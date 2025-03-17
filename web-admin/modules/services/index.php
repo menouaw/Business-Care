@@ -423,10 +423,17 @@ include_once '../../templates/header.php';
                                         <td><?php echo $appointment['duree'] . ' minutes'; ?></td>
                                         <td><?php echo htmlspecialchars($appointment['lieu'] ?: 'Non specifie'); ?></td>
                                         <td><?php echo getStatusBadge($appointment['statut']); ?></td>
-                                        <td>
-                                            <a href="?action=view&id=<?php echo $appointment['id']; ?>" class="btn btn-sm btn-info">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
+<td>
+    <a href="<?php echo APP_URL; ?>/modules/appointments/?action=view&id=<?php echo $appointment['id']; ?>" class="btn btn-sm btn-info">
+        <i class="fas fa-eye"></i>
+    </a>
+    <a href="<?php echo APP_URL; ?>/modules/appointments/?action=edit&id=<?php echo $appointment['id']; ?>" class="btn btn-sm btn-primary">
+        <i class="fas fa-edit"></i>
+    </a>
+    <a href="<?php echo APP_URL; ?>/modules/appointments/?action=delete&id=<?php echo $appointment['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce rendez-vous ?')">
+        <i class="fas fa-trash"></i>
+    </a>
+</td>
                                             <a href="?action=edit&id=<?php echo $appointment['id']; ?>" class="btn btn-sm btn-primary">
                                                 <i class="fas fa-edit"></i>
                                             </a>
