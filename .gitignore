@@ -42,3 +42,5 @@ config.php
 
 # fichier de creation d'utilisateur admin
 web-admin/install-admin.php
+
+documentation\BC_impact_mapping.excalidraw

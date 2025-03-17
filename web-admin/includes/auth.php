@@ -86,8 +86,8 @@ function hasPermission($requiredRole) {
     $role = $stmt->fetch();
     
     // TODO: implementer un systeme de permission propre
-    // pour l'instant, verifie si le rôle ID est admin (role_id = 1)
-    return $_SESSION['user_role'] == 1;
+    // pour l'instant, verifie si le rôle ID est admin (role_id = 3)
+    return $_SESSION['user_role'] == 3;
 }
 
 function getUserInfo($userId = null) {
