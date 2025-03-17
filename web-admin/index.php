@@ -9,7 +9,7 @@ if (!isAuthenticated()) {
     redirectTo('login.php');
 }
 
-// recupère les donnees du tableau de bord
+// recupere les donnees du tableau de bord
 $stats = [
     'total_users' => countTableRows('personnes'),
     'total_companies' => countTableRows('entreprises'),
@@ -19,7 +19,7 @@ $stats = [
 
 $recentActivities = getRecentActivities(10);
 
-// inclut l'en-tête
+// inclut l'en-tete
 $pageTitle = "Tableau de bord";
 include 'templates/header.php';
 ?>

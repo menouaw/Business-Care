@@ -1,23 +1,23 @@
 <?php
 // API principale pour Business Care
 
-// definit les en-têtes pour permettre l'accès API
+// definit les en-tetes pour permettre l'acces API
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
-// verifie si c'est une requête OPTIONS (preflight CORS)
+// verifie si c'est une requete OPTIONS (preflight CORS)
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit;
 }
 
-// recupère le chemin de la requête
+// recupere le chemin de la requete
 $requestPath = isset($_GET['path']) ? $_GET['path'] : '';
 $pathSegments = explode('/', trim($requestPath, '/'));
 
-// recupère le module demande
+// recupere le module demande
 $module = isset($pathSegments[0]) ? $pathSegments[0] : '';
 $action = isset($pathSegments[1]) ? $pathSegments[1] : '';
 $id = isset($pathSegments[2]) ? $pathSegments[2] : null;
@@ -34,10 +34,10 @@ $authHeader = isset($_SERVER['HTTP_AUTHORIZATION']) ? $_SERVER['HTTP_AUTHORIZATI
 if (preg_match('/Bearer\s(\S+)/', $authHeader, $matches)) {
     $token = $matches[1];
     // TODO: implementer la verification du token
-    $isAuthenticated = true; // temporaire: considère toute requête avec token comme authentifiee
+    $isAuthenticated = true; // temporaire: considere toute requete avec token comme authentifiee
 }
 
-// gère la requête en fonction du module demande
+// gere la requete en fonction du module demande
 switch ($module) {
     case 'users':
         require_once __DIR__ . '/admin/users.php';

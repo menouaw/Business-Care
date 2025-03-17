@@ -52,7 +52,7 @@
             <li class="nav-item">
                 <a class="nav-link <?php echo basename($_SERVER['SCRIPT_NAME']) == 'settings.php' ? 'active' : ''; ?>" href="<?php echo APP_URL; ?>/settings.php">
                     <i class="fas fa-cog me-2"></i>
-                    Paramètres
+                    Parametres
                 </a>
             </li>
             <li class="nav-item">

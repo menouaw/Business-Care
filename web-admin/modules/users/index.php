@@ -13,7 +13,7 @@ if (!hasPermission('admin')) {
     exit;
 }
 
-// recupère les param de la requête
+// recupere les param de la requete
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 $role = isset($_GET['role']) ? (int)$_GET['role'] : 0;
@@ -38,7 +38,7 @@ if ($role) {
     $params[] = $role;
 }
 
-// recupère les utilisateurs pagines
+// recupere les utilisateurs pagines
 $perPage = 10;
 $offset = ($page - 1) * $perPage;
 
@@ -68,11 +68,11 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $users = $stmt->fetchAll();
 
-// recupère tous les rôles pour le dropdown de filtrage
+// recupere tous les rôles pour le dropdown de filtrage
 $rolesStmt = $pdo->query("SELECT id, nom FROM roles ORDER BY nom");
 $roles = $rolesStmt->fetchAll();
 
-// definit le titre de la page et inclut l'en-tête
+// definit le titre de la page et inclut l'en-tete
 $pageTitle = "Gestion des utilisateurs";
 include '../../templates/header.php';
 ?>
@@ -129,7 +129,7 @@ include '../../templates/header.php';
                                     <th>Email</th>
                                     <th>Rôle</th>
                                     <th>Statut</th>
-                                    <th>Dernière connexion</th>
+                                    <th>Derniere connexion</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>

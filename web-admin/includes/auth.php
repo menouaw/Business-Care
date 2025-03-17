@@ -18,7 +18,7 @@ function login($email, $password) {
         $_SESSION['user_photo'] = $user['photo_url'];
         $_SESSION['last_activity'] = time();
         
-        // met à jour le temps de dernière connexion
+        // met à jour le temps de derniere connexion
         $stmt = $pdo->prepare("UPDATE personnes SET derniere_connexion = NOW() WHERE id = ?");
         $stmt->execute([$user['id']]);
         
@@ -66,7 +66,7 @@ function isAuthenticated() {
 
 function requireAuthentication() {
     if (!isAuthenticated()) {
-        // enregistre l'URL actuelle pour la redirection après connexion
+        // enregistre l'URL actuelle pour la redirection apres connexion
         $_SESSION['redirect_after_login'] = $_SERVER['REQUEST_URI'];
         
         header('Location: ' . APP_URL . '/login.php');
@@ -85,7 +85,7 @@ function hasPermission($requiredRole) {
     $stmt->execute([$_SESSION['user_role']]);
     $role = $stmt->fetch();
     
-    // TODO: implementer un système de permission propre
+    // TODO: implementer un systeme de permission propre
     // pour l'instant, verifie si le rôle ID est admin (role_id = 1)
     return $_SESSION['user_role'] == 1;
 }
@@ -121,7 +121,7 @@ function resetPassword($email) {
         return false;
     }
     
-    // genère un jeton de reinitialisation
+    // genere un jeton de reinitialisation
     $token = bin2hex(random_bytes(32));
     $expires = date('Y-m-d H:i:s', strtotime('+1 hour'));
     

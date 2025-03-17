@@ -1,7 +1,7 @@
 <?php
 // API pour la gestion des utilisateurs
 
-// verifie si l'utilisateur a accès à cette API
+// verifie si l'utilisateur a acces à cette API
 if (!$isAuthenticated) {
     http_response_code(401);
     echo json_encode([
@@ -18,7 +18,7 @@ switch ($method) {
     case 'GET':
         // recuperation d'utilisateurs
         if ($id) {
-            // recupère un utilisateur specifique
+            // recupere un utilisateur specifique
             $user = fetchOne('personnes', "id = $id");
             
             if ($user) {
@@ -37,7 +37,7 @@ switch ($method) {
                 ]);
             }
         } else {
-            // recupère tous les utilisateurs avec pagination
+            // recupere tous les utilisateurs avec pagination
             $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
             $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 20;
             $search = isset($_GET['search']) ? $_GET['search'] : '';
@@ -77,7 +77,7 @@ switch ($method) {
             $totalPages = ceil($totalUsers / $limit);
             $offset = ($page - 1) * $limit;
             
-            // recupère les utilisateurs pour la page courante
+            // recupere les utilisateurs pour la page courante
             $sql = "SELECT p.*, r.nom as role_name 
                     FROM personnes p 
                     LEFT JOIN roles r ON p.role_id = r.id";
@@ -119,7 +119,7 @@ switch ($method) {
             http_response_code(400);
             echo json_encode([
                 'error' => true,
-                'message' => 'Donnees incomplètes'
+                'message' => 'Donnees incompletes'
             ]);
             exit;
         }
@@ -152,7 +152,7 @@ switch ($method) {
         if ($userId) {
             echo json_encode([
                 'error' => false,
-                'message' => 'Utilisateur cree avec succès',
+                'message' => 'Utilisateur cree avec succes',
                 'user_id' => $userId
             ]);
         } else {
@@ -204,7 +204,7 @@ switch ($method) {
         if ($updated) {
             echo json_encode([
                 'error' => false,
-                'message' => 'Utilisateur mis à jour avec succès'
+                'message' => 'Utilisateur mis à jour avec succes'
             ]);
         } else {
             http_response_code(500);
@@ -248,7 +248,7 @@ switch ($method) {
         if ($updated) {
             echo json_encode([
                 'error' => false,
-                'message' => 'Utilisateur desactive avec succès'
+                'message' => 'Utilisateur desactive avec succes'
             ]);
         } else {
             http_response_code(500);

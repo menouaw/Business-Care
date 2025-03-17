@@ -30,7 +30,7 @@ switch ($method) {
             // generer un token (à remplacer par une implementation JWT correcte)
             $token = bin2hex(random_bytes(32));
             
-            // mise à jour du temps de dernière connexion
+            // mise à jour du temps de derniere connexion
             $stmt = $pdo->prepare("UPDATE personnes SET derniere_connexion = NOW() WHERE id = ?");
             $stmt->execute([$user['id']]);
             
@@ -118,7 +118,7 @@ switch ($method) {
         if ($updated) {
             echo json_encode([
                 'error' => false,
-                'message' => 'Mot de passe mis à jour avec succès'
+                'message' => 'Mot de passe mis à jour avec succes'
             ]);
         } else {
             http_response_code(500);

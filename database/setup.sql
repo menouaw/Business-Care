@@ -1,5 +1,5 @@
 -- Script de configuration de la base de donnees Business Care
--- Ce script doit être execute en tant qu'administrateur MySQL
+-- Ce script doit etre execute en tant qu'administrateur MySQL
 
 -- Creation de la base de donnees et des tables
 source schemas/business_care.sql;
@@ -13,7 +13,7 @@ source schemas/triggers.sql;
 -- Creation d'un utilisateur dedie pour l'application
 CREATE USER IF NOT EXISTS 'business_care_user'@'localhost' IDENTIFIED BY 'business_care_password';
 
--- Attribution des privilèges necessaires
+-- Attribution des privileges necessaires
 GRANT SELECT, INSERT, UPDATE, DELETE ON business_care.* TO 'business_care_user'@'localhost';
 
 -- Creation d'un utilisateur en lecture seule pour les rapports
@@ -24,7 +24,7 @@ GRANT SELECT ON business_care.* TO 'business_care_report'@'localhost';
 CREATE USER IF NOT EXISTS 'business_care_backup'@'localhost' IDENTIFIED BY 'business_care_backup_password';
 GRANT SELECT, LOCK TABLES ON business_care.* TO 'business_care_backup'@'localhost';
 
--- Application des privilèges
+-- Application des privileges
 FLUSH PRIVILEGES;
 
 -- Creation d'une procedure stockee pour la sauvegarde

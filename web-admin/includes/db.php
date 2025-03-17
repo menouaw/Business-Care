@@ -31,9 +31,9 @@ function executeQuery($sql, $params = []) {
         return $stmt;
     } catch (PDOException $e) {
         if (DEBUG_MODE) {
-            die("[ERREUR] Impossible d'executer la requête: " . $e->getMessage());
+            die("[ERREUR] Impossible d'executer la requete: " . $e->getMessage());
         } else {
-            die("[ERREUR] Une erreur est survenue lors du traitement de votre requête.");
+            die("[ERREUR] Une erreur est survenue lors du traitement de votre requete.");
         }
     }
 }

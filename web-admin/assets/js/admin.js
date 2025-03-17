@@ -3,7 +3,7 @@
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-    // cache les alertes après 5 secondes
+    // cache les alertes apres 5 secondes
     const alerts = document.querySelectorAll('.alert:not(.alert-permanent)');
     alerts.forEach(function(alert) {
         setTimeout(function() {
@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // gère les elements dynamiques du formulaire
+    // gere les elements dynamiques du formulaire
     const addFieldButtons = document.querySelectorAll('.add-field');
     addFieldButtons.forEach(function(button) {
         button.addEventListener('click', function() {

@@ -3,7 +3,7 @@
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-    // cache les alertes après 5 secondes
+    // cache les alertes apres 5 secondes
     const alerts = document.querySelectorAll('.alert:not(.alert-permanent)');
     alerts.forEach(function(alert) {
         setTimeout(function() {
@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const deleteButtons = document.querySelectorAll('.btn-delete');
     deleteButtons.forEach(function(button) {
         button.addEventListener('click', function(e) {
-            if (!confirm('Êtes-vous sûr de vouloir supprimer cet element ? Cette action ne peut pas être annulee.')) {
+            if (!confirm('Etes-vous sûr de vouloir supprimer cet element ? Cette action ne peut pas etre annulee.')) {
                 e.preventDefault();
             }
         });
@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // gère les elements dynamiques du formulaire
+    // gere les elements dynamiques du formulaire
     const addFieldButtons = document.querySelectorAll('.add-field');
     addFieldButtons.forEach(function(button) {
         button.addEventListener('click', function() {

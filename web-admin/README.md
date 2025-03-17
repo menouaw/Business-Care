@@ -16,10 +16,10 @@ web-admin/                  # Dossier principal de l'administration
 │   ├── companies/          # Gestion des entreprises
 │   ├── contracts/          # Gestion des contrats
 │   ├── services/           # Gestion des services
-│   ├── financial/          # Gestion financière
+│   ├── financial/          # Gestion financiere
 │   └── reports/            # Rapports et statistiques
-├── templates/              # Modèles d'interface
-│   ├── header.php          # En-tête commune
+├── templates/              # Modeles d'interface
+│   ├── header.php          # En-tete commune
 │   ├── footer.php          # Pied de page commun
 │   └── sidebar.php         # Barre laterale de navigation
 ├── index.php               # Page d'accueil/tableau de bord
@@ -57,7 +57,7 @@ L'API REST se trouve dans le dossier `/api` à la racine du projet et comprend l
 
 1. Creer une base de donnees MySQL
 2. Importer le script SQL depuis `/database/setup.sql`
-3. Modifier les paramètres de connexion dans `/web-admin/includes/config.php`
+3. Modifier les parametres de connexion dans `/web-admin/includes/config.php`
 
 ## Fonctionnalites principales
 
@@ -66,7 +66,7 @@ L'API REST se trouve dans le dossier `/api` à la racine du projet et comprend l
 - Gestion des entreprises
 - Gestion des contrats
 - Gestion des services
-- Gestion financière
+- Gestion financiere
 - Rapports et statistiques
 
 ## Developpement

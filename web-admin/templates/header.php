@@ -37,7 +37,7 @@ if (!defined('APP_NAME')) {
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                             <li><a class="dropdown-item" href="<?php echo APP_URL; ?>/profile.php">Profil</a></li>
-                            <li><a class="dropdown-item" href="<?php echo APP_URL; ?>/settings.php">Paramètres</a></li>
+                            <li><a class="dropdown-item" href="<?php echo APP_URL; ?>/settings.php">Parametres</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="<?php echo APP_URL; ?>/logout.php">Deconnexion</a></li>
                         </ul>
