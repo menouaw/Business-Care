@@ -96,7 +96,12 @@ function insertRow($table, $data) {
     return $stmt->rowCount() > 0 ? getDbConnection()->lastInsertId() : false;
 }
 
-function updateRow($table, $data, $where) {
+function updateRow($table, $data, $where, $whereParams = []) {
+    // Validation du nom de table
+    if (!preg_match('/^[a-zA-Z0-9_]+$/', $table)) {
+        throw new Exception("Nom de table invalide");
+    }
+    
     $fields = array_keys($data);
     $setClause = array_map(function ($field) {
         return "$field = :$field";
@@ -104,7 +109,8 @@ function updateRow($table, $data, $where) {
     
     $sql = "UPDATE $table SET " . implode(', ', $setClause) . " WHERE $where";
     
-    $stmt = executeQuery($sql, $data);
+    $params = array_merge($data, $whereParams);
+    $stmt = executeQuery($sql, $params);
     return $stmt->rowCount();
 }
 
