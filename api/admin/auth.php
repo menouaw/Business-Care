@@ -87,7 +87,8 @@ switch ($method) {
         }
         
         // recuperer l'utilisateur
-        $user = fetchOne('personnes', "id = $userId");
+-        $user = fetchOne('personnes', "id = $userId");
++        $user = fetchOne('personnes', "id = ?", '', [$userId]);
         if (!$user) {
             http_response_code(404);
             echo json_encode([
