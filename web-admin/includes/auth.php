@@ -18,7 +18,7 @@ function login($email, $password) {
         $_SESSION['user_photo'] = $user['photo_url'];
         $_SESSION['last_activity'] = time();
         
-        // met à jour le temps de derniere connexion
+        // met a jour le temps de derniere connexion
         $stmt = $pdo->prepare("UPDATE personnes SET derniere_connexion = NOW() WHERE id = ?");
         $stmt->execute([$user['id']]);
         
@@ -58,7 +58,7 @@ function isAuthenticated() {
         return false;
     }
     
-    // met à jour le temps d'activite
+    // met a jour le temps d'activite
     $_SESSION['last_activity'] = time();
     
     return true;
@@ -86,8 +86,8 @@ function hasPermission($requiredRole) {
     $role = $stmt->fetch();
     
     // TODO: implementer un systeme de permission propre
-    // pour l'instant, verifie si le rôle ID est admin (role_id = 1)
-    return $_SESSION['user_role'] == 1;
+    // pour l'instant, verifie si le rôle ID est admin (role_id = 3)
+    return $_SESSION['user_role'] == 3;
 }
 
 function getUserInfo($userId = null) {

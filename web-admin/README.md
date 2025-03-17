@@ -29,7 +29,7 @@ web-admin/                  # Dossier principal de l'administration
 
 ## API REST
 
-L'API REST se trouve dans le dossier `/api` à la racine du projet et comprend les points d'entree suivants :
+L'API REST se trouve dans le dossier `/api` a la racine du projet et comprend les points d'entree suivants :
 
 ```
 /api/                      # Point d'entree principal
@@ -46,7 +46,7 @@ L'API REST se trouve dans le dossier `/api` à la racine du projet et comprend l
 - `GET /api/users` - Liste des utilisateurs (avec pagination)
 - `GET /api/users/{id}` - Detail d'un utilisateur
 - `POST /api/users` - Creation d'un utilisateur
-- `PUT /api/users/{id}` - Mise à jour d'un utilisateur
+- `PUT /api/users/{id}` - Mise a jour d'un utilisateur
 - `DELETE /api/users/{id}` - Suppression d'un utilisateur
 
 - `POST /api/auth` - Authentification

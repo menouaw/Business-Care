@@ -8,7 +8,7 @@ require_once '../../includes/functions.php';
 // verifie si l'utilsateur est connecte
 requireAuthentication();
 if (!hasPermission('admin')) {
-    flashMessage('Vous n\'avez pas les permissions pour acceder à cette page.', 'danger');
+    flashMessage('Vous n\'avez pas les permissions pour acceder a cette page.', 'danger');
     header('Location: ' . APP_URL);
     exit;
 }

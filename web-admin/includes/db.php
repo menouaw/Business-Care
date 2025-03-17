@@ -14,9 +14,9 @@ function getDbConnection() {
             $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
         } catch (PDOException $e) {
             if (DEBUG_MODE) {
-                die("[ERREUR] Connexion à la base de donnees impossible: " . $e->getMessage());
+                die("[ERREUR] Connexion a la base de donnees impossible: " . $e->getMessage());
             } else {
-                die("[ERREUR] Connexion à la base de donnees impossible. Veuillez reessayer plus tard.");
+                die("[ERREUR] Connexion a la base de donnees impossible. Veuillez reessayer plus tard.");
             }
         }
     }

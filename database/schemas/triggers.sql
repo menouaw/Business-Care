@@ -18,8 +18,8 @@ BEGIN
         INSERT INTO notifications (personne_id, titre, message, type)
         VALUES (
             NEW.personne_id,
-            'Mise à jour du rendez-vous',
-            CONCAT('Le statut de votre rendez-vous a ete mis à jour: ', NEW.statut),
+            'Mise a jour du rendez-vous',
+            CONCAT('Le statut de votre rendez-vous a ete mis a jour: ', NEW.statut),
             'info'
         );
     END IF;
