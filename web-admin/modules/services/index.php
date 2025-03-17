@@ -214,7 +214,6 @@ include_once '../../templates/header.php';
                     </a>
                 </div>
             </div>
-            
             <?php if (isset($errors) && !empty($errors)): ?>
                 <div class="alert alert-danger">
                     <ul class="mb-0">
@@ -235,6 +234,7 @@ include_once '../../templates/header.php';
                     </div>
                     <div class="card-body">
                         <form method="post">
++                           <input type="hidden" name="csrf_token" value="<?php echo generateCsrfToken(); ?>">
                             <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label for="nom" class="form-label">Nom du service*</label>
@@ -294,6 +294,28 @@ include_once '../../templates/header.php';
                                         }
                                         ?>
                                     </select>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            <?php endif; ?>
+            
+            <?php
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
++               // Vérification du jeton CSRF
++               if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
++                   flashMessage("Erreur de sécurité, veuillez réessayer", "danger");
++                   header('Location: ' . APP_URL . '/modules/services/');
++                   exit;
++               }
+                
+                $data = [
+                    // ...
+                ];
+                // Suite du traitement du formulaire
+            }
+            ?>
                                 </div>
                             </div>
                             
