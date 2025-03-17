@@ -29,10 +29,6 @@ npm-debug.log*
 # Composer
 composer.phar
 
-# Database files
-*.sql
-*.sqlite
-
 # Config files with sensitive information
 config.php
 .cursor/
