@@ -79,15 +79,10 @@ function hasPermission($requiredRole) {
         return false;
     }
     
-    // verifie si le rôle de l'utilisateur a la permission requise
-    $pdo = getDbConnection();
-    $stmt = $pdo->prepare("SELECT nom FROM roles WHERE id = ?");
-    $stmt->execute([$_SESSION['user_role']]);
-    $role = $stmt->fetch();
-    
     // TODO: implementer un systeme de permission propre
-    // pour l'instant, verifie si le rôle ID est admin (role_id = 1)
-    return $_SESSION['user_role'] == 1;
+    // Pour l'instant, vérifie si le rôle de l'utilisateur correspond au rôle requis
+    // ou si l'utilisateur est admin (role_id = 1)
+    return $_SESSION['user_role'] == $requiredRole || $_SESSION['user_role'] == 1;
 }
 
 function getUserInfo($userId = null) {
