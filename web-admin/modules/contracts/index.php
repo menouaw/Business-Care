@@ -214,114 +214,133 @@ include_once '../../templates/header.php';
 
 <div class="container-fluid">
     <div class="row">
-        <?php include_once '../../templates/sidebar.php'; ?>
+<?php include_once '../../templates/sidebar.php'; ?>
+
+<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+    <?php
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        // Vérification du jeton CSRF
+        if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
+            flashMessage("Erreur de sécurité, veuillez réessayer", "danger");
+            header('Location: ' . APP_URL . '/modules/contracts/');
+            exit;
+        }
         
-        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h2">Gestion des contrats</h1>
-                <div class="btn-toolbar mb-2 mb-md-0">
-                    <a href="?action=add" class="btn btn-sm btn-outline-primary">
-                        <i class="fas fa-plus"></i> Nouveau contrat
-                    </a>
-                </div>
+        $data = [
+            // ...
+        ];
+    }
+    ?>
+    
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Gestion des contrats</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <a href="?action=add" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-plus"></i> Nouveau contrat
+            </a>
+        </div>
+    </div>
+    
+    <?php if (isset($errors) && !empty($errors)): ?>
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                <?php foreach ($errors as $error): ?>
+                    <li><?php echo htmlspecialchars($error); ?></li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+    <?php endif; ?>
+    
+    <?php echo displayFlashMessages(); ?>
+    
+    <?php if ($action === 'add' || $action === 'edit'): ?>
+        <!-- formulaire d'ajout/edition -->
+        <div class="card">
+            <div class="card-header">
+                <?php echo $action === 'add' ? 'Ajouter un nouveau contrat' : 'Modifier le contrat'; ?>
             </div>
-            
-            <?php if (isset($errors) && !empty($errors)): ?>
-                <div class="alert alert-danger">
-                    <ul class="mb-0">
-                        <?php foreach ($errors as $error): ?>
-                            <li><?php echo htmlspecialchars($error); ?></li>
-                        <?php endforeach; ?>
-                    </ul>
-                </div>
-            <?php endif; ?>
-            
-            <?php echo displayFlashMessages(); ?>
-            
-            <?php if ($action === 'add' || $action === 'edit'): ?>
-                <!-- formulaire d'ajout/edition -->
-                <div class="card">
-                    <div class="card-header">
-                        <?php echo $action === 'add' ? 'Ajouter un nouveau contrat' : 'Modifier le contrat'; ?>
+            <div class="card-body">
+                <form method="post">
++                   <input type="hidden" name="csrf_token" value="<?php echo generateCsrfToken(); ?>">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="entreprise_id" class="form-label">Entreprise*</label>
+                            <select class="form-select" id="entreprise_id" name="entreprise_id" required>
+                                <option value="">Selectionnez une entreprise...</option>
+                                <?php foreach ($entreprises as $e): ?>
+                                    <option value="<?php echo $e['id']; ?>" <?php echo (isset($contract['entreprise_id']) && $contract['entreprise_id'] == $e['id']) ? 'selected' : ''; ?>>
+                                        <?php echo htmlspecialchars($e['nom']); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="type_contrat" class="form-label">Type de contrat*</label>
+                            <select class="form-select" id="type_contrat" name="type_contrat" required>
+                                <option value="">Selectionnez un type...</option>
+                                <?php
+                                $types = ['standard', 'premium', 'entreprise'];
+                                foreach ($types as $t) {
+                                    $selected = (isset($contract['type_contrat']) && $contract['type_contrat'] === $t) ? 'selected' : '';
+                                    echo "<option value=\"$t\" $selected>" . ucfirst($t) . "</option>";
+                                }
+                                ?>
+                            </select>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <form method="post">
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="entreprise_id" class="form-label">Entreprise*</label>
-                                    <select class="form-select" id="entreprise_id" name="entreprise_id" required>
-                                        <option value="">Selectionnez une entreprise...</option>
-                                        <?php foreach ($entreprises as $e): ?>
-                                            <option value="<?php echo $e['id']; ?>" <?php echo (isset($contract['entreprise_id']) && $contract['entreprise_id'] == $e['id']) ? 'selected' : ''; ?>>
-                                                <?php echo htmlspecialchars($e['nom']); ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="type_contrat" class="form-label">Type de contrat*</label>
-                                    <select class="form-select" id="type_contrat" name="type_contrat" required>
-                                        <option value="">Selectionnez un type...</option>
-                                        <?php
-                                        $types = ['standard', 'premium', 'entreprise'];
-                                        foreach ($types as $t) {
-                                            $selected = (isset($contract['type_contrat']) && $contract['type_contrat'] === $t) ? 'selected' : '';
-                                            echo "<option value=\"$t\" $selected>" . ucfirst($t) . "</option>";
-                                        }
-                                        ?>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="date_debut" class="form-label">Date de debut*</label>
-                                    <input type="date" class="form-control" id="date_debut" name="date_debut" value="<?php echo isset($contract['date_debut']) ? htmlspecialchars($contract['date_debut']) : ''; ?>" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="date_fin" class="form-label">Date de fin</label>
-                                    <input type="date" class="form-control" id="date_fin" name="date_fin" value="<?php echo isset($contract['date_fin']) ? htmlspecialchars($contract['date_fin']) : ''; ?>">
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-4">
-                                    <label for="montant_mensuel" class="form-label">Montant mensuel (€)</label>
-                                    <input type="number" step="0.01" min="0" class="form-control" id="montant_mensuel" name="montant_mensuel" value="<?php echo isset($contract['montant_mensuel']) ? htmlspecialchars($contract['montant_mensuel']) : ''; ?>">
-                                </div>
-                                <div class="col-md-4">
-                                    <label for="nombre_salaries" class="form-label">Nombre de salaries</label>
-                                    <input type="number" min="1" class="form-control" id="nombre_salaries" name="nombre_salaries" value="<?php echo isset($contract['nombre_salaries']) ? htmlspecialchars($contract['nombre_salaries']) : ''; ?>">
-                                </div>
-                                <div class="col-md-4">
-                                    <label for="statut" class="form-label">Statut</label>
-                                    <select class="form-select" id="statut" name="statut">
-                                        <?php
-                                        $statuts = ['actif', 'expire', 'resilie', 'en_attente'];
-                                        foreach ($statuts as $s) {
-                                            $selected = (isset($contract['statut']) && $contract['statut'] === $s) ? 'selected' : '';
-                                            echo "<option value=\"$s\" $selected>" . ucfirst($s) . "</option>";
-                                        }
-                                        ?>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-12">
-                                    <label for="conditions_particulieres" class="form-label">Conditions particulieres</label>
-                                    <textarea class="form-control" id="conditions_particulieres" name="conditions_particulieres" rows="3"><?php echo isset($contract['conditions_particulieres']) ? htmlspecialchars($contract['conditions_particulieres']) : ''; ?></textarea>
-                                </div>
-                            </div>
-                            
-                            <div class="row">
-                                <div class="col-12">
-                                    <button type="submit" class="btn btn-primary">Enregistrer</button>
-                                    <a href="<?php echo APP_URL; ?>/modules/contracts/" class="btn btn-secondary">Annuler</a>
-                                </div>
-                            </div>
-                        </form>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="date_debut" class="form-label">Date de debut*</label>
+                            <input type="date" class="form-control" id="date_debut" name="date_debut" value="<?php echo isset($contract['date_debut']) ? htmlspecialchars($contract['date_debut']) : ''; ?>" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="date_fin" class="form-label">Date de fin</label>
+                            <input type="date" class="form-control" id="date_fin" name="date_fin" value="<?php echo isset($contract['date_fin']) ? htmlspecialchars($contract['date_fin']) : ''; ?>">
+                        </div>
                     </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="montant_mensuel" class="form-label">Montant mensuel (€)</label>
+                            <input type="number" step="0.01" min="0" class="form-control" id="montant_mensuel" name="montant_mensuel" value="<?php echo isset($contract['montant_mensuel']) ? htmlspecialchars($contract['montant_mensuel']) : ''; ?>">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="nombre_salaries" class="form-label">Nombre de salaries</label>
+                            <input type="number" min="1" class="form-control" id="nombre_salaries" name="nombre_salaries" value="<?php echo isset($contract['nombre_salaries']) ? htmlspecialchars($contract['nombre_salaries']) : ''; ?>">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="statut" class="form-label">Statut</label>
+                            <select class="form-select" id="statut" name="statut">
+                                <?php
+                                $statuts = ['actif', 'expire', 'resilie', 'en_attente'];
+                                foreach ($statuts as $s) {
+                                    $selected = (isset($contract['statut']) && $contract['statut'] === $s) ? 'selected' : '';
+                                    echo "<option value=\"$s\" $selected>" . ucfirst($s) . "</option>";
+                                }
+                                ?>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label for="conditions_particulieres" class="form-label">Conditions particulieres</label>
+                            <textarea class="form-control" id="conditions_particulieres" name="conditions_particulieres" rows="3"><?php echo isset($contract['conditions_particulieres']) ? htmlspecialchars($contract['conditions_particulieres']) : ''; ?></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">Enregistrer</button>
+                            <a href="<?php echo APP_URL; ?>/modules/contracts/" class="btn btn-secondary">Annuler</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    <?php endif; ?>
+</main>
                 </div>
             <?php elseif ($action === 'view' && $contract): ?>
                 <!-- affichage des details d'un contrat -->
