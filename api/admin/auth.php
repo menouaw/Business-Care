@@ -113,8 +113,7 @@ switch ($method) {
             'updated_at' => date('Y-m-d H:i:s')
         ];
         
-        $updated = updateRow('personnes', $updatedData, "id = $userId");
-        
+        $updated = updateRow('personnes', $updatedData, "id = ?", [$userId]);
         if ($updated) {
             echo json_encode([
                 'error' => false,
