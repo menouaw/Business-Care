@@ -108,10 +108,15 @@ function updateRow($table, $data, $where) {
     return $stmt->rowCount();
 }
 
-function deleteRow($table, $where) {
+function deleteRow($table, $where, $params = []) {
+    // Validation du nom de table
+    if (!preg_match('/^[a-zA-Z0-9_]+$/', $table)) {
+        throw new Exception("Nom de table invalide");
+    }
+    
     $sql = "DELETE FROM $table WHERE $where";
     
-    $stmt = executeQuery($sql);
+    $stmt = executeQuery($sql, $params);
     return $stmt->rowCount();
 }
 
