@@ -93,7 +93,7 @@ function getUserInfo($userId = null) {
         $userId = $_SESSION['user_id'];
     }
     
-    return fetchOne('personnes', "id = $userId");
+    return fetchOne('personnes', "id = ?", '', [$userId]);
 }
 
 function logActivity($userId, $action, $details = '') {
