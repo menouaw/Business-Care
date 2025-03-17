@@ -39,12 +39,18 @@ function executeQuery($sql, $params = []) {
 }
 
 function countTableRows($table, $where = '') {
+    // Validation du nom de table
+    if (!preg_match('/^[a-zA-Z0-9_]+$/', $table)) {
+        throw new Exception("Nom de table invalide");
+    }
+    
     $sql = "SELECT COUNT(*) FROM $table";
+    $params = [];
     if ($where) {
         $sql .= " WHERE $where";
     }
     
-    $stmt = executeQuery($sql);
+    $stmt = executeQuery($sql, $params);
     return $stmt->fetchColumn();
 }
 
