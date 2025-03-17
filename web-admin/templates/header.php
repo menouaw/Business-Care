@@ -27,7 +27,7 @@ if (!defined('APP_NAME')) {
                 <input class="form-control form-control-dark" type="text" placeholder="Rechercher..." aria-label="Search">
                 <div class="navbar-nav flex-row">
                     <div class="nav-item text-nowrap">
-                        <a class="nav-link px-3" href="<?php echo APP_URL; ?>/notifications.php">
+                        <a class="nav-link px-3" href="<?php echo APP_URL; ?>/notifications.php" title="Notifications">
                             <i class="fas fa-bell"></i>
                         </a>
                     </div>

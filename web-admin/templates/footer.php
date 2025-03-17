@@ -17,13 +17,16 @@
     <script src="<?php echo ASSETS_URL; ?>/js/admin.js"></script>
     
     <script>
-        // initialise les icônes feather
-        feather.replace();
-        
-        // initialise les infobulles
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl)
+        // initialisation des plugins
+        document.addEventListener('DOMContentLoaded', function() {
+            // initialise les icones feather
+            feather.replace();
+            
+            // initialise les infobulles
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
+            });
         });
     </script>
 </body>

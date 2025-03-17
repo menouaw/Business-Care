@@ -1,16 +1,55 @@
+:root {
+  /* variables de couleurs */
+  --color-primary: #4e73df;
+  --color-success: #1cc88a;
+  --color-info: #36b9cc;
+  --color-warning: #f6c23e;
+  --color-danger: #e74a3b;
+  --color-gray-100: #f8f9fc;
+  --color-gray-300: #dddfeb;
+  --color-gray-500: #aaaaaa;
+  --color-gray-800: #5a5c69;
+  --color-text-muted: #6c757d;
+  
+  /* variables d'espacement */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 3rem;
+  
+  /* variables de tailles */
+  --sidebar-width-md: 16rem;
+  --sidebar-width-lg: 14rem;
+  --navbar-height: 3.5rem;
+}
+
+/* 
+ * Base et structure
+ * ------------------------------------------------ */
 body {
-  font-size: .875rem;
+  font-size: 0.875rem;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
+main {
+  flex: 1;
+  padding-top: var(--spacing-md);
+  padding-bottom: var(--spacing-md);
+}
+
+/* icones */
 .feather {
   width: 16px;
   height: 16px;
   vertical-align: text-bottom;
 }
 
+/* 
+ * barre laterale
+ * ------------------------------------------------ */
 .sidebar {
   position: fixed;
   top: 0;
@@ -18,20 +57,14 @@ body {
   left: 0;
   z-index: 100;
   padding: 48px 0 0;
-  box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
-}
-
-@media (max-width: 767.98px) {
-  .sidebar {
-    top: 5rem;
-  }
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.1);
 }
 
 .sidebar-sticky {
   position: relative;
   top: 0;
   height: calc(100vh - 48px);
-  padding-top: .5rem;
+  padding-top: var(--spacing-sm);
   overflow-x: hidden;
   overflow-y: auto;
 }
@@ -43,11 +76,11 @@ body {
 
 .sidebar .nav-link .feather {
   margin-right: 4px;
-  color: #727272;
+  color: var(--color-gray-500);
 }
 
 .sidebar .nav-link.active {
-  color: #2470dc;
+  color: var(--color-primary);
 }
 
 .sidebar .nav-link:hover .feather,
@@ -56,38 +89,163 @@ body {
 }
 
 .sidebar-heading {
-  font-size: .75rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
 }
 
+@media (max-width: 767.98px) {
+  .sidebar {
+    top: 5rem;
+  }
+}
+
+/* 
+ * barre de navigation
+ * ------------------------------------------------ */
+header.navbar {
+  z-index: 1030;
+  position: relative;
+  width: 100%;
+}
+
 .navbar-brand {
-  padding-top: .75rem;
-  padding-bottom: .75rem;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
   font-size: 1rem;
-  background-color: rgba(0, 0, 0, .25);
-  box-shadow: inset -1px 0 0 rgba(0, 0, 0, .25);
+  background-color: rgba(0, 0, 0, 0.25);
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.25);
 }
 
 .navbar .navbar-toggler {
-  top: .25rem;
+  top: 0.25rem;
   right: 1rem;
 }
 
+/* champ de recherche */
 .navbar .form-control {
-  padding: .75rem 1rem;
+  padding: 0.75rem 1rem;
   border-width: 0;
   border-radius: 0;
 }
 
 .form-control-dark {
   color: #fff;
-  background-color: rgba(255, 255, 255, .1);
-  border-color: rgba(255, 255, 255, .1);
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .form-control-dark:focus {
   border-color: transparent;
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, .25);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.25);
+}
+
+/* alignement du header */
+header.navbar .ms-sm-auto {
+  padding-right: 0.75rem;
+}
+
+/* menu utilisateur */
+.navbar .form-control-dark {
+  width: 100%;
+  max-width: 400px;
+  margin-right: 10px;
+}
+
+.navbar .navbar-nav.flex-row {
+  display: flex;
+  align-items: center;
+}
+
+.user-dropdown {
+  position: relative;
+}
+
+.user-dropdown .dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 1031;
+  min-width: 10rem;
+}
+
+.user-dropdown .dropdown-toggle {
+  white-space: nowrap;
+}
+
+.dropdown-menu-end {
+  right: 0;
+  left: auto;
+}
+
+/* 
+ * pied de page
+ * ------------------------------------------------ */
+footer.footer {
+  z-index: 1030;
+  position: relative;
+  width: 100%;
+  margin-left: 0 !important;
+}
+
+/* 
+ * cartes et composants
+ * ------------------------------------------------ */
+.card-body {
+  position: relative;
+}
+
+/* cartes avec bordure colorée */
+.card[class*="border-left-"] {
+  border-left-width: 0.25rem !important;
+  border-left-style: solid !important;
+}
+
+.card.border-left-primary {
+  border-left-color: var(--color-primary) !important;
+}
+
+.card.border-left-success {
+  border-left-color: var(--color-success) !important;
+}
+
+.card.border-left-info {
+  border-left-color: var(--color-info) !important;
+}
+
+.card.border-left-warning {
+  border-left-color: var(--color-warning) !important;
+}
+
+.card.border-left-danger {
+  border-left-color: var(--color-danger) !important;
+}
+
+/* tableaux */
+.table-actions {
+  white-space: nowrap;
+}
+
+/* 
+ * utilitaires
+ * ------------------------------------------------ */
+.text-gray-300 {
+  color: var(--color-gray-300) !important;
+}
+
+.text-gray-800 {
+  color: var(--color-gray-800) !important;
+}
+
+.font-weight-bold {
+  font-weight: 700 !important;
+}
+
+.text-xs {
+  font-size: 0.7rem;
+}
+
+.border-radius-0 {
+  border-radius: 0 !important;
 }
 
 .bd-placeholder-img {
@@ -104,63 +262,9 @@ body {
   }
 }
 
-main {
-  flex: 1;
-}
-
-.table-actions {
-  white-space: nowrap;
-}
-
-.card-body {
-  position: relative;
-}
-
-.card.border-left-primary {
-  border-left: 0.25rem solid #4e73df !important;
-}
-
-.card.border-left-success {
-  border-left: 0.25rem solid #1cc88a !important;
-}
-
-.card.border-left-info {
-  border-left: 0.25rem solid #36b9cc !important;
-}
-
-.card.border-left-warning {
-  border-left: 0.25rem solid #f6c23e !important;
-}
-
-.card.border-left-danger {
-  border-left: 0.25rem solid #e74a3b !important;
-}
-
-.text-gray-300 {
-  color: #dddfeb !important;
-}
-
-.text-gray-800 {
-  color: #5a5c69 !important;
-}
-
-.font-weight-bold {
-  font-weight: 700 !important;
-}
-
-.text-xs {
-  font-size: .7rem;
-}
-
-.border-radius-0 {
-  border-radius: 0 !important;
-}
-
-.dropdown-menu-end {
-  right: 0;
-  left: auto;
-}
-
+/* 
+ * pages specifiques
+ * ------------------------------------------------ */
 /* page de connexion */
 .login-page {
   height: 100vh;
@@ -210,60 +314,9 @@ main {
   z-index: 2;
 }
 
-/* pour resoudre le probleme de chevauchement de la barre laterale et de l'en-tete */
-header.navbar {
-  z-index: 1030;
-  position: relative;
-  width: 100%;
-}
-
-header.navbar .ms-sm-auto {
-  padding-right: 0.75rem;
-}
-
-/* corriger le menu deroulant utilisateur */
-.navbar .form-control-dark {
-  width: 100%;
-  max-width: 400px;
-  margin-right: 10px;
-}
-
-.navbar .navbar-nav.flex-row {
-  display: flex;
-  align-items: center;
-}
-
-.user-dropdown {
-  position: relative;
-}
-
-.user-dropdown .dropdown-menu {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  z-index: 1031;
-  min-width: 10rem;
-}
-
-.user-dropdown .dropdown-toggle {
-  white-space: nowrap;
-}
-
-/* pareil mais pour le footer */
-footer.footer {
-  z-index: 1030;
-  position: relative;
-  width: 100%;
-  margin-left: 0 !important;
-}
-
-/* espacement cohérent entre les sections */
-main {
-  padding-top: 1rem;
-  padding-bottom: 1rem;
-}
-
-/* messages flash */
+/* 
+ * messages et alertes
+ * ------------------------------------------------ */
 .alert {
   margin-bottom: 0;
   border-radius: 0;
