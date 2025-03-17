@@ -7,7 +7,7 @@ AFTER INSERT ON personnes
 FOR EACH ROW
 BEGIN
     INSERT INTO logs (personne_id, action, details)
-    VALUES (NEW.id, 'creation_compte', CONCAT('Création du compte pour ', NEW.email));
+    VALUES (NEW.id, 'creation_compte', CONCAT('Creation du compte pour ', NEW.email));
 END//
 
 CREATE TRIGGER before_rendez_vous_update
@@ -19,7 +19,7 @@ BEGIN
         VALUES (
             NEW.personne_id,
             'Mise à jour du rendez-vous',
-            CONCAT('Le statut de votre rendez-vous a été mis à jour: ', NEW.statut),
+            CONCAT('Le statut de votre rendez-vous a ete mis à jour: ', NEW.statut),
             'info'
         );
     END IF;
@@ -33,7 +33,7 @@ BEGIN
     SELECT 
         p.id,
         'Nouvelle Facture',
-        CONCAT('Une nouvelle facture de ', NEW.montant_total, '€ a été créée'),
+        CONCAT('Une nouvelle facture de ', NEW.montant_total, '€ a ete creee'),
         'info',
         CONCAT('/factures/', NEW.id)
     FROM personnes p
@@ -49,8 +49,8 @@ BEGIN
         INSERT INTO notifications (personne_id, titre, message, type, lien)
         SELECT 
             p.id,
-            'Facture Payée',
-            CONCAT('La facture ', NEW.numero_facture, ' a été payée'),
+            'Facture Payee',
+            CONCAT('La facture ', NEW.numero_facture, ' a ete payee'),
             'success',
             CONCAT('/factures/', NEW.id)
         FROM personnes p
@@ -67,7 +67,7 @@ BEGIN
     VALUES (
         NEW.personne_id,
         'nouvelle_evaluation',
-        CONCAT('Nouvelle évaluation de ', NEW.note, '/5 pour la prestation ', NEW.prestation_id)
+        CONCAT('Nouvelle evaluation de ', NEW.note, '/5 pour la prestation ', NEW.prestation_id)
     );
 END//
 

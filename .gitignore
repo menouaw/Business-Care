@@ -1,41 +1,44 @@
 
-# Dependency directories
+# repertoire des dependances
 /vendor/
 /node_modules/
 
-# Environment files
+# fichiers d'environnement
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 
-# Logs
+# fichiers de journaux
 /logs/
 *.log
 npm-debug.log*
 
-# Build directories
+# repertoire de build
 /dist/
 /build/
 
-# Cache and temporary files
+# fichiers de cache et de fichiers temporaires
 /cache/
 /tmp/
 *.tmp
 *.bak
 *.cache
 
-# Composer
+# composer
 composer.phar
 
-# Config files with sensitive information
+# fichiers de configuration avec des informations sensibles
 config.php
 .cursor/
 
-# Uploads and user content
+# fichiers de contenu utilisateur
 /uploads/
 /media/
 
-# Generated files
+# fichiers generes
 /generated/
+
+# fichier de creation d'utilisateur admin
+web-admin/install-admin.php
