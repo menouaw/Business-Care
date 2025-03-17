@@ -170,7 +170,9 @@ $sql = "SELECT * FROM entreprises";
 if ($where) {
     $sql .= " WHERE $where";
 }
-$sql .= " ORDER BY nom ASC LIMIT $offset, $perPage";
+$sql .= " ORDER BY nom ASC LIMIT ?, ?";
+$params[] = $offset;
+$params[] = $perPage;
 
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
