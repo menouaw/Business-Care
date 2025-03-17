@@ -1,0 +1,270 @@
+body {
+  font-size: .875rem;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.feather {
+  width: 16px;
+  height: 16px;
+  vertical-align: text-bottom;
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 100;
+  padding: 48px 0 0;
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+}
+
+@media (max-width: 767.98px) {
+  .sidebar {
+    top: 5rem;
+  }
+}
+
+.sidebar-sticky {
+  position: relative;
+  top: 0;
+  height: calc(100vh - 48px);
+  padding-top: .5rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.sidebar .nav-link {
+  font-weight: 500;
+  color: #333;
+}
+
+.sidebar .nav-link .feather {
+  margin-right: 4px;
+  color: #727272;
+}
+
+.sidebar .nav-link.active {
+  color: #2470dc;
+}
+
+.sidebar .nav-link:hover .feather,
+.sidebar .nav-link.active .feather {
+  color: inherit;
+}
+
+.sidebar-heading {
+  font-size: .75rem;
+  text-transform: uppercase;
+}
+
+.navbar-brand {
+  padding-top: .75rem;
+  padding-bottom: .75rem;
+  font-size: 1rem;
+  background-color: rgba(0, 0, 0, .25);
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, .25);
+}
+
+.navbar .navbar-toggler {
+  top: .25rem;
+  right: 1rem;
+}
+
+.navbar .form-control {
+  padding: .75rem 1rem;
+  border-width: 0;
+  border-radius: 0;
+}
+
+.form-control-dark {
+  color: #fff;
+  background-color: rgba(255, 255, 255, .1);
+  border-color: rgba(255, 255, 255, .1);
+}
+
+.form-control-dark:focus {
+  border-color: transparent;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, .25);
+}
+
+.bd-placeholder-img {
+  font-size: 1.125rem;
+  text-anchor: middle;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+}
+
+@media (min-width: 768px) {
+  .bd-placeholder-img-lg {
+    font-size: 3.5rem;
+  }
+}
+
+main {
+  flex: 1;
+}
+
+.table-actions {
+  white-space: nowrap;
+}
+
+.card-body {
+  position: relative;
+}
+
+.card.border-left-primary {
+  border-left: 0.25rem solid #4e73df !important;
+}
+
+.card.border-left-success {
+  border-left: 0.25rem solid #1cc88a !important;
+}
+
+.card.border-left-info {
+  border-left: 0.25rem solid #36b9cc !important;
+}
+
+.card.border-left-warning {
+  border-left: 0.25rem solid #f6c23e !important;
+}
+
+.card.border-left-danger {
+  border-left: 0.25rem solid #e74a3b !important;
+}
+
+.text-gray-300 {
+  color: #dddfeb !important;
+}
+
+.text-gray-800 {
+  color: #5a5c69 !important;
+}
+
+.font-weight-bold {
+  font-weight: 700 !important;
+}
+
+.text-xs {
+  font-size: .7rem;
+}
+
+.border-radius-0 {
+  border-radius: 0 !important;
+}
+
+.dropdown-menu-end {
+  right: 0;
+  left: auto;
+}
+
+/* page de connexion */
+.login-page {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  background-color: #f5f5f5;
+}
+
+.form-signin {
+  width: 100%;
+  max-width: 330px;
+  padding: 15px;
+  margin: auto;
+}
+
+.form-signin .form-floating:focus-within {
+  z-index: 2;
+}
+
+.form-signin input[type="email"] {
+  margin-bottom: -1px;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.form-signin input[type="password"] {
+  margin-bottom: 10px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+/* page d'installation de l'admin */
+.install-page {
+  background-color: #f5f5f5;
+  padding-top: 40px;
+  padding-bottom: 40px;
+}
+
+.form-install {
+  width: 100%;
+  max-width: 500px;
+  padding: 15px;
+  margin: 0 auto;
+}
+
+.form-install .form-floating:focus-within {
+  z-index: 2;
+}
+
+/* pour resoudre le probleme de chevauchement de la barre laterale et de l'en-tete */
+header.navbar {
+  z-index: 1030;
+  position: relative;
+  width: 100%;
+}
+
+header.navbar .ms-sm-auto {
+  padding-right: 0.75rem;
+}
+
+/* corriger le menu deroulant utilisateur */
+.navbar .form-control-dark {
+  width: 100%;
+  max-width: 400px;
+  margin-right: 10px;
+}
+
+.navbar .navbar-nav.flex-row {
+  display: flex;
+  align-items: center;
+}
+
+.user-dropdown {
+  position: relative;
+}
+
+.user-dropdown .dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 1031;
+  min-width: 10rem;
+}
+
+.user-dropdown .dropdown-toggle {
+  white-space: nowrap;
+}
+
+/* pareil mais pour le footer */
+footer.footer {
+  z-index: 1030;
+  position: relative;
+  width: 100%;
+  margin-left: 0 !important;
+}
+
+/* espacement cohérent entre les sections */
+main {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
+/* messages flash */
+.alert {
+  margin-bottom: 0;
+  border-radius: 0;
+} 
