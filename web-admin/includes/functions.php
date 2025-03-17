@@ -72,6 +72,37 @@ function getFlashMessage() {
     return null;
 }
 
+function displayFlashMessages() {
+    $flashMessage = getFlashMessage();
+    if ($flashMessage) {
+        $type = $flashMessage['type'];
+        $message = $flashMessage['message'];
+        
+        $alertClass = 'alert-info';
+        switch ($type) {
+            case 'success':
+                $alertClass = 'alert-success';
+                break;
+            case 'danger':
+            case 'error':
+                $alertClass = 'alert-danger';
+                break;
+            case 'warning':
+                $alertClass = 'alert-warning';
+                break;
+        }
+        
+        $html = '<div class="alert ' . $alertClass . ' alert-dismissible fade show" role="alert">';
+        $html .= $message;
+        $html .= '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
+        $html .= '</div>';
+        
+        return $html;
+    }
+    
+    return '';
+}
+
 function generateToken() {
     if (!isset($_SESSION['csrf_token'])) {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));

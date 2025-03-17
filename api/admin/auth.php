@@ -1,7 +1,7 @@
 <?php
 // API pour l'authentification
 
-// determine l'action à effectuer en fonction de la methode HTTP
+// determine l'action a effectuer en fonction de la methode HTTP
 $method = $_SERVER['REQUEST_METHOD'];
 
 switch ($method) {
@@ -27,10 +27,10 @@ switch ($method) {
         $user = $stmt->fetch();
         
         if ($user && password_verify($data['password'], $user['mot_de_passe'])) {
-            // generer un token (à remplacer par une implementation JWT correcte)
+            // generer un token (a remplacer par une implementation JWT correcte)
             $token = bin2hex(random_bytes(32));
             
-            // mise à jour du temps de derniere connexion
+            // mise a jour du temps de derniere connexion
             $stmt = $pdo->prepare("UPDATE personnes SET derniere_connexion = NOW() WHERE id = ?");
             $stmt->execute([$user['id']]);
             
@@ -108,7 +108,7 @@ switch ($method) {
             exit;
         }
         
-        // mettre à jour le mot de passe
+        // mettre a jour le mot de passe
         $updatedData = [
             'mot_de_passe' => password_hash($data['new_password'], PASSWORD_DEFAULT),
             'updated_at' => date('Y-m-d H:i:s')
@@ -118,19 +118,19 @@ switch ($method) {
         if ($updated) {
             echo json_encode([
                 'error' => false,
-                'message' => 'Mot de passe mis à jour avec succes'
+                'message' => 'Mot de passe mis a jour avec succes'
             ]);
         } else {
             http_response_code(500);
             echo json_encode([
                 'error' => true,
-                'message' => 'Erreur lors de la mise à jour du mot de passe'
+                'message' => 'Erreur lors de la mise a jour du mot de passe'
             ]);
         }
         break;
         
     case 'DELETE':
-        // deconnexion (à implementer avec une invalidation du token)
+        // deconnexion (a implementer avec une invalidation du token)
         echo json_encode([
             'error' => false,
             'message' => 'Deconnexion reussie'

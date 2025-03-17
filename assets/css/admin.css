@@ -194,7 +194,7 @@ footer.footer {
   position: relative;
 }
 
-/* cartes avec bordure colorée */
+/* cartes avec bordure coloree */
 .card[class*="border-left-"] {
   border-left-width: 0.25rem !important;
   border-left-style: solid !important;

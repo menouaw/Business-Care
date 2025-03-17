@@ -1,7 +1,7 @@
 <?php
 // API pour la gestion des utilisateurs
 
-// verifie si l'utilisateur a acces à cette API
+// verifie si l'utilisateur a acces a cette API
 if (!$isAuthenticated) {
     http_response_code(401);
     echo json_encode([
@@ -11,7 +11,7 @@ if (!$isAuthenticated) {
     exit;
 }
 
-// determine l'action à effectuer en fonction de la methode HTTP
+// determine l'action a effectuer en fonction de la methode HTTP
 $method = $_SERVER['REQUEST_METHOD'];
 
 switch ($method) {
@@ -124,13 +124,13 @@ switch ($method) {
             exit;
         }
         
-        // verifie si l'email existe dejà
+        // verifie si l'email existe deja
         $existingUser = fetchOne('personnes', "email = '{$data['email']}'");
         if ($existingUser) {
             http_response_code(409);
             echo json_encode([
                 'error' => true,
-                'message' => 'Un utilisateur avec cet email existe dejà'
+                'message' => 'Un utilisateur avec cet email existe deja'
             ]);
             exit;
         }
@@ -165,7 +165,7 @@ switch ($method) {
         break;
         
     case 'PUT':
-        // mise à jour d'un utilisateur existant
+        // mise a jour d'un utilisateur existant
         if (!$id) {
             http_response_code(400);
             echo json_encode([
@@ -195,22 +195,22 @@ switch ($method) {
             unset($data['mot_de_passe']);
         }
         
-        // ajoute la date de mise à jour
+        // ajoute la date de mise a jour
         $data['updated_at'] = date('Y-m-d H:i:s');
         
-        // mise à jour de l'utilisateur
+        // mise a jour de l'utilisateur
         $updated = updateRow('personnes', $data, "id = $id");
         
         if ($updated) {
             echo json_encode([
                 'error' => false,
-                'message' => 'Utilisateur mis à jour avec succes'
+                'message' => 'Utilisateur mis a jour avec succes'
             ]);
         } else {
             http_response_code(500);
             echo json_encode([
                 'error' => true,
-                'message' => 'Erreur lors de la mise à jour de l\'utilisateur'
+                'message' => 'Erreur lors de la mise a jour de l\'utilisateur'
             ]);
         }
         break;
