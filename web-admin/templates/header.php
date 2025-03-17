@@ -57,5 +57,6 @@ if (!defined('APP_NAME')) {
         </div>';
     }
     ?>
-</body>
-</html> 
+        </div>';
+    }
+    ?>
