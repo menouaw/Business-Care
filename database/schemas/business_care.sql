@@ -1,4 +1,6 @@
-CREATE DATABASE IF NOT EXISTS business_care CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+-- source C:/MAMP/htdocs/Business-Care/database/schemas/business_care.sql
+
+CREATE DATABASE business_care CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE business_care;
 
 CREATE TABLE roles (
