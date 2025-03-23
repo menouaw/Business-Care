@@ -46,18 +46,7 @@ if (!defined('APP_NAME')) {
             </div>
         </div>
     </header>
-    
-    <!-- Explicit spacer div to push down content -->
-    <div style="padding-top: 20px;"></div>
-    
-    <?php
-    // affiche le message flash s'il existe
-    $flashMessage = getFlashMessage();
-    if ($flashMessage) {
-        echo '<div class="alert alert-' . $flashMessage['type'] . ' alert-dismissible fade show" role="alert">
-            ' . $flashMessage['message'] . '
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>';
-    }
-    ?>
+    <div style="padding-top: 1.25rem;"></div>
+</body>
+</html>
 
