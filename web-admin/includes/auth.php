@@ -1,147 +1,110 @@
 <?php
 // API pour l'authentification
 
-// determine l'action a effectuer en fonction de la methode HTTP
-$method = $_SERVER['REQUEST_METHOD'];
+function login($email, $password) {
+    $pdo = getDbConnection();
+    $stmt = $pdo->prepare("SELECT id, nom, prenom, email, mot_de_passe, role_id, photo_url 
+                           FROM personnes WHERE email = ? AND statut = 'actif'");
+    $stmt->execute([$email]);
+    $user = $stmt->fetch();
+    
+    if ($user && password_verify($password, $user['mot_de_passe'])) {
+        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['user_name'] = $user['prenom'] . ' ' . $user['nom'];
+        $_SESSION['user_email'] = $user['email'];
+        $_SESSION['user_role'] = $user['role_id'];
+        $_SESSION['user_photo'] = $user['photo_url'];
+        $_SESSION['last_activity'] = time();
+        
+        return true;
+    }
+    return false;
+}
 
-switch ($method) {
-    case 'POST':
-        // authentification
-        $data = json_decode(file_get_contents('php://input'), true);
-        
-        // verifier si les identifiants sont fournis
-        if (!isset($data['email']) || !isset($data['password'])) {
-            http_response_code(400);
-            echo json_encode([
-                'error' => true,
-                'message' => 'Email et mot de passe requis'
-            ]);
-            exit;
+function logout() {
+    if (isset($_SESSION['user_id'])) {
+        logActivity($_SESSION['user_id'], 'logout', 'Utilisateur deconnecte');
+    }
+    
+    session_unset();
+    session_destroy();
+    session_start();
+    
+    return true;
+}
+
+function isAuthenticated() {
+    if (!isset($_SESSION['user_id'])) {
+        return false;
+    }
+    
+    if (time() - $_SESSION['last_activity'] > SESSION_LIFETIME) {
+        logout();
+        return false;
+    }
+    
+    $_SESSION['last_activity'] = time();
+    return true;
+}
+
+function requireAuthentication() {
+    if (!isAuthenticated()) {
+        $_SESSION['redirect_after_login'] = $_SERVER['REQUEST_URI'];
+        header('Location: ' . APP_URL . '/login.php');
+        exit;
+    }
+}
+
+function hasPermission($requiredRole) {
+    if (!isAuthenticated()) {
+        return false;
+    }
+    
+    // TODO: implementer un systeme de permission propre
+    // pour l'instant, verifie si le rôle ID est admin (role_id = 3)
+    return $_SESSION['user_role'] == 3;
+}
+
+function getUserInfo($userId = null) {
+    if ($userId === null) {
+        if (!isAuthenticated()) {
+            return false;
         }
-        
-        // recuperer l'utilisateur
-        $pdo = getDbConnection();
-        $stmt = $pdo->prepare("SELECT id, nom, prenom, email, mot_de_passe, role_id, photo_url 
-                               FROM personnes WHERE email = ? AND statut = 'actif'");
-        $stmt->execute([$data['email']]);
-        $user = $stmt->fetch();
-        
-        if ($user && password_verify($data['password'], $user['mot_de_passe'])) {
-            // generer un token (a remplacer par une implementation JWT correcte)
-            $token = bin2hex(random_bytes(32));
-            
-            // mise a jour du temps de derniere connexion
-            $stmt = $pdo->prepare("UPDATE personnes SET derniere_connexion = NOW() WHERE id = ?");
-            $stmt->execute([$user['id']]);
-            
-            // masquer le mot de passe
-            unset($user['mot_de_passe']);
-            
-            echo json_encode([
-                'error' => false,
-                'message' => 'Authentification reussie',
-                'token' => $token,
-                'user' => $user
-            ]);
-        } else {
-            http_response_code(401);
-            echo json_encode([
-                'error' => true,
-                'message' => 'Email ou mot de passe invalide'
-            ]);
-        }
-        break;
-        
-    case 'PUT':
-        // verifier que l'utilisateur est authentifie
-        if (!$isAuthenticated) {
-            http_response_code(401);
-            echo json_encode([
-                'error' => true,
-                'message' => 'Authentification requise'
-            ]);
-            exit;
-        }
-        
-        // modification du mot de passe
-        $data = json_decode(file_get_contents('php://input'), true);
-        
-        if (!isset($data['current_password']) || !isset($data['new_password'])) {
-            http_response_code(400);
-            echo json_encode([
-                'error' => true,
-                'message' => 'Mot de passe actuel et nouveau mot de passe requis'
-            ]);
-            exit;
-        }
-        
-        // recuperer l'ID de l'utilisateur (normalement extrait du token)
-        $userId = $data['user_id'] ?? null;
-        if (!$userId) {
-            http_response_code(400);
-            echo json_encode([
-                'error' => true,
-                'message' => 'ID utilisateur requis'
-            ]);
-            exit;
-        }
-        
-        // recuperer l'utilisateur
-        $user = fetchOne('personnes', "id = $userId");
-        if (!$user) {
-            http_response_code(404);
-            echo json_encode([
-                'error' => true,
-                'message' => 'Utilisateur non trouve'
-            ]);
-            exit;
-        }
-        
-        // verifier le mot de passe actuel
-        if (!password_verify($data['current_password'], $user['mot_de_passe'])) {
-            http_response_code(400);
-            echo json_encode([
-                'error' => true,
-                'message' => 'Mot de passe actuel incorrect'
-            ]);
-            exit;
-        }
-        
-        // mettre a jour le mot de passe
-        $updatedData = [
-            'mot_de_passe' => password_hash($data['new_password'], PASSWORD_DEFAULT),
-            'updated_at' => date('Y-m-d H:i:s')
-        ];
-        
-        $updated = updateRow('personnes', $updatedData, "id = $userId");
-        
-        if ($updated) {
-            echo json_encode([
-                'error' => false,
-                'message' => 'Mot de passe mis a jour avec succes'
-            ]);
-        } else {
-            http_response_code(500);
-            echo json_encode([
-                'error' => true,
-                'message' => 'Erreur lors de la mise a jour du mot de passe'
-            ]);
-        }
-        break;
-        
-    case 'DELETE':
-        // deconnexion (a implementer avec une invalidation du token)
-        echo json_encode([
-            'error' => false,
-            'message' => 'Deconnexion reussie'
-        ]);
-        break;
-        
-    default:
-        http_response_code(405);
-        echo json_encode([
-            'error' => true,
-            'message' => 'Methode non autorisee'
-        ]);
-        break;
+        $userId = $_SESSION['user_id'];
+    }
+    
+    return fetchOne('personnes', "id = $userId");
+}
+
+function logActivity($userId, $action, $details = '') {
+    $data = [
+        'personne_id' => $userId,
+        'action' => $action,
+        'details' => $details,
+        'ip_address' => $_SERVER['REMOTE_ADDR'],
+        'user_agent' => $_SERVER['HTTP_USER_AGENT'],
+        'created_at' => date('Y-m-d H:i:s')
+    ];
+    
+    return insertRow('logs', $data);
+}
+
+function resetPassword($email) {
+    $user = fetchOne('personnes', "email = '$email'");
+    
+    if (!$user) {
+        return false;
+    }
+    
+    $token = bin2hex(random_bytes(32));
+    $expires = date('Y-m-d H:i:s', strtotime('+1 hour'));
+    
+    updateRow('personnes', [
+        'token' => $token,
+        'expires' => $expires
+    ], "id = {$user['id']}");
+    
+    // TODO: envoyer un email de reinitialisation de mot de passe
+    
+    return true;
 } 

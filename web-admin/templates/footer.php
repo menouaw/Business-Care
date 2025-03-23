@@ -1,13 +1,8 @@
     <footer class="footer mt-auto py-3 bg-light">
         <div class="container-fluid">
-            <div class="row">
-                <div class="col-md-3 col-lg-2"></div>
-                <div class="col-md-9 col-lg-10 ms-sm-auto px-md-4">
-                    <div class="d-flex justify-content-between">
-                        <span class="text-muted">&copy; <?php echo date('Y'); ?> Business Care</span>
-                        <span class="text-muted">Version <?php echo APP_VERSION; ?></span>
-                    </div>
-                </div>
+            <div class="d-flex justify-content-between px-md-4">
+                <span class="text-muted">&copy; <?php echo date('Y'); ?> Business Care</span>
+                <span class="text-muted">Version <?php echo APP_VERSION; ?></span>
             </div>
         </div>
     </footer>

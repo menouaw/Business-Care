@@ -12,26 +12,21 @@ if (isAuthenticated()) {
 
 $error = '';
 
-// traite la soumission du formulaire de connexion
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_POST['email'] ?? '';
     $password = $_POST['password'] ?? '';
     
     if (empty($email) || empty($password)) {
         $error = 'Veuillez entrer un email et un mot de passe.';
+    } else if (login($email, $password)) {
+        $redirectUrl = isset($_SESSION['redirect_after_login']) ? $_SESSION['redirect_after_login'] : 'index.php';
+        unset($_SESSION['redirect_after_login']);
+        redirectTo($redirectUrl);
     } else {
-        // essaie de se connecter
-        if (login($email, $password)) {
-            $redirectUrl = isset($_SESSION['redirect_after_login']) ? $_SESSION['redirect_after_login'] : 'index.php';
-            unset($_SESSION['redirect_after_login']);
-            redirectTo($redirectUrl);
-        } else {
-            $error = 'Email ou mot de passe invalide.';
-        }
+        $error = 'Email ou mot de passe invalide.';
     }
 }
 
-// affiche le message de delai d'attente si applicable
 if (isset($_GET['timeout']) && $_GET['timeout'] == 1) {
     $error = 'Votre session a expire. Veuillez vous reconnecter.';
 }
