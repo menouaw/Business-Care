@@ -261,7 +261,7 @@ include_once '../../templates/header.php';
             </div>
             <div class="card-body">
                 <form method="post">
-                   <input type="hidden" name="csrf_token" value="<?php echo generateCsrfToken(); ?>">
+                    <input type="hidden" name="csrf_token" value="<?php echo generateCsrfToken(); ?>">
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="entreprise_id" class="form-label">Entreprise*</label>
@@ -527,6 +527,9 @@ include_once '../../templates/header.php';
     
     <?php include_once '../../templates/footer.php'; ?>
 </main>
-</div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 ?> 
