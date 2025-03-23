@@ -38,69 +38,68 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     
     if (empty($errors)) {
-if (empty($errors)) {
-    $pdo = getDbConnection();
-    
-    try {
-        // cas de mise a jour
-        if ($id > 0) {
-            $sql = "UPDATE entreprises SET 
-                    nom = ?, siret = ?, adresse = ?, code_postal = ?, ville = ?, 
-                    telephone = ?, email = ?, site_web = ?, taille_entreprise = ?, 
-                    secteur_activite = ?, date_creation = ? 
-                    WHERE id = ?";
-            
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([
-                $data['nom'], 
-                $data['siret'], 
-                $data['adresse'], 
-                $data['code_postal'],
-                $data['ville'], 
-                $data['telephone'], 
-                $data['email'], 
-                $data['site_web'],
-                $data['taille_entreprise'], 
-                $data['secteur_activite'], 
-                $data['date_creation'], 
-                $id
-            ]);
-            
-            flashMessage("L'entreprise a ete mise a jour avec succes", "success");
-        } 
-        // cas de creation
-        else {
-            $sql = "INSERT INTO entreprises (nom, siret, adresse, code_postal, ville, 
-                    telephone, email, site_web, taille_entreprise, secteur_activite, date_creation) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([
-                $data['nom'], 
-                $data['siret'], 
-                $data['adresse'], 
-                $data['code_postal'],
-                $data['ville'], 
-                $data['telephone'], 
-                $data['email'], 
-                $data['site_web'],
-                $data['taille_entreprise'], 
-                $data['secteur_activite'], 
-                $data['date_creation']
-            ]);
-            
-            flashMessage("L'entreprise a ete creee avec succes", "success");
-        }
+        $pdo = getDbConnection();
         
-        // redirection vers la liste
-        header('Location: ' . APP_URL . '/modules/companies/');
-        exit;
-    } catch (PDOException $e) {
-        $errors[] = "Erreur de base de données : " . $e->getMessage();
-        // Log l'erreur pour l'administrateur
-        error_log("Erreur DB dans companies/index.php : " . $e->getMessage());
+        try {
+            // cas de mise a jour
+            if ($id > 0) {
+                $sql = "UPDATE entreprises SET 
+                        nom = ?, siret = ?, adresse = ?, code_postal = ?, ville = ?, 
+                        telephone = ?, email = ?, site_web = ?, taille_entreprise = ?, 
+                        secteur_activite = ?, date_creation = ? 
+                        WHERE id = ?";
+                
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute([
+                    $data['nom'], 
+                    $data['siret'], 
+                    $data['adresse'], 
+                    $data['code_postal'],
+                    $data['ville'], 
+                    $data['telephone'], 
+                    $data['email'], 
+                    $data['site_web'],
+                    $data['taille_entreprise'], 
+                    $data['secteur_activite'], 
+                    $data['date_creation'], 
+                    $id
+                ]);
+                
+                flashMessage("L'entreprise a ete mise a jour avec succes", "success");
+            } 
+            // cas de creation
+            else {
+                $sql = "INSERT INTO entreprises (nom, siret, adresse, code_postal, ville, 
+                        telephone, email, site_web, taille_entreprise, secteur_activite, date_creation) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute([
+                    $data['nom'], 
+                    $data['siret'], 
+                    $data['adresse'], 
+                    $data['code_postal'],
+                    $data['ville'], 
+                    $data['telephone'], 
+                    $data['email'], 
+                    $data['site_web'],
+                    $data['taille_entreprise'], 
+                    $data['secteur_activite'], 
+                    $data['date_creation']
+                ]);
+                
+                flashMessage("L'entreprise a ete creee avec succes", "success");
+            }
+            
+            // redirection vers la liste
+            header('Location: ' . APP_URL . '/modules/companies/');
+            exit;
+        } catch (PDOException $e) {
+            $errors[] = "Erreur de base de données : " . $e->getMessage();
+            // Log l'erreur pour l'administrateur
+            error_log("Erreur DB dans companies/index.php : " . $e->getMessage());
+        }
     }
-}
 }
 
 // traitement de la suppression
