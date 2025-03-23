@@ -1,6 +1,7 @@
+-- source C:/MAMP/htdocs/Business-Care/database/seeders/sample_data.sql
+
 USE business_care;
 
--- First, clear existing data
 SET FOREIGN_KEY_CHECKS = 0;
 TRUNCATE TABLE notifications;
 TRUNCATE TABLE evaluations;
@@ -35,11 +36,11 @@ INSERT INTO prestations (nom, description, prix, duree, type, categorie, niveau_
 ('Defi Sportif Mensuel', 'Programme d''activites physiques sur un mois', 180.00, 30, 'evenement', 'Sport', 'avance', 30, 'Tenue de sport', 'Niveau intermediaire');
 
 INSERT INTO personnes (nom, prenom, email, mot_de_passe, telephone, date_naissance, genre, photo_url, role_id, entreprise_id, statut, derniere_connexion) VALUES
+('Admin', 'System', 'admin@businesscare.fr', '$2y$10$CGP1gfg0khtXjAZcJFC6iO3oYisjwlPfkm8tQ8Q/OxWpFdR7tOiqO', '00 00 00 00 00', '1990-01-01', 'Autre', '/photos/admin.jpg', 3, NULL, 'actif', '2024-03-17 18:30:00'),
 ('Dupont', 'Marie', 'marie.dupont@techsolutions.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 12 34 56 78', '1990-05-15', 'F', '/photos/marie.dupont.jpg', 1, 1, 'actif', '2024-03-17 14:30:00'),
 ('Martin', 'Jean', 'jean.martin@santeplus.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 23 45 67 89', '1985-08-20', 'M', '/photos/jean.martin.jpg', 1, 2, 'actif', '2024-03-17 15:45:00'),
 ('Petit', 'Sophie', 'sophie.petit@bienetrecorp.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 34 56 78 90', '1992-03-10', 'F', '/photos/sophie.petit.jpg', 1, 3, 'actif', '2024-03-17 16:20:00'),
-('Dubois', 'Pierre', 'pierre.dubois@prestataire.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 45 67 89 01', '1988-12-25', 'M', '/photos/pierre.dubois.jpg', 2, NULL, 'actif', '2024-03-17 17:00:00'),
-('Admin', 'System', 'admin@businesscare.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 56 78 90 12', '1990-01-01', 'Autre', '/photos/admin.jpg', 3, NULL, 'actif', '2024-03-17 18:30:00');
+('Dubois', 'Pierre', 'pierre.dubois@prestataire.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 45 67 89 01', '1988-12-25', 'M', '/photos/pierre.dubois.jpg', 2, NULL, 'actif', '2024-03-17 17:00:00');
 
 INSERT INTO contrats (entreprise_id, date_debut, date_fin, montant_mensuel, nombre_salaries, type_contrat, statut, conditions_particulieres) VALUES
 (1, '2024-01-01', '2024-12-31', 5000.00, 150, 'premium', 'actif', 'Acces a toutes les prestations premium'),

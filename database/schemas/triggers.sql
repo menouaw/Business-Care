@@ -1,3 +1,5 @@
+-- source C:/MAMP/htdocs/Business-Care/database/schemas/triggers.sql
+
 USE business_care;
 
 DELIMITER //
@@ -59,6 +61,18 @@ BEGIN
     END IF;
 END//
 
+CREATE TRIGGER after_contrat_insert
+AFTER INSERT ON contrats
+FOR EACH ROW
+BEGIN
+    INSERT INTO logs (personne_id, action, details)
+    VALUES (
+        NULL,
+        'creation_contrat',
+        CONCAT('Nouveau contrat cree pour l\'entreprise ID: ', NEW.entreprise_id, ', Type: ', NEW.type_contrat)
+    );
+END//
+
 CREATE TRIGGER after_evaluation_insert
 AFTER INSERT ON evaluations
 FOR EACH ROW
@@ -71,4 +85,4 @@ BEGIN
     );
 END//
 
-DELIMITER ; 
+DELIMITER ;

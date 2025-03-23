@@ -1,3 +1,5 @@
+-- source C:/MAMP/htdocs/Business-Care/database/schemas/views.sql
+
 USE business_care;
 
 CREATE VIEW v_prestations_populaires AS

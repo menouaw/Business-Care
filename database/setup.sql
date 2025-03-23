@@ -1,27 +1,38 @@
--- Script de configuration de la base de donnees Business Care
--- Ce script doit etre execute en tant qu'administrateur MySQL
+-- source C:/MAMP/htdocs/Business-Care/database/setup.sql (être administrateur MySQL)
+
+SET FOREIGN_KEY_CHECKS = 0;
+DROP DATABASE IF EXISTS business_care;
+SET FOREIGN_KEY_CHECKS = 1;
 
 -- Creation de la base de donnees et des tables
-source schemas/business_care.sql;
+source C:/MAMP/htdocs/Business-Care/database/schemas/business_care.sql;
 
 -- Creation des vues
-source schemas/views.sql;
+source C:/MAMP/htdocs/Business-Care/database/schemas/views.sql;
 
 -- Creation des triggers
-source schemas/triggers.sql;
+source C:/MAMP/htdocs/Business-Care/database/schemas/triggers.sql;
+
+-- Sélection de la base de données
+USE business_care;
+
+-- Suppression des utilisateurs existants
+DROP USER IF EXISTS 'business_care_user'@'localhost';
+DROP USER IF EXISTS 'business_care_report'@'localhost';
+DROP USER IF EXISTS 'business_care_backup'@'localhost';
 
 -- Creation d'un utilisateur dedie pour l'application
-CREATE USER IF NOT EXISTS 'business_care_user'@'localhost' IDENTIFIED BY 'business_care_password';
+CREATE USER 'business_care_user'@'localhost' IDENTIFIED BY 'business_care_password';
 
 -- Attribution des privileges necessaires
 GRANT SELECT, INSERT, UPDATE, DELETE ON business_care.* TO 'business_care_user'@'localhost';
 
 -- Creation d'un utilisateur en lecture seule pour les rapports
-CREATE USER IF NOT EXISTS 'business_care_report'@'localhost' IDENTIFIED BY 'business_care_report_password';
+CREATE USER 'business_care_report'@'localhost' IDENTIFIED BY 'business_care_report_password';
 GRANT SELECT ON business_care.* TO 'business_care_report'@'localhost';
 
 -- Creation d'un utilisateur pour les sauvegardes
-CREATE USER IF NOT EXISTS 'business_care_backup'@'localhost' IDENTIFIED BY 'business_care_backup_password';
+CREATE USER 'business_care_backup'@'localhost' IDENTIFIED BY 'business_care_backup_password';
 GRANT SELECT, LOCK TABLES ON business_care.* TO 'business_care_backup'@'localhost';
 
 -- Application des privileges
@@ -32,13 +43,11 @@ DELIMITER //
 
 CREATE PROCEDURE backup_database()
 BEGIN
-    DECLARE backup_file VARCHAR(255);
-    SET backup_file = CONCAT('backup_business_care_', DATE_FORMAT(NOW(), '%Y%m%d_%H%i%S'), '.sql');
-    
-    SET @backup_command = CONCAT('mysqldump -u business_care_backup -p business_care > ', backup_file);
-    PREPARE stmt FROM @backup_command;
-    EXECUTE stmt;
-    DEALLOCATE PREPARE stmt;
+    -- Note: Cette procedure ne peut pas executer directement mysqldump
+    -- Utilisez plutot un script externe ou une tache planifiee systeme
+    SELECT CONCAT('Sauvegarde demandee le ', NOW(), 
+                 '. Utilisez la commande: mysqldump -u business_care_backup -p business_care > backup_business_care_',
+                 DATE_FORMAT(NOW(), '%Y%m%d_%H%i%S'), '.sql') AS backup_command;
 END//
 
 DELIMITER ;
@@ -48,10 +57,11 @@ DELIMITER //
 
 CREATE PROCEDURE restore_database(IN backup_file VARCHAR(255))
 BEGIN
-    SET @restore_command = CONCAT('mysql -u business_care_backup -p business_care < ', backup_file);
-    PREPARE stmt FROM @restore_command;
-    EXECUTE stmt;
-    DEALLOCATE PREPARE stmt;
+    -- Note: Cette procedure ne peut pas executer directement mysql
+    -- Utilisez plutot un script externe ou une tache planifiee systeme
+    SELECT CONCAT('Restauration demandee le ', NOW(), 
+                 '. Utilisez la commande: mysql -u business_care_backup -p business_care < ', 
+                 backup_file) AS restore_command;
 END//
 
 DELIMITER ;
@@ -148,4 +158,4 @@ BEGIN
     WHERE email = user_email;
 END//
 
-DELIMITER ; 
+DELIMITER ;
