@@ -219,8 +219,8 @@ include_once '../../templates/header.php';
 <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
     <?php
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        // Vérification du jeton CSRF
-        if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
+        // verification du jeton CSRF
+        if (!validateToken($_POST['csrf_token'] ?? '')) {
             flashMessage("Erreur de sécurité, veuillez réessayer", "danger");
             header('Location: ' . APP_URL . '/modules/contracts/');
             exit;
@@ -261,7 +261,7 @@ include_once '../../templates/header.php';
             </div>
             <div class="card-body">
                 <form method="post">
-                   <input type="hidden" name="csrf_token" value="<?php echo generateCsrfToken(); ?>">
+                   <input type="hidden" name="csrf_token" value="<?php echo generateToken(); ?>">
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="entreprise_id" class="form-label">Entreprise*</label>

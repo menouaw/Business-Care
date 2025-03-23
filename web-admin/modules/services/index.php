@@ -18,7 +18,7 @@ $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 // traitement du formulaire de creation/edition
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // verification du jeton CSRF
-    if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
+    if (!validateToken($_POST['csrf_token'] ?? '')) {
         flashMessage("Erreur de sécurité, veuillez réessayer", "danger");
         header('Location: ' . APP_URL . '/modules/services/');
         exit;
@@ -241,7 +241,7 @@ include_once '../../templates/header.php';
                     </div>
                     <div class="card-body">
                         <form method="post">
-                           <input type="hidden" name="csrf_token" value="<?php echo generateCsrfToken(); ?>">
+                           <input type="hidden" name="csrf_token" value="<?php echo generateToken(); ?>">
                             <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label for="nom" class="form-label">Nom du service*</label>
