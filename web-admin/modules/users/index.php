@@ -22,7 +22,7 @@ $where = [];
 $params = [];
 
 if ($search) {
-    $where[] = "(nom LIKE ? OR prenom LIKE ? OR email LIKE ?)";
+    $where[] = "(p.nom LIKE ? OR p.prenom LIKE ? OR p.email LIKE ?)";
     $params[] = "%$search%";
     $params[] = "%$search%";
     $params[] = "%$search%";
@@ -40,7 +40,7 @@ $perPage = 10;
 $offset = ($page - 1) * $perPage;
 
 $pdo = getDbConnection();
-$countSql = "SELECT COUNT(id) FROM personnes $whereClause";
+$countSql = "SELECT COUNT(id) FROM personnes p $whereClause";
 $countStmt = $pdo->prepare($countSql);
 $countStmt->execute($params);
 $totalUsers = $countStmt->fetchColumn();
