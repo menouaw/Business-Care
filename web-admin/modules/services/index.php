@@ -17,6 +17,13 @@ $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
 // traitement du formulaire de creation/edition
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // verification du jeton CSRF
+    if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
+        flashMessage("Erreur de sécurité, veuillez réessayer", "danger");
+        header('Location: ' . APP_URL . '/modules/services/');
+        exit;
+    }
+    
     $data = [
         'nom' => $_POST['nom'] ?? '',
         'description' => $_POST['description'] ?? '',
@@ -234,7 +241,7 @@ include_once '../../templates/header.php';
                     </div>
                     <div class="card-body">
                         <form method="post">
-+                           <input type="hidden" name="csrf_token" value="<?php echo generateCsrfToken(); ?>">
+                           <input type="hidden" name="csrf_token" value="<?php echo generateCsrfToken(); ?>">
                             <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label for="nom" class="form-label">Nom du service*</label>
@@ -296,28 +303,6 @@ include_once '../../templates/header.php';
                                     </select>
                                 </div>
                             </div>
-                        </form>
-                    </div>
-                </div>
-            <?php endif; ?>
-            
-            <?php
-            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-+               // Vérification du jeton CSRF
-+               if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
-+                   flashMessage("Erreur de sécurité, veuillez réessayer", "danger");
-+                   header('Location: ' . APP_URL . '/modules/services/');
-+                   exit;
-+               }
-                
-                $data = [
-                    // ...
-                ];
-                // Suite du traitement du formulaire
-            }
-            ?>
-                                </div>
-                            </div>
                             
                             <div class="row mb-3">
                                 <div class="col-md-6">
@@ -348,7 +333,7 @@ include_once '../../templates/header.php';
                             <a href="?action=edit&id=<?php echo $service['id']; ?>" class="btn btn-sm btn-primary">
                                 <i class="fas fa-edit"></i> Modifier
                             </a>
-                            <a href="?action=delete&id=<?php echo $service['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce service ?')">
+                            <a href="?action=delete&id=<?php echo $service['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Etes-vous sûr de vouloir supprimer ce service ?')">
                                 <i class="fas fa-trash"></i> Supprimer
                             </a>
                         </div>
@@ -423,21 +408,14 @@ include_once '../../templates/header.php';
                                         <td><?php echo $appointment['duree'] . ' minutes'; ?></td>
                                         <td><?php echo htmlspecialchars($appointment['lieu'] ?: 'Non specifie'); ?></td>
                                         <td><?php echo getStatusBadge($appointment['statut']); ?></td>
-<td>
-    <a href="<?php echo APP_URL; ?>/modules/appointments/?action=view&id=<?php echo $appointment['id']; ?>" class="btn btn-sm btn-info">
-        <i class="fas fa-eye"></i>
-    </a>
-    <a href="<?php echo APP_URL; ?>/modules/appointments/?action=edit&id=<?php echo $appointment['id']; ?>" class="btn btn-sm btn-primary">
-        <i class="fas fa-edit"></i>
-    </a>
-    <a href="<?php echo APP_URL; ?>/modules/appointments/?action=delete&id=<?php echo $appointment['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce rendez-vous ?')">
-        <i class="fas fa-trash"></i>
-    </a>
-</td>
-                                            <a href="?action=edit&id=<?php echo $appointment['id']; ?>" class="btn btn-sm btn-primary">
+                                        <td>
+                                            <a href="<?php echo APP_URL; ?>/modules/appointments/?action=view&id=<?php echo $appointment['id']; ?>" class="btn btn-sm btn-info">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="<?php echo APP_URL; ?>/modules/appointments/?action=edit&id=<?php echo $appointment['id']; ?>" class="btn btn-sm btn-primary">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-                                            <a href="?action=delete&id=<?php echo $appointment['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce rendez-vous ?')">
+                                            <a href="<?php echo APP_URL; ?>/modules/appointments/?action=delete&id=<?php echo $appointment['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Etes-vous sûr de vouloir supprimer ce rendez-vous ?')">
                                                 <i class="fas fa-trash"></i>
                                             </a>
                                         </td>
@@ -552,7 +530,7 @@ include_once '../../templates/header.php';
                                                 <a href="?action=edit&id=<?php echo $service['id']; ?>" class="btn btn-sm btn-primary">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
-                                                <a href="?action=delete&id=<?php echo $service['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce service ?')">
+                                                <a href="?action=delete&id=<?php echo $service['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Etes-vous sûr de vouloir supprimer ce service ?')">
                                                     <i class="fas fa-trash"></i>
                                                 </a>
                                             </td>
@@ -594,4 +572,3 @@ include_once '../../templates/header.php';
         </main>
     </div>
 </div>
-?> 

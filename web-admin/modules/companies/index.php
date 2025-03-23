@@ -512,4 +512,3 @@ include_once '../../templates/header.php';
         </main>
     </div>
 </div>
-?> 
