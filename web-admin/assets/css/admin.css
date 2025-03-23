@@ -3,7 +3,6 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  padding-top: 3.5rem;
 }
 
 .feather {
@@ -114,8 +113,6 @@ main {
 .card[class*="border-left-"] {
   border-left: 0.25rem solid transparent !important;
 }
-
-
 
 .card.border-left-warning {
   border-left: 0.25rem solid #f6c23e !important;

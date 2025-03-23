@@ -15,7 +15,7 @@ if (!defined('APP_NAME')) {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <header class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow" style="position: fixed; top: 0; width: 100%;">
+    <header class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow" style="position: fixed;">
         <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3" href="<?php echo APP_URL; ?>/">
             <?php echo APP_NAME; ?>
         </a>
@@ -46,6 +46,9 @@ if (!defined('APP_NAME')) {
             </div>
         </div>
     </header>
+    
+    <!-- Explicit spacer div to push down content -->
+    <div style="padding-top: 20px;"></div>
     
     <?php
     // affiche le message flash s'il existe
