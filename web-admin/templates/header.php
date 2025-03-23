@@ -60,4 +60,3 @@ if (!defined('APP_NAME')) {
         </div>';
     }
     ?>
-

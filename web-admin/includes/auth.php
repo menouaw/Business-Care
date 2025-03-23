@@ -1,6 +1,5 @@
 <?php
-require_once 'config.php';
-require_once 'db.php';
+// API pour l'authentification
 
 function login($email, $password) {
     $pdo = getDbConnection();
@@ -17,12 +16,22 @@ function login($email, $password) {
         $_SESSION['user_photo'] = $user['photo_url'];
         $_SESSION['last_activity'] = time();
         
-        // met a jour le temps de derniere connexion
-        $stmt = $pdo->prepare("UPDATE personnes SET derniere_connexion = NOW() WHERE id = ?");
-        $stmt->execute([$user['id']]);
+        // verifier si les identifiants sont fournis
+        if (!isset($data['email']) || !isset($data['password'])) {
+            http_response_code(400);
+            echo json_encode([
+                'error' => true,
+                'message' => 'Email et mot de passe requis'
+            ]);
+            exit;
+        }
         
-        // enregistre l'activite de connexion
-        logActivity($user['id'], 'login', 'Utilisateur connecte');
+        // recuperer l'utilisateur
+        $pdo = getDbConnection();
+        $stmt = $pdo->prepare("SELECT id, nom, prenom, email, mot_de_passe, role_id, photo_url 
+                               FROM personnes WHERE email = ? AND statut = 'actif'");
+        $stmt->execute([$data['email']]);
+        $user = $stmt->fetch();
         
         return true;
     }

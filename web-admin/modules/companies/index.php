@@ -38,8 +38,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     
     if (empty($errors)) {
-        $pdo = getDbConnection();
-        
+if (empty($errors)) {
+    $pdo = getDbConnection();
+    
+    try {
         // cas de mise a jour
         if ($id > 0) {
             $sql = "UPDATE entreprises SET 
@@ -93,7 +95,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // redirection vers la liste
         header('Location: ' . APP_URL . '/modules/companies/');
         exit;
+    } catch (PDOException $e) {
+        $errors[] = "Erreur de base de données : " . $e->getMessage();
+        // Log l'erreur pour l'administrateur
+        error_log("Erreur DB dans companies/index.php : " . $e->getMessage());
     }
+}
 }
 
 // traitement de la suppression
@@ -170,7 +177,9 @@ $sql = "SELECT * FROM entreprises";
 if ($where) {
     $sql .= " WHERE $where";
 }
-$sql .= " ORDER BY nom ASC LIMIT $offset, $perPage";
+$sql .= " ORDER BY nom ASC LIMIT ?, ?";
+$params[] = $offset;
+$params[] = $perPage;
 
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);

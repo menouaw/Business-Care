@@ -56,13 +56,13 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="<?php echo APP_URL; ?>/logs.php">
+                <a class="nav-link <?php echo basename($_SERVER['SCRIPT_NAME']) == 'logs.php' ? 'active' : ''; ?>" href="<?php echo APP_URL; ?>/logs.php">
                     <i class="fas fa-history me-2"></i>
                     Journal d'activite
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="<?php echo APP_URL; ?>/backup.php">
+                <a class="nav-link <?php echo basename($_SERVER['SCRIPT_NAME']) == 'backup.php' ? 'active' : ''; ?>" href="<?php echo APP_URL; ?>/backup.php">
                     <i class="fas fa-database me-2"></i>
                     Sauvegarde & Restauration
                 </a>
