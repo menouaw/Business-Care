@@ -560,10 +560,9 @@ include_once '../../templates/header.php';
                     </div>
                 </div>
             <?php endif; ?>
+            
+            <?php include_once '../../templates/footer.php'; ?>
         </main>
     </div>
 </div>
-
-<?php
-include_once '../../templates/footer.php';
 ?> 

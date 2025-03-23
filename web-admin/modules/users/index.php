@@ -196,8 +196,8 @@ include '../../templates/header.php';
                     <?php endif; ?>
                 </div>
             </div>
+            
+            <?php include '../../templates/footer.php'; ?>
         </main>
     </div>
-</div>
-
-<?php include '../../templates/footer.php'; ?> 
+</div> 

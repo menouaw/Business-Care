@@ -49,7 +49,7 @@ reviews:
       enabled: true
       timeout_ms: 90000
     languagetool:
-      enabled: true
+      enabled: false
       enabled_only: false
       level: default
     biome:

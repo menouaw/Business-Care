@@ -128,7 +128,7 @@ include 'templates/header.php';
                         <?php foreach ($recentActivities as $activity): ?>
                         <tr>
                             <td><?php echo formatDate($activity['created_at']); ?></td>
-                            <td><?php echo htmlspecialchars($activity['user_name']); ?></td>
+                            <td><?php echo htmlspecialchars($activity['user_name'] ?? 'Systeme'); ?></td>
                             <td><?php echo htmlspecialchars($activity['action']); ?></td>
                             <td><?php echo htmlspecialchars($activity['details']); ?></td>
                         </tr>
@@ -136,8 +136,8 @@ include 'templates/header.php';
                     </tbody>
                 </table>
             </div>
+            
+            <?php include 'templates/footer.php'; ?>
         </main>
     </div>
 </div>
-
-<?php include 'templates/footer.php'; ?>

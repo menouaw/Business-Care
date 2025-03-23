@@ -15,7 +15,7 @@ if (!defined('APP_NAME')) {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
+    <header class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow" style="position: fixed; top: 0; width: 100%;">
         <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3" href="<?php echo APP_URL; ?>/">
             <?php echo APP_NAME; ?>
         </a>
@@ -24,7 +24,7 @@ if (!defined('APP_NAME')) {
         </button>
         <div class="col-md-9 col-lg-10 ms-sm-auto">
             <div class="d-flex justify-content-between align-items-center">
-                <input class="form-control form-control-dark" type="text" placeholder="Rechercher..." aria-label="Search">
+                <input class="form-control form-control-white" type="text" placeholder="Rechercher..." aria-label="Search">
                 <div class="navbar-nav flex-row">
                     <div class="nav-item text-nowrap">
                         <a class="nav-link px-3" href="<?php echo APP_URL; ?>/notifications.php" title="Notifications">
@@ -57,5 +57,4 @@ if (!defined('APP_NAME')) {
         </div>';
     }
     ?>
-</body>
-</html> 
+
