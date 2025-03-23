@@ -16,8 +16,8 @@ if (!defined('APP_NAME')) {
 </head>
 <body>
     <header class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow" style="position: fixed;">
-        <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3" href="<?php echo APP_URL; ?>/">
-            <?php echo APP_NAME; ?>
+        <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3 d-flex align-items-center" href="<?php echo APP_URL; ?>/" title="<?php echo APP_NAME; ?>">
+            <img src="/Business-Care/assets/images/logo/noBgWhite.png" alt="<?php echo APP_NAME; ?>" height="30">
         </a>
         <button class="navbar-toggler position-absolute d-md-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>

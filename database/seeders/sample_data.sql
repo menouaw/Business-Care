@@ -146,7 +146,7 @@ INSERT INTO personnes (nom, prenom, email, mot_de_passe, telephone, date_naissan
 ('Fontaine', 'Sarah', 'sarah.fontaine@evenementielpro.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 45 67 89 01', '1993-12-15', 'F', '/photos/sarah.fontaine.jpg', 1, 10, 'actif', '2024-03-12 10:45:00'),
 ('Roussel', 'Gabriel', 'gabriel.roussel@santementale.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 56 78 90 12', '1989-01-30', 'M', '/photos/gabriel.roussel.jpg', 1, 11, 'actif', '2024-03-12 13:20:00'),
 ('Vincent', 'Lucie', 'lucie.vincent@prestataire.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 67 89 01 23', '1990-03-18', 'F', '/photos/lucie.vincent.jpg', 2, NULL, 'actif', '2024-03-12 15:45:00'),
-('Chevalier', 'Raphaël', 'raphael.chevalier@prestataire.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 78 90 12 34', '1986-05-07', 'M', '/photos/raphael.chevalier.jpg', 2, NULL, 'actif', '2024-03-12 17:30:00'),
+('Chevalier', 'Raphael', 'raphael.chevalier@prestataire.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 78 90 12 34', '1986-05-07', 'M', '/photos/raphael.chevalier.jpg', 2, NULL, 'actif', '2024-03-12 17:30:00'),
 ('Marchand', 'Zoe', 'zoe.marchand@techsolutions.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 89 01 23 45', '1992-07-22', 'F', '/photos/zoe.marchand.jpg', 1, 1, 'actif', '2024-03-11 09:30:00'),
 ('Dupuis', 'Adam', 'adam.dupuis@santeplus.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 90 12 34 56', '1988-09-14', 'M', '/photos/adam.dupuis.jpg', 1, 2, 'actif', '2024-03-11 11:45:00');
 
