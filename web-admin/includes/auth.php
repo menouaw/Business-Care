@@ -10,7 +10,6 @@ function login($email, $password) {
     $user = $stmt->fetch();
     
     if ($user && password_verify($password, $user['mot_de_passe'])) {
-        // definit les variables de session
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['user_name'] = $user['prenom'] . ' ' . $user['nom'];
         $_SESSION['user_email'] = $user['email'];
@@ -31,44 +30,34 @@ function login($email, $password) {
 }
 
 function logout() {
-    // enregistre l'activite de deconnexion si l'utilisateur est connecte
     if (isset($_SESSION['user_id'])) {
         logActivity($_SESSION['user_id'], 'logout', 'Utilisateur deconnecte');
     }
     
-    // detruit la session
     session_unset();
     session_destroy();
-    
-    // demarre une nouvelle session
     session_start();
     
     return true;
 }
 
 function isAuthenticated() {
-    // verifie si l'utilisateur est connecte
     if (!isset($_SESSION['user_id'])) {
         return false;
     }
     
-    // verifie le delai de session
     if (time() - $_SESSION['last_activity'] > SESSION_LIFETIME) {
         logout();
         return false;
     }
     
-    // met a jour le temps d'activite
     $_SESSION['last_activity'] = time();
-    
     return true;
 }
 
 function requireAuthentication() {
     if (!isAuthenticated()) {
-        // enregistre l'URL actuelle pour la redirection apres connexion
         $_SESSION['redirect_after_login'] = $_SERVER['REQUEST_URI'];
-        
         header('Location: ' . APP_URL . '/login.php');
         exit;
     }
@@ -78,12 +67,6 @@ function hasPermission($requiredRole) {
     if (!isAuthenticated()) {
         return false;
     }
-    
-    // verifie si le rôle de l'utilisateur a la permission requise
-    $pdo = getDbConnection();
-    $stmt = $pdo->prepare("SELECT nom FROM roles WHERE id = ?");
-    $stmt->execute([$_SESSION['user_role']]);
-    $role = $stmt->fetch();
     
     // TODO: implementer un systeme de permission propre
     // pour l'instant, verifie si le rôle ID est admin (role_id = 3)
@@ -121,17 +104,13 @@ function resetPassword($email) {
         return false;
     }
     
-    // genere un jeton de reinitialisation
     $token = bin2hex(random_bytes(32));
     $expires = date('Y-m-d H:i:s', strtotime('+1 hour'));
     
-    // enregistre le jeton de reinitialisation
-    $data = [
+    updateRow('personnes', [
         'token' => $token,
         'expires' => $expires
-    ];
-    
-    updateRow('personnes', $data, "id = {$user['id']}");
+    ], "id = {$user['id']}");
     
     // TODO: envoyer un email de reinitialisation de mot de passe
     

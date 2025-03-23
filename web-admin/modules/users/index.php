@@ -18,36 +18,29 @@ $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 $role = isset($_GET['role']) ? (int)$_GET['role'] : 0;
 
-// construit la clause WHERE pour le filtrage
-$where = '';
+$where = [];
 $params = [];
 
 if ($search) {
-    $where .= " (nom LIKE ? OR prenom LIKE ? OR email LIKE ?)";
+    $where[] = "(nom LIKE ? OR prenom LIKE ? OR email LIKE ?)";
     $params[] = "%$search%";
     $params[] = "%$search%";
     $params[] = "%$search%";
 }
 
 if ($role) {
-    if ($where) {
-        $where .= " AND role_id = ?";
-    } else {
-        $where .= " role_id = ?";
-    }
+    $where[] = "role_id = ?";
     $params[] = $role;
 }
+
+$whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
 
 // recupere les utilisateurs pagines
 $perPage = 10;
 $offset = ($page - 1) * $perPage;
 
 $pdo = getDbConnection();
-$countSql = "SELECT COUNT(id) FROM personnes";
-if ($where) {
-    $countSql .= " WHERE $where";
-}
-
+$countSql = "SELECT COUNT(id) FROM personnes $whereClause";
 $countStmt = $pdo->prepare($countSql);
 $countStmt->execute($params);
 $totalUsers = $countStmt->fetchColumn();
@@ -56,11 +49,10 @@ $page = max(1, min($page, $totalPages));
 
 $sql = "SELECT p.*, r.nom as role_name 
         FROM personnes p 
-        LEFT JOIN roles r ON p.role_id = r.id";
-if ($where) {
-    $sql .= " WHERE $where";
-}
-$sql .= " ORDER BY p.nom, p.prenom LIMIT ? OFFSET ?";
+        LEFT JOIN roles r ON p.role_id = r.id
+        $whereClause
+        ORDER BY p.nom, p.prenom 
+        LIMIT ? OFFSET ?";
 $params[] = $perPage;
 $params[] = $offset;
 
@@ -118,7 +110,7 @@ include '../../templates/header.php';
                 </div>
             </div>
             
-            <div class="card">
+            <div class="card mb-4">
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-striped table-hover">

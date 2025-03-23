@@ -74,33 +74,23 @@ function getFlashMessage() {
 
 function displayFlashMessages() {
     $flashMessage = getFlashMessage();
-    if ($flashMessage) {
-        $type = $flashMessage['type'];
-        $message = $flashMessage['message'];
-        
-        $alertClass = 'alert-info';
-        switch ($type) {
-            case 'success':
-                $alertClass = 'alert-success';
-                break;
-            case 'danger':
-            case 'error':
-                $alertClass = 'alert-danger';
-                break;
-            case 'warning':
-                $alertClass = 'alert-warning';
-                break;
-        }
-        
-        $html = '<div class="alert ' . $alertClass . ' alert-dismissible fade show" role="alert">';
-        $html .= $message;
-        $html .= '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
-        $html .= '</div>';
-        
-        return $html;
+    if (!$flashMessage) return '';
+    
+    $type = $flashMessage['type'];
+    $message = $flashMessage['message'];
+    
+    $alertClass = 'alert-info';
+    switch ($type) {
+        case 'success': $alertClass = 'alert-success'; break;
+        case 'danger':
+        case 'error': $alertClass = 'alert-danger'; break;
+        case 'warning': $alertClass = 'alert-warning'; break;
     }
     
-    return '';
+    return '<div class="alert ' . $alertClass . ' alert-dismissible fade show" role="alert">'
+         . $message
+         . '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>'
+         . '</div>';
 }
 
 function generateToken() {
@@ -117,7 +107,7 @@ function validateToken($token) {
     return true;
 }
 
-function getStatusBadge($status, $context = '') {
+function getStatusBadge($status) {
     $badges = [
         'actif' => 'success',
         'inactif' => 'danger',
@@ -151,6 +141,8 @@ function paginateResults($table, $page, $perPage = 20, $where = '', $orderBy = '
 }
 
 function renderPagination($pagination, $urlPattern) {
+    if ($pagination['totalPages'] <= 1) return '';
+    
     $html = '<nav aria-label="Page navigation"><ul class="pagination">';
     
     // Previous button
