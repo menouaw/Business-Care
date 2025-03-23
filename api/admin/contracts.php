@@ -1,7 +1,27 @@
 <?php
+// Vérification de l'authentification
+require_once '../auth_check.php';
+
+// Si l'utilisateur n'est pas authentifié ou n'a pas les droits suffisants
+if (!isAuthenticated() || !hasPermission('manage_contracts')) {
+    http_response_code(401);
+    echo json_encode([
+        'error' => true,
+        'message' => 'Authentification requise'
+    ]);
+    exit;
+}
+
 // module de gestion des contrats
 
 // traitement de la requete selon la methode
+<?php
+// module de gestion des contrats
+
+// Récupération de l'ID depuis l'URL (exemple: /contracts.php?id=123)
+$id = isset($_GET['id']) ? (int)$_GET['id'] : null;
+
+// traitement de la requête selon la méthode
 switch ($_SERVER['REQUEST_METHOD']) {
     case 'GET':
         if (isset($id)) {

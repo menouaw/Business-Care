@@ -1,6 +1,16 @@
 <?php
 // module de gestion des entreprises
 
+// verifie si l'utilisateur a acces a cette API
+if (!$isAuthenticated) {
+    http_response_code(401);
+    echo json_encode([
+        'error' => true,
+        'message' => 'Authentification requise'
+    ]);
+    exit;
+}
+
 // traitement de la requete selon la methode
 switch ($_SERVER['REQUEST_METHOD']) {
     case 'GET':

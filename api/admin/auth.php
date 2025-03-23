@@ -87,7 +87,8 @@ switch ($method) {
         }
         
         // recuperer l'utilisateur
-        $user = fetchOne('personnes', "id = $userId");
+-        $user = fetchOne('personnes', "id = $userId");
++        $user = fetchOne('personnes', "id = ?", '', [$userId]);
         if (!$user) {
             http_response_code(404);
             echo json_encode([
@@ -113,8 +114,7 @@ switch ($method) {
             'updated_at' => date('Y-m-d H:i:s')
         ];
         
-        $updated = updateRow('personnes', $updatedData, "id = $userId");
-        
+        $updated = updateRow('personnes', $updatedData, "id = ?", [$userId]);
         if ($updated) {
             echo json_encode([
                 'error' => false,
