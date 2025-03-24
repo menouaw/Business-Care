@@ -73,7 +73,6 @@ if (($action === 'edit' || $action === 'view') && $id > 0) {
         exit;
     }
     
-    // Si c'est une vue détaillée, récupérer les données associées
     if ($action === 'view') {
         $pdo = getDbConnection();
         
