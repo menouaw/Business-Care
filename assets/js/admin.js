@@ -20,6 +20,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // initialise les dropdowns select2 si disponibles
     initSelect2();
+    
+    // initialise les icones feather
+    initFeatherIcons();
+    
+    // initialise les tooltips
+    initTooltips();
 });
 
 function autoHideAlerts() {
@@ -91,4 +97,17 @@ function initSelect2() {
             width: '100%'
         });
     }
+}
+
+function initFeatherIcons() {
+    if (typeof feather !== 'undefined') {
+        feather.replace();
+    }
+}
+
+function initTooltips() {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function(tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
 } 
