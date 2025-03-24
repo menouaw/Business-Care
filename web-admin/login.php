@@ -4,14 +4,16 @@ require_once 'includes/config.php';
 require_once 'includes/auth.php';
 require_once 'includes/functions.php';
 
+// Verifier si l'utilisateur est deja connecte
 if (isAuthenticated()) {
-    $redirectUrl = isset($_SESSION['redirect_after_login']) ? $_SESSION['redirect_after_login'] : 'index.php';
+    $redirectUrl = $_SESSION['redirect_after_login'] ?? 'index.php';
     unset($_SESSION['redirect_after_login']);
     redirectTo($redirectUrl);
 }
 
 $error = '';
 
+// Traiter le formulaire de connexion
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_POST['email'] ?? '';
     $password = $_POST['password'] ?? '';
@@ -20,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($email) || empty($password)) {
         $error = 'Veuillez entrer un email et un mot de passe.';
     } else if (login($email, $password, $rememberMe)) {
-        $redirectUrl = isset($_SESSION['redirect_after_login']) ? $_SESSION['redirect_after_login'] : 'index.php';
+        $redirectUrl = $_SESSION['redirect_after_login'] ?? 'index.php';
         unset($_SESSION['redirect_after_login']);
         redirectTo($redirectUrl);
     } else {
@@ -28,6 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+// Si l'utilisateur a ete deconnecte pour inactivite
 if (isset($_GET['timeout']) && $_GET['timeout'] == 1) {
     $error = 'Votre session a expire. Veuillez vous reconnecter.';
 }

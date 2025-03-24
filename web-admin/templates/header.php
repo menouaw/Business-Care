@@ -46,7 +46,7 @@ if (!defined('APP_NAME')) {
             </div>
         </div>
     </header>
-    <div style="padding-top: 1.25rem;"></div>
+    <div style="padding-top: 2rem;"></div>
 </body>
 </html>
 

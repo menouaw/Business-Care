@@ -23,6 +23,13 @@ function getDbConnection() {
     return $pdo;
 }
 
+function validateTableName($table) {
+    if (!preg_match('/^[a-zA-Z0-9_]+$/', $table)) {
+        throw new Exception("Nom de table invalide");
+    }
+    return $table;
+}
+
 function executeQuery($sql, $params = []) {
     try {
         $pdo = getDbConnection();
@@ -39,10 +46,7 @@ function executeQuery($sql, $params = []) {
 }
 
 function countTableRows($table, $where = '') {
-    // Validation du nom de table
-    if (!preg_match('/^[a-zA-Z0-9_]+$/', $table)) {
-        throw new Exception("Nom de table invalide");
-    }
+    $table = validateTableName($table);
     
     $sql = "SELECT COUNT(*) FROM $table";
     $params = [];
@@ -55,6 +59,8 @@ function countTableRows($table, $where = '') {
 }
 
 function fetchAll($table, $where = '', $orderBy = '', $limit = 0, $offset = 0) {
+    $table = validateTableName($table);
+    
     $sql = "SELECT * FROM $table";
     if ($where) {
         $sql .= " WHERE $where";
@@ -74,6 +80,8 @@ function fetchAll($table, $where = '', $orderBy = '', $limit = 0, $offset = 0) {
 }
 
 function fetchOne($table, $where, $orderBy = '') {
+    $table = validateTableName($table);
+    
     $sql = "SELECT * FROM $table WHERE $where";
     if ($orderBy) {
         $sql .= " ORDER BY $orderBy";
@@ -85,6 +93,8 @@ function fetchOne($table, $where, $orderBy = '') {
 }
 
 function insertRow($table, $data) {
+    $table = validateTableName($table);
+    
     $fields = array_keys($data);
     $placeholders = array_map(function ($field) {
         return ":$field";
@@ -97,10 +107,7 @@ function insertRow($table, $data) {
 }
 
 function updateRow($table, $data, $where, $whereParams = []) {
-    // Validation du nom de table
-    if (!preg_match('/^[a-zA-Z0-9_]+$/', $table)) {
-        throw new Exception("Nom de table invalide");
-    }
+    $table = validateTableName($table);
     
     $fields = array_keys($data);
     $setClause = array_map(function ($field) {
@@ -115,10 +122,7 @@ function updateRow($table, $data, $where, $whereParams = []) {
 }
 
 function deleteRow($table, $where, $params = []) {
-    // Validation du nom de table
-    if (!preg_match('/^[a-zA-Z0-9_]+$/', $table)) {
-        throw new Exception("Nom de table invalide");
-    }
+    $table = validateTableName($table);
     
     $sql = "DELETE FROM $table WHERE $where";
     
