@@ -4,6 +4,7 @@ require_once '../../includes/config.php';
 require_once '../../includes/auth.php';
 require_once '../../includes/db.php';
 require_once '../../includes/functions.php';
+require_once '../../includes/page_functions/modules/users.php';
 
 // verifie si l'utilsateur est connecte
 requireAuthentication();
@@ -18,51 +19,15 @@ $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 $role = isset($_GET['role']) ? (int)$_GET['role'] : 0;
 
-$where = [];
-$params = [];
-
-if ($search) {
-    $where[] = "(p.nom LIKE ? OR p.prenom LIKE ? OR p.email LIKE ?)";
-    $params[] = "%$search%";
-    $params[] = "%$search%";
-    $params[] = "%$search%";
-}
-
-if ($role) {
-    $where[] = "role_id = ?";
-    $params[] = $role;
-}
-
-$whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
-
-// recupere les utilisateurs pagines
-$perPage = 10;
-$offset = ($page - 1) * $perPage;
-
-$pdo = getDbConnection();
-$countSql = "SELECT COUNT(id) FROM personnes p $whereClause";
-$countStmt = $pdo->prepare($countSql);
-$countStmt->execute($params);
-$totalUsers = $countStmt->fetchColumn();
-$totalPages = ceil($totalUsers / $perPage);
-$page = max(1, min($page, $totalPages));
-
-$sql = "SELECT p.*, r.nom as role_name 
-        FROM personnes p 
-        LEFT JOIN roles r ON p.role_id = r.id
-        $whereClause
-        ORDER BY p.nom, p.prenom 
-        LIMIT ? OFFSET ?";
-$params[] = $perPage;
-$params[] = $offset;
-
-$stmt = $pdo->prepare($sql);
-$stmt->execute($params);
-$users = $stmt->fetchAll();
+// recupere les utilisateurs pagines avec filtrage
+$result = usersGetList($page, 10, $search, $role);
+$users = $result['users'];
+$totalPages = $result['totalPages'];
+$totalUsers = $result['totalItems'];
+$page = $result['currentPage'];
 
 // recupere tous les rôles pour le dropdown de filtrage
-$rolesStmt = $pdo->query("SELECT id, nom FROM roles ORDER BY nom");
-$roles = $rolesStmt->fetchAll();
+$roles = usersGetRoles();
 
 // definit le titre de la page et inclut l'en-tete
 $pageTitle = "Gestion des utilisateurs";
@@ -141,7 +106,7 @@ include '../../templates/header.php';
                                         <?php echo htmlspecialchars($user['prenom'] . ' ' . $user['nom']); ?>
                                     </td>
                                     <td><?php echo htmlspecialchars($user['email']); ?></td>
-                                    <td><?php echo htmlspecialchars($user['role_name']); ?></td>
+                                    <td><?php echo htmlspecialchars($user['role_name'] ?? ''); ?></td>
                                     <td><?php echo getStatusBadge($user['statut']); ?></td>
                                     <td><?php echo $user['derniere_connexion'] ? formatDate($user['derniere_connexion']) : 'Never'; ?></td>
                                     <td class="table-actions">

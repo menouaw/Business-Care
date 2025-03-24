@@ -4,6 +4,7 @@ require_once '../../includes/config.php';
 require_once '../../includes/auth.php';
 require_once '../../includes/db.php';
 require_once '../../includes/functions.php';
+require_once '../../includes/page_functions/modules/services.php';
 
 // verifie si l'utilisateur est connecte
 requireAuthentication();
@@ -14,6 +15,10 @@ $search = isset($_GET['search']) ? $_GET['search'] : '';
 $type = isset($_GET['type']) ? $_GET['type'] : '';
 $action = isset($_GET['action']) ? $_GET['action'] : '';
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+
+// initialisation des variables
+$errors = [];
+$service = null;
 
 // traitement du formulaire de creation/edition
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -31,177 +36,75 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'duree' => $_POST['duree'] ?? null,
         'type' => $_POST['type'] ?? '',
         'categorie' => $_POST['categorie'] ?? null,
+        'statut' => 'actif',
         'niveau_difficulte' => $_POST['niveau_difficulte'] ?? null,
         'capacite_max' => $_POST['capacite_max'] ?? null,
         'materiel_necessaire' => $_POST['materiel_necessaire'] ?? null,
         'prerequis' => $_POST['prerequis'] ?? null
     ];
 
-    // validation des donnees
-    $errors = [];
+    // sauvegarde du service
+    $result = servicesSave($data, $id);
     
-    if (empty($data['nom'])) {
-        $errors[] = "Le nom du service est obligatoire";
-    }
-    
-    if (empty($data['prix']) || !is_numeric($data['prix'])) {
-        $errors[] = "Le prix du service est obligatoire et doit etre un nombre";
-    }
-    
-    if (empty($data['type'])) {
-        $errors[] = "Le type de service est obligatoire";
-    }
-    
-    if (empty($errors)) {
-        $pdo = getDbConnection();
-        
-        // cas de mise a jour
-        if ($id > 0) {
-            $sql = "UPDATE prestations SET 
-                    nom = ?, description = ?, prix = ?, duree = ?, type = ?, 
-                    categorie = ?, niveau_difficulte = ?, capacite_max = ?, 
-                    materiel_necessaire = ?, prerequis = ? 
-                    WHERE id = ?";
-            
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([
-                $data['nom'],
-                $data['description'],
-                $data['prix'],
-                $data['duree'],
-                $data['type'],
-                $data['categorie'],
-                $data['niveau_difficulte'],
-                $data['capacite_max'],
-                $data['materiel_necessaire'],
-                $data['prerequis'],
-                $id
-            ]);
-            
-            flashMessage("Le service a ete mis a jour avec succes", "success");
-        } 
-        // cas de creation
-        else {
-            $sql = "INSERT INTO prestations (nom, description, prix, duree, type, 
-                   categorie, niveau_difficulte, capacite_max, materiel_necessaire, prerequis) 
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([
-                $data['nom'],
-                $data['description'],
-                $data['prix'],
-                $data['duree'],
-                $data['type'],
-                $data['categorie'],
-                $data['niveau_difficulte'],
-                $data['capacite_max'],
-                $data['materiel_necessaire'],
-                $data['prerequis']
-            ]);
-            
-            flashMessage("Le service a ete cree avec succes", "success");
-        }
-        
-        // redirection vers la liste
+    if ($result['success']) {
+        flashMessage($result['message'], "success");
         header('Location: ' . APP_URL . '/modules/services/');
         exit;
+    } else {
+        $errors = $result['errors'];
     }
 }
 
 // traitement de la suppression
 if ($action === 'delete' && $id > 0) {
-    $pdo = getDbConnection();
-    
-    // verifie si le service a des rendez-vous associes
-    $stmt = $pdo->prepare("SELECT COUNT(id) FROM rendez_vous WHERE prestation_id = ?");
-    $stmt->execute([$id]);
-    $appointmentCount = $stmt->fetchColumn();
-    
-    // verifie si le service a des evaluations associees
-    $stmt = $pdo->prepare("SELECT COUNT(id) FROM evaluations WHERE prestation_id = ?");
-    $stmt->execute([$id]);
-    $evaluationCount = $stmt->fetchColumn();
-    
-    if ($appointmentCount > 0) {
-        flashMessage("Impossible de supprimer ce service car il a des rendez-vous associes", "danger");
-    } else if ($evaluationCount > 0) {
-        flashMessage("Impossible de supprimer ce service car il a des evaluations associees", "danger");
-    } else {
-        $stmt = $pdo->prepare("DELETE FROM prestations WHERE id = ?");
-        $stmt->execute([$id]);
-        flashMessage("Le service a ete supprime avec succes", "success");
-    }
-    
+    $result = servicesDelete($id);
+    flashMessage($result['message'], $result['success'] ? "success" : "danger");
     header('Location: ' . APP_URL . '/modules/services/');
     exit;
 }
 
 // recuperation des donnees pour l'edition
-$service = null;
 if (($action === 'edit' || $action === 'view') && $id > 0) {
-    $pdo = getDbConnection();
-    $stmt = $pdo->prepare("SELECT * FROM prestations WHERE id = ?");
-    $stmt->execute([$id]);
-    $service = $stmt->fetch(PDO::FETCH_ASSOC);
+    $service = servicesGetDetails($id);
     
     if (!$service) {
         flashMessage("Service non trouve", "danger");
         header('Location: ' . APP_URL . '/modules/services/');
         exit;
     }
-}
-
-// construit la clause WHERE pour le filtrage
-$where = '';
-$params = [];
-
-if ($search) {
-    $where .= " (nom LIKE ? OR description LIKE ?)";
-    $params[] = "%$search%";
-    $params[] = "%$search%";
-}
-
-if ($type) {
-    if ($where) {
-        $where .= " AND type = ?";
-    } else {
-        $where .= " type = ?";
+    
+    if ($action === 'view') {
+        $pdo = getDbConnection();
+        
+        // recupere les rendez-vous associes
+        $stmt = $pdo->prepare("SELECT r.*, p.nom as nom_personne, p.prenom as prenom_personne 
+                              FROM rendez_vous r 
+                              LEFT JOIN personnes p ON r.personne_id = p.id 
+                              WHERE r.prestation_id = ? 
+                              ORDER BY r.date_rdv DESC");
+        $stmt->execute([$id]);
+        $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // recupere les evaluations associees
+        $stmt = $pdo->prepare("SELECT e.*, p.nom as nom_personne, p.prenom as prenom_personne 
+                              FROM evaluations e 
+                              LEFT JOIN personnes p ON e.personne_id = p.id 
+                              WHERE e.prestation_id = ? 
+                              ORDER BY e.date_evaluation DESC");
+        $stmt->execute([$id]);
+        $evaluations = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    $params[] = $type;
 }
 
 // recupere les services pagines
-$perPage = 10;
-$offset = ($page - 1) * $perPage;
-
-$pdo = getDbConnection();
-$countSql = "SELECT COUNT(id) FROM prestations";
-if ($where) {
-    $countSql .= " WHERE $where";
-}
-
-$countStmt = $pdo->prepare($countSql);
-$countStmt->execute($params);
-$totalServices = $countStmt->fetchColumn();
-$totalPages = ceil($totalServices / $perPage);
-$page = max(1, min($page, $totalPages));
-
-$sql = "SELECT * FROM prestations";
-if ($where) {
-    $sql .= " WHERE $where";
-}
-$sql .= " ORDER BY nom ASC LIMIT $offset, $perPage";
-
-$stmt = $pdo->prepare($sql);
-$stmt->execute($params);
-$services = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$result = servicesGetList($page, 10, $search, $type);
+$services = $result['services'];
+$totalPages = $result['totalPages'];
+$totalServices = $result['totalItems'];
+$page = $result['currentPage'];
 
 // recuperation des types de services pour le filtre
-$typesSql = "SELECT DISTINCT type FROM prestations ORDER BY type";
-$typesStmt = $pdo->prepare($typesSql);
-$typesStmt->execute();
-$serviceTypes = $typesStmt->fetchAll(PDO::FETCH_COLUMN);
+$serviceTypes = servicesGetTypes();
 
 // inclusion du header
 $pageTitle = "Gestion des services";
@@ -379,16 +282,8 @@ include_once '../../templates/header.php';
                 <div class="mt-4">
                     <h3>Rendez-vous associes</h3>
                     <?php
-                    $stmt = $pdo->prepare("SELECT r.*, p.nom as nom_personne, p.prenom as prenom_personne 
-                                          FROM rendez_vous r 
-                                          LEFT JOIN personnes p ON r.personne_id = p.id 
-                                          WHERE r.prestation_id = ? 
-                                          ORDER BY r.date_rdv DESC");
-                    $stmt->execute([$id]);
-                    $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                    if (!empty($appointments)):
                     ?>
-                    
-                    <?php if ($appointments): ?>
                         <table class="table table-striped table-hover">
                             <thead>
                                 <tr>
@@ -434,16 +329,8 @@ include_once '../../templates/header.php';
                 <div class="mt-4">
                     <h3>Évaluations reçues</h3>
                     <?php
-                    $stmt = $pdo->prepare("SELECT e.*, p.nom as nom_personne, p.prenom as prenom_personne 
-                                          FROM evaluations e 
-                                          LEFT JOIN personnes p ON e.personne_id = p.id 
-                                          WHERE e.prestation_id = ? 
-                                          ORDER BY e.date_evaluation DESC");
-                    $stmt->execute([$id]);
-                    $evaluations = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                    if (!empty($evaluations)):
                     ?>
-                    
-                    <?php if ($evaluations): ?>
                         <div class="card mb-4">
                             <div class="card-header">
                                 <?php

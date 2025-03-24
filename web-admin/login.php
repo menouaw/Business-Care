@@ -3,30 +3,27 @@ session_start();
 require_once 'includes/config.php';
 require_once 'includes/auth.php';
 require_once 'includes/functions.php';
+require_once 'includes/page_functions/login.php';
 
+// Verifier si l'utilisateur est deja connecte
 if (isAuthenticated()) {
-    $redirectUrl = isset($_SESSION['redirect_after_login']) ? $_SESSION['redirect_after_login'] : 'index.php';
+    $redirectUrl = $_SESSION['redirect_after_login'] ?? 'index.php';
     unset($_SESSION['redirect_after_login']);
     redirectTo($redirectUrl);
 }
 
-$error = '';
+// Traiter le formulaire de connexion
+$loginResult = processLoginForm();
+$error = $loginResult['error'];
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = $_POST['email'] ?? '';
-    $password = $_POST['password'] ?? '';
-    
-    if (empty($email) || empty($password)) {
-        $error = 'Veuillez entrer un email et un mot de passe.';
-    } else if (login($email, $password)) {
-        $redirectUrl = isset($_SESSION['redirect_after_login']) ? $_SESSION['redirect_after_login'] : 'index.php';
-        unset($_SESSION['redirect_after_login']);
-        redirectTo($redirectUrl);
-    } else {
-        $error = 'Email ou mot de passe invalide.';
-    }
+// Si connexion reussie, rediriger
+if ($loginResult['success']) {
+    $redirectUrl = $_SESSION['redirect_after_login'] ?? 'index.php';
+    unset($_SESSION['redirect_after_login']);
+    redirectTo($redirectUrl);
 }
 
+// Si l'utilisateur a ete deconnecte pour inactivite
 if (isset($_GET['timeout']) && $_GET['timeout'] == 1) {
     $error = 'Votre session a expire. Veuillez vous reconnecter.';
 }
@@ -43,7 +40,7 @@ if (isset($_GET['timeout']) && $_GET['timeout'] == 1) {
 <body class="text-center login-page">
     <main class="form-signin">
         <form method="post">
-            <img class="mb-4" src="<?php echo ASSETS_URL; ?>/images/logo/no_padding.png" alt="Logo" width="72" height="72">
+            <img class="mb-4" src="<?php echo ASSETS_URL; ?>/images/logo/goldOnWhite.jpg" alt="Logo" width="72" height="72">
             <h1 class="h3 mb-3 fw-normal">Business Care Admin</h1>
             
             <?php if ($error): ?>
@@ -61,7 +58,7 @@ if (isset($_GET['timeout']) && $_GET['timeout'] == 1) {
             
             <div class="checkbox mb-3">
                 <label>
-                    <input type="checkbox" value="remember-me"> Se souvenir de moi
+                    <input type="checkbox" name="remember_me" value="1"> Se souvenir de moi
                 </label>
             </div>
             <button class="w-100 btn btn-lg btn-primary" type="submit">Connexion</button>

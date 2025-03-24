@@ -79,13 +79,15 @@ function displayFlashMessages() {
     $type = $flashMessage['type'];
     $message = $flashMessage['message'];
     
-    $alertClass = 'alert-info';
-    switch ($type) {
-        case 'success': $alertClass = 'alert-success'; break;
-        case 'danger':
-        case 'error': $alertClass = 'alert-danger'; break;
-        case 'warning': $alertClass = 'alert-warning'; break;
-    }
+    $alertTypes = [
+        'success' => 'alert-success',
+        'danger' => 'alert-danger',
+        'error' => 'alert-danger',
+        'warning' => 'alert-warning',
+        'info' => 'alert-info'
+    ];
+    
+    $alertClass = $alertTypes[$type] ?? 'alert-info';
     
     return '<div class="alert ' . $alertClass . ' alert-dismissible fade show" role="alert">'
          . $message

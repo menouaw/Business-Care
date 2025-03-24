@@ -4,6 +4,7 @@ require_once '../../includes/config.php';
 require_once '../../includes/auth.php';
 require_once '../../includes/db.php';
 require_once '../../includes/functions.php';
+require_once '../../includes/page_functions/modules/contracts.php';
 
 // verifie si l'utilisateur est connecte
 requireAuthentication();
@@ -29,100 +30,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'conditions_particulieres' => $_POST['conditions_particulieres'] ?? null
     ];
 
-    // validation des donnees
-    $errors = [];
+    $result = contractsSave($data, $id);
     
-    if (empty($data['entreprise_id'])) {
-        $errors[] = "L'entreprise est obligatoire";
-    }
-    
-    if (empty($data['date_debut'])) {
-        $errors[] = "La date de debut est obligatoire";
-    }
-    
-    if (empty($data['type_contrat'])) {
-        $errors[] = "Le type de contrat est obligatoire";
-    }
-    
-    if (!empty($data['date_fin']) && strtotime($data['date_fin']) < strtotime($data['date_debut'])) {
-        $errors[] = "La date de fin ne peut pas etre anterieure a la date de debut";
-    }
-    
-    if (empty($errors)) {
-        $pdo = getDbConnection();
-        
-        // verification que l'entreprise existe
-        $stmt = $pdo->prepare("SELECT id FROM entreprises WHERE id = ?");
-        $stmt->execute([$data['entreprise_id']]);
-        if ($stmt->rowCount() === 0) {
-            $errors[] = "L'entreprise selectionnee n'existe pas";
-        } else {
-            // cas de mise a jour
-            if ($id > 0) {
-                $sql = "UPDATE contrats SET 
-                        entreprise_id = ?, date_debut = ?, date_fin = ?, montant_mensuel = ?, 
-                        nombre_salaries = ?, type_contrat = ?, statut = ?, conditions_particulieres = ? 
-                        WHERE id = ?";
-                
-                $stmt = $pdo->prepare($sql);
-                $stmt->execute([
-                    $data['entreprise_id'],
-                    $data['date_debut'],
-                    $data['date_fin'],
-                    $data['montant_mensuel'],
-                    $data['nombre_salaries'],
-                    $data['type_contrat'],
-                    $data['statut'],
-                    $data['conditions_particulieres'],
-                    $id
-                ]);
-                
-                flashMessage("Le contrat a ete mis a jour avec succes", "success");
-            } 
-            // cas de creation
-            else {
-                $sql = "INSERT INTO contrats (entreprise_id, date_debut, date_fin, montant_mensuel, 
-                        nombre_salaries, type_contrat, statut, conditions_particulieres) 
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-                
-                $stmt = $pdo->prepare($sql);
-                $stmt->execute([
-                    $data['entreprise_id'],
-                    $data['date_debut'],
-                    $data['date_fin'],
-                    $data['montant_mensuel'],
-                    $data['nombre_salaries'],
-                    $data['type_contrat'],
-                    $data['statut'],
-                    $data['conditions_particulieres']
-                ]);
-                
-                flashMessage("Le contrat a ete cree avec succes", "success");
-            }
-            
-            // redirection vers la liste
-            header('Location: ' . APP_URL . '/modules/contracts/');
-            exit;
-        }
+    if ($result['success']) {
+        flashMessage($result['message'], "success");
+        redirectTo(APP_URL . '/modules/contracts/');
+    } else {
+        $errors = $result['errors'];
     }
 }
 
 // traitement de la suppression
 if ($action === 'delete' && $id > 0) {
-    $pdo = getDbConnection();
-    
-    // verification que le contrat existe
-    $stmt = $pdo->prepare("SELECT id FROM contrats WHERE id = ?");
-    $stmt->execute([$id]);
-    
-    if ($stmt->rowCount() === 0) {
-        flashMessage("Contrat non trouve", "danger");
-    } else {
-        $stmt = $pdo->prepare("DELETE FROM contrats WHERE id = ?");
-        $stmt->execute([$id]);
-        flashMessage("Le contrat a ete supprime avec succes", "success");
-    }
-    
+    $result = contractsDelete($id);
+    flashMessage($result['message'], $result['success'] ? "success" : "danger");
     header('Location: ' . APP_URL . '/modules/contracts/');
     exit;
 }
@@ -130,82 +51,23 @@ if ($action === 'delete' && $id > 0) {
 // recuperation des donnees pour l'edition
 $contract = null;
 if (($action === 'edit' || $action === 'view') && $id > 0) {
-    $pdo = getDbConnection();
-    $stmt = $pdo->prepare("SELECT c.*, e.nom as nom_entreprise 
-                          FROM contrats c 
-                          LEFT JOIN entreprises e ON c.entreprise_id = e.id 
-                          WHERE c.id = ?");
-    $stmt->execute([$id]);
-    $contract = $stmt->fetch(PDO::FETCH_ASSOC);
+    $contract = contractsGetDetails($id);
     
     if (!$contract) {
         flashMessage("Contrat non trouve", "danger");
-        header('Location: ' . APP_URL . '/modules/contracts/');
-        exit;
+        redirectTo(APP_URL . '/modules/contracts/');
     }
-}
-
-// construit la clause WHERE pour le filtrage
-$where = '';
-$params = [];
-
-if ($entreprise > 0) {
-    $where .= " c.entreprise_id = ?";
-    $params[] = $entreprise;
-}
-
-if ($statut) {
-    if ($where) {
-        $where .= " AND c.statut = ?";
-    } else {
-        $where .= " c.statut = ?";
-    }
-    $params[] = $statut;
-}
-
-if ($search) {
-    if ($where) {
-        $where .= " AND (e.nom LIKE ? OR c.type_contrat LIKE ?)";
-    } else {
-        $where .= " (e.nom LIKE ? OR c.type_contrat LIKE ?)";
-    }
-    $params[] = "%$search%";
-    $params[] = "%$search%";
 }
 
 // recupere les contrats pagines
-$perPage = 10;
-$offset = ($page - 1) * $perPage;
-
-$pdo = getDbConnection();
-$countSql = "SELECT COUNT(c.id) FROM contrats c LEFT JOIN entreprises e ON c.entreprise_id = e.id";
-if ($where) {
-    $countSql .= " WHERE $where";
-}
-
-$countStmt = $pdo->prepare($countSql);
-$countStmt->execute($params);
-$totalContracts = $countStmt->fetchColumn();
-$totalPages = ceil($totalContracts / $perPage);
-$page = max(1, min($page, $totalPages));
-
-$sql = "SELECT c.*, e.nom as nom_entreprise 
-        FROM contrats c 
-        LEFT JOIN entreprises e ON c.entreprise_id = e.id";
-if ($where) {
-    $sql .= " WHERE $where";
-}
-$sql .= " ORDER BY c.date_debut DESC LIMIT $offset, $perPage";
-
-$stmt = $pdo->prepare($sql);
-$stmt->execute($params);
-$contracts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$result = contractsGetList($page, 10, $search, $statut, $entreprise);
+$contracts = $result['contracts'];
+$totalPages = $result['totalPages'];
+$totalContracts = $result['totalItems'];
+$page = $result['currentPage'];
 
 // recuperation des entreprises pour le formulaire et le filtre
-$entreprisesSql = "SELECT id, nom FROM entreprises ORDER BY nom";
-$entreprisesStmt = $pdo->prepare($entreprisesSql);
-$entreprisesStmt->execute();
-$entreprises = $entreprisesStmt->fetchAll(PDO::FETCH_ASSOC);
+$entreprises = contractsGetEntreprises();
 
 // inclusion du header
 $pageTitle = "Gestion des contrats";
@@ -217,21 +79,6 @@ include_once '../../templates/header.php';
 <?php include_once '../../templates/sidebar.php'; ?>
 
 <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-    <?php
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        // verification du jeton CSRF
-        if (!validateToken($_POST['csrf_token'] ?? '')) {
-            flashMessage("Erreur de sécurité, veuillez réessayer", "danger");
-            header('Location: ' . APP_URL . '/modules/contracts/');
-            exit;
-        }
-        
-        $data = [
-            // ...
-        ];
-    }
-    ?>
-    
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
         <h1 class="h2">Gestion des contrats</h1>
         <div class="btn-toolbar mb-2 mb-md-0">

@@ -76,3 +76,51 @@ L'API REST se trouve dans le dossier `/api` a la racine du projet et comprend le
 - PHP 7.4 ou superieur
 - MySQL 5.7 ou superieur
 - Serveur web Apache avec mod_rewrite active 
+
+## Organisation du code
+
+### Structure des fichiers
+
+Pour maintenir une organisation claire du code, les fonctions spécifiques aux pages sont séparées dans des fichiers dédiés:
+
+- `/web-admin/includes/` - Contient les fichiers principaux du système
+  - `config.php` - Configuration générale
+  - `db.php` - Connexion à la base de données et fonctions de requêtes
+  - `auth.php` - Fonctions d'authentification
+  - `functions.php` - Fonctions utilitaires générales
+  - `/page_functions/` - Fonctions spécifiques à chaque page
+    - `dashboard.php` - Fonctions pour le tableau de bord
+    - `login.php` - Fonctions de traitement du login
+    - `/modules/` - Fonctions spécifiques aux modules
+      - `companies.php` - Gestion des entreprises
+      - `contracts.php` - Gestion des contrats
+      - `services.php` - Gestion des services
+      - `users.php` - Gestion des utilisateurs
+
+### Directives pour ajouter de nouvelles pages et fonctions
+
+1. Pour chaque nouvelle page:
+   - Créer un fichier dans `/includes/page_functions/` portant le nom de la page
+   - Y inclure toutes les fonctions spécifiques à cette page
+   - Inclure ce fichier en haut de la page correspondante
+
+2. Pour les modules:
+   - Créer un fichier dans `/includes/page_functions/modules/` pour chaque module
+   - Exemple: `/includes/page_functions/modules/companies.php` pour les fonctions du module entreprises
+   - Le nom des fonctions doit commencer par le nom du module (ex: `companiesGetList()`, `companiesGetDetails()`)
+
+3. Règles à suivre:
+   - Les fonctions d'une page ne doivent pas être dans le fichier de la page
+   - Chaque fichier de fonction doit inclure les dépendances nécessaires
+   - Les noms de fonctions doivent être préfixés par le nom de la page ou du module
+   - Ajouter de la documentation pour chaque fonction
+   - Les fonctions doivent retourner des structures cohérentes (ex: tableau associatif avec clés 'success', 'message', etc.)
+   - Séparer clairement la logique métier de la présentation
+
+### Avantages de cette organisation
+
+1. **Meilleure lisibilité du code**: Les fichiers de page sont plus courts et contiennent uniquement la logique de présentation
+2. **Réutilisation des fonctions**: Les fonctions peuvent être utilisées dans différents contextes
+3. **Facilite la maintenance**: Les modifications de la logique métier sont centralisées
+4. **Tests plus simples**: Il est plus facile de tester les fonctions séparément
+5. **Évolution plus aisée**: L'ajout de nouvelles fonctionnalités est simplifié 

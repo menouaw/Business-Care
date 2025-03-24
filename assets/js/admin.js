@@ -4,6 +4,31 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     // cache les alertes apres 5 secondes
+    autoHideAlerts();
+    
+    // confirme les actions de suppression
+    setupDeleteConfirmation();
+    
+    // active le menu lateral sur mobile
+    setupSidebarToggle();
+    
+    // gere les elements dynamiques du formulaire
+    setupDynamicFormFields();
+    
+    // initialise les datepickers si disponibles
+    initDatepickers();
+    
+    // initialise les dropdowns select2 si disponibles
+    initSelect2();
+    
+    // initialise les icones feather
+    initFeatherIcons();
+    
+    // initialise les tooltips
+    initTooltips();
+});
+
+function autoHideAlerts() {
     const alerts = document.querySelectorAll('.alert:not(.alert-permanent)');
     alerts.forEach(function(alert) {
         setTimeout(function() {
@@ -11,8 +36,9 @@ document.addEventListener('DOMContentLoaded', function() {
             bsAlert.close();
         }, 5000);
     });
-    
-    // confirme les actions de suppression
+}
+
+function setupDeleteConfirmation() {
     const deleteButtons = document.querySelectorAll('.btn-delete');
     deleteButtons.forEach(function(button) {
         button.addEventListener('click', function(e) {
@@ -21,16 +47,18 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-    
-    // active le menu lateral sur mobile
+}
+
+function setupSidebarToggle() {
     const sidebarToggle = document.querySelector('.navbar-toggler');
     if (sidebarToggle) {
         sidebarToggle.addEventListener('click', function() {
             document.querySelector('.sidebar').classList.toggle('show');
         });
     }
-    
-    // gere les elements dynamiques du formulaire
+}
+
+function setupDynamicFormFields() {
     const addFieldButtons = document.querySelectorAll('.add-field');
     addFieldButtons.forEach(function(button) {
         button.addEventListener('click', function() {
@@ -43,7 +71,6 @@ document.addEventListener('DOMContentLoaded', function() {
             div.innerHTML = newHtml;
             container.appendChild(div);
             
-            // ajoute la fonctionnalite du bouton de suppression
             const removeButton = div.querySelector('.remove-field');
             if (removeButton) {
                 removeButton.addEventListener('click', function() {
@@ -52,20 +79,35 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-    
-    // initialise les datepickers si disponibles
+}
+
+function initDatepickers() {
     if (typeof flatpickr !== 'undefined') {
         flatpickr('.datepicker', {
             dateFormat: 'd/m/Y',
             locale: 'fr'
         });
     }
-    
-    // initialise les dropdowns select2 si disponibles
+}
+
+function initSelect2() {
     if (typeof $.fn.select2 !== 'undefined') {
         $('.select2').select2({
             theme: 'bootstrap-5',
             width: '100%'
         });
     }
-}); 
+}
+
+function initFeatherIcons() {
+    if (typeof feather !== 'undefined') {
+        feather.replace();
+    }
+}
+
+function initTooltips() {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function(tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+} 

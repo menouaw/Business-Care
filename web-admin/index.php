@@ -3,6 +3,7 @@ session_start();
 require_once 'includes/config.php';
 require_once 'includes/auth.php';
 require_once 'includes/functions.php';
+require_once 'includes/page_functions/dashboard.php';
 
 // verifie si l'utilisateur est connecte, redirige vers la connexion si non
 if (!isAuthenticated()) {
@@ -10,14 +11,8 @@ if (!isAuthenticated()) {
 }
 
 // recupere les donnees du tableau de bord
-$stats = [
-    'total_users' => countTableRows('personnes'),
-    'total_companies' => countTableRows('entreprises'),
-    'total_contracts' => countTableRows('contrats'),
-    'active_contracts' => countTableRows('contrats', "statut = 'actif'")
-];
-
-$recentActivities = getRecentActivities(10);
+$stats = getDashboardStats();
+$recentActivities = getDashboardRecentActivities(10);
 
 // inclut l'en-tete
 $pageTitle = "Tableau de bord";
