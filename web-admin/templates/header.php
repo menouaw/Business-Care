@@ -46,7 +46,7 @@ if (!defined('APP_NAME')) {
             </div>
         </div>
     </header>
-    <div style="padding-top: 2rem;"></div>
+    <div style="padding-top: var(--navbar-height);"></div>
 </body>
 </html>
 
