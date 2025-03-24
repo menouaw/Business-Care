@@ -15,10 +15,11 @@ $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_POST['email'] ?? '';
     $password = $_POST['password'] ?? '';
+    $rememberMe = isset($_POST['remember_me']);
     
     if (empty($email) || empty($password)) {
         $error = 'Veuillez entrer un email et un mot de passe.';
-    } else if (login($email, $password)) {
+    } else if (login($email, $password, $rememberMe)) {
         $redirectUrl = isset($_SESSION['redirect_after_login']) ? $_SESSION['redirect_after_login'] : 'index.php';
         unset($_SESSION['redirect_after_login']);
         redirectTo($redirectUrl);
@@ -43,7 +44,7 @@ if (isset($_GET['timeout']) && $_GET['timeout'] == 1) {
 <body class="text-center login-page">
     <main class="form-signin">
         <form method="post">
-            <img class="mb-4" src="<?php echo ASSETS_URL; ?>/images/logo/no_padding.png" alt="Logo" width="72" height="72">
+            <img class="mb-4" src="<?php echo ASSETS_URL; ?>/images/logo/goldOnWhite.jpg" alt="Logo" width="72" height="72">
             <h1 class="h3 mb-3 fw-normal">Business Care Admin</h1>
             
             <?php if ($error): ?>
@@ -61,7 +62,7 @@ if (isset($_GET['timeout']) && $_GET['timeout'] == 1) {
             
             <div class="checkbox mb-3">
                 <label>
-                    <input type="checkbox" value="remember-me"> Se souvenir de moi
+                    <input type="checkbox" name="remember_me" value="1"> Se souvenir de moi
                 </label>
             </div>
             <button class="w-100 btn btn-lg btn-primary" type="submit">Connexion</button>

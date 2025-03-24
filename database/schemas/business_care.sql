@@ -232,3 +232,14 @@ CREATE TABLE logs (
     INDEX idx_action (action),
     INDEX idx_date (created_at)
 );
+
+CREATE TABLE remember_me_tokens (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    token VARCHAR(64) NOT NULL,
+    expires_at DATETIME NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES personnes(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_token (token),
+    INDEX idx_expires (expires_at)
+);
