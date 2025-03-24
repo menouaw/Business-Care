@@ -4,6 +4,7 @@ require_once '../../includes/config.php';
 require_once '../../includes/auth.php';
 require_once '../../includes/db.php';
 require_once '../../includes/functions.php';
+require_once '../../includes/page_functions/modules/companies.php';
 
 // verifie si l'utilisateur est connecte
 requireAuthentication();
@@ -13,6 +14,10 @@ $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 $action = isset($_GET['action']) ? $_GET['action'] : '';
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+
+// initialisation des variables
+$errors = [];
+$company = null;
 
 // traitement du formulaire de creation/edition
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -30,113 +35,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'date_creation' => $_POST['date_creation'] ?? null
     ];
 
-    // validation des donnees
-    $errors = [];
+    // sauvegarde de l'entreprise
+    $result = companiesSave($data, $id);
     
-    if (empty($data['nom'])) {
-        $errors[] = "Le nom de l'entreprise est obligatoire";
-    }
-    
-    if (empty($errors)) {
-        $pdo = getDbConnection();
-        
-        try {
-            // cas de mise a jour
-            if ($id > 0) {
-                $sql = "UPDATE entreprises SET 
-                        nom = ?, siret = ?, adresse = ?, code_postal = ?, ville = ?, 
-                        telephone = ?, email = ?, site_web = ?, taille_entreprise = ?, 
-                        secteur_activite = ?, date_creation = ? 
-                        WHERE id = ?";
-                
-                $stmt = $pdo->prepare($sql);
-                $stmt->execute([
-                    $data['nom'], 
-                    $data['siret'], 
-                    $data['adresse'], 
-                    $data['code_postal'],
-                    $data['ville'], 
-                    $data['telephone'], 
-                    $data['email'], 
-                    $data['site_web'],
-                    $data['taille_entreprise'], 
-                    $data['secteur_activite'], 
-                    $data['date_creation'], 
-                    $id
-                ]);
-                
-                flashMessage("L'entreprise a ete mise a jour avec succes", "success");
-            } 
-            // cas de creation
-            else {
-                $sql = "INSERT INTO entreprises (nom, siret, adresse, code_postal, ville, 
-                        telephone, email, site_web, taille_entreprise, secteur_activite, date_creation) 
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                
-                $stmt = $pdo->prepare($sql);
-                $stmt->execute([
-                    $data['nom'], 
-                    $data['siret'], 
-                    $data['adresse'], 
-                    $data['code_postal'],
-                    $data['ville'], 
-                    $data['telephone'], 
-                    $data['email'], 
-                    $data['site_web'],
-                    $data['taille_entreprise'], 
-                    $data['secteur_activite'], 
-                    $data['date_creation']
-                ]);
-                
-                flashMessage("L'entreprise a ete creee avec succes", "success");
-            }
-            
-            // redirection vers la liste
-            header('Location: ' . APP_URL . '/modules/companies/');
-            exit;
-        } catch (PDOException $e) {
-            $errors[] = "Erreur de base de données : " . $e->getMessage();
-            // Log l'erreur pour l'administrateur
-            error_log("Erreur DB dans companies/index.php : " . $e->getMessage());
-        }
+    if ($result['success']) {
+        flashMessage($result['message'], "success");
+        header('Location: ' . APP_URL . '/modules/companies/');
+        exit;
+    } else {
+        $errors = $result['errors'];
     }
 }
 
 // traitement de la suppression
 if ($action === 'delete' && $id > 0) {
-    $pdo = getDbConnection();
-    
-    // verifie si l'entreprise a des personnes associees
-    $stmt = $pdo->prepare("SELECT COUNT(id) FROM personnes WHERE entreprise_id = ?");
-    $stmt->execute([$id]);
-    $personCount = $stmt->fetchColumn();
-    
-    // verifie si l'entreprise a des contrats associes
-    $stmt = $pdo->prepare("SELECT COUNT(id) FROM contrats WHERE entreprise_id = ?");
-    $stmt->execute([$id]);
-    $contractCount = $stmt->fetchColumn();
-    
-    if ($personCount > 0) {
-        flashMessage("Impossible de supprimer cette entreprise car elle a des utilisateurs associes", "danger");
-    } else if ($contractCount > 0) {
-        flashMessage("Impossible de supprimer cette entreprise car elle a des contrats associes", "danger");
-    } else {
-        $stmt = $pdo->prepare("DELETE FROM entreprises WHERE id = ?");
-        $stmt->execute([$id]);
-        flashMessage("L'entreprise a ete supprimee avec succes", "success");
-    }
-    
+    $result = companiesDelete($id);
+    flashMessage($result['message'], $result['success'] ? "success" : "danger");
     header('Location: ' . APP_URL . '/modules/companies/');
     exit;
 }
 
-// recuperation des donnees pour l'edition
-$company = null;
+// recuperation des donnees pour l'edition/affichage
 if (($action === 'edit' || $action === 'view') && $id > 0) {
-    $pdo = getDbConnection();
-    $stmt = $pdo->prepare("SELECT * FROM entreprises WHERE id = ?");
-    $stmt->execute([$id]);
-    $company = $stmt->fetch(PDO::FETCH_ASSOC);
+    $company = companiesGetDetails($id);
     
     if (!$company) {
         flashMessage("Entreprise non trouvee", "danger");
@@ -145,44 +66,12 @@ if (($action === 'edit' || $action === 'view') && $id > 0) {
     }
 }
 
-// construit la clause WHERE pour le filtrage
-$where = '';
-$params = [];
-
-if ($search) {
-    $where .= " (nom LIKE ? OR siret LIKE ? OR ville LIKE ?)";
-    $params[] = "%$search%";
-    $params[] = "%$search%";
-    $params[] = "%$search%";
-}
-
 // recupere les entreprises paginees
-$perPage = 10;
-$offset = ($page - 1) * $perPage;
-
-$pdo = getDbConnection();
-$countSql = "SELECT COUNT(id) FROM entreprises";
-if ($where) {
-    $countSql .= " WHERE $where";
-}
-
-$countStmt = $pdo->prepare($countSql);
-$countStmt->execute($params);
-$totalCompanies = $countStmt->fetchColumn();
-$totalPages = ceil($totalCompanies / $perPage);
-$page = max(1, min($page, $totalPages));
-
-$sql = "SELECT * FROM entreprises";
-if ($where) {
-    $sql .= " WHERE $where";
-}
-$sql .= " ORDER BY nom ASC LIMIT ?, ?";
-$params[] = $offset;
-$params[] = $perPage;
-
-$stmt = $pdo->prepare($sql);
-$stmt->execute($params);
-$companies = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$result = companiesGetList($page, 10, $search);
+$companies = $result['companies'];
+$totalPages = $result['totalPages'];
+$totalCompanies = $result['totalItems'];
+$page = $result['currentPage'];
 
 // inclusion du header
 $pageTitle = "Gestion des entreprises";
@@ -341,11 +230,7 @@ include_once '../../templates/header.php';
                 <!-- liste des contrats associes -->
                 <div class="mt-4">
                     <h3>Contrats associes</h3>
-                    <?php
-                    $stmt = $pdo->prepare("SELECT c.* FROM contrats c WHERE c.entreprise_id = ? ORDER BY c.date_debut DESC");
-                    $stmt->execute([$id]);
-                    $contracts = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                    ?>
+                    <?php $contracts = $company['contracts']; ?>
                     
                     <?php if ($contracts): ?>
                         <table class="table table-striped table-hover">
@@ -386,11 +271,7 @@ include_once '../../templates/header.php';
                 <!-- liste des personnes associees -->
                 <div class="mt-4">
                     <h3>Utilisateurs associes</h3>
-                    <?php
-                    $stmt = $pdo->prepare("SELECT p.*, r.nom as role_name FROM personnes p LEFT JOIN roles r ON p.role_id = r.id WHERE p.entreprise_id = ? ORDER BY p.nom, p.prenom");
-                    $stmt->execute([$id]);
-                    $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                    ?>
+                    <?php $users = $company['users']; ?>
                     
                     <?php if ($users): ?>
                         <table class="table table-striped table-hover">

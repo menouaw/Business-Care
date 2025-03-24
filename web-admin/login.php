@@ -3,6 +3,7 @@ session_start();
 require_once 'includes/config.php';
 require_once 'includes/auth.php';
 require_once 'includes/functions.php';
+require_once 'includes/page_functions/login.php';
 
 // Verifier si l'utilisateur est deja connecte
 if (isAuthenticated()) {
@@ -11,23 +12,15 @@ if (isAuthenticated()) {
     redirectTo($redirectUrl);
 }
 
-$error = '';
-
 // Traiter le formulaire de connexion
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = $_POST['email'] ?? '';
-    $password = $_POST['password'] ?? '';
-    $rememberMe = isset($_POST['remember_me']);
-    
-    if (empty($email) || empty($password)) {
-        $error = 'Veuillez entrer un email et un mot de passe.';
-    } else if (login($email, $password, $rememberMe)) {
-        $redirectUrl = $_SESSION['redirect_after_login'] ?? 'index.php';
-        unset($_SESSION['redirect_after_login']);
-        redirectTo($redirectUrl);
-    } else {
-        $error = 'Email ou mot de passe invalide.';
-    }
+$loginResult = processLoginForm();
+$error = $loginResult['error'];
+
+// Si connexion reussie, rediriger
+if ($loginResult['success']) {
+    $redirectUrl = $_SESSION['redirect_after_login'] ?? 'index.php';
+    unset($_SESSION['redirect_after_login']);
+    redirectTo($redirectUrl);
 }
 
 // Si l'utilisateur a ete deconnecte pour inactivite
