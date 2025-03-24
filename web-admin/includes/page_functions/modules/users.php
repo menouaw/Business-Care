@@ -4,14 +4,24 @@ require_once __DIR__ . '/../../db.php';
 require_once __DIR__ . '/../../functions.php';
 
 /**
- * Recupere la liste des utilisateurs avec pagination et filtrage
- * 
- * @param int $page Numero de la page
- * @param int $perPage Nombre d'elements par page
- * @param string $search Terme de recherche
- * @param int $roleId Filtre par role
- * @param int $entrepriseId Filtre par entreprise
- * @return array Donnees de pagination et liste des utilisateurs
+ * Récupère la liste paginée des utilisateurs en appliquant des filtres optionnels.
+ *
+ * Cette fonction construit dynamiquement une requête SQL en intégrant des conditions de filtrage
+ * basées sur un terme de recherche (nom, prénom ou email), un identifiant de rôle et/ou un identifiant d'entreprise.
+ * Elle exécute d'abord une requête pour déterminer le nombre total d'utilisateurs correspondant aux critères,
+ * ajuste la pagination en conséquence, puis récupère la liste des utilisateurs avec leurs rôles et le nom de leur entreprise.
+ *
+ * @param int $page Le numéro de la page à afficher.
+ * @param int $perPage Le nombre d'utilisateurs à afficher par page.
+ * @param string $search Terme de recherche appliqué sur le nom, prénom ou email.
+ * @param int $roleId Identifiant du rôle pour filtrer les utilisateurs.
+ * @param int $entrepriseId Identifiant de l'entreprise pour filtrer les utilisateurs.
+ * @return array Un tableau associatif contenant :
+ *   - 'users': le tableau des utilisateurs récupérés,
+ *   - 'currentPage': le numéro de la page courante après ajustement,
+ *   - 'totalPages': le nombre total de pages disponibles,
+ *   - 'totalItems': le nombre total d'utilisateurs correspondant aux critères,
+ *   - 'perPage': le nombre d'utilisateurs affichés par page.
  */
 function usersGetList($page = 1, $perPage = 10, $search = '', $roleId = 0, $entrepriseId = 0) {
     $where = '';
@@ -74,10 +84,16 @@ function usersGetList($page = 1, $perPage = 10, $search = '', $roleId = 0, $entr
 }
 
 /**
- * Recupere les details d'un utilisateur
- * 
- * @param int $id Identifiant de l'utilisateur
- * @return array|false Donnees de l'utilisateur ou false si non trouve
+ * Récupère les détails complets d'un utilisateur.
+ *
+ * Cette fonction retourne les informations de l'utilisateur, y compris le nom associé à son rôle et à son entreprise.
+ * Elle complète ces informations avec les 10 derniers événements de connexion (login et logout).
+ * De plus, pour un praticien (role_id == 2), elle ajoute la liste des 10 dernières prestations,
+ * et pour un salarié (role_id == 1), elle fournit les 10 dernières réservations.
+ *
+ * @param int $id Identifiant unique de l'utilisateur.
+ * @return array|false Tableau associatif contenant les informations de l'utilisateur avec son historique et ses activités,
+ *                     ou false si aucun utilisateur n'est trouvé.
  */
 function usersGetDetails($id) {
     $pdo = getDbConnection();
@@ -128,9 +144,11 @@ function usersGetDetails($id) {
 }
 
 /**
- * Recupere la liste des roles
- * 
- * @return array Liste des roles
+ * Récupère la liste des rôles.
+ *
+ * Retourne l'ensemble des rôles présents dans la base de données, triés par ordre alphabétique croissant selon leur nom.
+ *
+ * @return array La liste des rôles, chaque rôle étant représenté par un tableau associatif.
  */
 function usersGetRoles() {
     $pdo = getDbConnection();
@@ -140,9 +158,13 @@ function usersGetRoles() {
 }
 
 /**
- * Recupere la liste des entreprises pour le formulaire
- * 
- * @return array Liste des entreprises
+ * Récupère la liste des entreprises triées par ordre alphabétique.
+ *
+ * Cette fonction se connecte à la base de données et exécute une requête préparée pour obtenir
+ * l'identifiant et le nom de chaque entreprise à partir de la table "entreprises". Le résultat,
+ * organisé par nom en ordre ascendant, est destiné à être utilisé dans les formulaires de l'application.
+ *
+ * @return array Liste des entreprises, chaque entrée étant un tableau associatif avec les clés "id" et "nom".
  */
 function usersGetEntreprises() {
     $pdo = getDbConnection();
@@ -152,11 +174,19 @@ function usersGetEntreprises() {
 }
 
 /**
- * Cree ou met a jour un utilisateur
- * 
- * @param array $data Donnees de l'utilisateur
- * @param int $id Identifiant de l'utilisateur (0 pour creation)
- * @return array Resultat de l'operation avec status et message
+ * Crée ou met à jour un utilisateur.
+ *
+ * Cette fonction effectue la validation des champs obligatoires du formulaire utilisateur,
+ * vérifie l'unicité de l'email et procède à l'insertion ou à la mise à jour des données en base.
+ * Lors de la création, le mot de passe est nécessaire et sera hashé avant stockage.
+ * En cas d'erreur de validation ou de problème lors de l'opération en base, la fonction renvoie
+ * un tableau contenant les messages d'erreur.
+ *
+ * @param array $data Données de l'utilisateur, incluant 'nom', 'prenom', 'email', 'telephone',
+ *                    'adresse', 'code_postal', 'ville', 'role_id', 'entreprise_id', 'mot_de_passe' et 'statut'.
+ * @param int $id Identifiant de l'utilisateur (0 pour création).
+ * @return array Tableau indiquant le succès de l'opération, avec une clé 'success' et, selon le cas,
+ *               un message de confirmation dans 'message' ou une liste d'erreurs dans 'errors'.
  */
 function usersSave($data, $id = 0) {
     $errors = [];
@@ -274,10 +304,15 @@ function usersSave($data, $id = 0) {
 }
 
 /**
- * Supprime un utilisateur si possible
- * 
- * @param int $id Identifiant de l'utilisateur
- * @return array Resultat de l'operation avec status et message
+ * Supprime l'utilisateur identifié par son ID si aucune association critique n'existe.
+ *
+ * La fonction vérifie d'abord que l'utilisateur n'est pas associé à des prestations (pour les praticiens)
+ * ni à des réservations (pour les salariés). Si une de ces associations est détectée, la suppression est annulée
+ * et un tableau avec un message explicatif est renvoyé. Sinon, les logs liés à l'utilisateur sont supprimés
+ * ainsi que l'enregistrement correspondant dans la table des personnes.
+ *
+ * @param int $id Identifiant de l'utilisateur.
+ * @return array Tableau indiquant le succès de l'opération et contenant un message informatif.
  */
 function usersDelete($id) {
     $pdo = getDbConnection();

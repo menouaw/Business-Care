@@ -72,6 +72,15 @@ function getFlashMessage() {
     return null;
 }
 
+/**
+ * Génère le code HTML d'une alerte flash à partir du message stocké dans la session.
+ *
+ * La fonction récupère un message flash, détermine la classe CSS appropriée en fonction de son type
+ * grâce à un tableau associatif, et retourne le HTML pour une alerte Bootstrap dismissible.
+ * Si aucun message flash n'est présent, elle renvoie une chaîne vide.
+ *
+ * @return string Le code HTML de l'alerte flash ou une chaîne vide.
+ */
 function displayFlashMessages() {
     $flashMessage = getFlashMessage();
     if (!$flashMessage) return '';

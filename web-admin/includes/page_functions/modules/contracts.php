@@ -32,10 +32,15 @@ function contractsGetList($page = 1, $perPage = 20, $search = '', $status = '') 
 }
 
 /**
- * Recupere les details d'un contrat
- * 
- * @param int $id Identifiant du contrat
- * @return array|false Données du contrat ou false si non trouvé
+ * Récupère les détails complets d'un contrat donné.
+ *
+ * Cette fonction renvoie les informations associées à un contrat identifié par son ID.
+ * Si le contrat est trouvé, le tableau retourné est enrichi avec les données de l'entreprise associée
+ * ainsi que la liste des paiements du contrat, ordonnés par date décroissante. Si aucun contrat
+ * ne correspond à l'ID fourni, la fonction retourne false.
+ *
+ * @param int $id Identifiant unique du contrat.
+ * @return array|false Tableau des données du contrat incluant l'entreprise et les paiements, ou false si non trouvé.
  */
 function contractsGetDetails($id) {
     $contract = fetchOne('contrats', "id = $id");
@@ -52,11 +57,14 @@ function contractsGetDetails($id) {
 }
 
 /**
- * Met à jour le statut d'un contrat
- * 
- * @param int $id Identifiant du contrat
- * @param string $status Nouveau statut
- * @return bool Succès de l'opération
+ * Met à jour le statut d'un contrat après validation.
+ *
+ * Vérifie que le nouveau statut appartient à la liste des statuts acceptés et, en cas de succès,
+ * met à jour le registre du contrat dans la base de données tout en consignant l'activité de mise à jour.
+ *
+ * @param int $id Identifiant du contrat.
+ * @param string $status Nouveau statut à appliquer ('actif', 'inactif', 'en_attente', 'suspendu', 'expire', 'resilie').
+ * @return bool Retourne true si la mise à jour est réussie, false sinon.
  */
 function contractsUpdateStatus($id, $status) {
     $validStatuses = ['actif', 'inactif', 'en_attente', 'suspendu', 'expire', 'resilie'];

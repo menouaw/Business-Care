@@ -28,6 +28,15 @@ document.addEventListener('DOMContentLoaded', function() {
     initTooltips();
 });
 
+/**
+ * Masque automatiquement les alertes non permanentes après un délai de 5 secondes.
+ *
+ * Cette fonction parcourt tous les éléments d'alerte qui n'ont pas la classe "alert-permanent"
+ * et déclenche leur fermeture via Bootstrap après un délai de 5000 millisecondes.
+ *
+ * @example
+ * autoHideAlerts();
+ */
 function autoHideAlerts() {
     const alerts = document.querySelectorAll('.alert:not(.alert-permanent)');
     alerts.forEach(function(alert) {
@@ -38,6 +47,13 @@ function autoHideAlerts() {
     });
 }
 
+/**
+ * Initialise la confirmation de suppression pour les boutons.
+ *
+ * Parcourt tous les éléments possédant la classe "btn-delete" et leur associe un écouteur d'événement "click".
+ * Lors du clic, une boîte de dialogue demande à l'utilisateur de confirmer la suppression. Si la confirmation est refusée,
+ * l'action par défaut est empêchée, évitant ainsi une suppression involontaire.
+ */
 function setupDeleteConfirmation() {
     const deleteButtons = document.querySelectorAll('.btn-delete');
     deleteButtons.forEach(function(button) {
@@ -49,6 +65,15 @@ function setupDeleteConfirmation() {
     });
 }
 
+/**
+ * Configure le comportement du bouton de basculement de la barre latérale.
+ *
+ * Cette fonction ajoute un écouteur d'événements sur l'élément avec la classe "navbar-toggler".
+ * Lorsqu'on clique sur ce bouton, la fonction bascule la visibilité de la barre latérale
+ * en ajoutant ou en retirant la classe "show" sur l'élément avec la classe "sidebar".
+ *
+ * Note : Si le bouton de basculement n'est pas présent dans le DOM, aucune action n'est effectuée.
+ */
 function setupSidebarToggle() {
     const sidebarToggle = document.querySelector('.navbar-toggler');
     if (sidebarToggle) {
@@ -58,6 +83,15 @@ function setupSidebarToggle() {
     }
 }
 
+/**
+ * Initialise la gestion des champs de formulaire dynamiques.
+ *
+ * Cette fonction ajoute un écouteur d'événement "click" à chaque bouton comportant la classe "add-field".
+ * Lors d'un clic, elle récupère le conteneur cible et le template défini via les attributs "data-container" et "data-template" du bouton,
+ * génère un nouveau champ de formulaire en remplaçant le placeholder "{index}" par le nombre de champs existants,
+ * et l'ajoute au conteneur. Si un bouton de suppression est présent dans le nouveau champ (classe "remove-field"), il est configuré
+ * pour permettre la suppression du champ lorsqu'il est cliqué.
+ */
 function setupDynamicFormFields() {
     const addFieldButtons = document.querySelectorAll('.add-field');
     addFieldButtons.forEach(function(button) {
@@ -81,6 +115,13 @@ function setupDynamicFormFields() {
     });
 }
 
+/**
+ * Initialise les datepickers avec flatpickr si la bibliothèque est disponible.
+ *
+ * Cette fonction applique flatpickr sur tous les éléments possédant la classe "datepicker", en configurant le format de date sur "d/m/Y" et la locale sur "fr".
+ *
+ * @remark Aucun datepicker n'est initialisé si la bibliothèque flatpickr n'est pas définie.
+ */
 function initDatepickers() {
     if (typeof flatpickr !== 'undefined') {
         flatpickr('.datepicker', {
@@ -90,6 +131,12 @@ function initDatepickers() {
     }
 }
 
+/**
+ * Initialise les éléments select2 avec le thème Bootstrap 5 et une largeur de 100%.
+ *
+ * La fonction vérifie d'abord si le plugin jQuery select2 est disponible. Si c'est le cas, elle applique
+ * l'initialisation à tous les éléments de la page possédant la classe "select2".
+ */
 function initSelect2() {
     if (typeof $.fn.select2 !== 'undefined') {
         $('.select2').select2({
@@ -99,12 +146,23 @@ function initSelect2() {
     }
 }
 
+/**
+ * Initialise et remplace les icônes avec la bibliothèque Feather.
+ *
+ * Si la bibliothèque Feather est disponible, cette fonction appelle sa méthode
+ * `replace()` pour mettre à jour les éléments d'icônes dans le document.
+ */
 function initFeatherIcons() {
     if (typeof feather !== 'undefined') {
         feather.replace();
     }
 }
 
+/**
+ * Initialise les tooltips Bootstrap sur tous les éléments possédant l'attribut `data-bs-toggle="tooltip"`.
+ *
+ * Cette fonction parcourt le document pour trouver les éléments configurés pour afficher des tooltips et crée une instance de tooltip pour chacun d'eux à l'aide du composant Bootstrap.
+ */
 function initTooltips() {
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     tooltipTriggerList.map(function(tooltipTriggerEl) {
