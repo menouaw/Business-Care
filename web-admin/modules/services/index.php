@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // verification du jeton CSRF
     if (!validateToken($_POST['csrf_token'] ?? '')) {
         flashMessage("Erreur de sécurité, veuillez réessayer", "danger");
-        header('Location: ' . APP_URL . '/modules/services/');
+        header('Location: ' . WEBADMIN_URL . '/modules/services/');
         exit;
     }
     
@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     if ($result['success']) {
         flashMessage($result['message'], "success");
-        header('Location: ' . APP_URL . '/modules/services/');
+        header('Location: ' . WEBADMIN_URL . '/modules/services/');
         exit;
     } else {
         $errors = $result['errors'];
@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 if ($action === 'delete' && $id > 0) {
     $result = servicesDelete($id);
     flashMessage($result['message'], $result['success'] ? "success" : "danger");
-    header('Location: ' . APP_URL . '/modules/services/');
+    header('Location: ' . WEBADMIN_URL . '/modules/services/');
     exit;
 }
 
@@ -65,7 +65,7 @@ if (($action === 'edit' || $action === 'view') && $id > 0) {
     
     if (!$service) {
         flashMessage("Service non trouve", "danger");
-        header('Location: ' . APP_URL . '/modules/services/');
+        header('Location: ' . WEBADMIN_URL . '/modules/services/');
         exit;
     }
     
@@ -217,7 +217,7 @@ include_once '../../templates/header.php';
                             <div class="row">
                                 <div class="col-12">
                                     <button type="submit" class="btn btn-primary">Enregistrer</button>
-                                    <a href="<?php echo APP_URL; ?>/modules/services/" class="btn btn-secondary">Annuler</a>
+                                    <a href="<?php echo WEBADMIN_URL; ?>/modules/services/" class="btn btn-secondary">Annuler</a>
                                 </div>
                             </div>
                         </form>
@@ -300,13 +300,13 @@ include_once '../../templates/header.php';
                                         <td><?php echo htmlspecialchars($appointment['lieu'] ?: 'Non specifie'); ?></td>
                                         <td><?php echo getStatusBadge($appointment['statut']); ?></td>
                                         <td>
-                                            <a href="<?php echo APP_URL; ?>/modules/appointments/?action=view&id=<?php echo $appointment['id']; ?>" class="btn btn-sm btn-info">
+                                            <a href="<?php echo WEBADMIN_URL; ?>/modules/appointments/?action=view&id=<?php echo $appointment['id']; ?>" class="btn btn-sm btn-info">
                                                 <i class="fas fa-eye"></i>
                                             </a>
-                                            <a href="<?php echo APP_URL; ?>/modules/appointments/?action=edit&id=<?php echo $appointment['id']; ?>" class="btn btn-sm btn-primary">
+                                            <a href="<?php echo WEBADMIN_URL; ?>/modules/appointments/?action=edit&id=<?php echo $appointment['id']; ?>" class="btn btn-sm btn-primary">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-                                            <a href="<?php echo APP_URL; ?>/modules/appointments/?action=delete&id=<?php echo $appointment['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Etes-vous sûr de vouloir supprimer ce rendez-vous ?')">
+                                            <a href="<?php echo WEBADMIN_URL; ?>/modules/appointments/?action=delete&id=<?php echo $appointment['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Etes-vous sûr de vouloir supprimer ce rendez-vous ?')">
                                                 <i class="fas fa-trash"></i>
                                             </a>
                                         </td>
@@ -381,7 +381,7 @@ include_once '../../templates/header.php';
                                 <button type="submit" class="btn btn-primary">
                                     <i class="fas fa-search"></i> Rechercher
                                 </button>
-                                <a href="<?php echo APP_URL; ?>/modules/services/" class="btn btn-secondary">Reinitialiser</a>
+                                <a href="<?php echo WEBADMIN_URL; ?>/modules/services/" class="btn btn-secondary">Reinitialiser</a>
                             </div>
                         </form>
                     </div>

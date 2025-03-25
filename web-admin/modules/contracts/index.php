@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     if ($result['success']) {
         flashMessage($result['message'], "success");
-        redirectTo(APP_URL . '/modules/contracts/');
+        redirectTo(WEBADMIN_URL . '/modules/contracts/');
     } else {
         $errors = $result['errors'];
     }
@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 if ($action === 'delete' && $id > 0) {
     $result = contractsDelete($id);
     flashMessage($result['message'], $result['success'] ? "success" : "danger");
-    header('Location: ' . APP_URL . '/modules/contracts/');
+    header('Location: ' . WEBADMIN_URL . '/modules/contracts/');
     exit;
 }
 
@@ -51,7 +51,7 @@ if (($action === 'edit' || $action === 'view') && $id > 0) {
     
     if (!$contract) {
         flashMessage("Contrat non trouve", "danger");
-        redirectTo(APP_URL . '/modules/contracts/');
+        redirectTo(WEBADMIN_URL . '/modules/contracts/');
     }
 }
 
@@ -176,7 +176,7 @@ include_once '../../templates/header.php';
                     <div class="row">
                         <div class="col-12">
                             <button type="submit" class="btn btn-primary">Enregistrer</button>
-                            <a href="<?php echo APP_URL; ?>/modules/contracts/" class="btn btn-secondary">Annuler</a>
+                            <a href="<?php echo WEBADMIN_URL; ?>/modules/contracts/" class="btn btn-secondary">Annuler</a>
                         </div>
                     </div>
                 </form>
@@ -199,7 +199,7 @@ include_once '../../templates/header.php';
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <p><strong>Entreprise:</strong> <a href="<?php echo APP_URL; ?>/modules/companies/?action=view&id=<?php echo $contract['entreprise_id']; ?>"><?php echo htmlspecialchars($contract['nom_entreprise']); ?></a></p>
+                        <p><strong>Entreprise:</strong> <a href="<?php echo WEBADMIN_URL; ?>/modules/companies/?action=view&id=<?php echo $contract['entreprise_id']; ?>"><?php echo htmlspecialchars($contract['nom_entreprise']); ?></a></p>
                         <p><strong>Type de contrat:</strong> <?php echo htmlspecialchars(ucfirst($contract['type_contrat'])); ?></p>
                         <p><strong>Date de debut:</strong> <?php echo date('d/m/Y', strtotime($contract['date_debut'])); ?></p>
                         <p><strong>Date de fin:</strong> <?php echo $contract['date_fin'] ? date('d/m/Y', strtotime($contract['date_fin'])) : 'Indeterminee'; ?></p>
@@ -296,7 +296,7 @@ include_once '../../templates/header.php';
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-search"></i> Rechercher
                         </button>
-                        <a href="<?php echo APP_URL; ?>/modules/contracts/" class="btn btn-secondary">Reinitialiser</a>
+                        <a href="<?php echo WEBADMIN_URL; ?>/modules/contracts/" class="btn btn-secondary">Reinitialiser</a>
                     </div>
                 </form>
             </div>
@@ -317,7 +317,7 @@ include_once '../../templates/header.php';
                         <tbody>
                             <?php foreach ($contracts as $contract): ?>
                                 <tr>
-                                    <td><a href="<?php echo APP_URL; ?>/modules/companies/?action=view&id=<?php echo $contract['entreprise_id']; ?>"><?php echo htmlspecialchars($contract['nom_entreprise']); ?></a></td>
+                                    <td><a href="<?php echo WEBADMIN_URL; ?>/modules/companies/?action=view&id=<?php echo $contract['entreprise_id']; ?>"><?php echo htmlspecialchars($contract['nom_entreprise']); ?></a></td>
                                     <td><?php echo htmlspecialchars(ucfirst($contract['type_contrat'])); ?></td>
                                     <td><?php echo date('d/m/Y', strtotime($contract['date_debut'])); ?></td>
                                     <td><?php echo $contract['date_fin'] ? date('d/m/Y', strtotime($contract['date_fin'])) : '-'; ?></td>

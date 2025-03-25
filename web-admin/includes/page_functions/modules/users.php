@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../../init.php';
+require_once __DIR__ . '/../../../../shared/web-admin/logging.php';
 
 /**
  * Recupere la liste des utilisateurs avec pagination et filtrage
@@ -179,6 +180,7 @@ function usersSave($data, $id = 0) {
     $stmt->execute([$data['email'], $id]);
     if ($stmt->fetchColumn()) {
         $errors[] = "Cet email est deja utilise par un autre utilisateur";
+        logSystemActivity('user_duplicate_email', "Tentative d'utilisation d'email déjà existant: {$data['email']}");
     }
     
     // verification du mot de passe lors de la creation
@@ -215,9 +217,11 @@ function usersSave($data, $id = 0) {
             ];
             
             // ajout du mot de passe s'il est fourni
+            $passwordChanged = false;
             if (!empty($data['mot_de_passe'])) {
                 $sql .= ", mot_de_passe = ?";
                 $params[] = password_hash($data['mot_de_passe'], PASSWORD_DEFAULT);
+                $passwordChanged = true;
             }
             
             $sql .= " WHERE id = ?";
@@ -225,6 +229,14 @@ function usersSave($data, $id = 0) {
             
             $stmt = $pdo->prepare($sql);
             $stmt->execute($params);
+            
+            logBusinessOperation($_SESSION['user_id'], 'user_update', 
+                "Mise à jour utilisateur: {$data['prenom']} {$data['nom']} (ID: $id), role: {$data['role_id']}");
+                
+            if ($passwordChanged) {
+                logSecurityEvent($_SESSION['user_id'], 'password_change', 
+                    "Modification mot de passe pour utilisateur ID: $id par administrateur");
+            }
             
             $message = "L'utilisateur a ete mis a jour avec succes";
         } 
@@ -251,6 +263,13 @@ function usersSave($data, $id = 0) {
                 $data['statut']
             ]);
             
+            $newId = $pdo->lastInsertId();
+            logBusinessOperation($_SESSION['user_id'], 'user_create', 
+                "Création utilisateur: {$data['prenom']} {$data['nom']} (ID: $newId), role: {$data['role_id']}");
+                
+            logSecurityEvent($_SESSION['user_id'], 'account_creation', 
+                "Création compte pour {$data['email']} (ID: $newId, role: {$data['role_id']})");
+            
             $message = "L'utilisateur a ete cree avec succes";
         }
         
@@ -262,7 +281,7 @@ function usersSave($data, $id = 0) {
         $errors[] = "Erreur de base de données : " . $e->getMessage();
         
         // log l'erreur pour l'administrateur
-        error_log("Erreur DB dans users/index.php : " . $e->getMessage());
+        logSystemActivity('error', "Erreur BDD dans users/index.php : " . $e->getMessage());
         
         return [
             'success' => false,
@@ -291,11 +310,15 @@ function usersDelete($id) {
     $reservationsCount = $stmt->fetchColumn();
     
     if ($prestationsCount > 0) {
+        logBusinessOperation($_SESSION['user_id'], 'user_delete_attempt', 
+            "Tentative échouée de suppression utilisateur ID: $id - Prestations associées existent");
         return [
             'success' => false,
             'message' => "Impossible de supprimer cet utilisateur car il a des prestations associees"
         ];
     } else if ($reservationsCount > 0) {
+        logBusinessOperation($_SESSION['user_id'], 'user_delete_attempt', 
+            "Tentative échouée de suppression utilisateur ID: $id - Réservations associées existent");
         return [
             'success' => false,
             'message' => "Impossible de supprimer cet utilisateur car il a des reservations associees"
@@ -308,6 +331,9 @@ function usersDelete($id) {
         // supprimer l'utilisateur
         $stmt = $pdo->prepare("DELETE FROM personnes WHERE id = ?");
         $stmt->execute([$id]);
+        
+        logSecurityEvent($_SESSION['user_id'], 'account_deletion', 
+            "Suppression compte utilisateur ID: $id");
         
         return [
             'success' => true,

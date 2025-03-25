@@ -6,7 +6,7 @@ require_once '../../includes/page_functions/modules/users.php';
 requireAuthentication();
 if (!hasPermission('admin')) {
     flashMessage('Vous n\'avez pas les permissions pour acceder a cette page.', 'danger');
-    header('Location: ' . APP_URL);
+    header('Location: ' . WEBADMIN_URL);
     exit;
 }
 

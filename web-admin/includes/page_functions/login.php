@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../init.php';
+require_once __DIR__ . '/../../../shared/web-admin/logging.php';
 
 /**
  * Traite la soumission du formulaire de connexion
@@ -16,6 +17,7 @@ function processLoginForm() {
         
         if (empty($email) || empty($password)) {
             $error = 'Veuillez entrer un email et un mot de passe.';
+            logSystemActivity('login_attempt', "Échec de connexion: informations d'identification manquantes");
         } else if (login($email, $password, $rememberMe)) {
             $success = true;
         } else {
@@ -26,6 +28,7 @@ function processLoginForm() {
     // Verifie si l'utilisateur a ete deconnecte pour inactivite
     if (isset($_GET['timeout']) && $_GET['timeout'] == 1) {
         $error = 'Votre session a expire. Veuillez vous reconnecter.';
+        logSystemActivity('session_timeout', "Redirection vers la page de connexion suite à l'expiration de session");
     }
     
     return [

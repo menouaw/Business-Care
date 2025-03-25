@@ -1,5 +1,6 @@
 <?php
 // API pour l'authentification
+require_once 'logging.php';
 
 function login($email, $password, $rememberMe = false) {
     $pdo = getDbConnection();
@@ -21,16 +22,22 @@ function login($email, $password, $rememberMe = false) {
             setcookie('remember_me', $token, time() + (30 * 24 * 60 * 60), '/', '', true, true);
         }
         
-        logActivity($user['id'], 'login', 'Utilisateur connecte');
+        logSecurityEvent($user['id'], 'login', 'Connexion réussie');
         
         return true;
+    } else {
+        if ($user) {
+            logSecurityEvent($user['id'], 'login', 'Échec de connexion: mot de passe incorrect', true);
+        } else {
+            logSecurityEvent(null, 'login', "Tentative de connexion avec email inexistant: $email", true);
+        }
+        return false;
     }
-    return false;
 }
 
 function logout() {
     if (isset($_SESSION['user_id'])) {
-        logActivity($_SESSION['user_id'], 'logout', 'Utilisateur deconnecte');
+        logSecurityEvent($_SESSION['user_id'], 'logout', 'Utilisateur déconnecté');
     }
     
     if (isset($_COOKIE['remember_me'])) {
@@ -48,6 +55,7 @@ function logout() {
 function isAuthenticated() {
     if (isset($_SESSION['user_id'])) {
         if (time() - $_SESSION['last_activity'] > SESSION_LIFETIME) {
+            logSystemActivity('session_timeout', "Session expirée pour l'utilisateur ID: " . $_SESSION['user_id']);
             logout();
             return false;
         }
@@ -66,7 +74,7 @@ function isAuthenticated() {
 function requireAuthentication() {
     if (!isAuthenticated()) {
         $_SESSION['redirect_after_login'] = $_SERVER['REQUEST_URI'];
-        header('Location: ' . APP_URL . '/login.php');
+        header('Location: ' . WEBADMIN_URL . '/login.php');
         exit;
     }
 }
@@ -92,23 +100,11 @@ function getUserInfo($userId = null) {
     return fetchOne('personnes', "id = $userId");
 }
 
-function logActivity($userId, $action, $details = '') {
-    $data = [
-        'personne_id' => $userId,
-        'action' => $action,
-        'details' => $details,
-        'ip_address' => $_SERVER['REMOTE_ADDR'],
-        'user_agent' => $_SERVER['HTTP_USER_AGENT'],
-        'created_at' => date('Y-m-d H:i:s')
-    ];
-    
-    return insertRow('logs', $data);
-}
-
 function resetPassword($email) {
     $user = fetchOne('personnes', "email = '$email'");
     
     if (!$user) {
+        logSecurityEvent(null, 'password_reset', "Tentative de réinitialisation pour email inexistant: $email", true);
         return false;
     }
     
@@ -119,6 +115,8 @@ function resetPassword($email) {
         'token' => $token,
         'expires' => $expires
     ], "id = {$user['id']}");
+    
+    logSecurityEvent($user['id'], 'password_reset', 'Demande de réinitialisation de mot de passe initiée');
     
     // TODO: envoyer un email de reinitialisation de mot de passe
     
@@ -132,6 +130,8 @@ function createRememberMeToken($userId) {
     
     $stmt = $pdo->prepare("INSERT INTO remember_me_tokens (user_id, token, expires_at) VALUES (?, ?, ?)");
     $stmt->execute([$userId, $token, $expires]);
+    
+    logSecurityEvent($userId, 'remember_token', 'Création de token "Se souvenir de moi"');
     
     return $token;
 }
@@ -151,6 +151,8 @@ function validateRememberMeToken($token) {
             $_SESSION['user_role'] = $user['role_id'];
             $_SESSION['user_photo'] = $user['photo_url'];
             $_SESSION['last_activity'] = time();
+            
+            logSecurityEvent($user['id'], 'auto_login', 'Connexion automatique via token "Se souvenir de moi"');
             return true;
         }
     }
