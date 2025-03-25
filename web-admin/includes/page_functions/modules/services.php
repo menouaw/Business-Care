@@ -92,11 +92,17 @@ function servicesGetTypes() {
 }
 
 /**
- * Cree ou met a jour un service
- * 
- * @param array $data Donnees du service
- * @param int $id Identifiant du service (0 pour creation)
- * @return array Resultat de l'operation avec status et message
+ * Crée ou met à jour un service dans la base de données.
+ *
+ * Cette fonction vérifie que les données obligatoires (nom, prix et type) sont présentes et valides.
+ * En cas d'erreur de validation, elle retourne un tableau contenant les messages d'erreur.
+ * Si les validations réussissent, elle effectue une mise à jour si un identifiant supérieur à 0 est fourni,
+ * ou crée un nouveau service sinon. En cas d'échec de l'opération en base de données, un tableau d'erreurs est retourné.
+ *
+ * @param array $data Les informations du service, incluant notamment 'nom', 'prix', 'type', et d'autres champs optionnels.
+ * @param int $id L'identifiant du service à mettre à jour, ou 0 pour créer un nouveau service.
+ * @return array Tableau associatif indiquant le succès de l'opération. En cas de succès, il contient une clé 'message';
+ *               en cas d'erreur, une clé 'errors' avec la liste des messages d'erreur.
  */
 function servicesSave($data, $id = 0) {
     $errors = [];
@@ -196,10 +202,16 @@ function servicesSave($data, $id = 0) {
 }
 
 /**
- * Supprime un service si possible
- * 
- * @param int $id Identifiant du service
- * @return array Resultat de l'operation avec status et message
+ * Supprime un service après vérification des dépendances associées.
+ *
+ * Cette fonction tente de supprimer un service identifié par son ID, après avoir vérifié
+ * qu'il n'a aucun rendez-vous ou évaluation associé. Si des dépendances sont présentes,
+ * la suppression est annulée et une opération d'échec est consignée. Sinon, le service
+ * est supprimé et l'opération de suppression est enregistrée.
+ *
+ * @param int $id L'identifiant du service à supprimer.
+ * @return array Un tableau associatif contenant un booléen sous la clé 'success' indiquant
+ *               si l'opération a réussi et un message descriptif sous la clé 'message'.
  */
 function servicesDelete($id) {
     $pdo = getDbConnection();

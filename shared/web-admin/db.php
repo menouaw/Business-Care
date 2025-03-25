@@ -2,10 +2,13 @@
 require_once 'config.php';
 
 /**
- * Récupère une connexion PDO à la base de données
- * 
- * @return PDO Objet PDO représentant la connexion à la base de données
- * @throws Exception Si la connexion ne peut pas être établie
+ * Retourne une instance PDO pour la connexion à la base de données.
+ *
+ * La connexion est établie en utilisant les constantes de configuration (DB_HOST, DB_NAME, DB_CHARSET, DB_USER, DB_PASS)
+ * et est mise en cache pour éviter des connexions répétées. En cas d'erreur lors de l'établissement de la connexion,
+ * le script est interrompu avec un message adapté au mode DEBUG.
+ *
+ * @return PDO La connexion PDO active.
  */
 function getDbConnection() {
     static $pdo = null;
@@ -44,12 +47,15 @@ function validateTableName($table) {
 }
 
 /**
- * Exécute une requête SQL préparée
- * 
- * @param string $sql Requête SQL à exécuter
- * @param array $params Paramètres pour la requête préparée
- * @return PDOStatement Résultat de la requête
- * @throws Exception Si l'exécution de la requête échoue
+ * Exécute une requête SQL préparée via PDO.
+ *
+ * Cette fonction prépare et exécute une requête SQL avec les valeurs fournies et retourne
+ * l'objet PDOStatement résultant. En cas d'erreur, le script est interrompu avec un message
+ * d'erreur dépendant du mode de débogage.
+ *
+ * @param string $sql Requête SQL à préparer et exécuter.
+ * @param array $params Valeurs à lier aux paramètres de la requête.
+ * @return PDOStatement Instance de PDOStatement représentant le résultat de la requête.
  */
 function executeQuery($sql, $params = []) {
     try {
@@ -67,11 +73,15 @@ function executeQuery($sql, $params = []) {
 }
 
 /**
- * Compte le nombre de lignes dans une table avec condition optionnelle
- * 
- * @param string $table Nom de la table
- * @param string $where Clause WHERE (optionnelle)
- * @return int Nombre de lignes trouvées
+ * Compte le nombre d'enregistrements d'une table, avec une clause WHERE optionnelle.
+ *
+ * Le nom de la table est d'abord validé pour garantir qu'il ne contient que des caractères autorisés.
+ * La requête SQL construite compte les enregistrements correspondant à la clause conditionnelle fournie,
+ * ou compte tous les enregistrements si aucune clause n'est spécifiée.
+ *
+ * @param string $table Nom de la table (doit contenir uniquement des caractères alphanumériques et underscores).
+ * @param string $where Clause SQL optionnelle pour filtrer les enregistrements.
+ * @return int Nombre d'enregistrements répondant aux critères.
  */
 function countTableRows($table, $where = '') {
     $table = validateTableName($table);
@@ -87,14 +97,19 @@ function countTableRows($table, $where = '') {
 }
 
 /**
- * Récupère toutes les lignes d'une table avec filtres optionnels
- * 
- * @param string $table Nom de la table
- * @param string $where Clause WHERE (optionnelle)
- * @param string $orderBy Clause ORDER BY (optionnelle)
- * @param int $limit Nombre maximum de lignes à récupérer
- * @param int $offset Position de départ pour la récupération
- * @return array Tableau de résultats
+ * Récupère l'ensemble des enregistrements d'une table en appliquant des filtres optionnels.
+ *
+ * Cette fonction construit et exécute une requête SELECT sur la table spécifiée. Elle
+ * permet d'appliquer une clause WHERE pour filtrer les enregistrements, une clause ORDER BY
+ * pour trier les résultats, ainsi qu'une pagination via les paramètres limit et offset.
+ * Noter qu'une valeur de 0 pour le paramètre limit désactive la limitation du nombre de lignes retournées.
+ *
+ * @param string $table Nom de la table cible.
+ * @param string $where (Optionnel) Clause WHERE pour filtrer les enregistrements.
+ * @param string $orderBy (Optionnel) Clause ORDER BY pour trier les résultats.
+ * @param int $limit (Optionnel) Nombre maximum de lignes à récupérer. Une valeur de 0 désactive la limite.
+ * @param int $offset (Optionnel) Position de départ pour la récupération des enregistrements.
+ * @return array Tableau contenant l'ensemble des enregistrements récupérés.
  */
 function fetchAll($table, $where = '', $orderBy = '', $limit = 0, $offset = 0) {
     $table = validateTableName($table);
@@ -118,12 +133,16 @@ function fetchAll($table, $where = '', $orderBy = '', $limit = 0, $offset = 0) {
 }
 
 /**
- * Récupère une seule ligne d'une table avec filtre
- * 
- * @param string $table Nom de la table
- * @param string $where Clause WHERE
- * @param string $orderBy Clause ORDER BY (optionnelle)
- * @return array|false Ligne trouvée ou false si aucun résultat
+ * Récupère le premier enregistrement d'une table selon une condition donnée.
+ *
+ * La fonction valide le nom de la table pour éviter les injections SQL, puis construit
+ * et exécute une requête SQL avec une clause WHERE et, si spécifiée, une clause ORDER BY.
+ * Elle retourne le premier enregistrement trouvé sous forme de tableau associatif ou false si aucun enregistrement ne correspond.
+ *
+ * @param string $table Nom de la table concernée.
+ * @param string $where Condition SQL pour filtrer les enregistrements.
+ * @param string $orderBy Clause SQL pour ordonner les résultats (facultative).
+ * @return array|false Tableau associatif représentant l'enregistrement trouvé ou false si aucun enregistrement ne correspond.
  */
 function fetchOne($table, $where, $orderBy = '') {
     $table = validateTableName($table);
@@ -139,11 +158,17 @@ function fetchOne($table, $where, $orderBy = '') {
 }
 
 /**
- * Insère une nouvelle ligne dans une table
- * 
- * @param string $table Nom de la table
- * @param array $data Données à insérer sous forme de tableau associatif
- * @return int|false ID de la ligne insérée ou false en cas d'échec
+ * Insère une nouvelle ligne dans la table spécifiée.
+ *
+ * Cette fonction prépare et exécute une requête SQL afin d'insérer les données
+ * indiquées dans la table. Le nom de la table est d'abord validé pour éviter toute injection SQL.
+ * En cas de succès, elle retourne l'identifiant de la nouvelle ligne insérée, sinon false.
+ *
+ * @param string $table Nom de la table dans laquelle insérer la nouvelle ligne.
+ * @param array $data Tableau associatif des colonnes et valeurs à insérer.
+ * @return int|false Identifiant de la ligne insérée ou false si l'insertion échoue.
+ *
+ * @throws Exception Si la validation du nom de la table échoue ou en cas d'erreur lors de l'exécution de la requête.
  */
 function insertRow($table, $data) {
     $table = validateTableName($table);
@@ -184,12 +209,14 @@ function updateRow($table, $data, $where, $whereParams = []) {
 }
 
 /**
- * Supprime des lignes d'une table
- * 
- * @param string $table Nom de la table
- * @param string $where Clause WHERE pour cibler les lignes à supprimer
- * @param array $params Paramètres pour la clause WHERE
- * @return int Nombre de lignes supprimées
+ * Supprime des lignes de la table spécifiée.
+ *
+ * Valide le nom de la table pour prévenir les injections SQL, puis exécute une requête DELETE en utilisant la clause WHERE et les paramètres indiqués.
+ *
+ * @param string $table Nom de la table depuis laquelle supprimer les lignes (après validation).
+ * @param string $where Clause WHERE déterminant les critères de suppression.
+ * @param array $params Valeurs associées à la clause WHERE.
+ * @return int Le nombre de lignes supprimées.
  */
 function deleteRow($table, $where, $params = []) {
     $table = validateTableName($table);

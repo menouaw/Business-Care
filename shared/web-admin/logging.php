@@ -37,13 +37,16 @@ function logSystemActivity($action, $details = '') {
 }
 
 /**
- * Journalise un événement de sécurité
- * 
- * @param int|null $userId ID de l'utilisateur concerné
- * @param string $action Type d'action de sécurité
- * @param string $details Informations supplémentaires
- * @param bool $isFailure Indique si l'opération a échoué
- * @return int|false ID du journal créé ou false en cas d'échec
+ * Journalise un événement de sécurité.
+ *
+ * Enregistre un événement de sécurité dans le système de journalisation en préfixant l'action
+ * avec "securite_echec" si l'opération a échoué, ou "securite" sinon.
+ *
+ * @param int|null $userId Identifiant de l'utilisateur concerné.
+ * @param string $action Type d'action de sécurité.
+ * @param string $details Informations supplémentaires.
+ * @param bool $isFailure Indique si l'opération a échoué.
+ * @return int|false Identifiant du journal créé ou false en cas d'échec.
  */
 function logSecurityEvent($userId, $action, $details = '', $isFailure = false) {
     $securityPrefix = $isFailure ? 'securite_echec' : 'securite';
@@ -51,12 +54,14 @@ function logSecurityEvent($userId, $action, $details = '', $isFailure = false) {
 }
 
 /**
- * Journalise une opération métier
- * 
- * @param int|null $userId ID de l'utilisateur concerné
- * @param string $action Type d'opération métier
- * @param string $details Informations supplémentaires
- * @return int|false ID du journal créé ou false en cas d'échec
+ * Journalise une opération métier.
+ *
+ * La fonction enregistre une opération en ajoutant automatiquement le préfixe "operation:" au type d'action fourni.
+ *
+ * @param int|null $userId Identifiant de l'utilisateur concerné.
+ * @param string $action Type d'opération métier.
+ * @param string $details Informations supplémentaires sur l'opération.
+ * @return int|false ID du journal créé ou false en cas d'échec.
  */
 function logBusinessOperation($userId, $action, $details = '') {
     return logActivity($userId, 'operation:' . $action, $details);
