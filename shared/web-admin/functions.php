@@ -3,11 +3,14 @@ require_once 'config.php';
 require_once 'db.php';
 
 /**
- * Formate une date selon le format spécifié
- * 
- * @param string $date Date à formater
- * @param string $format Format de date souhaité (par défaut 'd/m/Y H:i')
- * @return string Date formatée ou chaîne vide si la date est invalide
+ * Formate une date donnée selon un format personnalisé.
+ *
+ * Cette fonction convertit une date sous forme de chaîne en un timestamp, puis la formate
+ * selon le modèle spécifié. Si la date est vide ou invalide, elle renvoie une chaîne vide.
+ *
+ * @param string $date La date à formater.
+ * @param string $format Le format de date souhaité. Par défaut, 'd/m/Y H:i'.
+ * @return string La date formatée ou une chaîne vide en cas de date invalide.
  */
 function formatDate($date, $format = 'd/m/Y H:i') {
     if (!$date) return '';
@@ -63,10 +66,12 @@ function getRecentActivities($limit = 10) {
 }
 
 /**
- * Génère le titre de la page en ajoutant optionnellement un titre spécifique
- * 
- * @param string $title Titre spécifique de la page
- * @return string Titre complet formaté
+ * Construit le titre complet de la page en combinant le nom de l'application et un titre spécifique optionnel.
+ *
+ * Si un titre est fourni, il est concaténé à APP_NAME avec un tiret comme séparateur. Sinon, seule la valeur de APP_NAME est retournée.
+ *
+ * @param string $title Titre spécifique à ajouter au nom de l'application.
+ * @return string Le titre complet de la page.
  */
 function generatePageTitle($title = '') {
     if ($title) {
@@ -76,10 +81,9 @@ function generatePageTitle($title = '') {
 }
 
 /**
- * Redirige l'utilisateur vers l'URL spécifiée
- * 
- * @param string $url URL de destination
- * @return void
+ * Redirige l'utilisateur vers une URL donnée et termine l'exécution du script.
+ *
+ * @param string $url L'adresse vers laquelle rediriger l'utilisateur.
  */
 function redirectTo($url) {
     header('Location: ' . $url);
@@ -161,9 +165,13 @@ function displayFlashMessages() {
 }
 
 /**
- * Génère un jeton CSRF pour la protection des formulaires
- * 
- * @return string Jeton CSRF
+ * Génère et retourne un jeton CSRF.
+ *
+ * Si aucun jeton CSRF n'existe dans la session, la fonction en crée un nouveau en utilisant 32 octets
+ * de données aléatoires converties en une chaîne hexadécimale, puis le stocke dans la session.
+ * Ce jeton est utilisé pour sécuriser les formulaires contre les attaques CSRF.
+ *
+ * @return string Le jeton CSRF.
  */
 function generateToken() {
     if (!isset($_SESSION['csrf_token'])) {
@@ -173,10 +181,13 @@ function generateToken() {
 }
 
 /**
- * Valide un jeton CSRF pour la protection contre les attaques CSRF
- * 
- * @param string $token Jeton à valider
- * @return bool Indique si le jeton est valide
+ * Vérifie la validité d'un jeton CSRF.
+ *
+ * Compare le jeton fourni avec celui stocké dans la session. Renvoie true si les jetons concordent,
+ * indiquant que la requête est authentique, ou false sinon.
+ *
+ * @param string $token Le jeton CSRF à valider.
+ * @return bool True si le jeton est valide, sinon false.
  */
 function validateToken($token) {
     if (!isset($_SESSION['csrf_token']) || $_SESSION['csrf_token'] !== $token) {
@@ -186,10 +197,13 @@ function validateToken($token) {
 }
 
 /**
- * Génère un badge HTML pour représenter un statut
- * 
- * @param string $status Statut à représenter
- * @return string HTML du badge Bootstrap
+ * Génère un badge HTML avec un style Bootstrap pour afficher un statut.
+ *
+ * Le badge affiche le texte du statut avec la première lettre en majuscule.
+ * Si le statut fourni n'est pas défini dans la liste interne, le style par défaut "primary" est utilisé.
+ *
+ * @param string $status Statut à représenter.
+ * @return string HTML du badge généré.
  */
 function getStatusBadge($status) {
     $badges = [
@@ -208,14 +222,23 @@ function getStatusBadge($status) {
 }
 
 /**
- * Pagine les résultats d'une requête sur une table
- * 
- * @param string $table Nom de la table
- * @param int $page Numéro de page actuel
- * @param int $perPage Nombre d'éléments par page
- * @param string $where Clause WHERE (facultative)
- * @param string $orderBy Clause ORDER BY (facultative)
- * @return array Informations de pagination et éléments
+ * Paginer les résultats d'une requête SQL sur une table.
+ *
+ * Calcule le nombre total d'éléments en appliquant une clause de filtrage optionnelle,
+ * ajuste le numéro de page pour qu'il reste dans des limites valides, et retourne les éléments
+ * de la page ainsi que les informations de pagination associées.
+ *
+ * @param string $table Nom de la table sur laquelle exécuter la pagination.
+ * @param int $page Numéro de la page à récupérer (sera ajusté si nécessaire).
+ * @param int $perPage Nombre d'éléments par page.
+ * @param string $where Clause SQL optionnelle pour filtrer les résultats.
+ * @param string $orderBy Clause SQL optionnelle pour trier les résultats.
+ * @return array Tableau associatif contenant :
+ *               - 'items': la liste des éléments de la page actuelle,
+ *               - 'currentPage': le numéro de la page actuelle,
+ *               - 'totalPages': le nombre total de pages disponibles,
+ *               - 'totalItems': le nombre total d'éléments correspondant à la requête,
+ *               - 'perPage': le nombre d'éléments par page.
  */
 function paginateResults($table, $page, $perPage = 20, $where = '', $orderBy = '') {
     $totalItems = countTableRows($table, $where);

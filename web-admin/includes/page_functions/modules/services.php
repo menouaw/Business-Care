@@ -92,11 +92,17 @@ function servicesGetTypes() {
 }
 
 /**
- * Cree ou met a jour un service
- * 
- * @param array $data Donnees du service
- * @param int $id Identifiant du service (0 pour creation)
- * @return array Resultat de l'operation avec status et message
+ * Crée ou met à jour un service.
+ *
+ * Cette fonction valide les données du service en vérifiant notamment que le nom, le prix (numérique) et le type sont fournis.
+ * Si des erreurs de validation sont détectées, elle renvoie un tableau contenant ces erreurs. En cas d'absence d'erreurs,
+ * la fonction effectue soit une mise à jour (pour un identifiant > 0) soit une création (pour un identifiant égal à 0) dans la base de données.
+ * Le résultat est retourné sous forme d'un tableau associatif indiquant le succès de l'opération et un message ou les erreurs rencontrées.
+ *
+ * @param array $data Données détaillées du service. Les clés obligatoires incluent notamment 'nom', 'prix' et 'type'.
+ * @param int $id Identifiant du service (0 pour création, > 0 pour mise à jour).
+ * @return array Tableau associatif avec une clé 'success' (booléen) et, selon le cas, soit une clé 'message' en cas de succès,
+ *               soit une clé 'errors' en cas d'erreur.
  */
 function servicesSave($data, $id = 0) {
     $errors = [];
@@ -196,10 +202,14 @@ function servicesSave($data, $id = 0) {
 }
 
 /**
- * Supprime un service si possible
- * 
- * @param int $id Identifiant du service
- * @return array Resultat de l'operation avec status et message
+ * Supprime un service uniquement si aucun rendez-vous ni évaluation ne lui est associé.
+ *
+ * Cette fonction vérifie si le service identifié par son ID possède des rendez-vous ou évaluations associés.
+ * En cas de présence d'associations, elle journalise l'échec de la tentative de suppression et renvoie un message d'erreur approprié.
+ * Si aucune association n'est trouvée, le service est supprimé et l'opération est journalisée, puis un message de succès est retourné.
+ *
+ * @param int $id Identifiant du service à supprimer.
+ * @return array Résultat de l'opération sous forme d'un tableau associatif avec les clés 'success' (bool) et 'message' (string).
  */
 function servicesDelete($id) {
     $pdo = getDbConnection();

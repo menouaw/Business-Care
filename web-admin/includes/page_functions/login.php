@@ -3,8 +3,14 @@ require_once __DIR__ . '/../init.php';
 require_once __DIR__ . '/../../../shared/web-admin/logging.php';
 
 /**
- * Traite la soumission du formulaire de connexion
- * @return array Tableau contenant le statut et un message d'erreur eventuel
+ * Traite la soumission du formulaire de connexion et gère l'authentification de l'utilisateur.
+ *
+ * Cette fonction vérifie si la requête est envoyée en méthode POST et récupère les informations de connexion (email, mot de passe et option "se souvenir de moi").
+ * Si l'email ou le mot de passe est absent, elle enregistre une tentative de connexion échouée et renvoie un message d'erreur.
+ * En présence des deux informations, elle appelle la fonction login() pour tenter l'authentification et met à jour le statut en fonction du résultat.
+ * En outre, si un paramètre GET indique une expiration de session, elle consigne cet événement et renvoie un message d'erreur correspondant.
+ *
+ * @return array Tableau associatif contenant le statut de la connexion ('success' => bool) et, le cas échéant, un message d'erreur ('error' => string).
  */
 function processLoginForm() {
     $error = '';

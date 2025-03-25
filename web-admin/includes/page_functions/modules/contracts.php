@@ -105,11 +105,13 @@ function contractsGetEntreprises() {
 }
 
 /**
- * Cree ou met a jour un contrat
- * 
- * @param array $data Donnees du contrat
- * @param int $id Identifiant du contrat (0 pour creation)
- * @return array Resultat de l'operation avec status et message
+ * Crée ou met à jour un contrat en fonction des données fournies.
+ *
+ * Cette fonction valide les champs obligatoires (entreprise_id, date_debut, type_contrat) et s'assure, le cas échéant, que la date de fin n'est pas antérieure à la date de début. Elle vérifie également l'existence de l'entreprise concernée avant d'effectuer une mise à jour (si l'identifiant du contrat est supérieur à 0) ou une création (si l'identifiant est 0). En cas de succès, la fonction retourne un tableau avec 'success' à true et un message associé. Sinon, elle retourne 'success' à false avec une liste d'erreurs, notamment pour les problèmes de validation ou les exceptions en base de données.
+ *
+ * @param array $data Données du contrat, incluant au minimum l'identifiant de l'entreprise, la date de début, le type de contrat, et éventuellement d'autres informations (date de fin, montant mensuel, nombre de salariés, statut, conditions particulières).
+ * @param int $id Identifiant du contrat à mettre à jour ou 0 pour créer un nouveau contrat.
+ * @return array Tableau associatif contenant une clé 'success' (bool) et, selon le cas, une clé 'message' (en cas de succès) ou 'errors' (en cas d'erreur).
  */
 function contractsSave($data, $id = 0) {
     $errors = [];
@@ -218,10 +220,14 @@ function contractsSave($data, $id = 0) {
 }
 
 /**
- * Supprime un contrat
- * 
- * @param int $id Identifiant du contrat
- * @return array Resultat de l'operation avec status et message
+ * Supprime un contrat de la base de données.
+ *
+ * Cette fonction vérifie si le contrat correspondant à l'identifiant fourni existe. 
+ * Si le contrat n'est pas trouvé, l'opération est loguée en tant qu'échec et un message d'erreur est retourné. 
+ * Sinon, le contrat est supprimé, l'opération est loguée et un message de confirmation est renvoyé.
+ *
+ * @param int $id Identifiant du contrat à supprimer
+ * @return array Tableau associatif contenant un booléen 'success' et un message descriptif de l'opération.
  */
 function contractsDelete($id) {
     $pdo = getDbConnection();
@@ -253,11 +259,13 @@ function contractsDelete($id) {
 }
 
 /**
- * Met à jour le statut d'un contrat
- * 
- * @param int $id Identifiant du contrat
- * @param string $status Nouveau statut
- * @return bool Succès de l'opération
+ * Met à jour le statut d'un contrat.
+ *
+ * Vérifie que le nouveau statut est valide parmi les valeurs autorisées ("actif", "inactif", "en_attente", "suspendu", "expire", "resilie"). Si le statut n'est pas valide, l'opération est annulée et la fonction retourne false. En cas de succès, le contrat est mis à jour en base et l'opération est consignée.
+ *
+ * @param int $id Identifiant du contrat.
+ * @param string $status Nouveau statut du contrat.
+ * @return bool True si la mise à jour a été effectuée avec succès, false sinon.
  */
 function contractsUpdateStatus($id, $status) {
     $validStatuses = ['actif', 'inactif', 'en_attente', 'suspendu', 'expire', 'resilie'];

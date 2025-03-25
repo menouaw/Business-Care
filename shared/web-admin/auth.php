@@ -3,12 +3,17 @@
 require_once 'logging.php';
 
 /**
- * Authentifie un utilisateur avec son email et mot de passe
- * 
- * @param string $email Email de l'utilisateur
- * @param string $password Mot de passe de l'utilisateur
- * @param bool $rememberMe Option pour se souvenir de l'utilisateur
- * @return bool Indique si l'authentification a réussi
+ * Authentifie un utilisateur à l'aide de son email et de son mot de passe.
+ *
+ * Cette fonction vérifie les informations d'identification en consultant la base de données.
+ * En cas de succès, elle initialise la session avec les données de l'utilisateur et, si l'option "se souvenir de moi" est activée,
+ * crée un token de reconnexion stocké dans un cookie sécurisé. Des événements de sécurité sont enregistrés pour indiquer
+ * la réussite ou l'échec de la tentative de connexion.
+ *
+ * @param string $email Adresse email de l'utilisateur.
+ * @param string $password Mot de passe saisi par l'utilisateur.
+ * @param bool $rememberMe Indique si l'utilisateur doit être reconnu lors de visites ultérieures.
+ * @return bool Renvoie true en cas d'authentification réussie, false sinon.
  */
 function login($email, $password, $rememberMe = false) {
     $pdo = getDbConnection();
@@ -44,9 +49,14 @@ function login($email, $password, $rememberMe = false) {
 }
 
 /**
- * Déconnecte l'utilisateur actuellement authentifié
- * 
- * @return bool Indique si la déconnexion a réussi
+ * Déconnecte l'utilisateur actuellement authentifié et réinitialise la session.
+ *
+ * Cette fonction effectue les opérations suivantes :
+ * - Enregistre un événement de sécurité de déconnexion si un identifiant d'utilisateur est présent en session.
+ * - Supprime le jeton "remember me" du stockage et expire le cookie correspondant, le cas échéant.
+ * - Efface toutes les données de session, détruit la session en cours puis démarre une nouvelle session.
+ *
+ * @return bool Retourne toujours true pour indiquer que la déconnexion a bien été effectuée.
  */
 function logout() {
     if (isset($_SESSION['user_id'])) {
@@ -66,9 +76,14 @@ function logout() {
 }
 
 /**
- * Vérifie si l'utilisateur est actuellement authentifié
- * 
- * @return bool État d'authentification de l'utilisateur
+ * Vérifie si l'utilisateur est authentifié.
+ *
+ * Cette fonction vérifie si une session utilisateur active existe et si celle-ci n'a pas dépassé
+ * la durée d'inactivité définie par SESSION_LIFETIME. En cas d'expiration, elle enregistre l'événement
+ * de timeout, termine la session via logout() et retourne false. Si aucune session valide n'est détectée
+ * mais qu'un cookie "remember_me" est présent, la fonction tente de ré-authentifier l'utilisateur en validant ce cookie.
+ *
+ * @return bool True si l'utilisateur est authentifié, false sinon.
  */
 function isAuthenticated() {
     if (isset($_SESSION['user_id'])) {
@@ -90,8 +105,12 @@ function isAuthenticated() {
 }
 
 /**
- * Force l'authentification de l'utilisateur ou redirige vers la page de connexion
- * 
+ * Vérifie si l'utilisateur est authentifié et, sinon, le redirige vers la page de connexion.
+ *
+ * Si l'utilisateur n'est pas authentifié, la fonction enregistre l'URL actuelle dans la session sous la clé 
+ * 'redirect_after_login' pour permettre une redirection post-authentification, puis effectue une redirection 
+ * vers la page de connexion.
+ *
  * @return void
  */
 function requireAuthentication() {
@@ -103,10 +122,14 @@ function requireAuthentication() {
 }
 
 /**
- * Vérifie si l'utilisateur authentifié a le rôle requis
- * 
- * @param int $requiredRole Identifiant du rôle requis
- * @return bool Indique si l'utilisateur a la permission
+ * Vérifie si l'utilisateur authentifié possède le rôle requis.
+ *
+ * Cette fonction renvoie false si l'utilisateur n'est pas authentifié.
+ * Actuellement, le paramètre $requiredRole n'est pas exploité et la vérification
+ * se limite à déterminer si l'utilisateur est administrateur (role_id = 3).
+ *
+ * @param int $requiredRole Identifiant du rôle requis (non utilisé dans la version actuelle).
+ * @return bool Retourne true si l'utilisateur est administrateur, sinon false.
  */
 function hasPermission($requiredRole) {
     if (!isAuthenticated()) {
@@ -136,10 +159,16 @@ function getUserInfo($userId = null) {
 }
 
 /**
- * Initialise la procédure de réinitialisation de mot de passe
- * 
- * @param string $email Email de l'utilisateur
- * @return bool Indique si la demande a été traitée avec succès
+ * Démarre la procédure de réinitialisation de mot de passe pour l'utilisateur associé à l'email fourni.
+ *
+ * Cette fonction vérifie si l'email existe dans la base de données. En cas d'absence, elle enregistre un
+ * événement de sécurité pour une tentative invalide et retourne false. Si l'utilisateur est trouvé, elle
+ * génère un token de réinitialisation avec une date d'expiration d'une heure, met à jour les informations
+ * correspondantes dans la base, et consigne l'initiation de la demande. Un email de réinitialisation doit ensuite
+ * être envoyé (à implémenter).
+ *
+ * @param string $email Email de l'utilisateur pour lequel la réinitialisation est demandée.
+ * @return bool Vrai si la demande a été traitée avec succès, faux sinon.
  */
 function resetPassword($email) {
     $user = fetchOne('personnes', "email = '$email'");
@@ -165,10 +194,13 @@ function resetPassword($email) {
 }
 
 /**
- * Crée un jeton de connexion automatique "Se souvenir de moi"
- * 
- * @param int $userId ID de l'utilisateur
- * @return string Jeton généré
+ * Génère et stocke un jeton sécurisé pour la connexion automatique "Se souvenir de moi".
+ *
+ * La fonction crée un jeton aléatoire de 64 caractères hexadécimaux, le stocke dans la base de données avec une date d'expiration fixée à 30 jours,
+ * et consigne l'événement de sécurité associé.
+ *
+ * @param int $userId ID de l'utilisateur pour lequel le jeton est généré.
+ * @return string Le jeton généré.
  */
 function createRememberMeToken($userId) {
     $pdo = getDbConnection();
@@ -184,10 +216,14 @@ function createRememberMeToken($userId) {
 }
 
 /**
- * Valide un jeton "Se souvenir de moi" et réauthentifie l'utilisateur
- * 
- * @param string $token Jeton à valider
- * @return bool Indique si le jeton est valide et l'authentification réussie
+ * Valide le jeton "Se souvenir de moi" et réauthentifie automatiquement l'utilisateur.
+ *
+ * Cette fonction vérifie que le jeton existe dans la base de données et n'est pas expiré. Si le jeton est valide,
+ * elle récupère les informations associées à l'utilisateur, initialise les variables de session nécessaires et
+ * enregistre l'événement de connexion automatique.
+ *
+ * @param string $token Jeton à valider.
+ * @return bool Vrai si le jeton est valide et l'utilisateur a été réauthentifié, faux sinon.
  */
 function validateRememberMeToken($token) {
     $pdo = getDbConnection();

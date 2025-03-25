@@ -151,11 +151,15 @@ function usersGetEntreprises() {
 }
 
 /**
- * Cree ou met a jour un utilisateur
- * 
- * @param array $data Donnees de l'utilisateur
- * @param int $id Identifiant de l'utilisateur (0 pour creation)
- * @return array Resultat de l'operation avec status et message
+ * Enregistre ou met à jour un utilisateur dans la base de données.
+ *
+ * Valide les données obligatoires (nom, prénom, email) et, pour la création, le mot de passe. Vérifie également
+ * l'unicité de l'email avant d'insérer ou de mettre à jour l'utilisateur. Selon le contexte, la modification
+ * du mot de passe est gérée et des événements de création, de mise à jour ou de modification de mot de passe sont logués.
+ *
+ * @param array $data Tableau associatif contenant les informations de l'utilisateur (par exemple, 'nom', 'prenom', 'email', etc.).
+ * @param int $id Identifiant de l'utilisateur à mettre à jour (utiliser 0 pour créer un nouvel utilisateur).
+ * @return array Tableau indiquant le succès de l'opération et retournant soit un message de succès, soit une liste d'erreurs en cas d'échec.
  */
 function usersSave($data, $id = 0) {
     $errors = [];
@@ -291,10 +295,14 @@ function usersSave($data, $id = 0) {
 }
 
 /**
- * Supprime un utilisateur si possible
- * 
- * @param int $id Identifiant de l'utilisateur
- * @return array Resultat de l'operation avec status et message
+ * Tente de supprimer un utilisateur après vérification des associations existantes.
+ *
+ * La fonction vérifie si l'utilisateur identifié par son ID possède des prestations (pour les praticiens) ou des réservations (pour les salariés). 
+ * Si l'une de ces associations est présente, la suppression est annulée et un message d'erreur descriptif est retourné. 
+ * Sinon, elle supprime d'abord les logs associés, puis l'utilisateur, et enregistre l'événement de suppression.
+ *
+ * @param int $id L'identifiant de l'utilisateur à supprimer.
+ * @return array Un tableau indiquant le succès de l'opération et un message explicatif.
  */
 function usersDelete($id) {
     $pdo = getDbConnection();

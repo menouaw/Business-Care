@@ -87,11 +87,18 @@ function companiesGetDetails($id) {
 }
 
 /**
- * Cree ou met a jour une entreprise
- * 
- * @param array $data Donnees de l'entreprise
- * @param int $id Identifiant de l'entreprise (0 pour creation)
- * @return array Resultat de l'operation avec status et message
+ * Crée ou met à jour une entreprise dans la base de données.
+ *
+ * Cette fonction vérifie que le champ "nom" est fourni dans les données de l'entreprise et,
+ * selon que l'identifiant est supérieur à 0 ou non, exécute une mise à jour ou une insertion. Elle
+ * enregistre ensuite l'opération via un système de journalisation structuré. En cas d'erreur
+ * de validation ou de base de données, la fonction retourne un tableau indiquant l'échec et les erreurs associées.
+ *
+ * @param array $data Données de l'entreprise, incluant notamment les clés suivantes : 
+ *                    "nom", "siret", "adresse", "code_postal", "ville", "telephone", 
+ *                    "email", "site_web", "taille_entreprise", "secteur_activite" et "date_creation".
+ * @param int $id Identifiant de l'entreprise. Si supérieur à 0, une mise à jour est effectuée ; sinon, une création est réalisée.
+ * @return array Tableau associatif contenant "success" (booléen) et, selon le résultat, "message" ou "errors".
  */
 function companiesSave($data, $id = 0) {
     $errors = [];
@@ -185,10 +192,14 @@ function companiesSave($data, $id = 0) {
 }
 
 /**
- * Supprime une entreprise si possible
- * 
- * @param int $id Identifiant de l'entreprise
- * @return array Resultat de l'operation avec status et message
+ * Tente de supprimer une entreprise identifiée par son ID.
+ *
+ * La suppression est effectuée uniquement si aucune association n'existe :
+ * aucun utilisateur (personnes) ni contrat (contrats) ne doit être lié à l'entreprise.
+ * En présence de telles associations, l'opération est annulée et un message d'erreur est retourné.
+ *
+ * @param int $id Identifiant de l'entreprise à supprimer.
+ * @return array Tableau contenant le résultat de l'opération, avec une clé 'success' indiquant le succès et une clé 'message' décrivant le résultat.
  */
 function companiesDelete($id) {
     $pdo = getDbConnection();

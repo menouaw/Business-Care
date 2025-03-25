@@ -2,10 +2,13 @@
 require_once 'config.php';
 
 /**
- * Récupère une connexion PDO à la base de données
- * 
- * @return PDO Objet PDO représentant la connexion à la base de données
- * @throws Exception Si la connexion ne peut pas être établie
+ * Récupère l'instance unique de connexion PDO à la base de données.
+ *
+ * Si aucune connexion n'existe, la fonction en initialise une en utilisant les constantes de configuration
+ * (DB_HOST, DB_NAME, DB_CHARSET, DB_USER, DB_PASS) et les options PDO recommandées. En cas d'échec, le script
+ * s'arrête et affiche un message d'erreur dont le détail varie selon le mode DEBUG.
+ *
+ * @return PDO L'objet PDO représentant la connexion à la base de données.
  */
 function getDbConnection() {
     static $pdo = null;
@@ -44,12 +47,13 @@ function validateTableName($table) {
 }
 
 /**
- * Exécute une requête SQL préparée
- * 
- * @param string $sql Requête SQL à exécuter
- * @param array $params Paramètres pour la requête préparée
- * @return PDOStatement Résultat de la requête
- * @throws Exception Si l'exécution de la requête échoue
+ * Exécute une requête SQL préparée et retourne l'objet PDOStatement associé.
+ *
+ * Cette fonction prépare et exécute la requête SQL fournie avec les paramètres spécifiés. En cas d'erreur d'exécution, le script s'arrête et affiche un message d'erreur dépendant du mode de débogage.
+ *
+ * @param string $sql La requête SQL à préparer et exécuter.
+ * @param array $params Les valeurs à lier aux paramètres de la requête.
+ * @return PDOStatement L'objet résultant de l'exécution de la requête.
  */
 function executeQuery($sql, $params = []) {
     try {
@@ -201,9 +205,11 @@ function deleteRow($table, $where, $params = []) {
 }
 
 /**
- * Démarre une transaction SQL
- * 
- * @return void
+ * Démarre une nouvelle transaction SQL.
+ *
+ * Initialise une transaction en appelant la méthode beginTransaction() sur la connexion PDO active
+ * obtenue via getDbConnection(). Cette opération permet de regrouper plusieurs requêtes SQL dans un
+ * contexte transactionnel afin d'assurer l'intégrité des données.
  */
 function beginTransaction() {
     getDbConnection()->beginTransaction();
