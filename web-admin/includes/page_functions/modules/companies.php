@@ -87,11 +87,15 @@ function companiesGetDetails($id) {
 }
 
 /**
- * Cree ou met a jour une entreprise
- * 
- * @param array $data Donnees de l'entreprise
- * @param int $id Identifiant de l'entreprise (0 pour creation)
- * @return array Resultat de l'operation avec status et message
+ * Crée ou met à jour une entreprise.
+ *
+ * Insère une nouvelle entreprise ou modifie une entreprise existante dans la base de données en fonction de l'identifiant fourni.
+ * Le tableau $data doit contenir les informations de l'entreprise, avec le champ 'nom' étant obligatoire. En cas d'erreur de validation
+ * ou de problème de base de données, la fonction retourne un tableau indiquant l'échec de l'opération ainsi que les messages d'erreur.
+ *
+ * @param array $data Tableau associatif des informations de l'entreprise.
+ * @param int $id Identifiant de l'entreprise (0 pour création, supérieur à 0 pour mise à jour).
+ * @return array Tableau contenant le statut de l'opération et un message de confirmation ou une liste d'erreurs.
  */
 function companiesSave($data, $id = 0) {
     $errors = [];
@@ -185,10 +189,16 @@ function companiesSave($data, $id = 0) {
 }
 
 /**
- * Supprime une entreprise si possible
- * 
- * @param int $id Identifiant de l'entreprise
- * @return array Resultat de l'operation avec status et message
+ * Supprime une entreprise en vérifiant l'absence d'associations.
+ *
+ * Cette fonction vérifie d'abord qu'aucun utilisateur ou contrat n'est associé à l'entreprise identifiée par son ID.
+ * Si des associations existent, elle loggue une tentative échouée et renvoie un tableau indiquant l'échec de l'opération
+ * avec un message explicatif. Sinon, l'entreprise est supprimée, une opération de suppression est logguée,
+ * et la fonction renvoie un tableau confirmant la réussite de l'opération.
+ *
+ * @param int $id L'identifiant de l'entreprise.
+ * @return array Un tableau associatif contenant la clé 'success' (booléen) indiquant le résultat de l'opération
+ *               et la clé 'message' (string) avec des détails sur le résultat.
  */
 function companiesDelete($id) {
     $pdo = getDbConnection();

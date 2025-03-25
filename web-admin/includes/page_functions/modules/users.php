@@ -151,11 +151,13 @@ function usersGetEntreprises() {
 }
 
 /**
- * Cree ou met a jour un utilisateur
- * 
- * @param array $data Donnees de l'utilisateur
- * @param int $id Identifiant de l'utilisateur (0 pour creation)
- * @return array Resultat de l'operation avec status et message
+ * Crée ou met à jour un utilisateur dans la base de données après validation des données fournies.
+ *
+ * La fonction vérifie d'abord la présence et la validité des champs requis (nom, prénom, email et, pour la création, le mot de passe) et assure l'unicité de l'email. En cas de mise à jour (identifiant > 0), elle actualise les informations utilisateur et, si un nouveau mot de passe est fourni, le modifie en générant un log de sécurité. Pour la création, elle insère un nouvel enregistrement utilisateur et enregistre des événements de création via les systèmes de logging métier et de sécurité. En cas d'erreur de validation ou de défaillance lors de l'exécution de la requête SQL, un tableau d'erreurs est renvoyé.
+ *
+ * @param array $data Tableau associatif contenant les informations de l'utilisateur (nom, prénom, email, téléphone, adresse, code postal, ville, role_id, entreprise_id, mot_de_passe, statut).
+ * @param int $id Identifiant de l'utilisateur (0 pour création, supérieur à 0 pour une mise à jour).
+ * @return array Tableau associatif contenant 'success' (booléen) et, selon le résultat, soit 'message' en cas de succès, soit 'errors' listant les erreurs rencontrées.
  */
 function usersSave($data, $id = 0) {
     $errors = [];
@@ -291,10 +293,15 @@ function usersSave($data, $id = 0) {
 }
 
 /**
- * Supprime un utilisateur si possible
- * 
- * @param int $id Identifiant de l'utilisateur
- * @return array Resultat de l'operation avec status et message
+ * Supprime un utilisateur après vérification de l'absence d'associations.
+ *
+ * Cette fonction vérifie d'abord que l'utilisateur identifié par son ID n'a ni prestations (pour les praticiens)
+ * ni réservations (pour les salariés) associées. Si l'une de ces associations existe, la suppression est annulée
+ * et une tentative échouée est loguée. En l'absence d'associations, les logs liés à l'utilisateur sont supprimés
+ * puis l'utilisateur est effacé de la base de données, avec enregistrement d'un événement de sécurité.
+ *
+ * @param int $id Identifiant de l'utilisateur à supprimer.
+ * @return array Tableau contenant 'success' indiquant le statut de l'opération et 'message' décrivant le résultat.
  */
 function usersDelete($id) {
     $pdo = getDbConnection();
