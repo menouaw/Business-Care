@@ -1,16 +1,12 @@
 <?php
-session_start();
-require_once '../../includes/config.php';
-require_once '../../includes/auth.php';
-require_once '../../includes/db.php';
-require_once '../../includes/functions.php';
+require_once '../../includes/init.php';
 require_once '../../includes/page_functions/modules/users.php';
 
 // verifie si l'utilsateur est connecte
 requireAuthentication();
 if (!hasPermission('admin')) {
     flashMessage('Vous n\'avez pas les permissions pour acceder a cette page.', 'danger');
-    header('Location: ' . APP_URL);
+    header('Location: ' . WEBADMIN_URL);
     exit;
 }
 

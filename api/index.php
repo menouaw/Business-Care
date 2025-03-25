@@ -22,10 +22,10 @@ $module = isset($pathSegments[0]) ? $pathSegments[0] : '';
 $action = isset($pathSegments[1]) ? $pathSegments[1] : '';
 $id = isset($pathSegments[2]) ? $pathSegments[2] : null;
 
-// charge le fichier de configuration de base de donnees
-require_once __DIR__ . '/../web-admin/includes/config.php';
-require_once __DIR__ . '/../web-admin/includes/db.php';
-require_once __DIR__ . '/../web-admin/includes/functions.php';
+// charge les fichiers partagés
+require_once __DIR__ . '/../shared/web-admin/config.php';
+require_once __DIR__ . '/../shared/web-admin/db.php';
+require_once __DIR__ . '/../shared/web-admin/functions.php';
 
 // verifie l'authentification (si necessaire)
 $isAuthenticated = false;
@@ -34,7 +34,7 @@ $authHeader = isset($_SERVER['HTTP_AUTHORIZATION']) ? $_SERVER['HTTP_AUTHORIZATI
 if (preg_match('/Bearer\s(\S+)/', $authHeader, $matches)) {
     $token = $matches[1];
     // TODO: implementer la verification du token
-    $isAuthenticated = true; // temporaire: considere toute requete avec token comme authentifiee
+    $isAuthenticated = true; // temporaire: considere toute requete avec jeton comme authentifiee
 }
 
 // gere la requete en fonction du module demande

@@ -2,16 +2,36 @@
 require_once 'config.php';
 require_once 'db.php';
 
+/**
+ * Formate une date selon le format spécifié
+ * 
+ * @param string $date Date à formater
+ * @param string $format Format de date souhaité (par défaut 'd/m/Y H:i')
+ * @return string Date formatée ou chaîne vide si la date est invalide
+ */
 function formatDate($date, $format = 'd/m/Y H:i') {
     if (!$date) return '';
     $timestamp = strtotime($date);
     return date($format, $timestamp);
 }
 
+/**
+ * Formate un montant selon le format monétaire spécifié
+ * 
+ * @param float $amount Montant à formater
+ * @param string $currency Symbole de la devise (par défaut '€')
+ * @return string Montant formaté avec devise
+ */
 function formatMoney($amount, $currency = '€') {
     return number_format($amount, 2, ',', ' ') . ' ' . $currency;
 }
 
+/**
+ * Nettoie les données entrées par l'utilisateur pour éviter les injections
+ * 
+ * @param mixed $input Données à nettoyer (chaîne ou tableau)
+ * @return mixed Données nettoyées
+ */
 function sanitizeInput($input) {
     if (is_array($input)) {
         foreach ($input as $key => $value) {
@@ -25,6 +45,12 @@ function sanitizeInput($input) {
     return $input;
 }
 
+/**
+ * Récupère les activités récentes du système
+ * 
+ * @param int $limit Nombre maximum d'activités à récupérer
+ * @return array Liste des activités récentes
+ */
 function getRecentActivities($limit = 10) {
     $sql = "SELECT l.*, CONCAT(p.prenom, ' ', p.nom) as user_name
             FROM logs l
@@ -36,6 +62,12 @@ function getRecentActivities($limit = 10) {
     return $stmt->fetchAll();
 }
 
+/**
+ * Génère le titre de la page en ajoutant optionnellement un titre spécifique
+ * 
+ * @param string $title Titre spécifique de la page
+ * @return string Titre complet formaté
+ */
 function generatePageTitle($title = '') {
     if ($title) {
         return APP_NAME . ' - ' . $title;
@@ -43,19 +75,42 @@ function generatePageTitle($title = '') {
     return APP_NAME;
 }
 
+/**
+ * Redirige l'utilisateur vers l'URL spécifiée
+ * 
+ * @param string $url URL de destination
+ * @return void
+ */
 function redirectTo($url) {
     header('Location: ' . $url);
     exit;
 }
 
+/**
+ * Récupère les données du formulaire POST avec nettoyage
+ * 
+ * @return array Données du formulaire nettoyées
+ */
 function getFormData() {
     return sanitizeInput($_POST);
 }
 
+/**
+ * Récupère les paramètres de requête GET avec nettoyage
+ * 
+ * @return array Paramètres de requête nettoyés
+ */
 function getQueryData() {
     return sanitizeInput($_GET);
 }
 
+/**
+ * Enregistre un message temporaire en session
+ * 
+ * @param string $message Contenu du message
+ * @param string $type Type de message (success, danger, warning, info)
+ * @return void
+ */
 function flashMessage($message, $type = 'success') {
     $_SESSION['flash_message'] = [
         'message' => $message,
@@ -63,6 +118,11 @@ function flashMessage($message, $type = 'success') {
     ];
 }
 
+/**
+ * Récupère le message flash enregistré en session et le supprime
+ * 
+ * @return array|null Message flash ou null si aucun message
+ */
 function getFlashMessage() {
     if (isset($_SESSION['flash_message'])) {
         $message = $_SESSION['flash_message'];
@@ -72,6 +132,11 @@ function getFlashMessage() {
     return null;
 }
 
+/**
+ * Affiche les messages flash sous forme d'alertes Bootstrap
+ * 
+ * @return string HTML des alertes ou chaîne vide si aucun message
+ */
 function displayFlashMessages() {
     $flashMessage = getFlashMessage();
     if (!$flashMessage) return '';
@@ -95,6 +160,11 @@ function displayFlashMessages() {
          . '</div>';
 }
 
+/**
+ * Génère un jeton CSRF pour la protection des formulaires
+ * 
+ * @return string Jeton CSRF
+ */
 function generateToken() {
     if (!isset($_SESSION['csrf_token'])) {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
@@ -102,6 +172,12 @@ function generateToken() {
     return $_SESSION['csrf_token'];
 }
 
+/**
+ * Valide un jeton CSRF pour la protection contre les attaques CSRF
+ * 
+ * @param string $token Jeton à valider
+ * @return bool Indique si le jeton est valide
+ */
 function validateToken($token) {
     if (!isset($_SESSION['csrf_token']) || $_SESSION['csrf_token'] !== $token) {
         return false;
@@ -109,6 +185,12 @@ function validateToken($token) {
     return true;
 }
 
+/**
+ * Génère un badge HTML pour représenter un statut
+ * 
+ * @param string $status Statut à représenter
+ * @return string HTML du badge Bootstrap
+ */
 function getStatusBadge($status) {
     $badges = [
         'actif' => 'success',
@@ -125,6 +207,16 @@ function getStatusBadge($status) {
     return '<span class="badge bg-' . $class . '">' . ucfirst($status) . '</span>';
 }
 
+/**
+ * Pagine les résultats d'une requête sur une table
+ * 
+ * @param string $table Nom de la table
+ * @param int $page Numéro de page actuel
+ * @param int $perPage Nombre d'éléments par page
+ * @param string $where Clause WHERE (facultative)
+ * @param string $orderBy Clause ORDER BY (facultative)
+ * @return array Informations de pagination et éléments
+ */
 function paginateResults($table, $page, $perPage = 20, $where = '', $orderBy = '') {
     $totalItems = countTableRows($table, $where);
     $totalPages = ceil($totalItems / $perPage);
@@ -142,6 +234,13 @@ function paginateResults($table, $page, $perPage = 20, $where = '', $orderBy = '
     ];
 }
 
+/**
+ * Génère une interface de pagination Bootstrap
+ * 
+ * @param array $pagination Informations de pagination issues de paginateResults()
+ * @param string $urlPattern Motif d'URL avec {page} comme placeholder
+ * @return string HTML de la pagination
+ */
 function renderPagination($pagination, $urlPattern) {
     if ($pagination['totalPages'] <= 1) return '';
     

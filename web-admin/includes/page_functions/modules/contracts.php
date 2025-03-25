@@ -1,7 +1,6 @@
 <?php
-require_once __DIR__ . '/../../config.php';
-require_once __DIR__ . '/../../db.php';
-require_once __DIR__ . '/../../functions.php';
+require_once __DIR__ . '/../../init.php';
+require_once __DIR__ . '/../../../../shared/web-admin/logging.php';
 
 /**
  * Recupere la liste des contrats avec pagination et filtrage
@@ -171,6 +170,9 @@ function contractsSave($data, $id = 0) {
                 $id
             ]);
             
+            logBusinessOperation($_SESSION['user_id'], 'contract_update', 
+                "Mise à jour contrat ID: $id, entreprise ID: {$data['entreprise_id']}, type: {$data['type_contrat']}");
+            
             $message = "Le contrat a ete mis a jour avec succes";
         } 
         // cas de creation
@@ -191,6 +193,10 @@ function contractsSave($data, $id = 0) {
                 $data['conditions_particulieres']
             ]);
             
+            $newId = $pdo->lastInsertId();
+            logBusinessOperation($_SESSION['user_id'], 'contract_create', 
+                "Création contrat ID: $newId, entreprise ID: {$data['entreprise_id']}, type: {$data['type_contrat']}");
+            
             $message = "Le contrat a ete cree avec succes";
         }
         
@@ -202,7 +208,7 @@ function contractsSave($data, $id = 0) {
         $errors[] = "Erreur de base de données : " . $e->getMessage();
         
         // log l'erreur pour l'administrateur
-        error_log("Erreur DB dans contracts/index.php : " . $e->getMessage());
+        logSystemActivity('error', "Erreur BDD dans contracts/index.php : " . $e->getMessage());
         
         return [
             'success' => false,
@@ -225,6 +231,8 @@ function contractsDelete($id) {
     $stmt->execute([$id]);
     
     if ($stmt->rowCount() === 0) {
+        logBusinessOperation($_SESSION['user_id'], 'contract_delete_attempt', 
+            "Tentative échouée de suppression de contrat inexistant ID: $id");
         return [
             'success' => false,
             'message' => "Contrat non trouve"
@@ -234,6 +242,9 @@ function contractsDelete($id) {
     // suppression du contrat
     $stmt = $pdo->prepare("DELETE FROM contrats WHERE id = ?");
     $stmt->execute([$id]);
+    
+    logBusinessOperation($_SESSION['user_id'], 'contract_delete', 
+        "Suppression contrat ID: $id");
     
     return [
         'success' => true,
@@ -252,13 +263,16 @@ function contractsUpdateStatus($id, $status) {
     $validStatuses = ['actif', 'inactif', 'en_attente', 'suspendu', 'expire', 'resilie'];
     
     if (!in_array($status, $validStatuses)) {
+        logBusinessOperation($_SESSION['user_id'], 'contract_status_update_attempt', 
+            "Tentative échouée de mise à jour de statut contrat ID: $id avec valeur invalide: $status");
         return false;
     }
     
     $result = updateRow('contrats', ['statut' => $status], "id = $id");
     
     if ($result) {
-        logActivity($_SESSION['user_id'], 'update_contract_status', "Statut du contrat #$id mis à jour: $status");
+        logBusinessOperation($_SESSION['user_id'], 'contract_status_update', 
+            "Mise à jour statut contrat ID: $id - Nouveau statut: $status");
     }
     
     return $result;

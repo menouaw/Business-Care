@@ -1,7 +1,6 @@
 <?php
-require_once __DIR__ . '/../../config.php';
-require_once __DIR__ . '/../../db.php';
-require_once __DIR__ . '/../../functions.php';
+require_once __DIR__ . '/../../init.php';
+require_once __DIR__ . '/../../../../shared/web-admin/logging.php';
 
 /**
  * Recupere la liste des services avec pagination et filtrage
@@ -147,6 +146,9 @@ function servicesSave($data, $id = 0) {
                 $id
             ]);
             
+            logBusinessOperation($_SESSION['user_id'], 'service_update', 
+                "Mise à jour service: {$data['nom']} (ID: $id), type: {$data['type']}, prix: {$data['prix']}€");
+            
             $message = "Le service a ete mis a jour avec succes";
         } 
         // cas de creation
@@ -169,6 +171,10 @@ function servicesSave($data, $id = 0) {
                 $data['prerequis']
             ]);
             
+            $newId = $pdo->lastInsertId();
+            logBusinessOperation($_SESSION['user_id'], 'service_create', 
+                "Création service: {$data['nom']} (ID: $newId), type: {$data['type']}, prix: {$data['prix']}€");
+            
             $message = "Le service a ete cree avec succes";
         }
         
@@ -180,7 +186,7 @@ function servicesSave($data, $id = 0) {
         $errors[] = "Erreur de base de données : " . $e->getMessage();
         
         // log l'erreur pour l'administrateur
-        error_log("Erreur DB dans services/index.php : " . $e->getMessage());
+        logSystemActivity('error', "Erreur BDD dans services/index.php : " . $e->getMessage());
         
         return [
             'success' => false,
@@ -209,11 +215,15 @@ function servicesDelete($id) {
     $evaluationCount = $stmt->fetchColumn();
     
     if ($appointmentCount > 0) {
+        logBusinessOperation($_SESSION['user_id'], 'service_delete_attempt', 
+            "Tentative échouée de suppression service ID: $id - Rendez-vous associés existent");
         return [
             'success' => false,
             'message' => "Impossible de supprimer ce service car il a des rendez-vous associes"
         ];
     } else if ($evaluationCount > 0) {
+        logBusinessOperation($_SESSION['user_id'], 'service_delete_attempt', 
+            "Tentative échouée de suppression service ID: $id - Évaluations associées existent");
         return [
             'success' => false,
             'message' => "Impossible de supprimer ce service car il a des evaluations associees"
@@ -221,6 +231,10 @@ function servicesDelete($id) {
     } else {
         $stmt = $pdo->prepare("DELETE FROM prestations WHERE id = ?");
         $stmt->execute([$id]);
+        
+        logBusinessOperation($_SESSION['user_id'], 'service_delete', 
+            "Suppression service ID: $id");
+            
         return [
             'success' => true,
             'message' => "Le service a ete supprime avec succes"

@@ -4,14 +4,7 @@ USE business_care;
 
 DELIMITER //
 
-CREATE TRIGGER after_personne_insert
-AFTER INSERT ON personnes
-FOR EACH ROW
-BEGIN
-    INSERT INTO logs (personne_id, action, details)
-    VALUES (NEW.id, 'creation_compte', CONCAT('Creation du compte pour ', NEW.email));
-END//
-
+-- notifications des changements de statut de rendez-vous
 CREATE TRIGGER before_rendez_vous_update
 BEFORE UPDATE ON rendez_vous
 FOR EACH ROW
@@ -27,6 +20,7 @@ BEGIN
     END IF;
 END//
 
+-- notifications pour les nouvelles factures
 CREATE TRIGGER after_facture_insert
 AFTER INSERT ON factures
 FOR EACH ROW
@@ -43,6 +37,7 @@ BEGIN
     WHERE e.id = NEW.entreprise_id;
 END//
 
+-- notifications pour les factures payées
 CREATE TRIGGER before_facture_update
 BEFORE UPDATE ON factures
 FOR EACH ROW
@@ -59,30 +54,6 @@ BEGIN
         JOIN entreprises e ON p.entreprise_id = e.id
         WHERE e.id = NEW.entreprise_id;
     END IF;
-END//
-
-CREATE TRIGGER after_contrat_insert
-AFTER INSERT ON contrats
-FOR EACH ROW
-BEGIN
-    INSERT INTO logs (personne_id, action, details)
-    VALUES (
-        NULL,
-        'creation_contrat',
-        CONCAT('Nouveau contrat cree pour l\'entreprise ID: ', NEW.entreprise_id, ', Type: ', NEW.type_contrat)
-    );
-END//
-
-CREATE TRIGGER after_evaluation_insert
-AFTER INSERT ON evaluations
-FOR EACH ROW
-BEGIN
-    INSERT INTO logs (personne_id, action, details)
-    VALUES (
-        NEW.personne_id,
-        'nouvelle_evaluation',
-        CONCAT('Nouvelle evaluation de ', NEW.note, '/5 pour la prestation ', NEW.prestation_id)
-    );
 END//
 
 DELIMITER ;

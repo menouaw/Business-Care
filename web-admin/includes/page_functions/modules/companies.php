@@ -1,7 +1,6 @@
 <?php
-require_once __DIR__ . '/../../config.php';
-require_once __DIR__ . '/../../db.php';
-require_once __DIR__ . '/../../functions.php';
+require_once __DIR__ . '/../../init.php';
+require_once __DIR__ . '/../../../../shared/web-admin/logging.php';
 
 /**
  * Recupere la liste des entreprises avec pagination et filtrage
@@ -135,6 +134,9 @@ function companiesSave($data, $id = 0) {
                 $id
             ]);
             
+            logBusinessOperation($_SESSION['user_id'], 'company_update', 
+                "Mise à jour entreprise: {$data['nom']} (ID: $id)");
+            
             $message = "L'entreprise a ete mise a jour avec succes";
         } 
         // cas de creation
@@ -158,6 +160,10 @@ function companiesSave($data, $id = 0) {
                 $data['date_creation']
             ]);
             
+            $newId = $pdo->lastInsertId();
+            logBusinessOperation($_SESSION['user_id'], 'company_create', 
+                "Création entreprise: {$data['nom']} (ID: $newId)");
+            
             $message = "L'entreprise a ete creee avec succes";
         }
         
@@ -169,7 +175,7 @@ function companiesSave($data, $id = 0) {
         $errors[] = "Erreur de base de données : " . $e->getMessage();
         
         // log l'erreur pour l'administrateur
-        error_log("Erreur DB dans companies/index.php : " . $e->getMessage());
+        logSystemActivity('error', "Erreur DB dans companies/index.php : " . $e->getMessage());
         
         return [
             'success' => false,
@@ -198,11 +204,15 @@ function companiesDelete($id) {
     $contractCount = $stmt->fetchColumn();
     
     if ($personCount > 0) {
+        logBusinessOperation($_SESSION['user_id'], 'company_delete_attempt', 
+            "Tentative échouée de suppression d'entreprise ID: $id - Utilisateurs associés existent");
         return [
             'success' => false,
             'message' => "Impossible de supprimer cette entreprise car elle a des utilisateurs associes"
         ];
     } else if ($contractCount > 0) {
+        logBusinessOperation($_SESSION['user_id'], 'company_delete_attempt', 
+            "Tentative échouée de suppression d'entreprise ID: $id - Contrats associés existent");
         return [
             'success' => false,
             'message' => "Impossible de supprimer cette entreprise car elle a des contrats associes"
@@ -210,6 +220,10 @@ function companiesDelete($id) {
     } else {
         $stmt = $pdo->prepare("DELETE FROM entreprises WHERE id = ?");
         $stmt->execute([$id]);
+        
+        logBusinessOperation($_SESSION['user_id'], 'company_delete', 
+            "Suppression entreprise ID: $id");
+            
         return [
             'success' => true,
             'message' => "L'entreprise a ete supprimee avec succes"

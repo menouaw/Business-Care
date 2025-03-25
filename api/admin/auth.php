@@ -27,7 +27,7 @@ switch ($method) {
         $user = $stmt->fetch();
         
         if ($user && password_verify($data['password'], $user['mot_de_passe'])) {
-            // generer un token (a remplacer par une implementation JWT correcte)
+            // generer un jeton (a remplacer par une implementation JWT correcte)
             $token = bin2hex(random_bytes(32));
             
             // mise a jour du temps de derniere connexion
