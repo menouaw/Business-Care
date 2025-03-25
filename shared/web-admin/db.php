@@ -1,6 +1,12 @@
 <?php
 require_once 'config.php';
 
+/**
+ * Récupère une connexion PDO à la base de données
+ * 
+ * @return PDO Objet PDO représentant la connexion à la base de données
+ * @throws Exception Si la connexion ne peut pas être établie
+ */
 function getDbConnection() {
     static $pdo = null;
     if ($pdo === null) {
@@ -23,6 +29,13 @@ function getDbConnection() {
     return $pdo;
 }
 
+/**
+ * Valide le nom d'une table pour éviter les injections SQL
+ * 
+ * @param string $table Nom de table à valider
+ * @return string Nom de table validé
+ * @throws Exception Si le nom de table est invalide
+ */
 function validateTableName($table) {
     if (!preg_match('/^[a-zA-Z0-9_]+$/', $table)) {
         throw new Exception("Nom de table invalide");
@@ -30,6 +43,14 @@ function validateTableName($table) {
     return $table;
 }
 
+/**
+ * Exécute une requête SQL préparée
+ * 
+ * @param string $sql Requête SQL à exécuter
+ * @param array $params Paramètres pour la requête préparée
+ * @return PDOStatement Résultat de la requête
+ * @throws Exception Si l'exécution de la requête échoue
+ */
 function executeQuery($sql, $params = []) {
     try {
         $pdo = getDbConnection();
@@ -45,6 +66,13 @@ function executeQuery($sql, $params = []) {
     }
 }
 
+/**
+ * Compte le nombre de lignes dans une table avec condition optionnelle
+ * 
+ * @param string $table Nom de la table
+ * @param string $where Clause WHERE (optionnelle)
+ * @return int Nombre de lignes trouvées
+ */
 function countTableRows($table, $where = '') {
     $table = validateTableName($table);
     
@@ -58,6 +86,16 @@ function countTableRows($table, $where = '') {
     return $stmt->fetchColumn();
 }
 
+/**
+ * Récupère toutes les lignes d'une table avec filtres optionnels
+ * 
+ * @param string $table Nom de la table
+ * @param string $where Clause WHERE (optionnelle)
+ * @param string $orderBy Clause ORDER BY (optionnelle)
+ * @param int $limit Nombre maximum de lignes à récupérer
+ * @param int $offset Position de départ pour la récupération
+ * @return array Tableau de résultats
+ */
 function fetchAll($table, $where = '', $orderBy = '', $limit = 0, $offset = 0) {
     $table = validateTableName($table);
     
@@ -79,6 +117,14 @@ function fetchAll($table, $where = '', $orderBy = '', $limit = 0, $offset = 0) {
     return $stmt->fetchAll();
 }
 
+/**
+ * Récupère une seule ligne d'une table avec filtre
+ * 
+ * @param string $table Nom de la table
+ * @param string $where Clause WHERE
+ * @param string $orderBy Clause ORDER BY (optionnelle)
+ * @return array|false Ligne trouvée ou false si aucun résultat
+ */
 function fetchOne($table, $where, $orderBy = '') {
     $table = validateTableName($table);
     
@@ -92,6 +138,13 @@ function fetchOne($table, $where, $orderBy = '') {
     return $stmt->fetch();
 }
 
+/**
+ * Insère une nouvelle ligne dans une table
+ * 
+ * @param string $table Nom de la table
+ * @param array $data Données à insérer sous forme de tableau associatif
+ * @return int|false ID de la ligne insérée ou false en cas d'échec
+ */
 function insertRow($table, $data) {
     $table = validateTableName($table);
     
@@ -106,6 +159,15 @@ function insertRow($table, $data) {
     return $stmt->rowCount() > 0 ? getDbConnection()->lastInsertId() : false;
 }
 
+/**
+ * Met à jour des lignes dans une table
+ * 
+ * @param string $table Nom de la table
+ * @param array $data Données à mettre à jour sous forme de tableau associatif
+ * @param string $where Clause WHERE pour cibler les lignes à mettre à jour
+ * @param array $whereParams Paramètres pour la clause WHERE
+ * @return int Nombre de lignes affectées
+ */
 function updateRow($table, $data, $where, $whereParams = []) {
     $table = validateTableName($table);
     
@@ -121,6 +183,14 @@ function updateRow($table, $data, $where, $whereParams = []) {
     return $stmt->rowCount();
 }
 
+/**
+ * Supprime des lignes d'une table
+ * 
+ * @param string $table Nom de la table
+ * @param string $where Clause WHERE pour cibler les lignes à supprimer
+ * @param array $params Paramètres pour la clause WHERE
+ * @return int Nombre de lignes supprimées
+ */
 function deleteRow($table, $where, $params = []) {
     $table = validateTableName($table);
     
@@ -130,14 +200,29 @@ function deleteRow($table, $where, $params = []) {
     return $stmt->rowCount();
 }
 
+/**
+ * Démarre une transaction SQL
+ * 
+ * @return void
+ */
 function beginTransaction() {
     getDbConnection()->beginTransaction();
 }
 
+/**
+ * Valide une transaction SQL en cours
+ * 
+ * @return void
+ */
 function commitTransaction() {
     getDbConnection()->commit();
 }
 
+/**
+ * Annule une transaction SQL en cours
+ * 
+ * @return void
+ */
 function rollbackTransaction() {
     getDbConnection()->rollBack();
 } 

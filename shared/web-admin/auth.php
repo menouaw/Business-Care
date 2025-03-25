@@ -2,6 +2,14 @@
 // API pour l'authentification
 require_once 'logging.php';
 
+/**
+ * Authentifie un utilisateur avec son email et mot de passe
+ * 
+ * @param string $email Email de l'utilisateur
+ * @param string $password Mot de passe de l'utilisateur
+ * @param bool $rememberMe Option pour se souvenir de l'utilisateur
+ * @return bool Indique si l'authentification a réussi
+ */
 function login($email, $password, $rememberMe = false) {
     $pdo = getDbConnection();
     $stmt = $pdo->prepare("SELECT id, nom, prenom, email, mot_de_passe, role_id, photo_url 
@@ -35,6 +43,11 @@ function login($email, $password, $rememberMe = false) {
     }
 }
 
+/**
+ * Déconnecte l'utilisateur actuellement authentifié
+ * 
+ * @return bool Indique si la déconnexion a réussi
+ */
 function logout() {
     if (isset($_SESSION['user_id'])) {
         logSecurityEvent($_SESSION['user_id'], 'logout', 'Utilisateur déconnecté');
@@ -52,6 +65,11 @@ function logout() {
     return true;
 }
 
+/**
+ * Vérifie si l'utilisateur est actuellement authentifié
+ * 
+ * @return bool État d'authentification de l'utilisateur
+ */
 function isAuthenticated() {
     if (isset($_SESSION['user_id'])) {
         if (time() - $_SESSION['last_activity'] > SESSION_LIFETIME) {
@@ -71,6 +89,11 @@ function isAuthenticated() {
     return false;
 }
 
+/**
+ * Force l'authentification de l'utilisateur ou redirige vers la page de connexion
+ * 
+ * @return void
+ */
 function requireAuthentication() {
     if (!isAuthenticated()) {
         $_SESSION['redirect_after_login'] = $_SERVER['REQUEST_URI'];
@@ -79,6 +102,12 @@ function requireAuthentication() {
     }
 }
 
+/**
+ * Vérifie si l'utilisateur authentifié a le rôle requis
+ * 
+ * @param int $requiredRole Identifiant du rôle requis
+ * @return bool Indique si l'utilisateur a la permission
+ */
 function hasPermission($requiredRole) {
     if (!isAuthenticated()) {
         return false;
@@ -89,6 +118,12 @@ function hasPermission($requiredRole) {
     return $_SESSION['user_role'] == 3;
 }
 
+/**
+ * Récupère les informations d'un utilisateur
+ * 
+ * @param int|null $userId ID de l'utilisateur (utilise l'utilisateur courant si null)
+ * @return array|false Informations de l'utilisateur ou false si non trouvé/authentifié
+ */
 function getUserInfo($userId = null) {
     if ($userId === null) {
         if (!isAuthenticated()) {
@@ -100,6 +135,12 @@ function getUserInfo($userId = null) {
     return fetchOne('personnes', "id = $userId");
 }
 
+/**
+ * Initialise la procédure de réinitialisation de mot de passe
+ * 
+ * @param string $email Email de l'utilisateur
+ * @return bool Indique si la demande a été traitée avec succès
+ */
 function resetPassword($email) {
     $user = fetchOne('personnes', "email = '$email'");
     
@@ -123,6 +164,12 @@ function resetPassword($email) {
     return true;
 }
 
+/**
+ * Crée un jeton de connexion automatique "Se souvenir de moi"
+ * 
+ * @param int $userId ID de l'utilisateur
+ * @return string Jeton généré
+ */
 function createRememberMeToken($userId) {
     $pdo = getDbConnection();
     $token = bin2hex(random_bytes(32));
@@ -136,6 +183,12 @@ function createRememberMeToken($userId) {
     return $token;
 }
 
+/**
+ * Valide un jeton "Se souvenir de moi" et réauthentifie l'utilisateur
+ * 
+ * @param string $token Jeton à valider
+ * @return bool Indique si le jeton est valide et l'authentification réussie
+ */
 function validateRememberMeToken($token) {
     $pdo = getDbConnection();
     $stmt = $pdo->prepare("SELECT user_id FROM remember_me_tokens WHERE token = ? AND expires_at > NOW()");
@@ -159,6 +212,12 @@ function validateRememberMeToken($token) {
     return false;
 }
 
+/**
+ * Supprime un jeton "Se souvenir de moi"
+ * 
+ * @param string $token Jeton à supprimer
+ * @return bool Indique si la suppression a réussi
+ */
 function deleteRememberMeToken($token) {
     $pdo = getDbConnection();
     $stmt = $pdo->prepare("DELETE FROM remember_me_tokens WHERE token = ?");
