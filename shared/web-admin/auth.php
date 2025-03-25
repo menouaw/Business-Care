@@ -131,7 +131,7 @@ function createRememberMeToken($userId) {
     $stmt = $pdo->prepare("INSERT INTO remember_me_tokens (user_id, token, expires_at) VALUES (?, ?, ?)");
     $stmt->execute([$userId, $token, $expires]);
     
-    logSecurityEvent($userId, 'remember_token', 'Création de token "Se souvenir de moi"');
+    logSecurityEvent($userId, 'remember_token', 'Création de jeton "Se souvenir de moi"');
     
     return $token;
 }
@@ -152,7 +152,7 @@ function validateRememberMeToken($token) {
             $_SESSION['user_photo'] = $user['photo_url'];
             $_SESSION['last_activity'] = time();
             
-            logSecurityEvent($user['id'], 'auto_login', 'Connexion automatique via token "Se souvenir de moi"');
+            logSecurityEvent($user['id'], 'auto_login', 'Connexion automatique via jeton "Se souvenir de moi"');
             return true;
         }
     }

@@ -148,4 +148,4 @@ Pour maintenir une organisation claire du code, les fonctions spécifiques aux p
 - L'authentification est gérée via des sessions sécurisées
 - Les mots de passe sont hachés avec bcrypt
 - Protection contre les attaques XSS et CSRF implémentée
-- Les requêtes à l'API nécessitent une authentification par token 
+- Les requêtes à l'API nécessitent une authentification par jeton 

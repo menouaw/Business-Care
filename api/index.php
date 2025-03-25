@@ -34,7 +34,7 @@ $authHeader = isset($_SERVER['HTTP_AUTHORIZATION']) ? $_SERVER['HTTP_AUTHORIZATI
 if (preg_match('/Bearer\s(\S+)/', $authHeader, $matches)) {
     $token = $matches[1];
     // TODO: implementer la verification du token
-    $isAuthenticated = true; // temporaire: considere toute requete avec token comme authentifiee
+    $isAuthenticated = true; // temporaire: considere toute requete avec jeton comme authentifiee
 }
 
 // gere la requete en fonction du module demande
