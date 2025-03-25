@@ -1,7 +1,7 @@
 <?php
-if (!defined('APP_NAME')) {
-    require_once '../includes/config.php';
-}
+// Absolument path definition for init.php
+define('BASE_DIR', __DIR__ . '/../');
+require_once BASE_DIR . 'includes/init.php';
 ?>
 <!DOCTYPE html>
 <html lang="fr">

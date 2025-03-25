@@ -1,10 +1,7 @@
 <?php
-session_start();
-require_once 'includes/config.php';
-require_once 'includes/auth.php';
-require_once 'includes/functions.php';
+require_once 'includes/init.php';
 
-// deconnecte
+// Deconnexion de l'utilisateur
 logout();
 
 // affiche un message de succes

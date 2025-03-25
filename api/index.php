@@ -22,10 +22,10 @@ $module = isset($pathSegments[0]) ? $pathSegments[0] : '';
 $action = isset($pathSegments[1]) ? $pathSegments[1] : '';
 $id = isset($pathSegments[2]) ? $pathSegments[2] : null;
 
-// charge le fichier de configuration de base de donnees
-require_once __DIR__ . '/../web-admin/includes/config.php';
-require_once __DIR__ . '/../web-admin/includes/db.php';
-require_once __DIR__ . '/../web-admin/includes/functions.php';
+// charge les fichiers partagés
+require_once __DIR__ . '/../shared/web-admin/config.php';
+require_once __DIR__ . '/../shared/web-admin/db.php';
+require_once __DIR__ . '/../shared/web-admin/functions.php';
 
 // verifie l'authentification (si necessaire)
 $isAuthenticated = false;
