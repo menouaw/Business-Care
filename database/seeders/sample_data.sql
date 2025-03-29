@@ -19,9 +19,10 @@ TRUNCATE TABLE roles;
 SET FOREIGN_KEY_CHECKS = 1;
 
 INSERT INTO roles (nom, description) VALUES
+('admin', 'Administrateur systeme'),
+('salarie', 'Salarie d''une entreprise'),
 ('prestataire', 'Prestataire de services'),
-('salarie', 'Salarie d''une entreprise cliente'),
-('admin', 'Administrateur systeme');
+('entreprise', 'Entreprise cliente');
 
 INSERT INTO entreprises (nom, siret, adresse, code_postal, ville, telephone, email, site_web, logo_url, taille_entreprise, secteur_activite, date_creation) VALUES
 ('Tech Solutions SA', '12345678901234', '123 Rue de l''Innovation', '75001', 'Paris', '01 23 45 67 89', 'contact@techsolutions.fr', 'www.techsolutions.fr', '/logos/techsolutions.png', '51-200', 'Technologie', '2020-01-15'),
@@ -91,36 +92,36 @@ INSERT INTO prestations (nom, description, prix, duree, type, categorie, niveau_
 
 
 INSERT INTO personnes (nom, prenom, email, mot_de_passe, telephone, date_naissance, genre, photo_url, role_id, entreprise_id, statut, derniere_connexion) VALUES
-('Admin', 'System', 'admin@businesscare.fr', '$2y$10$CGP1gfg0khtXjAZcJFC6iO3oYisjwlPfkm8tQ8Q/OxWpFdR7tOiqO', '00 00 00 00 00', '1990-01-01', 'Autre', '/photos/admin.jpg', 3, NULL, 'actif', '2024-03-17 18:30:00'),
-('Dupont', 'Marie', 'marie.dupont@techsolutions.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 12 34 56 78', '1990-05-15', 'F', '/photos/marie.dupont.jpg', 1, 1, 'actif', '2024-03-17 14:30:00'),
-('Martin', 'Jean', 'jean.martin@santeplus.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 23 45 67 89', '1985-08-20', 'M', '/photos/jean.martin.jpg', 1, 2, 'actif', '2024-03-17 15:45:00'),
-('Petit', 'Sophie', 'sophie.petit@bienetrecorp.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 34 56 78 90', '1992-03-10', 'F', '/photos/sophie.petit.jpg', 1, 3, 'actif', '2024-03-17 16:20:00'),
-('Dubois', 'Pierre', 'pierre.dubois@prestataire.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 45 67 89 01', '1988-12-25', 'M', '/photos/pierre.dubois.jpg', 2, NULL, 'actif', '2024-03-17 17:00:00'),
-('Leroy', 'Thomas', 'thomas.leroy@logistiquepro.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 56 78 90 12', '1987-07-18', 'M', '/photos/thomas.leroy.jpg', 1, 4, 'actif', '2024-03-16 09:15:00'),
-('Moreau', 'Julie', 'julie.moreau@assurancedirect.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 67 89 01 23', '1991-09-30', 'F', '/photos/julie.moreau.jpg', 1, 5, 'actif', '2024-03-16 11:20:00'),
-('Simon', 'Lucas', 'lucas.simon@formationcontinue.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 78 90 12 34', '1989-04-12', 'M', '/photos/lucas.simon.jpg', 1, 6, 'actif', '2024-03-16 14:45:00'),
-('Fournier', 'Emma', 'emma.fournier@rechercheinnovation.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 89 01 23 45', '1993-11-05', 'F', '/photos/emma.fournier.jpg', 1, 7, 'actif', '2024-03-16 16:30:00'),
-('Girard', 'Antoine', 'antoine.girard@textilemoderne.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 90 12 34 56', '1986-02-28', 'M', '/photos/antoine.girard.jpg', 1, 8, 'actif', '2024-03-16 18:10:00'),
-('Rousseau', 'Camille', 'camille.rousseau@informatiqueservices.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 01 23 45 67', '1990-06-15', 'F', '/photos/camille.rousseau.jpg', 1, 9, 'actif', '2024-03-15 09:45:00'),
-('Mercier', 'Hugo', 'hugo.mercier@evenementielpro.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 12 34 56 78', '1988-08-22', 'M', '/photos/hugo.mercier.jpg', 1, 10, 'actif', '2024-03-15 11:20:00'),
-('Blanc', 'Lea', 'lea.blanc@santementale.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 23 45 67 89', '1992-01-10', 'F', '/photos/lea.blanc.jpg', 1, 11, 'actif', '2024-03-15 14:30:00'),
-('Guerin', 'Maxime', 'maxime.guerin@prestataire.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 34 56 78 90', '1985-12-03', 'M', '/photos/maxime.guerin.jpg', 2, NULL, 'actif', '2024-03-15 16:45:00'),
-('Faure', 'Chloe', 'chloe.faure@prestataire.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 45 67 89 01', '1991-03-25', 'F', '/photos/chloe.faure.jpg', 2, NULL, 'actif', '2024-03-15 18:15:00'),
-('Roux', 'Nathan', 'nathan.roux@techsolutions.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 56 78 90 12', '1987-05-17', 'M', '/photos/nathan.roux.jpg', 1, 1, 'actif', '2024-03-14 10:30:00'),
-('Morel', 'Manon', 'manon.morel@santeplus.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 67 89 01 23', '1993-07-08', 'F', '/photos/manon.morel.jpg', 1, 2, 'actif', '2024-03-14 13:45:00'),
-('Perrin', 'Theo', 'theo.perrin@bienetrecorp.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 78 90 12 34', '1989-09-20', 'M', '/photos/theo.perrin.jpg', 1, 3, 'actif', '2024-03-14 15:20:00'),
-('Gauthier', 'Ines', 'ines.gauthier@logistiquepro.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 89 01 23 45', '1990-11-12', 'F', '/photos/ines.gauthier.jpg', 1, 4, 'actif', '2024-03-14 17:30:00'),
-('Legrand', 'Mathis', 'mathis.legrand@assurancedirect.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 90 12 34 56', '1986-04-05', 'M', '/photos/mathis.legrand.jpg', 1, 5, 'inactif', '2024-03-13 09:15:00'),
-('Robin', 'Clara', 'clara.robin@formationcontinue.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 01 23 45 67', '1992-06-28', 'F', '/photos/clara.robin.jpg', 1, 6, 'actif', '2024-03-13 11:45:00'),
-('Bertrand', 'Enzo', 'enzo.bertrand@rechercheinnovation.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 12 34 56 78', '1988-02-14', 'M', '/photos/enzo.bertrand.jpg', 1, 7, 'actif', '2024-03-13 14:20:00'),
-('Clement', 'Jade', 'jade.clement@textilemoderne.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 23 45 67 89', '1991-08-09', 'F', '/photos/jade.clement.jpg', 1, 8, 'actif', '2024-03-13 16:30:00'),
-('Durand', 'Louis', 'louis.durand@informatiqueservices.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 34 56 78 90', '1987-10-23', 'M', '/photos/louis.durand.jpg', 1, 9, 'actif', '2024-03-13 18:15:00'),
-('Fontaine', 'Sarah', 'sarah.fontaine@evenementielpro.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 45 67 89 01', '1993-12-15', 'F', '/photos/sarah.fontaine.jpg', 1, 10, 'actif', '2024-03-12 10:45:00'),
-('Roussel', 'Gabriel', 'gabriel.roussel@santementale.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 56 78 90 12', '1989-01-30', 'M', '/photos/gabriel.roussel.jpg', 1, 11, 'actif', '2024-03-12 13:20:00'),
-('Vincent', 'Lucie', 'lucie.vincent@prestataire.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 67 89 01 23', '1990-03-18', 'F', '/photos/lucie.vincent.jpg', 2, NULL, 'actif', '2024-03-12 15:45:00'),
-('Chevalier', 'Raphael', 'raphael.chevalier@prestataire.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 78 90 12 34', '1986-05-07', 'M', '/photos/raphael.chevalier.jpg', 2, NULL, 'actif', '2024-03-12 17:30:00'),
-('Marchand', 'Zoe', 'zoe.marchand@techsolutions.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 89 01 23 45', '1992-07-22', 'F', '/photos/zoe.marchand.jpg', 1, 1, 'actif', '2024-03-11 09:30:00'),
-('Dupuis', 'Adam', 'adam.dupuis@santeplus.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 90 12 34 56', '1988-09-14', 'M', '/photos/adam.dupuis.jpg', 1, 2, 'actif', '2024-03-11 11:45:00');
+('Admin', 'System', 'admin@businesscare.fr', '$2y$10$CGP1gfg0khtXjAZcJFC6iO3oYisjwlPfkm8tQ8Q/OxWpFdR7tOiqO', '00 00 00 00 00', '1990-01-01', 'Autre', '/photos/admin.jpg', 1, NULL, 'actif', '2024-03-17 18:30:00'),
+('Dupont', 'Marie', 'marie.dupont@techsolutions.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 12 34 56 78', '1990-05-15', 'F', '/photos/marie.dupont.jpg', 2, 1, 'actif', '2024-03-17 14:30:00'),
+('Martin', 'Jean', 'jean.martin@santeplus.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 23 45 67 89', '1985-08-20', 'M', '/photos/jean.martin.jpg', 2, 2, 'actif', '2024-03-17 15:45:00'),
+('Petit', 'Sophie', 'sophie.petit@bienetrecorp.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 34 56 78 90', '1992-03-10', 'F', '/photos/sophie.petit.jpg', 2, 3, 'actif', '2024-03-17 16:20:00'),
+('Dubois', 'Pierre', 'pierre.dubois@prestataire.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 45 67 89 01', '1988-12-25', 'M', '/photos/pierre.dubois.jpg', 3, NULL, 'actif', '2024-03-17 17:00:00'),
+('Leroy', 'Thomas', 'thomas.leroy@logistiquepro.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 56 78 90 12', '1987-07-18', 'M', '/photos/thomas.leroy.jpg', 2, 4, 'actif', '2024-03-16 09:15:00'),
+('Moreau', 'Julie', 'julie.moreau@assurancedirect.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 67 89 01 23', '1991-09-30', 'F', '/photos/julie.moreau.jpg', 2, 5, 'actif', '2024-03-16 11:20:00'),
+('Simon', 'Lucas', 'lucas.simon@formationcontinue.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 78 90 12 34', '1989-04-12', 'M', '/photos/lucas.simon.jpg', 2, 6, 'actif', '2024-03-16 14:45:00'),
+('Fournier', 'Emma', 'emma.fournier@rechercheinnovation.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 89 01 23 45', '1993-11-05', 'F', '/photos/emma.fournier.jpg', 2, 7, 'actif', '2024-03-16 16:30:00'),
+('Girard', 'Antoine', 'antoine.girard@textilemoderne.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 90 12 34 56', '1986-02-28', 'M', '/photos/antoine.girard.jpg', 2, 8, 'actif', '2024-03-16 18:10:00'),
+('Rousseau', 'Camille', 'camille.rousseau@informatiqueservices.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 01 23 45 67', '1990-06-15', 'F', '/photos/camille.rousseau.jpg', 2, 9, 'actif', '2024-03-15 09:45:00'),
+('Mercier', 'Hugo', 'hugo.mercier@evenementielpro.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 12 34 56 78', '1988-08-22', 'M', '/photos/hugo.mercier.jpg', 2, 10, 'actif', '2024-03-15 11:20:00'),
+('Blanc', 'Lea', 'lea.blanc@santementale.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 23 45 67 89', '1992-01-10', 'F', '/photos/lea.blanc.jpg', 2, 11, 'actif', '2024-03-15 14:30:00'),
+('Guerin', 'Maxime', 'maxime.guerin@prestataire.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 34 56 78 90', '1985-12-03', 'M', '/photos/maxime.guerin.jpg', 3, NULL, 'actif', '2024-03-15 16:45:00'),
+('Faure', 'Chloe', 'chloe.faure@prestataire.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 45 67 89 01', '1991-03-25', 'F', '/photos/chloe.faure.jpg', 3, NULL, 'actif', '2024-03-15 18:15:00'),
+('Roux', 'Nathan', 'nathan.roux@techsolutions.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 56 78 90 12', '1987-05-17', 'M', '/photos/nathan.roux.jpg', 2, 1, 'actif', '2024-03-14 10:30:00'),
+('Morel', 'Manon', 'manon.morel@santeplus.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 67 89 01 23', '1993-07-08', 'F', '/photos/manon.morel.jpg', 2, 2, 'actif', '2024-03-14 13:45:00'),
+('Perrin', 'Theo', 'theo.perrin@bienetrecorp.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 78 90 12 34', '1989-09-20', 'M', '/photos/theo.perrin.jpg', 2, 3, 'actif', '2024-03-14 15:20:00'),
+('Gauthier', 'Ines', 'ines.gauthier@logistiquepro.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 89 01 23 45', '1990-11-12', 'F', '/photos/ines.gauthier.jpg', 2, 4, 'actif', '2024-03-14 17:30:00'),
+('Legrand', 'Mathis', 'mathis.legrand@assurancedirect.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 90 12 34 56', '1986-04-05', 'M', '/photos/mathis.legrand.jpg', 2, 5, 'inactif', '2024-03-13 09:15:00'),
+('Robin', 'Clara', 'clara.robin@formationcontinue.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 01 23 45 67', '1992-06-28', 'F', '/photos/clara.robin.jpg', 2, 6, 'actif', '2024-03-13 11:45:00'),
+('Bertrand', 'Enzo', 'enzo.bertrand@rechercheinnovation.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 12 34 56 78', '1988-02-14', 'M', '/photos/enzo.bertrand.jpg', 2, 7, 'actif', '2024-03-13 14:20:00'),
+('Clement', 'Jade', 'jade.clement@textilemoderne.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 23 45 67 89', '1991-08-09', 'F', '/photos/jade.clement.jpg', 2, 8, 'actif', '2024-03-13 16:30:00'),
+('Durand', 'Louis', 'louis.durand@informatiqueservices.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 34 56 78 90', '1987-10-23', 'M', '/photos/louis.durand.jpg', 2, 9, 'actif', '2024-03-13 18:15:00'),
+('Fontaine', 'Sarah', 'sarah.fontaine@evenementielpro.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 45 67 89 01', '1993-12-15', 'F', '/photos/sarah.fontaine.jpg', 2, 10, 'actif', '2024-03-12 10:45:00'),
+('Roussel', 'Gabriel', 'gabriel.roussel@santementale.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 56 78 90 12', '1989-01-30', 'M', '/photos/gabriel.roussel.jpg', 2, 11, 'actif', '2024-03-12 13:20:00'),
+('Vincent', 'Lucie', 'lucie.vincent@prestataire.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 67 89 01 23', '1990-03-18', 'F', '/photos/lucie.vincent.jpg', 3, NULL, 'actif', '2024-03-12 15:45:00'),
+('Chevalier', 'Raphael', 'raphael.chevalier@prestataire.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 78 90 12 34', '1986-05-07', 'M', '/photos/raphael.chevalier.jpg', 3, NULL, 'actif', '2024-03-12 17:30:00'),
+('Marchand', 'Zoe', 'zoe.marchand@techsolutions.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 89 01 23 45', '1992-07-22', 'F', '/photos/zoe.marchand.jpg', 2, 1, 'actif', '2024-03-11 09:30:00'),
+('Dupuis', 'Adam', 'adam.dupuis@santeplus.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 90 12 34 56', '1988-09-14', 'M', '/photos/adam.dupuis.jpg', 2, 2, 'actif', '2024-03-11 11:45:00');
 
 
 INSERT INTO contrats (entreprise_id, date_debut, date_fin, montant_mensuel, nombre_salaries, type_contrat, statut, conditions_particulieres) VALUES
