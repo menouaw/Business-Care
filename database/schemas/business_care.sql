@@ -247,9 +247,9 @@ CREATE TABLE remember_me_tokens (
 CREATE TABLE preferences_utilisateurs (
     id INT PRIMARY KEY AUTO_INCREMENT,
     personne_id INT NOT NULL,
-    langue VARCHAR(3) TYPE ENUM('fr', 'eng') DEFAULT 'fr',
+    langue ENUM('fr', 'en') DEFAULT 'fr',
     notif_email BOOLEAN DEFAULT TRUE,
-    theme VARCHAR(10) TYPE ENUM('clair', 'sombre') DEFAULT 'clair',
+    theme ENUM('clair', 'sombre') DEFAULT 'clair',
     FOREIGN KEY (personne_id) REFERENCES personnes(id),
     UNIQUE KEY unique_personne_id (personne_id)
 );
