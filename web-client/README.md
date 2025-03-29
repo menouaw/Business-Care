@@ -11,8 +11,41 @@ web-client/                  # Dossier principal de l'interface client
 │   └── page_functions/      # Fonctions spécifiques à chaque page
 ├── modules/                 # Modules fonctionnels
 │   ├── profile/             # Gestion du profil utilisateur
-│   ├── services/            # Consultation des services
+│   ├── providers/           # Prestataires de services
+│   │   ├── index.php        # Liste des prestataires
+│   │   ├── view.php         # Profil du prestataire
+│   │   ├── search.php       # Recherche de prestataires
+│   │   ├── calendar.php     # Calendrier de disponibilités
+│   │   ├── ratings.php      # Évaluations et avis
+│   │   ├── categories.php   # Catégories de prestataires
+│   │   ├── contracts.php    # Contrats avec les prestataires
+│   │   ├── services.php     # Services offerts
+│   │   ├── invoices.php     # Factures des prestations
+│   │   └── settings.php     # Paramètres prestataires
 │   ├── contracts/           # Suivi des contrats
+│   ├── companies/           # Gestion des entreprises clientes
+│   │   ├── index.php        # Liste des entreprises
+│   │   ├── view.php         # Détails d'une entreprise
+│   │   ├── edit.php         # Modification d'une entreprise
+│   │   ├── employees.php    # Gestion des collaborateurs
+│   │   ├── contracts.php    # Contrats de l'entreprise
+│   │   ├── quotes.php       # Devis et propositions
+│   │   ├── invoices.php     # Factures de l'entreprise
+│   │   ├── payments.php     # Historique des paiements
+│   │   ├── reports.php      # Rapports et analyses
+│   │   └── settings.php     # Paramètres de l'entreprise
+│   ├── employees/           # Gestion des salariés
+│   │   ├── index.php        # Tableau de bord salarié
+│   │   ├── view.php         # Profil du salarié
+│   │   ├── edit.php         # Modification du profil
+│   │   ├── services.php     # Services disponibles
+│   │   ├── reservations.php # Réservations de services
+│   │   ├── appointments.php # Rendez-vous médicaux
+│   │   ├── history.php      # Historique d'activités
+│   │   ├── communities.php  # Espace communautaire
+│   │   ├── donations.php    # Gestion des dons
+│   │   ├── events.php       # Défis et événements
+│   │   └── settings.php     # Préférences utilisateur
 │   └── appointments/        # Gestion des rendez-vous
 ├── templates/               # Modèles d'interface
 │   ├── header.php           # En-tête commune
@@ -46,8 +79,10 @@ L'API REST se trouve dans le dossier `/api` à la racine du projet et comprend l
 ├── client/                 # Endpoints pour l'interface client
 │   ├── auth.php            # Authentification
 │   ├── profile.php         # Gestion du profil
-│   ├── services.php        # Consultation des services
+│   ├── providers.php       # Prestataires de services
 │   ├── contracts.php       # Suivi des contrats
+│   ├── companies.php       # Gestion des entreprises
+│   ├── employees.php       # Gestion des salariés
 │   └── appointments.php    # Gestion des rendez-vous
 ```
 
@@ -60,8 +95,11 @@ L'API REST se trouve dans le dossier `/api` à la racine du projet et comprend l
 - `GET /api/client/profile` - Détails du profil utilisateur
 - `PUT /api/client/profile` - Mise à jour du profil
 
-- `GET /api/client/services` - Liste des services disponibles (avec pagination)
-- `GET /api/client/services/{id}` - Détail d'un service spécifique
+- `GET /api/client/providers` - Liste des prestataires de services
+- `GET /api/client/providers/{id}` - Profil d'un prestataire
+- `GET /api/client/providers/{id}/services` - Services offerts par un prestataire
+- `GET /api/client/providers/{id}/ratings` - Évaluations d'un prestataire
+- `GET /api/client/providers/categories` - Liste des catégories de prestataires
 
 - `GET /api/client/contracts` - Liste des contrats de l'entreprise
 - `GET /api/client/contracts/{id}` - Détail d'un contrat spécifique
@@ -82,7 +120,7 @@ L'API REST se trouve dans le dossier `/api` à la racine du projet et comprend l
 ## Fonctionnalités principales
 
 - Tableau de bord personnalisé pour les clients
-- Consultation du catalogue de services disponibles
+- Recherche et filtrage des prestataires de services
 - Prise de rendez-vous et gestion des réservations
 - Suivi des contrats et services souscrits
 - Gestion du profil utilisateur et préférences
@@ -125,8 +163,10 @@ Pour maintenir une organisation claire du code, les fonctions sont séparées se
     - `login.php` - Fonctions de traitement du login
     - `/modules/` - Fonctions spécifiques aux modules
       - `profile.php` - Gestion du profil
-      - `services.php` - Affichage des services
+      - `providers.php` - Gestion des prestataires
       - `contracts.php` - Gestion des contrats
+      - `companies.php` - Gestion des entreprises
+      - `employees.php` - Gestion des salariés
       - `appointments.php` - Gestion des rendez-vous
 
 ### API Client
@@ -143,16 +183,30 @@ L'API client suit une architecture RESTful et gère:
    - Mise à jour des informations personnelles
    - Gestion des préférences utilisateur
 
-3. **Services** (`services.php`):
-   - Listage des prestations disponibles avec filtrage et pagination
-   - Consultation des détails d'une prestation
-   - Accès aux évaluations et notes moyennes
+3. **Prestataires** (`providers.php`):
+   - Listage des prestataires de services
+   - Profils détaillés et disponibilités
+   - Évaluations et avis des clients
+   - Services proposés et tarification
+   - Catégories de prestataires
 
-4. **Contrats** (`contracts.php`):
+4. **Entreprises** (`companies.php`):
+   - Gestion des informations des entreprises clientes
+   - Accès aux collaborateurs, contrats et facturation
+   - Génération de devis personnalisés
+   - Suivi des paiements et abonnements
+
+5. **Salariés** (`employees.php`):
+   - Gestion des comptes et profils des salariés
+   - Accès aux services, réservations et rendez-vous
+   - Participation aux communautés et défis
+   - Gestion des dons et engagement associatif
+
+6. **Contrats** (`contracts.php`):
    - Récupération des contrats de l'entreprise du client
    - Accès aux détails d'un contrat, services inclus et historique des paiements
 
-5. **Rendez-vous** (`appointments.php`):
+7. **Rendez-vous** (`appointments.php`):
    - Gestion complète des rendez-vous (création, modification, annulation)
    - Consultation de l'historique des rendez-vous
    - Filtrage par statut et date

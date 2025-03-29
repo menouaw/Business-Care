@@ -122,7 +122,7 @@ function updateClientProfile($clientId) {
     
     try {
         // vérifier que la personne est bien un client
-        $stmt = $pdo->prepare("SELECT id FROM personnes WHERE id = ? AND role_id = 2");
+        $stmt = $pdo->prepare("SELECT id FROM personnes WHERE id = ? AND role_id = 3");
         $stmt->execute([$clientId]);
         
         if ($stmt->rowCount() === 0) {
