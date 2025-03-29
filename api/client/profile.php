@@ -65,7 +65,7 @@ function getClientProfile($clientId) {
         $stmt = $pdo->prepare("SELECT p.*, r.nom as role_nom
                               FROM personnes p 
                               JOIN roles r ON p.role_id = r.id
-                              WHERE p.id = ? AND p.role_id = 3");
+                              WHERE p.id = ? AND p.role_id = 2");
         $stmt->execute([$clientId]);
         $client = $stmt->fetch(PDO::FETCH_ASSOC);
         
