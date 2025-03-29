@@ -131,7 +131,8 @@ function hasPermission($requiredRole) {
     }
     
     // TODO: implementer un systeme de permission propre
-    return $_SESSION['user_role'] == ROLE_ADMIN;
+    // pour l'instant, verifie si le rôle ID est admin (role_id = 3)
+    return $_SESSION['user_role'] == 3;
 }
 
 /**
@@ -200,7 +201,7 @@ function createRememberMeToken($userId) {
     $token = bin2hex(random_bytes(32));
     $expires = date('Y-m-d H:i:s', strtotime('+30 days'));
     
-    $stmt = $pdo->prepare("INSERT INTO remember_me_tokens (personne_id, token, expires_at) VALUES (?, ?, ?)");
+    $stmt = $pdo->prepare("INSERT INTO remember_me_tokens (user_id, token, expires_at) VALUES (?, ?, ?)");
     $stmt->execute([$userId, $token, $expires]);
     
     logSecurityEvent($userId, 'remember_token', 'Création de jeton "Se souvenir de moi"');

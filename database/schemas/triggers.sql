@@ -57,14 +57,3 @@ BEGIN
 END//
 
 DELIMITER ;
-
--- preferences utilisateurs
-DELIMITER //
-CREATE TRIGGER after_personne_insert
-AFTER INSERT ON personnes
-FOR EACH ROW
-BEGIN
-    INSERT INTO preferences_utilisateurs (personne_id, langue) VALUES (NEW.id, 'fr');
-END//
-
-DELIMITER ;
