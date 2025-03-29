@@ -49,7 +49,14 @@ switch ($_SERVER['REQUEST_METHOD']) {
         break;
 }
 
-// fonction pour recuperer toutes les prestations
+/**
+ * Récupère toutes les prestations de la base de données
+ * 
+ * Cette fonction retourne la liste complète des prestations triées par nom.
+ * En cas d'erreur, elle renvoie un message d'erreur approprié.
+ * 
+ * @return void Affiche un JSON contenant les prestations ou un message d'erreur
+ */
 function getServices() {
     global $db;
     
@@ -74,7 +81,15 @@ function getServices() {
     }
 }
 
-// fonction pour recuperer une prestation specifique
+/**
+ * Récupère une prestation spécifique par son ID
+ * 
+ * Cette fonction recherche une prestation dans la base de données par son identifiant.
+ * Si la prestation n'est pas trouvée, elle renvoie une erreur 404.
+ * 
+ * @param int $id Identifiant de la prestation à récupérer
+ * @return void Affiche un JSON contenant la prestation ou un message d'erreur
+ */
 function getService($id) {
     global $db;
     
@@ -108,14 +123,19 @@ function getService($id) {
     }
 }
 
-// fonction pour creer une nouvelle prestation
+/**
+ * Crée une nouvelle prestation dans la base de données
+ * 
+ * Cette fonction crée une nouvelle prestation à partir des données fournies dans le corps de la requête.
+ * Elle valide les champs requis (nom, prix, type) et gère les erreurs potentielles.
+ * 
+ * @return void Affiche un JSON contenant le statut de la création ou un message d'erreur
+ */
 function createService() {
     global $db;
     
-    // recuperer les donnees du corps de la requete
     $data = json_decode(file_get_contents('php://input'), true);
     
-    // validation des champs requis
     if (!isset($data['nom']) || empty(trim($data['nom']))) {
         http_response_code(400);
         echo json_encode([
@@ -179,14 +199,20 @@ function createService() {
     }
 }
 
-// fonction pour mettre a jour une prestation existante
+/**
+ * Met à jour une prestation existante
+ * 
+ * Cette fonction met à jour les informations d'une prestation existante.
+ * Elle vérifie d'abord l'existence de la prestation et valide les données fournies.
+ * 
+ * @param int $id Identifiant de la prestation à mettre à jour
+ * @return void Affiche un JSON contenant le statut de la mise à jour ou un message d'erreur
+ */
 function updateService($id) {
     global $db;
     
-    // recuperer les donnees du corps de la requete
     $data = json_decode(file_get_contents('php://input'), true);
     
-    // verifier si la prestation existe
     try {
         $query = "SELECT id FROM prestations WHERE id = :id";
         $stmt = $db->prepare($query);
@@ -202,7 +228,6 @@ function updateService($id) {
             return;
         }
         
-        // construire la requete de mise a jour
         $updateFields = [];
         $params = [':id' => $id];
         
@@ -245,13 +270,20 @@ function updateService($id) {
     }
 }
 
-// fonction pour supprimer une prestation
+/**
+ * Supprime une prestation de la base de données
+ * 
+ * Cette fonction supprime une prestation et ses données associées.
+ * Elle vérifie d'abord si la prestation existe et si elle peut être supprimée.
+ * 
+ * @param int $id Identifiant de la prestation à supprimer
+ * @return void Affiche un JSON contenant le statut de la suppression ou un message d'erreur
+ */
 function deleteService($id) {
     global $db;
     
     try {
-        // verifier si la prestation a des rendez-vous associes
-        $query = "SELECT COUNT(*) as count FROM rendez_vous WHERE prestation_id = :id";
+        $query = "SELECT COUNT(id) as count FROM rendez_vous WHERE prestation_id = :id";
         $stmt = $db->prepare($query);
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         $stmt->execute();
@@ -266,8 +298,7 @@ function deleteService($id) {
             return;
         }
         
-        // verifier si la prestation a des evaluations associees
-        $query = "SELECT COUNT(*) as count FROM evaluations WHERE prestation_id = :id";
+        $query = "SELECT COUNT(id) as count FROM evaluations WHERE prestation_id = :id";
         $stmt = $db->prepare($query);
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         $stmt->execute();
@@ -282,7 +313,6 @@ function deleteService($id) {
             return;
         }
         
-        // supprimer la prestation
         $query = "DELETE FROM prestations WHERE id = :id";
         $stmt = $db->prepare($query);
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);

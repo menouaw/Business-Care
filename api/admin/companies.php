@@ -59,7 +59,14 @@ switch ($_SERVER['REQUEST_METHOD']) {
         break;
 }
 
-// fonction pour recuperer toutes les entreprises
+/**
+ * Récupère toutes les entreprises de la base de données
+ * 
+ * Cette fonction retourne la liste complète des entreprises triées par nom.
+ * En cas d'erreur, elle renvoie un message d'erreur approprié.
+ * 
+ * @return void Affiche un JSON contenant les entreprises ou un message d'erreur
+ */
 function getCompanies() {
     global $db;
     
@@ -84,7 +91,15 @@ function getCompanies() {
     }
 }
 
-// fonction pour recuperer une entreprise specifique
+/**
+ * Récupère une entreprise spécifique par son ID
+ * 
+ * Cette fonction recherche une entreprise dans la base de données par son identifiant.
+ * Si l'entreprise n'est pas trouvée, elle renvoie une erreur 404.
+ * 
+ * @param int $id Identifiant de l'entreprise à récupérer
+ * @return void Affiche un JSON contenant l'entreprise ou un message d'erreur
+ */
 function getCompany($id) {
     global $db;
     
@@ -118,14 +133,19 @@ function getCompany($id) {
     }
 }
 
-// fonction pour creer une nouvelle entreprise
+/**
+ * Crée une nouvelle entreprise dans la base de données
+ * 
+ * Cette fonction crée une nouvelle entreprise à partir des données fournies dans le corps de la requête.
+ * Elle valide les champs requis et gère les erreurs potentielles.
+ * 
+ * @return void Affiche un JSON contenant le statut de la création ou un message d'erreur
+ */
 function createCompany() {
     global $db;
     
-    // recuperer les donnees du corps de la requete
     $data = json_decode(file_get_contents('php://input'), true);
     
-    // validation des champs requis
     if (!isset($data['nom']) || empty(trim($data['nom']))) {
         http_response_code(400);
         echo json_encode([
@@ -173,7 +193,15 @@ function createCompany() {
     }
 }
 
-// fonction pour mettre a jour une entreprise existante
+/**
+ * Met à jour une entreprise existante
+ * 
+ * Cette fonction met à jour les informations d'une entreprise existante.
+ * Elle vérifie d'abord l'existence de l'entreprise et valide les données fournies.
+ * 
+ * @param int $id Identifiant de l'entreprise à mettre à jour
+ * @return void Affiche un JSON contenant le statut de la mise à jour ou un message d'erreur
+ */
 function updateCompany($id) {
     global $db;
     
@@ -239,7 +267,15 @@ function updateCompany($id) {
     }
 }
 
-// fonction pour supprimer une entreprise
+/**
+ * Supprime une entreprise de la base de données
+ * 
+ * Cette fonction supprime une entreprise et ses données associées.
+ * Elle vérifie d'abord si l'entreprise existe et si elle peut être supprimée.
+ * 
+ * @param int $id Identifiant de l'entreprise à supprimer
+ * @return void Affiche un JSON contenant le statut de la suppression ou un message d'erreur
+ */
 function deleteCompany($id) {
     global $db;
     

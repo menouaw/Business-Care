@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<phpdocumentor
+        configVersion="3"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="https://www.phpdoc.org"
+        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/phpDocumentor/phpDocumentor/master/data/xsd/phpdoc.xsd"
+>
+    <title>Documentation Business Care</title>
+    <paths>
+        <output>docs</output>
+        <cache>build/cache</cache>
+    </paths>
+    <version number="latest">
+        <api>
+            <source dsn=".">
+                <path>web-admin/includes/page_functions</path>
+                <path>shared/web-admin</path>
+                <path>api</path>
+                <path>web-client</path>
+                <path>web-admin</path>
+            </source>
+            <ignore hidden="true" symlinks="true">
+                <path>vendor/**/*</path>
+                <path>tests/**/*</path>
+                <path>**/*.js</path>
+                <path>**/*.css</path>
+                <path>**/*.html</path>
+                <path>**/*.md</path>
+                <path>**/node_modules/**/*</path>
+                <path>**/assets/**/*</path>
+                
+                <!-- .gitignore -->
+                <path>node_modules/**/*</path>
+                <path>.env</path>
+                <path>.env.local</path>
+                <path>.env.development.local</path>
+                <path>.env.test.local</path>
+                <path>.env.production.local</path>
+                <path>logs/**/*</path>
+                <path>**/*.log</path>
+                <path>**/*npm-debug.log*</path>
+                <path>dist/**/*</path>
+                <path>build/**/*</path>
+                <path>cache/**/*</path>
+                <path>tmp/**/*</path>
+                <path>**/*.tmp</path>
+                <path>**/*.bak</path>
+                <path>**/*.cache</path>
+                <path>composer.phar</path>
+                <path>config.php</path>
+                <path>.cursor/**/*</path>
+                <path>uploads/**/*</path>
+                <path>media/**/*</path>
+                <path>generated/**/*</path>
+                <path>web-admin/install-admin.php</path>
+            </ignore>
+            <extensions>
+                <extension>php</extension>
+            </extensions>
+            <default-package-name>BusinessCare</default-package-name>
+            <visibility>public</visibility>
+        </api>
+    </version>
+</phpdocumentor>
