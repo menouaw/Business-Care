@@ -15,7 +15,6 @@ if (!isAuthenticated() || !hasPermission('manage_contracts')) {
 // module de gestion des contrats
 
 // traitement de la requete selon la methode
-<?php
 // module de gestion des contrats
 
 // Récupération de l'ID depuis l'URL (exemple: /contracts.php?id=123)
@@ -69,12 +68,18 @@ switch ($_SERVER['REQUEST_METHOD']) {
         break;
 }
 
-// fonction pour recuperer tous les contrats
+/**
+ * Récupère tous les contrats de la base de données
+ * 
+ * Cette fonction retourne la liste des contrats avec possibilité de filtrage par statut et entreprise.
+ * Les contrats sont triés par date de début décroissante.
+ * 
+ * @return void Affiche un JSON contenant les contrats ou un message d'erreur
+ */
 function getContracts() {
     global $db;
     
     try {
-        // recuperer les parametres de filtrage optionnels
         $statut = isset($_GET['statut']) ? $_GET['statut'] : null;
         $entreprise_id = isset($_GET['entreprise_id']) ? $_GET['entreprise_id'] : null;
         
@@ -120,7 +125,15 @@ function getContracts() {
     }
 }
 
-// fonction pour recuperer un contrat specifique
+/**
+ * Récupère un contrat spécifique par son ID
+ * 
+ * Cette fonction recherche un contrat dans la base de données par son identifiant.
+ * Elle inclut également les informations de l'entreprise associée.
+ * 
+ * @param int $id Identifiant du contrat à récupérer
+ * @return void Affiche un JSON contenant le contrat ou un message d'erreur
+ */
 function getContract($id) {
     global $db;
     
@@ -157,14 +170,19 @@ function getContract($id) {
     }
 }
 
-// fonction pour creer un nouveau contrat
+/**
+ * Crée un nouveau contrat dans la base de données
+ * 
+ * Cette fonction crée un nouveau contrat à partir des données fournies dans le corps de la requête.
+ * Elle valide les champs requis et vérifie l'existence de l'entreprise associée.
+ * 
+ * @return void Affiche un JSON contenant le statut de la création ou un message d'erreur
+ */
 function createContract() {
     global $db;
     
-    // recuperer les donnees du corps de la requete
     $data = json_decode(file_get_contents('php://input'), true);
     
-    // validation des champs requis
     if (!isset($data['entreprise_id']) || !is_numeric($data['entreprise_id'])) {
         http_response_code(400);
         echo json_encode([
@@ -193,7 +211,6 @@ function createContract() {
     }
     
     try {
-        // verifier si l'entreprise existe
         $query = "SELECT id FROM entreprises WHERE id = :entreprise_id";
         $stmt = $db->prepare($query);
         $stmt->bindParam(':entreprise_id', $data['entreprise_id'], PDO::PARAM_INT);
@@ -208,7 +225,6 @@ function createContract() {
             return;
         }
         
-        // inserer le nouveau contrat
         $query = "INSERT INTO contrats (entreprise_id, date_debut, date_fin, montant_mensuel, 
                  nombre_salaries, type_contrat, statut, conditions_particulieres) 
                  VALUES (:entreprise_id, :date_debut, :date_fin, :montant_mensuel, 
@@ -242,14 +258,20 @@ function createContract() {
     }
 }
 
-// fonction pour mettre a jour un contrat existant
+/**
+ * Met à jour un contrat existant
+ * 
+ * Cette fonction met à jour les informations d'un contrat existant.
+ * Elle vérifie d'abord l'existence du contrat et valide les données fournies.
+ * 
+ * @param int $id Identifiant du contrat à mettre à jour
+ * @return void Affiche un JSON contenant le statut de la mise à jour ou un message d'erreur
+ */
 function updateContract($id) {
     global $db;
     
-    // recuperer les donnees du corps de la requete
     $data = json_decode(file_get_contents('php://input'), true);
     
-    // verifier si le contrat existe
     try {
         $query = "SELECT id FROM contrats WHERE id = :id";
         $stmt = $db->prepare($query);
@@ -265,7 +287,6 @@ function updateContract($id) {
             return;
         }
         
-        // construire la requete de mise a jour
         $updateFields = [];
         $params = [':id' => $id];
         
@@ -290,7 +311,6 @@ function updateContract($id) {
             return;
         }
         
-        // si entreprise_id est fourni, verifier si l'entreprise existe
         if (isset($data['entreprise_id'])) {
             $query = "SELECT id FROM entreprises WHERE id = :entreprise_id";
             $stmt = $db->prepare($query);
@@ -325,12 +345,19 @@ function updateContract($id) {
     }
 }
 
-// fonction pour supprimer un contrat
+/**
+ * Supprime un contrat de la base de données
+ * 
+ * Cette fonction supprime un contrat et ses données associées.
+ * Elle vérifie d'abord si le contrat existe et si la suppression est possible.
+ * 
+ * @param int $id Identifiant du contrat à supprimer
+ * @return void Affiche un JSON contenant le statut de la suppression ou un message d'erreur
+ */
 function deleteContract($id) {
     global $db;
     
     try {
-        // verifier d'abord si le contrat existe
         $query = "SELECT id FROM contrats WHERE id = :id";
         $stmt = $db->prepare($query);
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
@@ -345,7 +372,6 @@ function deleteContract($id) {
             return;
         }
         
-        // supprimer le contrat
         $query = "DELETE FROM contrats WHERE id = :id";
         $stmt = $db->prepare($query);
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
