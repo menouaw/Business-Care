@@ -216,7 +216,6 @@ function resetPassword($email) {
  * @return void
  */
 function loadUserPreferences($userId) {
-    // Récupération de la langue préférée
     $pdo = getDbConnection();
     $stmt = $pdo->prepare("SELECT langue FROM preferences_utilisateurs WHERE personne_id = ?");
     $stmt->execute([$userId]);
@@ -224,9 +223,6 @@ function loadUserPreferences($userId) {
     
     if ($result) {
         $_SESSION['user_language'] = $result['langue'];
-    } else {
-        // Valeur par défaut
-        $_SESSION['user_language'] = 'fr';
     }
 }
 
