@@ -18,11 +18,6 @@ function login($email, $password, $rememberMe = false) {
     $user = $stmt->fetch();
     
     if ($user && password_verify($password, $user['mot_de_passe'])) {
-        // Vérification que ce n'est pas un administrateur (role_id 3)
-        if ($user['role_id'] == 3) {
-            logSecurityEvent($user['id'], 'login', 'Tentative de connexion admin sur interface client', true);
-            return false;
-        }
         
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['user_name'] = $user['prenom'] . ' ' . $user['nom'];
@@ -32,7 +27,7 @@ function login($email, $password, $rememberMe = false) {
         $_SESSION['user_photo'] = $user['photo_url'];
         $_SESSION['last_activity'] = time();
         
-        // Stocker les préférences utilisateur
+        // stocker les préférences utilisateur
         loadUserPreferences($user['id']);
         
         if ($rememberMe) {
@@ -164,8 +159,7 @@ function requireRole($requiredRole) {
     
     if (!hasRole($requiredRole)) {
         flashMessage('accès refusé: vous n\'avez pas les permissions nécessaires', 'danger');
-        header('Location: ' . WEBCLIENT_URL . '/index.php');
-        exit;
+        redirectTo(WEBCLIENT_URL . '/index.php');
     }
 }
 
@@ -278,7 +272,7 @@ function validateRememberMeToken($token) {
             $_SESSION['user_photo'] = $user['photo_url'];
             $_SESSION['last_activity'] = time();
             
-            // Charger les préférences utilisateur
+            // charger les préférences utilisateur
             loadUserPreferences($user['id']);
             
             logSecurityEvent($user['id'], 'auto_login', 'Connexion automatique via jeton "Se souvenir de moi"');

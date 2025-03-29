@@ -301,7 +301,7 @@ function getPrestations($type = '', $categorie = '', $page = 1, $perPage = 10) {
 function isTimeSlotAvailable($dateHeure, $duree, $prestationId) {
     $finRdv = date('Y-m-d H:i:s', strtotime($dateHeure) + ($duree * 60));
     
-    $sql = "SELECT COUNT(*) FROM rendez_vous 
+    $sql = "SELECT COUNT(id) FROM rendez_vous 
             WHERE prestation_id = :prestation_id
             AND statut NOT IN ('annule', 'termine')
             AND (
