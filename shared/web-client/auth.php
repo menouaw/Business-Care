@@ -1,5 +1,5 @@
 <?php
-// API pour l'authentification
+// API pour l'authentification côté client
 require_once 'logging.php';
 
 /**
@@ -12,18 +12,23 @@ require_once 'logging.php';
  */
 function login($email, $password, $rememberMe = false) {
     $pdo = getDbConnection();
-    $stmt = $pdo->prepare("SELECT id, nom, prenom, email, mot_de_passe, role_id, photo_url 
-                           FROM personnes WHERE email = ? AND statut = 'actif'");
+    $stmt = $pdo->prepare("SELECT id, nom, prenom, email, mot_de_passe, role_id, entreprise_id, photo_url 
+                          FROM personnes WHERE email = ? AND statut = 'actif'");
     $stmt->execute([$email]);
     $user = $stmt->fetch();
     
     if ($user && password_verify($password, $user['mot_de_passe'])) {
+        
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['user_name'] = $user['prenom'] . ' ' . $user['nom'];
         $_SESSION['user_email'] = $user['email'];
         $_SESSION['user_role'] = $user['role_id'];
+        $_SESSION['user_entreprise'] = $user['entreprise_id'];
         $_SESSION['user_photo'] = $user['photo_url'];
         $_SESSION['last_activity'] = time();
+        
+        // stocker les préférences utilisateur
+        loadUserPreferences($user['id']);
         
         if ($rememberMe) {
             $token = createRememberMeToken($user['id']);
@@ -44,13 +49,9 @@ function login($email, $password, $rememberMe = false) {
 }
 
 /**
- * Déconnecte l'utilisateur authentifié et réinitialise la session.
+ * Déconnecte l'utilisateur et réinitialise la session
  *
- * Cette fonction marque l'événement de déconnexion en journalisant l'action pour un utilisateur identifié,
- * supprime le token "remember_me" ainsi que son cookie associé si présent,
- * puis détruit la session PHP en cours et en démarre une nouvelle afin d'assurer une déconnexion complète.
- *
- * @return bool Indique si la déconnexion a été effectuée avec succès.
+ * @return bool Indique si la déconnexion a été effectuée avec succès
  */
 function logout() {
     if (isset($_SESSION['user_id'])) {
@@ -70,15 +71,9 @@ function logout() {
 }
 
 /**
- * Vérifie si l'utilisateur est authentifié.
+ * Vérifie si l'utilisateur est authentifié
  *
- * Cette fonction détermine d'abord si une session active existe en vérifiant la présence d'un identifiant utilisateur.
- * Si la session existe, elle compare l'heure de la dernière activité avec le délai autorisé (SESSION_LIFETIME).
- * En cas d'expiration de la session, l'événement est consigné, la fonction procède à une déconnexion automatique et retourne false.
- *
- * Si aucune session n'est active, la fonction tente une authentification via le cookie "remember_me" en validant son token.
- *
- * @return bool Retourne true si l'utilisateur est authentifié, false sinon.
+ * @return bool Retourne true si l'utilisateur est authentifié, false sinon
  */
 function isAuthenticated() {
     if (isset($_SESSION['user_id'])) {
@@ -100,38 +95,72 @@ function isAuthenticated() {
 }
 
 /**
- * Vérifie que l'utilisateur est authentifié.
- *
- * Si l'utilisateur n'est pas authentifié, enregistre l'URL de la requête actuelle dans la session
- * pour permettre une redirection après connexion, puis redirige vers la page de connexion.
- * La fonction termine immédiatement l'exécution du script après la redirection.
+ * Vérifie que l'utilisateur est authentifié et redirige si nécessaire
  *
  * @return void
  */
 function requireAuthentication() {
     if (!isAuthenticated()) {
         $_SESSION['redirect_after_login'] = $_SERVER['REQUEST_URI'];
-        header('Location: ' . WEBADMIN_URL . '/login.php');
+        header('Location: ' . WEBCLIENT_URL . '/connexion.php');
         exit;
     }
 }
 
 /**
- * Vérifie si l'utilisateur authentifié dispose de la permission nécessaire.
+ * Vérifie si l'utilisateur authentifié dispose du rôle spécifié
  *
- * Actuellement, la vérification ignore le paramètre $requiredRole et se contente de
- * confirmer que l'utilisateur possède le rôle administrateur (role_id = 3) dans la session.
- *
- * @param int $requiredRole Identifiant du rôle requis (non utilisé dans l'implémentation actuelle)
- * @return bool Retourne true si l'utilisateur est authentifié et est administrateur, sinon false.
+ * @param int $requiredRole Identifiant du rôle requis
+ * @return bool Retourne true si l'utilisateur est authentifié et a le rôle requis
  */
-function hasPermission($requiredRole) {
+function hasRole($requiredRole) {
     if (!isAuthenticated()) {
         return false;
     }
     
-    // TODO: implementer un systeme de permission propre
-    return $_SESSION['user_role'] == ROLE_ADMIN;
+    return $_SESSION['user_role'] == $requiredRole;
+}
+
+/**
+ * Vérifie si l'utilisateur authentifié est un représentant d'entreprise
+ *
+ * @return bool Retourne true si l'utilisateur est un représentant d'entreprise
+ */
+function isEntrepriseUser() {
+    return hasRole(ROLE_ENTREPRISE);
+}
+
+/**
+ * Vérifie si l'utilisateur authentifié est un salarié
+ *
+ * @return bool Retourne true si l'utilisateur est un salarié
+ */
+function isSalarieUser() {
+    return hasRole(ROLE_SALARIE);
+}
+
+/**
+ * Vérifie si l'utilisateur authentifié est un prestataire
+ *
+ * @return bool Retourne true si l'utilisateur est un prestataire
+ */
+function isPrestataireUser() {
+    return hasRole(ROLE_PRESTATAIRE);
+}
+
+/**
+ * Vérifie l'accès au rôle spécifié et redirige si non autorisé
+ *
+ * @param int $requiredRole Identifiant du rôle requis
+ * @return void
+ */
+function requireRole($requiredRole) {
+    requireAuthentication();
+    
+    if (!hasRole($requiredRole)) {
+        flashMessage('accès refusé: vous n\'avez pas les permissions nécessaires', 'danger');
+        redirectTo(WEBCLIENT_URL . '/index.php');
+    }
 }
 
 /**
@@ -152,15 +181,10 @@ function getUserInfo($userId = null) {
 }
 
 /**
- * Initialise la procédure de réinitialisation de mot de passe pour un utilisateur.
+ * Initialise la procédure de réinitialisation de mot de passe pour un utilisateur
  *
- * Cette fonction vérifie si l'email fourni correspond à un utilisateur existant. Si ce n'est pas le cas,
- * elle consigne un événement de sécurité et retourne false. Sinon, elle génère un jeton unique et définit
- * une date d'expiration d'une heure pour le lien de réinitialisation, met à jour l'enregistrement de l'utilisateur,
- * et consigne l'initiation de la demande de réinitialisation.
- *
- * @param string $email Email de l'utilisateur concerné.
- * @return bool Retourne true si la procédure de réinitialisation a été initiée avec succès, false sinon.
+ * @param string $email Email de l'utilisateur concerné
+ * @return bool Retourne true si la procédure de réinitialisation a été initiée avec succès
  */
 function resetPassword($email) {
     $user = fetchOne('personnes', "email = '$email'");
@@ -180,27 +204,40 @@ function resetPassword($email) {
     
     logSecurityEvent($user['id'], 'password_reset', 'Demande de réinitialisation de mot de passe initiée');
     
-    // TODO: envoyer un email de reinitialisation de mot de passe
+    // TODO: envoyer un email de reinitialisation de mot de passe avec lien contenant le token
     
     return true;
 }
 
 /**
- * Génère et stocke un jeton de connexion automatique "Se souvenir de moi" pour un utilisateur.
+ * Charge les préférences utilisateur en session
+ * 
+ * @param int $userId ID de l'utilisateur
+ * @return void
+ */
+function loadUserPreferences($userId) {
+    $pdo = getDbConnection();
+    $stmt = $pdo->prepare("SELECT langue FROM preferences_utilisateurs WHERE personne_id = ?");
+    $stmt->execute([$userId]);
+    $result = $stmt->fetch();
+    
+    if ($result) {
+        $_SESSION['user_language'] = $result['langue'];
+    }
+}
+
+/**
+ * Génère et stocke un jeton de connexion automatique "Se souvenir de moi"
  *
- * Le jeton, composé d'une chaîne hexadécimale de 64 caractères, est enregistré dans la base
- * de données avec une date d'expiration fixée à 30 jours. Un événement de sécurité est loggué
- * lors de sa création.
- *
- * @param int $userId Identifiant de l'utilisateur pour lequel le jeton est généré.
- * @return string Le jeton généré.
+ * @param int $userId Identifiant de l'utilisateur
+ * @return string Le jeton généré
  */
 function createRememberMeToken($userId) {
     $pdo = getDbConnection();
     $token = bin2hex(random_bytes(32));
     $expires = date('Y-m-d H:i:s', strtotime('+30 days'));
     
-    $stmt = $pdo->prepare("INSERT INTO remember_me_tokens (personne_id, token, expires_at) VALUES (?, ?, ?)");
+    $stmt = $pdo->prepare("INSERT INTO remember_me_tokens (user_id, token, expires_at) VALUES (?, ?, ?)");
     $stmt->execute([$userId, $token, $expires]);
     
     logSecurityEvent($userId, 'remember_token', 'Création de jeton "Se souvenir de moi"');
@@ -227,8 +264,12 @@ function validateRememberMeToken($token) {
             $_SESSION['user_name'] = $user['prenom'] . ' ' . $user['nom'];
             $_SESSION['user_email'] = $user['email'];
             $_SESSION['user_role'] = $user['role_id'];
+            $_SESSION['user_entreprise'] = $user['entreprise_id'];
             $_SESSION['user_photo'] = $user['photo_url'];
             $_SESSION['last_activity'] = time();
+            
+            // charger les préférences utilisateur
+            loadUserPreferences($user['id']);
             
             logSecurityEvent($user['id'], 'auto_login', 'Connexion automatique via jeton "Se souvenir de moi"');
             return true;

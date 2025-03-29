@@ -7,11 +7,7 @@ Le panneau d'administration est la partie backend permettant de gérer toutes le
 ```
 web-admin/                  # Dossier principal de l'administration
 ├── includes/               # Fichiers d'inclusion PHP
-│   ├── config.php          # Configuration de l'application
-│   ├── db.php              # Fonctions de base de données
-│   ├── auth.php            # Fonctions d'authentification
 │   ├── init.php            # Initialisation du système
-│   ├── functions.php       # Fonctions utilitaires
 │   └── page_functions/     # Fonctions spécifiques à chaque page
 ├── modules/                # Modules fonctionnels
 │   ├── users/              # Gestion des utilisateurs
@@ -29,6 +25,18 @@ web-admin/                  # Dossier principal de l'administration
 └── install-admin.php       # Script d'installation
 ```
 
+### Fichiers partagés
+
+Les fichiers communs partagés entre plusieurs composants de l'application se trouvent dans le dossier `/shared/web-admin/` :
+```
+shared/web-admin/           # Fichiers partagés pour l'administration
+├── config.php              # Configuration de l'application
+├── db.php                  # Fonctions de base de données
+├── auth.php                # Fonctions d'authentification
+├── functions.php           # Fonctions utilitaires
+└── logging.php             # Fonctions de journalisation
+```
+
 ## API REST
 
 L'API REST se trouve dans le dossier `/api` à la racine du projet et comprend les points d'entrée suivants :
@@ -40,7 +48,7 @@ L'API REST se trouve dans le dossier `/api` à la racine du projet et comprend l
 │   ├── companies.php      # Gestion des entreprises
 │   ├── contracts.php      # Gestion des contrats
 │   ├── services.php       # Gestion des services
-│   ├── auth.php           # Authentification
+│   └── auth.php           # Authentification
 ```
 
 ### Points d'entrée API disponibles
@@ -63,7 +71,7 @@ L'API REST se trouve dans le dossier `/api` à la racine du projet et comprend l
 
 1. Créer une base de données MySQL
 2. Importer le script SQL depuis `/database/setup.sql`
-3. Modifier les paramètres de connexion dans `/web-admin/includes/config.php`
+3. Modifier les paramètres de connexion dans `/shared/web-admin/config.php`
 4. Exécuter le script d'installation via `/web-admin/install-admin.php`
 
 ## Fonctionnalités principales
@@ -90,20 +98,23 @@ L'API REST se trouve dans le dossier `/api` à la racine du projet et comprend l
 1. Cloner le dépôt GitHub
 2. Créer et configurer la base de données
 3. Exécuter `composer install` pour installer les dépendances
-4. Configurer le fichier `includes/config.php`
+4. Configurer le fichier `shared/web-admin/config.php`
 5. Exécuter le script d'installation
 
-## Organisation du code
+## Architecture du code
 
 ### Structure des fichiers
 
-Pour maintenir une organisation claire du code, les fonctions spécifiques aux pages sont séparées dans des fichiers dédiés:
+Pour maintenir une organisation claire du code, les fonctions sont séparées selon leur responsabilité:
 
-- `/web-admin/includes/` - Contient les fichiers principaux du système
+- `/shared/web-admin/` - Contient les fichiers partagés du système
   - `config.php` - Configuration générale
   - `db.php` - Connexion à la base de données et fonctions de requêtes
   - `auth.php` - Fonctions d'authentification
   - `functions.php` - Fonctions utilitaires générales
+  - `logging.php` - Journalisation des événements système
+
+- `/web-admin/includes/` - Contient les fichiers spécifiques à l'administration
   - `init.php` - Initialisation du système
   - `/page_functions/` - Fonctions spécifiques à chaque page
     - `dashboard.php` - Fonctions pour le tableau de bord
@@ -141,11 +152,13 @@ Pour maintenir une organisation claire du code, les fonctions spécifiques aux p
 3. **Facilite la maintenance**: Les modifications de la logique métier sont centralisées
 4. **Tests plus simples**: Il est plus facile de tester les fonctions séparément
 5. **Évolution plus aisée**: L'ajout de nouvelles fonctionnalités est simplifié
+6. **Partage de code**: Les fonctions communes sont disponibles pour tous les composants de l'application
 
 ## Sécurité
 
 - Toutes les entrées utilisateur doivent être validées et nettoyées
 - L'authentification est gérée via des sessions sécurisées
-- Les mots de passe sont hachés avec bcrypt
+- Les mots de passe sont hachés avec SHA-256
 - Protection contre les attaques XSS et CSRF implémentée
-- Les requêtes à l'API nécessitent une authentification par jeton 
+- Les requêtes à l'API nécessitent une authentification par jeton
+- Journalisation des événements de sécurité 

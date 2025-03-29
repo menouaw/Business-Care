@@ -100,7 +100,7 @@ function usersGetDetails($id) {
     $user['login_history'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     // recupere les prestations associees (pour les praticiens)
-    if ($user['role_id'] == 2) { // role_id 2 = praticien
+    if ($user['role_id'] == ROLE_PRESTATAIRE) {
         $stmt = $pdo->prepare("SELECT p.*, s.nom as service_nom
                               FROM prestations p
                               LEFT JOIN services s ON p.service_id = s.id
@@ -111,7 +111,7 @@ function usersGetDetails($id) {
     }
     
     // recupere les reservations (pour les salaries)
-    if ($user['role_id'] == 1) { // role_id 1 = salarie
+    if ($user['role_id'] == ROLE_SALARIE) {
         $stmt = $pdo->prepare("SELECT r.*, s.nom as service_nom, p.prenom as praticien_prenom, p.nom as praticien_nom
                               FROM reservations r
                               LEFT JOIN prestations pr ON r.prestation_id = pr.id
