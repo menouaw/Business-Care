@@ -2,73 +2,76 @@
 
 L'interface client est la partie frontend permettant aux clients et salariés d'entreprises d'accéder aux services de Business Care. Cette interface centralise tous les outils nécessaires pour bénéficier des prestations proposées.
 
-## Structure du projet
+## Structure actuelle du projet
 
 ```
 web-client/                  # Dossier principal de l'interface client
 ├── includes/                # Fichiers d'inclusion PHP
-│   ├── init.php             # Initialisation du système
+│   ├── init.php             # Initialisation du système et inclusion des fichiers partagés
 │   └── page_functions/      # Fonctions spécifiques à chaque page
+│       ├── login.php        # Fonctions pour la gestion de l'authentification
+│       └── modules/         # Fonctions spécifiques aux modules fonctionnels
+│           ├── companies.php  # Fonctions pour la gestion des entreprises
+│           ├── employees.php  # Fonctions pour la gestion des salariés
+│           └── providers.php  # Fonctions pour la gestion des prestataires
 ├── modules/                 # Modules fonctionnels
-│   ├── profile/             # Gestion du profil utilisateur
 │   ├── providers/           # Prestataires de services
-│   │   ├── index.php        # Liste des prestataires
-│   │   ├── view.php         # Profil du prestataire
-│   │   ├── search.php       # Recherche de prestataires
-│   │   ├── calendar.php     # Calendrier de disponibilités
-│   │   ├── ratings.php      # Évaluations et avis
-│   │   ├── categories.php   # Catégories de prestataires
-│   │   ├── contracts.php    # Contrats avec les prestataires
-│   │   ├── services.php     # Services offerts
-│   │   ├── invoices.php     # Factures des prestations
-│   │   └── settings.php     # Paramètres prestataires
-│   ├── contracts/           # Suivi des contrats
 │   ├── companies/           # Gestion des entreprises clientes
-│   │   ├── index.php        # Liste des entreprises
-│   │   ├── view.php         # Détails d'une entreprise
-│   │   ├── edit.php         # Modification d'une entreprise
-│   │   ├── employees.php    # Gestion des collaborateurs
-│   │   ├── contracts.php    # Contrats de l'entreprise
-│   │   ├── quotes.php       # Devis et propositions
-│   │   ├── invoices.php     # Factures de l'entreprise
-│   │   ├── payments.php     # Historique des paiements
-│   │   ├── reports.php      # Rapports et analyses
-│   │   └── settings.php     # Paramètres de l'entreprise
-│   ├── employees/           # Gestion des salariés
-│   │   ├── index.php        # Tableau de bord salarié
-│   │   ├── view.php         # Profil du salarié
-│   │   ├── edit.php         # Modification du profil
-│   │   ├── services.php     # Services disponibles
-│   │   ├── reservations.php # Réservations de services
-│   │   ├── appointments.php # Rendez-vous médicaux
-│   │   ├── history.php      # Historique d'activités
-│   │   ├── communities.php  # Espace communautaire
-│   │   ├── donations.php    # Gestion des dons
-│   │   ├── events.php       # Défis et événements
-│   │   └── settings.php     # Préférences utilisateur
-│   └── appointments/        # Gestion des rendez-vous
+│   └── employees/           # Gestion des salariés
 ├── templates/               # Modèles d'interface
 │   ├── header.php           # En-tête commune
 │   ├── footer.php           # Pied de page commun
-│   └── sidebar.php          # Barre latérale de navigation
-├── assets/                  # Ressources statiques (css, js, images)
+│   ├── companies/           # Templates spécifiques aux entreprises
+│   ├── employees/           # Templates spécifiques aux salariés 
+│   └── services/            # Templates de services
 ├── index.php                # Page d'accueil/tableau de bord
-├── connexion.php            # Page de connexion
-├── inscription.php          # Page d'inscription
-└── deconnexion.php          # Script de déconnexion
+├── login.php                # Page de connexion
+└── logout.php               # Script de déconnexion
 ```
 
 ### Fichiers partagés
 
 Les fichiers communs partagés entre plusieurs composants de l'application se trouvent dans le dossier `/shared/web-client/` :
+
 ```
 shared/web-client/           # Fichiers partagés pour l'interface client
-├── config.php               # Configuration de l'application
-├── db.php                   # Fonctions de base de données
-├── auth.php                 # Fonctions d'authentification
-├── functions.php            # Fonctions utilitaires
-└── logging.php              # Fonctions de journalisation
+├── config.php               # Configuration générale de l'application
+├── db.php                   # Fonctions de connexion et requêtes de base de données
+├── auth.php                 # Authentification et gestion des sessions
+├── functions.php            # Fonctions utilitaires générales
+└── logging.php              # Journalisation des événements système
 ```
+
+### Ressources statiques
+
+Les ressources statiques sont organisées dans le dossier `assets/` à la racine du projet :
+
+```
+assets/                      # Ressources statiques
+├── css/                     # Feuilles de style CSS
+│   ├── client.css           # Styles spécifiques pour l'interface client
+│   └── admin.css            # Styles spécifiques pour l'interface admin
+├── js/                      # Scripts JavaScript
+│   └── admin.js             # Fonctionnalités JavaScript pour l'interface admin
+├── images/                  # Images et icônes
+│   ├── logo/                # Logos et identité visuelle
+│   ├── cover/               # Images d'en-tête et bannières 
+│   └── exemple/             # Images d'exemple et de démonstration
+└── fonts/                   # Polices de caractères
+```
+
+## État actuel du développement
+
+Le projet Business Care est en cours de développement. La structure de base est en place, mais de nombreux fichiers sont encore vides ou en cours d'implémentation. Les principaux modules identifiés (providers, companies, employees) sont créés et prêts à recevoir leur contenu fonctionnel.
+
+### Prochaines étapes de développement
+
+1. Implémenter les fichiers d'authentification (login.php)
+2. Développer les templates de base (header.php, footer.php)
+3. Compléter les modules fonctionnels prioritaires:
+   - Gestion des entreprises clientes
+   - Gestion des salariés
+   - Gestion des prestataires de services
 
 ## API REST
 
@@ -77,71 +80,60 @@ L'API REST se trouve dans le dossier `/api` à la racine du projet et comprend l
 ```
 /api/                       # Point d'entrée principal
 ├── client/                 # Endpoints pour l'interface client
-│   ├── auth.php            # Authentification
-│   ├── profile.php         # Gestion du profil
-│   ├── providers.php       # Prestataires de services
-│   ├── contracts.php       # Suivi des contrats
-│   ├── companies.php       # Gestion des entreprises
-│   ├── employees.php       # Gestion des salariés
-│   └── appointments.php    # Gestion des rendez-vous
+│   ├── auth.php            # Authentification et gestion des sessions
+│   ├── profile.php         # Gestion du profil utilisateur
+│   ├── services.php        # Gestion des services disponibles
+│   ├── contracts.php       # Suivi et gestion des contrats
+│   └── appointments.php    # Gestion complète des rendez-vous
 ```
 
 ### Points d'entrée API disponibles
 
-- `POST /api/client/auth` - Authentification
-- `PUT /api/client/auth` - Modification de mot de passe
-- `DELETE /api/client/auth` - Déconnexion
+- **auth.php**: 
+  - Authentification des utilisateurs
+  - Gestion des sessions et tokens
+  - Modification des mots de passe
 
-- `GET /api/client/profile` - Détails du profil utilisateur
-- `PUT /api/client/profile` - Mise à jour du profil
+- **profile.php**: 
+  - Récupération et mise à jour des informations de profil
+  - Gestion des préférences utilisateur
 
-- `GET /api/client/providers` - Liste des prestataires de services
-- `GET /api/client/providers/{id}` - Profil d'un prestataire
-- `GET /api/client/providers/{id}/services` - Services offerts par un prestataire
-- `GET /api/client/providers/{id}/ratings` - Évaluations d'un prestataire
-- `GET /api/client/providers/categories` - Liste des catégories de prestataires
+- **services.php**: 
+  - Catalogue des services disponibles
+  - Recherche et filtrage des services
+  - Détails et disponibilités des services
 
-- `GET /api/client/contracts` - Liste des contrats de l'entreprise
-- `GET /api/client/contracts/{id}` - Détail d'un contrat spécifique
+- **contracts.php**: 
+  - Liste et détails des contrats
+  - Historique des contrats
+  - Suivi de l'état des contrats
 
-- `GET /api/client/appointments` - Liste des rendez-vous
-- `GET /api/client/appointments/{id}` - Détail d'un rendez-vous
-- `POST /api/client/appointments` - Création d'un rendez-vous
-- `PUT /api/client/appointments/{id}` - Modification d'un rendez-vous
-- `DELETE /api/client/appointments/{id}` - Annulation d'un rendez-vous
+- **appointments.php**: 
+  - Création, modification et annulation de rendez-vous
+  - Consultation de l'historique des rendez-vous
+  - Filtrage par statut, date et prestataire
 
-## Configuration
+## Base de données
 
-1. S'assurer que la base de données MySQL est configurée
-2. Vérifier que le script SQL depuis `/database/setup.sql` a été importé
-3. Modifier les paramètres de connexion dans `/shared/web-client/config.php` si nécessaire
-4. Les préférences utilisateur sont stockées dans la table `preferences_utilisateurs`
+Le projet utilise une base de données MySQL avec le schéma suivant:
 
-## Fonctionnalités principales
-
-- Tableau de bord personnalisé pour les clients
-- Recherche et filtrage des prestataires de services
-- Prise de rendez-vous et gestion des réservations
-- Suivi des contrats et services souscrits
-- Gestion du profil utilisateur et préférences
-- Historique des rendez-vous et évaluations
-- Gestion des paiements et factures
-
-## Développement
-
-### Prérequis
-
-- PHP 7.4 ou supérieur
-- MySQL 5.7 ou supérieur
-- Serveur web Apache avec mod_rewrite activé
-- Composer pour la gestion des dépendances
-
-### Installation pour le développement
-
-1. Cloner le dépôt GitHub
-2. S'assurer que la base de données est configurée
-3. Exécuter `composer install` pour installer les dépendances
-4. Configurer le fichier `shared/web-client/config.php`
+### Tables principales
+- `roles` - Définit les rôles utilisateur dans le système
+- `entreprises` - Stocke les informations des entreprises clientes
+- `personnes` - Contient les données des utilisateurs (employés, prestataires, etc.)
+- `prestations` - Catalogue des services disponibles
+- `contrats` - Contrats entre Business Care et les entreprises
+- `devis` - Devis émis pour les entreprises
+- `factures` - Factures générées et leur statut
+- `rendez_vous` - Gestion des rendez-vous et consultations
+- `evenements` - Évènements organisés (conférences, webinars, etc.)
+- `communautes` - Espaces communautaires pour les salariés
+- `dons` - Suivi des dons (financiers ou matériels)
+- `evaluations` - Évaluations des prestations par les utilisateurs
+- `notifications` - Système de notifications internes
+- `logs` - Journalisation des activités
+- `remember_me_tokens` - Jetons de connexion persistante
+- `preferences_utilisateurs` - Préférences de langue, thème, etc.
 
 ## Architecture du code
 
@@ -157,75 +149,40 @@ Pour maintenir une organisation claire du code, les fonctions sont séparées se
   - `logging.php` - Journalisation des événements système
 
 - `/web-client/includes/` - Contient les fichiers spécifiques à l'interface client
-  - `init.php` - Initialisation du système
+  - `init.php` - Initialisation du système et inclusion des fichiers partagés
   - `/page_functions/` - Fonctions spécifiques à chaque page
-    - `dashboard.php` - Fonctions pour le tableau de bord
-    - `login.php` - Fonctions de traitement du login
+    - `login.php` - Fonctions de traitement du login (à implémenter)
     - `/modules/` - Fonctions spécifiques aux modules
-      - `profile.php` - Gestion du profil
-      - `providers.php` - Gestion des prestataires
-      - `contracts.php` - Gestion des contrats
-      - `companies.php` - Gestion des entreprises
-      - `employees.php` - Gestion des salariés
-      - `appointments.php` - Gestion des rendez-vous
-
-### API Client
-
-L'API client suit une architecture RESTful et gère:
-
-1. **Authentification** (`auth.php`):
-   - Login des clients avec vérification du rôle
-   - Changement de mot de passe
-   - Déconnexion et gestion des tokens
-
-2. **Profil** (`profile.php`):
-   - Récupération des informations du profil utilisateur
-   - Mise à jour des informations personnelles
-   - Gestion des préférences utilisateur
-
-3. **Prestataires** (`providers.php`):
-   - Listage des prestataires de services
-   - Profils détaillés et disponibilités
-   - Évaluations et avis des clients
-   - Services proposés et tarification
-   - Catégories de prestataires
-
-4. **Entreprises** (`companies.php`):
-   - Gestion des informations des entreprises clientes
-   - Accès aux collaborateurs, contrats et facturation
-   - Génération de devis personnalisés
-   - Suivi des paiements et abonnements
-
-5. **Salariés** (`employees.php`):
-   - Gestion des comptes et profils des salariés
-   - Accès aux services, réservations et rendez-vous
-   - Participation aux communautés et défis
-   - Gestion des dons et engagement associatif
-
-6. **Contrats** (`contracts.php`):
-   - Récupération des contrats de l'entreprise du client
-   - Accès aux détails d'un contrat, services inclus et historique des paiements
-
-7. **Rendez-vous** (`appointments.php`):
-   - Gestion complète des rendez-vous (création, modification, annulation)
-   - Consultation de l'historique des rendez-vous
-   - Filtrage par statut et date
-
-### Avantages de cette organisation
-
-1. **Interface intuitive**: Centrée sur les besoins des clients
-2. **Accès personnalisé**: Chaque client accède uniquement à ses données
-3. **Réactivité**: Interface optimisée pour une utilisation sur différents appareils
-4. **Facilité d'utilisation**: Processus guidés pour la prise de rendez-vous
-5. **Transparence**: Accès complet à l'historique et aux contrats
-6. **Personnalisation**: Préférences utilisateur pour adapter l'expérience
-
-## Sécurité
-
-- Authentification sécurisée des utilisateurs
-- Vérification des rôles et permissions
-- Protection des données personnelles
-- Validation et nettoyage de toutes les entrées utilisateur
-- Utilisation de jetons pour l'authentification à l'API
-- Protection contre les attaques XSS et CSRF
-- Journalisation des activités de sécurité
+      - `companies.php` - Fonctions de gestion des entreprises
+        * `getCompaniesList()` - Liste des entreprises
+        * `getCompanyDetails()` - Détails d'une entreprise
+        * `getCompanyEmployees()` - Employés d'une entreprise
+        * `getCompanyContracts()` - Contrats d'une entreprise
+        * `generateCompanyQuote()` - Génération de devis
+        * `getCompanyInvoices()` - Factures d'une entreprise
+        * `getCompanyPayments()` - Paiements d'une entreprise
+        * `generateCompanyReports()` - Rapports d'analyse
+        * `updateCompanySettings()` - Paramètres d'une entreprise
+      - `employees.php` - Fonctions de gestion des salariés
+        * `getEmployeesList()` - Liste des salariés
+        * `getEmployeeDetails()` - Détails d'un salarié
+        * `updateEmployeeProfile()` - Mise à jour de profil
+        * `getEmployeeAvailableServices()` - Services disponibles
+        * `getEmployeeReservations()` - Réservations
+        * `getEmployeeAppointments()` - Rendez-vous médicaux
+        * `getEmployeeActivityHistory()` - Historique d'activités
+        * `getEmployeeCommunities()` - Communautés accessibles
+        * `manageEmployeeDonations()` - Gestion des dons
+        * `getEmployeeEvents()` - Événements et défis
+        * `updateEmployeeSettings()` - Préférences utilisateur
+      - `providers.php` - Fonctions de gestion des prestataires
+        * `getProvidersList()` - Liste des prestataires
+        * `getProviderDetails()` - Détails d'un prestataire
+        * `searchProviders()` - Recherche de prestataires
+        * `getProviderCalendar()` - Calendrier de disponibilité
+        * `getProviderRatings()` - Évaluations
+        * `getProviderCategories()` - Catégories de prestataires
+        * `getProviderContracts()` - Contrats
+        * `getProviderServices()` - Services proposés
+        * `getProviderInvoices()` - Factures
+        * `updateProviderSettings()` - Paramètres

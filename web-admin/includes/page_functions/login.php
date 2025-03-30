@@ -1,6 +1,5 @@
 <?php
 require_once __DIR__ . '/../init.php';
-require_once __DIR__ . '/../../../shared/web-admin/logging.php';
 
 /**
  * Traite la soumission du formulaire de connexion.
