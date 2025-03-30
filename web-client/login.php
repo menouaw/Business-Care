@@ -10,7 +10,16 @@ require_once __DIR__ . '/includes/page_functions/login.php';
 
 // Si l'utilisateur est déjà connecté, rediriger vers la page d'accueil
 if (isAuthenticated()) {
-    redirectTo(WEBCLIENT_URL);
+    // Rediriger vers la page correspondant au rôle de l'utilisateur
+    if (isEntrepriseUser()) {
+        redirectTo(WEBCLIENT_URL . '/modules/companies/index.php');
+    } elseif (isSalarieUser()) {
+        redirectTo(WEBCLIENT_URL . '/modules/employees/index.php');
+    } elseif (isPrestataireUser()) {
+        redirectTo(WEBCLIENT_URL . '/modules/providers/index.php');
+    } else {
+        redirectTo(WEBCLIENT_URL);
+    }
 }
 
 // Initialiser les variables
@@ -23,13 +32,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $result = processLoginForm($_POST);
     
     if ($result['success']) {
-        // La redirection est gérée dans processLoginForm
-        // Ce code ne sera jamais exécuté si la redirection est correcte,
-        // mais on le laisse par sécurité
+        // La redirection est déjà gérée dans processLoginForm
+        // qui redirige vers le bon module selon le rôle
         if (!empty($result['redirect'])) {
             redirectTo($result['redirect']);
         } else {
-            redirectTo(WEBCLIENT_URL);
+            // Redirection de secours basée sur le rôle de l'utilisateur
+            if (isEntrepriseUser()) {
+                redirectTo(WEBCLIENT_URL . '/modules/companies/index.php');
+            } elseif (isSalarieUser()) {
+                redirectTo(WEBCLIENT_URL . '/modules/employees/index.php');
+            } elseif (isPrestataireUser()) {
+                redirectTo(WEBCLIENT_URL . '/modules/providers/index.php');
+            } else {
+                redirectTo(WEBCLIENT_URL);
+            }
         }
     } else {
         $error = $result['message'];
