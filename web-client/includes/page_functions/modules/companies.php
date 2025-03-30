@@ -52,7 +52,7 @@ function getCompaniesList($page = 1, $limit = 20, $search = '') {
         }
         
         // Groupement et tri
-        $query .= " GROUP BY e.id ORDER BY e.nom LIMIT :limit OFFSET :offset";
+        $query .= " GROUP BY e.id, e.nom, e.adresse, e.telephone, e.email, e.logo_url, e.statut ORDER BY e.nom LIMIT :limit OFFSET :offset";
         $queryParams['limit'] = $limit;
         $queryParams['offset'] = $offset;
         
@@ -144,7 +144,8 @@ function getCompanyDetails($company_id) {
                   LEFT JOIN personnes p ON e.id = p.entreprise_id AND p.role_id = :role_id
                   LEFT JOIN contrats c ON e.id = c.entreprise_id
                   WHERE e.id = :company_id
-                  GROUP BY e.id";
+                  GROUP BY e.id, e.nom, e.adresse, e.telephone, e.email, e.site_web, 
+                  e.logo_url, e.statut, e.siret, e.description, e.secteur_activite, e.date_creation";
         
         $company = executeQuery($query, [
             'role_id' => ROLE_SALARIE, 
@@ -355,7 +356,9 @@ function getCompanyContracts($company_id, $status = 'active') {
                 LEFT JOIN personnes p ON c.responsable_id = p.id
                 LEFT JOIN contrats_prestations cp ON c.id = cp.contrat_id
                 WHERE " . $where . "
-                GROUP BY c.id ORDER BY c.date_debut DESC";
+                GROUP BY c.id, c.entreprise_id, c.date_debut, c.date_fin, c.montant, 
+                c.responsable_id, c.date_creation, c.statut, c.description, c.reference, responsable_nom
+                ORDER BY c.date_debut DESC";
         
         $contracts = executeQuery($query)->fetchAll(PDO::FETCH_ASSOC);
         
@@ -369,7 +372,7 @@ function getCompanyContracts($company_id, $status = 'active') {
                             JOIN prestations p ON r.prestation_id = p.id
                             JOIN contrats_prestations cp ON p.id = cp.prestation_id
                             WHERE cp.contrat_id = ?
-                            GROUP BY pr.id
+                            GROUP BY pr.id, nom
                             ORDER BY nombre_prestations DESC
                             LIMIT 5";
             

@@ -37,7 +37,12 @@ function sanitizeInput($input) {
         foreach ($input as $key => $value) {
             $input[$key] = sanitizeInput($value);
         }
+    } else if ($input === null) {
+        // Si l'entrée est null, retourner une chaîne vide
+        $input = '';
     } else {
+        // Convertir en chaîne si ce n'est pas déjà le cas
+        $input = (string)$input;
         $input = trim($input);
         $input = stripslashes($input);
         $input = htmlspecialchars($input, ENT_QUOTES, 'UTF-8');

@@ -576,7 +576,8 @@ function getProviderServices($provider_id) {
               FROM prestations pr
               JOIN rendez_vous r ON pr.id = r.prestation_id
               WHERE r.personne_id = ?
-              GROUP BY pr.id
+              GROUP BY pr.id, pr.nom, pr.description, pr.type, pr.categorie, 
+              pr.prix, pr.duree, pr.niveau_difficulte
               ORDER BY nombre_prestations DESC";
     
     $stmt = executeQuery($query, [$provider_id]);
@@ -636,7 +637,7 @@ function getProviderInvoices($provider_id, $start_date = null, $end_date = null)
         $params[] = $end_date;
     }
     
-    $query .= " GROUP BY YEAR(r.date_rdv), MONTH(r.date_rdv)
+    $query .= " GROUP BY facture_id, periode, statut
                 ORDER BY periode DESC";
     
     $stmt = executeQuery($query, $params);
