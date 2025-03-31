@@ -76,6 +76,66 @@ Search.appendIndex(
             "summary": "Supprime\u0020une\u0020prestation\u0020de\u0020la\u0020base\u0020de\u0020donn\u00E9es",
             "url": "namespaces/default.html#function_deleteService"
         },                {
+            "fqsen": "\\getClientAppointments\u0028\u0029",
+            "name": "getClientAppointments",
+            "summary": "R\u00E9cup\u00E8re\u0020tous\u0020les\u0020rendez\u002Dvous\u0020d\u0027un\u0020client",
+            "url": "namespaces/default.html#function_getClientAppointments"
+        },                {
+            "fqsen": "\\getAppointmentDetails\u0028\u0029",
+            "name": "getAppointmentDetails",
+            "summary": "R\u00E9cup\u00E8re\u0020les\u0020d\u00E9tails\u0020d\u0027un\u0020rendez\u002Dvous\u0020sp\u00E9cifique",
+            "url": "namespaces/default.html#function_getAppointmentDetails"
+        },                {
+            "fqsen": "\\createAppointment\u0028\u0029",
+            "name": "createAppointment",
+            "summary": "Cr\u00E9e\u0020un\u0020nouveau\u0020rendez\u002Dvous",
+            "url": "namespaces/default.html#function_createAppointment"
+        },                {
+            "fqsen": "\\updateAppointment\u0028\u0029",
+            "name": "updateAppointment",
+            "summary": "Met\u0020\u00E0\u0020jour\u0020un\u0020rendez\u002Dvous\u0020existant",
+            "url": "namespaces/default.html#function_updateAppointment"
+        },                {
+            "fqsen": "\\cancelAppointment\u0028\u0029",
+            "name": "cancelAppointment",
+            "summary": "Annule\u0020un\u0020rendez\u002Dvous",
+            "url": "namespaces/default.html#function_cancelAppointment"
+        },                {
+            "fqsen": "\\getClientContracts\u0028\u0029",
+            "name": "getClientContracts",
+            "summary": "R\u00E9cup\u00E8re\u0020tous\u0020les\u0020contrats\u0020associ\u00E9s\u0020\u00E0\u0020un\u0020client",
+            "url": "namespaces/default.html#function_getClientContracts"
+        },                {
+            "fqsen": "\\getClientContract\u0028\u0029",
+            "name": "getClientContract",
+            "summary": "R\u00E9cup\u00E8re\u0020les\u0020d\u00E9tails\u0020d\u0027un\u0020contrat\u0020sp\u00E9cifique",
+            "url": "namespaces/default.html#function_getClientContract"
+        },                {
+            "fqsen": "\\getClientProfile\u0028\u0029",
+            "name": "getClientProfile",
+            "summary": "R\u00E9cup\u00E8re\u0020le\u0020profil\u0020complet\u0020d\u0027un\u0020client",
+            "url": "namespaces/default.html#function_getClientProfile"
+        },                {
+            "fqsen": "\\updateClientProfile\u0028\u0029",
+            "name": "updateClientProfile",
+            "summary": "Met\u0020\u00E0\u0020jour\u0020le\u0020profil\u0020d\u0027un\u0020client",
+            "url": "namespaces/default.html#function_updateClientProfile"
+        },                {
+            "fqsen": "\\getAvailableServices\u0028\u0029",
+            "name": "getAvailableServices",
+            "summary": "R\u00E9cup\u00E8re\u0020tous\u0020les\u0020services\u0020disponibles",
+            "url": "namespaces/default.html#function_getAvailableServices"
+        },                {
+            "fqsen": "\\getServiceDetails\u0028\u0029",
+            "name": "getServiceDetails",
+            "summary": "R\u00E9cup\u00E8re\u0020les\u0020d\u00E9tails\u0020d\u0027un\u0020service\u0020sp\u00E9cifique",
+            "url": "namespaces/default.html#function_getServiceDetails"
+        },                {
+            "fqsen": "\\requestService\u0028\u0029",
+            "name": "requestService",
+            "summary": "Demande\u0020un\u0020service\u0020\u0028cr\u00E9e\u0020une\u0020r\u00E9servation\u0029",
+            "url": "namespaces/default.html#function_requestService"
+        },                {
             "fqsen": "\\login\u0028\u0029",
             "name": "login",
             "summary": "Authentifie\u0020un\u0020utilisateur\u0020avec\u0020son\u0020email\u0020et\u0020mot\u0020de\u0020passe",
@@ -180,6 +240,26 @@ Search.appendIndex(
             "name": "API_URL",
             "summary": "",
             "url": "namespaces/default.html#constant_API_URL"
+        },                {
+            "fqsen": "\\ROLE_ADMIN",
+            "name": "ROLE_ADMIN",
+            "summary": "",
+            "url": "namespaces/default.html#constant_ROLE_ADMIN"
+        },                {
+            "fqsen": "\\ROLE_SALARIE",
+            "name": "ROLE_SALARIE",
+            "summary": "",
+            "url": "namespaces/default.html#constant_ROLE_SALARIE"
+        },                {
+            "fqsen": "\\ROLE_PRESTATAIRE",
+            "name": "ROLE_PRESTATAIRE",
+            "summary": "",
+            "url": "namespaces/default.html#constant_ROLE_PRESTATAIRE"
+        },                {
+            "fqsen": "\\ROLE_ENTREPRISE",
+            "name": "ROLE_ENTREPRISE",
+            "summary": "",
+            "url": "namespaces/default.html#constant_ROLE_ENTREPRISE"
         },                {
             "fqsen": "\\SESSION_LIFETIME",
             "name": "SESSION_LIFETIME",

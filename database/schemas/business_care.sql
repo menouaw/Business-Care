@@ -243,3 +243,13 @@ CREATE TABLE remember_me_tokens (
     UNIQUE KEY unique_token (token),
     INDEX idx_expires (expires_at)
 );
+
+CREATE TABLE preferences_utilisateurs (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    personne_id INT NOT NULL,
+    langue ENUM('fr', 'en') DEFAULT 'fr',
+    notif_email BOOLEAN DEFAULT TRUE,
+    theme ENUM('clair', 'sombre') DEFAULT 'clair',
+    FOREIGN KEY (personne_id) REFERENCES personnes(id),
+    UNIQUE KEY unique_personne_id (personne_id)
+);
