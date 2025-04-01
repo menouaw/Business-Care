@@ -51,12 +51,14 @@ function logSecurityEvent($userId, $action, $details = '', $isFailure = false) {
 }
 
 /**
- * Journalise une opération métier
+ * Enregistre une opération métier dans le journal central.
  *
- * @param int|null $userId Identifiant de l'utilisateur concerné
- * @param string $action Type d'opération métier
- * @param string $details Informations supplémentaires sur l'opération
- * @return int|false ID du journal créé ou false en cas d'échec
+ * Cette fonction logue une opération métier en préfixant automatiquement le type d'opération avec "[BUSINESS OPERATION]" pour standardiser les entrées.
+ *
+ * @param int|null $userId Identifiant de l'utilisateur concerné (peut être null si non applicable).
+ * @param string $action Description ou type de l'opération métier.
+ * @param string $details Informations complémentaires sur l'opération.
+ * @return int|false L'ID de l'entrée de journal créée ou false en cas d'échec.
  */
 function logBusinessOperation($userId, $action, $details = '') {
     return logActivity($userId, '[BUSINESS OPERATION]' . $action, $details);

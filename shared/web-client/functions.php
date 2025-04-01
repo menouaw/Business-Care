@@ -9,11 +9,14 @@ define('INVOICE_PREFIX', 'F');
 
 
 /**
- * Formate une date selon un format spécifié
+ * Formate une date selon un format spécifié.
  *
- * @param string $date Chaîne représentant la date à formater
- * @param string $format Format de la date souhaité (par défaut 'd/m/Y H:i')
- * @return string Date formatée ou chaîne vide si la date d'entrée est vide
+ * La fonction convertit la chaîne de caractères représentant une date en timestamp, puis renvoie la date formatée selon le format indiqué.
+ * Si la date d'entrée est vide, elle renvoie une chaîne vide.
+ *
+ * @param string $date Chaîne représentant la date à formater.
+ * @param string $format Format de la date souhaité. Si omis, le format par défaut est défini par DEFAULT_DATE_FORMAT.
+ * @return string La date formatée ou une chaîne vide si l'entrée est vide.
  */
 function formatDate($date, $format = DEFAULT_DATE_FORMAT) {
     if (!$date) return '';
@@ -22,21 +25,28 @@ function formatDate($date, $format = DEFAULT_DATE_FORMAT) {
 }
 
 /**
- * Formate un montant selon le format monétaire spécifié
- * 
- * @param float $amount Montant à formater
- * @param string $currency Symbole de la devise (par défaut '€')
- * @return string Montant formaté avec devise
+ * Formate un montant en chaîne de caractères selon le format monétaire français.
+ *
+ * Le montant est présenté avec deux décimales, en utilisant la virgule pour le séparateur décimal et l'espace pour le séparateur des milliers,
+ * suivi d'un espace et du symbole de la devise.
+ *
+ * @param float $amount Le montant à formater.
+ * @param string $currency Le symbole de la devise, par défaut celui défini par DEFAULT_CURRENCY.
+ * @return string Le montant formaté avec la devise.
  */
 function formatMoney($amount, $currency = DEFAULT_CURRENCY) {
     return number_format($amount, 2, ',', ' ') . ' ' . $currency;
 }
 
 /**
- * Nettoie et sécurise les données fournies par l'utilisateur
+ * Nettoie et sécurise les données utilisateur pour prévenir les injections et assurer un affichage correct.
  *
- * @param mixed $input Donnée ou tableau de données à nettoyer
- * @return mixed Données nettoyées
+ * La fonction transforme toute entrée en chaîne de caractères sécurisée : les espaces superflus sont supprimés,
+ * les antislashes retirés, et les caractères spéciaux convertis en entités HTML. Si une valeur nulle est fournie,
+ * elle est convertie en chaîne vide. Pour un tableau, le nettoyage s'applique récursivement à chaque élément.
+ *
+ * @param mixed $input Donnée ou tableau de données à nettoyer.
+ * @return mixed Données nettoyées, sous forme de chaîne ou de tableau selon l'entrée.
  */
 function sanitizeInput($input) {
     if (is_array($input)) {
@@ -272,13 +282,16 @@ function renderPagination($pagination, $urlPattern) {
 }
 
 /**
- * Récupère les prestations disponibles
- * 
- * @param string $type Type de prestation (optionnel)
- * @param string $categorie Catégorie de prestation (optionnel)
- * @param int $page Numéro de page pour la pagination
- * @param int $perPage Nombre d'éléments par page
- * @return array Prestations paginées
+ * Récupère et pagine les prestations disponibles.
+ *
+ * Cette fonction interroge la table "prestations" en appliquant des filtres optionnels sur le type et la catégorie,
+ * puis retourne les résultats paginés triés par ordre alphabétique sur le nom.
+ *
+ * @param string $type Filtre optionnel pour le type de prestation.
+ * @param string $categorie Filtre optionnel pour la catégorie de prestation.
+ * @param int $page Numéro de la page à récupérer.
+ * @param int $perPage Nombre d'éléments par page, par défaut défini par la constante DEFAUT_ITEMS_PER_PAGE.
+ * @return array Tableau contenant les prestations paginées ainsi que les informations de pagination.
  */
 function getPrestations($type = '', $categorie = '', $page = 1, $perPage = DEFAUT_ITEMS_PER_PAGE) {
     $where = [];
@@ -332,9 +345,14 @@ function isTimeSlotAvailable($dateHeure, $duree, $prestationId) {
 }
 
 /**
- * Génère un numéro de facture unique
- * 
- * @return string Numéro de facture au format F-YYYYMMDD-XXXX
+ * Génère un numéro de facture unique basé sur la date courante.
+ *
+ * Le numéro est composé du préfixe configuré (défini par la constante INVOICE_PREFIX),
+ * de la date au format YYYYMMDD et d'un identifiant séquentiel sur 4 chiffres. La fonction
+ * interroge la base de données pour récupérer le dernier identifiant utilisé pour la date
+ * actuelle, puis incrémente cet identifiant pour garantir l'unicité du numéro généré.
+ *
+ * @return string Le numéro de facture au format INVOICE_PREFIX-YYYYMMDD-XXXX.
  */
 function generateInvoiceNumber() {
     $date = date('Ymd');

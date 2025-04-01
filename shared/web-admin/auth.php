@@ -5,12 +5,17 @@ require_once 'config.php';
 require_once 'db.php';
 
 /**
- * Authentifie un utilisateur avec son email et mot de passe
- * 
- * @param string $email Email de l'utilisateur
- * @param string $password Mot de passe de l'utilisateur
- * @param bool $rememberMe Option pour se souvenir de l'utilisateur
- * @return bool Indique si l'authentification a réussi
+ * Authentifie un utilisateur en vérifiant son email et son mot de passe puis initialise la session.
+ *
+ * La fonction recherche un utilisateur actif par son adresse email et valide le mot de passe fourni. Si l'authentification est réussie, elle
+ * initialise les variables de session avec les informations de l'utilisateur et crée, si demandé, un cookie de connexion persistante ("remember me").
+ * Un événement de sécurité est enregistré pour consigner le résultat de l'opération.
+ *
+ * @param string $email Email de l'utilisateur.
+ * @param string $password Mot de passe de l'utilisateur.
+ * @param bool $rememberMe Indique si un token "remember me" doit être créé.
+ *
+ * @return bool Retourne true si l'authentification réussit, sinon false.
  */
 function login($email, $password, $rememberMe = false) {
     $user = fetchOne('personnes', "email = '$email' AND statut = 'actif'");
@@ -145,10 +150,13 @@ function hasPermission($requiredRole) {
 }
 
 /**
- * Récupère les informations d'un utilisateur
- * 
- * @param int|null $userId ID de l'utilisateur (utilise l'utilisateur courant si null)
- * @return array|false Informations de l'utilisateur ou false si non trouvé/authentifié
+ * Récupère les informations d'un utilisateur ou de l'utilisateur connecté.
+ *
+ * Si aucun identifiant n'est fourni, la fonction utilise l'utilisateur actuellement authentifié.
+ * Elle retourne les informations de l'utilisateur sous forme de tableau associatif, ou false si l'utilisateur n'existe pas ou n'est pas authentifié.
+ *
+ * @param int|null $userId Identifiant de l'utilisateur à récupérer. Utilise l'utilisateur connecté si null.
+ * @return array|false Tableau associatif des informations utilisateur, ou false en cas d'absence d'utilisateur valide.
  */
 function getUserInfo($userId = null) {
     if ($userId === null) {
@@ -230,10 +238,15 @@ function createRememberMeToken($userId) {
 }
 
 /**
- * Valide un jeton "Se souvenir de moi" et réauthentifie l'utilisateur
- * 
- * @param string $token Jeton à valider
- * @return bool Indique si le jeton est valide et l'authentification réussie
+ * Valide un jeton "Se souvenir de moi" et ré-authentifie l'utilisateur associé.
+ *
+ * Cette fonction vérifie que le jeton fourni existe et n'est pas expiré dans la base de données. 
+ * Si le jeton est valide, elle récupère les informations de l'utilisateur correspondant, initialise 
+ * les variables de session et enregistre un événement de connexion automatique. En cas d'invalidité 
+ * du jeton ou si l'utilisateur est introuvable, un événement d'échec est consigné.
+ *
+ * @param string $token Le jeton à valider.
+ * @return bool Renvoie true si la ré-authentification a réussi, sinon false.
  */
 function validateRememberMeToken($token) {
     $result = fetchOne('remember_me_tokens', "token = '$token' AND expires_at > NOW()");
@@ -260,10 +273,13 @@ function validateRememberMeToken($token) {
 }
 
 /**
- * Supprime un jeton "Se souvenir de moi"
- * 
- * @param string $token Jeton à supprimer
- * @return bool Indique si la suppression a réussi
+ * Supprime un jeton "Se souvenir de moi" de la base de données et journalise l'opération.
+ *
+ * Cette fonction recherche le jeton dans la table dédiée et tente de le supprimer. Elle enregistre ensuite
+ * un événement de sécurité indiquant si l'opération a réussi ou échoué.
+ *
+ * @param string $token Jeton d'authentification à supprimer.
+ * @return bool Retourne true si la suppression est effectuée avec succès, sinon false.
  */
 function deleteRememberMeToken($token) {
     $tokenInfo = fetchOne('remember_me_tokens', "token = '$token'");

@@ -10,13 +10,12 @@ define('INVOICE_PREFIX', 'F');
 /**
  * Formate une date selon un format spécifié.
  *
- * Si la chaîne de date est vide ou évaluée à false, la fonction retourne une chaîne vide.
- * Sinon, elle convertit la chaîne en timestamp via strtotime() et renvoie la date formatée selon le format fourni.
- * Notez que si la conversion échoue, le timestamp 0 (l'époque Unix) sera utilisé.
+ * Si la chaîne représentant la date est vide ou évaluée à false, la fonction retourne une chaîne vide.
+ * En cas de conversion échouée (via strtotime), le timestamp 0 (l'époque Unix) est utilisé.
  *
  * @param string $date Chaîne représentant la date à formater.
- * @param string $format Format de la date souhaité (par défaut 'd/m/Y H:i').
- * @return string Date formatée ou chaîne vide si la date d'entrée est vide.
+ * @param string $format Format de date souhaité (par défaut la valeur de DEFAULT_DATE_FORMAT).
+ * @return string La date formatée ou une chaîne vide si l'entrée est invalide.
  */
 function formatDate($date, $format = DEFAULT_DATE_FORMAT) {
     if (!$date) return '';
@@ -25,11 +24,14 @@ function formatDate($date, $format = DEFAULT_DATE_FORMAT) {
 }
 
 /**
- * Formate un montant selon le format monétaire spécifié
- * 
- * @param float $amount Montant à formater
- * @param string $currency Symbole de la devise (par défaut '€')
- * @return string Montant formaté avec devise
+ * Formate un montant en une chaîne représentant une valeur monétaire.
+ *
+ * Le montant est affiché avec deux décimales, utilisant une virgule comme séparateur décimal et un espace pour les milliers,
+ * suivi du symbole de la devise.
+ *
+ * @param float $amount Montant à formater.
+ * @param string $currency Symbole de la devise (par défaut DEFAULT_CURRENCY).
+ * @return string Montant formaté avec la devise.
  */
 function formatMoney($amount, $currency = DEFAULT_CURRENCY) {
     return number_format($amount, 2, ',', ' ') . ' ' . $currency;
