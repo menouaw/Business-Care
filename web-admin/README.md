@@ -1,6 +1,6 @@
 # Business Care - Panneau d'Administration
 
-Le panneau d'administration est la partie backend permettant de gérer toutes les fonctionnalités de Business Care. Cette interface centralise les outils nécessaires à la gestion de l'ensemble des services proposés.
+Le panneau d'administration est la partie backend permettant de gérer toutes les fonctionnalités de Business Care. Cette interface centralise les outils nécessaires à la gestion de l'ensemble des services proposés aux entreprises, salariés et prestataires.
 
 ## Structure du projet
 
@@ -13,7 +13,7 @@ web-admin/                  # Dossier principal de l'administration
 │   ├── users/              # Gestion des utilisateurs
 │   ├── companies/          # Gestion des entreprises
 │   ├── contracts/          # Gestion des contrats
-│   └── services/           # Gestion des services
+│   └── services/           # Gestion des services et prestations
 ├── templates/              # Modèles d'interface
 │   ├── header.php          # En-tête commune
 │   ├── footer.php          # Pied de page commun
@@ -53,36 +53,56 @@ L'API REST se trouve dans le dossier `/api` à la racine du projet et comprend l
 
 ### Points d'entrée API disponibles
 
+#### Gestion des utilisateurs
 - `GET /api/admin/users` - Liste des utilisateurs (avec pagination)
 - `GET /api/admin/users/{id}` - Détail d'un utilisateur
 - `POST /api/admin/users` - Création d'un utilisateur
 - `PUT /api/admin/users/{id}` - Mise à jour d'un utilisateur
 - `DELETE /api/admin/users/{id}` - Suppression d'un utilisateur
 
-- `POST /api/admin/auth` - Authentification
+#### Authentification
+- `POST /api/admin/auth` - Authentification et génération de token
 - `PUT /api/admin/auth` - Modification de mot de passe
-- `DELETE /api/admin/auth` - Déconnexion
+- `DELETE /api/admin/auth` - Déconnexion et invalidation du token
 
-- `GET /api/admin/companies` - Liste des entreprises
-- `GET /api/admin/contracts` - Liste des contrats
-- `GET /api/admin/services` - Liste des services
+#### Gestion des entreprises
+- `GET /api/admin/companies` - Liste des entreprises (avec pagination)
+- `GET /api/admin/companies/{id}` - Détail d'une entreprise
+- `POST /api/admin/companies` - Création d'une entreprise
+- `PUT /api/admin/companies/{id}` - Mise à jour d'une entreprise
+- `DELETE /api/admin/companies/{id}` - Suppression d'une entreprise
+
+#### Gestion des contrats
+- `GET /api/admin/contracts` - Liste des contrats (avec pagination)
+- `GET /api/admin/contracts/{id}` - Détail d'un contrat
+- `POST /api/admin/contracts` - Création d'un contrat
+- `PUT /api/admin/contracts/{id}` - Mise à jour d'un contrat
+- `DELETE /api/admin/contracts/{id}` - Suppression d'un contrat
+
+#### Gestion des services
+- `GET /api/admin/services` - Liste des services (avec pagination)
+- `GET /api/admin/services/{id}` - Détail d'un service
+- `POST /api/admin/services` - Création d'un service
+- `PUT /api/admin/services/{id}` - Mise à jour d'un service
+- `DELETE /api/admin/services/{id}` - Suppression d'un service
 
 ## Configuration
 
 1. Créer une base de données MySQL
-2. Importer le script SQL depuis `/database/setup.sql`
+2. Importer le script SQL depuis `/database/schemas/business_care.sql`
 3. Modifier les paramètres de connexion dans `/shared/web-admin/config.php`
 4. Exécuter le script d'installation via `/web-admin/install-admin.php`
 
 ## Fonctionnalités principales
 
 - Tableau de bord avec statistiques et métriques clés
-- Gestion complète des utilisateurs (administrateurs, prestataires)
+- Gestion complète des utilisateurs (administrateurs, prestataires, salariés)
 - Gestion des entreprises clientes et de leurs contrats
 - Gestion des services et prestations
 - Suivi des événements et des réservations
 - Gestion financière (facturation, paiements)
 - Rapports et statistiques
+- Journalisation complète des activités système
 
 ## Développement
 
@@ -108,11 +128,11 @@ L'API REST se trouve dans le dossier `/api` à la racine du projet et comprend l
 Pour maintenir une organisation claire du code, les fonctions sont séparées selon leur responsabilité:
 
 - `/shared/web-admin/` - Contient les fichiers partagés du système
-  - `config.php` - Configuration générale
-  - `db.php` - Connexion à la base de données et fonctions de requêtes
-  - `auth.php` - Fonctions d'authentification
-  - `functions.php` - Fonctions utilitaires générales
-  - `logging.php` - Journalisation des événements système
+  - `config.php` - Configuration générale (constantes, URLs, paramètres de base de données)
+  - `db.php` - Connexion à la base de données et fonctions de requêtes (getDbConnection, fetchAll, fetchOne, etc.)
+  - `auth.php` - Fonctions d'authentification (login, logout, isAuthenticated, etc.)
+  - `functions.php` - Fonctions utilitaires générales (formatDate, sanitizeInput, flashMessage, etc.)
+  - `logging.php` - Journalisation des événements système (logActivity, logSecurityEvent, logBusinessOperation)
 
 - `/web-admin/includes/` - Contient les fichiers spécifiques à l'administration
   - `init.php` - Initialisation du système
@@ -145,6 +165,16 @@ Pour maintenir une organisation claire du code, les fonctions sont séparées se
    - Les fonctions doivent retourner des structures cohérentes (ex: tableau associatif avec clés 'success', 'message', etc.)
    - Séparer clairement la logique métier de la présentation
 
+### Système de journalisation
+
+Le système intègre une journalisation complète des activités:
+- Activités utilisateurs standard avec `logActivity()`
+- Opérations système critiques avec `logSystemActivity()`
+- Événements de sécurité avec `logSecurityEvent()`
+- Opérations métiers avec `logBusinessOperation()`
+
+Ces logs sont stockés dans la table `logs` de la base de données et peuvent être consultés depuis l'interface d'administration.
+
 ### Avantages de cette organisation
 
 1. **Meilleure lisibilité du code**: Les fichiers de page sont plus courts et contiennent uniquement la logique de présentation
@@ -156,9 +186,12 @@ Pour maintenir une organisation claire du code, les fonctions sont séparées se
 
 ## Sécurité
 
-- Toutes les entrées utilisateur doivent être validées et nettoyées
-- L'authentification est gérée via des sessions sécurisées
-- Les mots de passe sont hachés avec SHA-256
-- Protection contre les attaques XSS et CSRF implémentée
-- Les requêtes à l'API nécessitent une authentification par jeton
-- Journalisation des événements de sécurité 
+- Toutes les entrées utilisateur sont validées et nettoyées via la fonction `sanitizeInput()`
+- L'authentification est gérée via des sessions sécurisées avec `login()`, `logout()` et `isAuthenticated()`
+- Les mots de passe sont hachés avec PASSWORD_DEFAULT (bcrypt)
+- Protection contre les attaques XSS via `htmlspecialchars()` et nettoyage des entrées
+- Protection contre les attaques CSRF avec des jetons via `generateToken()` et `validateToken()`
+- Expiration automatique des sessions inactives (SESSION_LIFETIME)
+- Fonction "Se souvenir de moi" sécurisée avec des jetons à usage unique
+- Journalisation de tous les événements de sécurité (tentatives de connexion, permissions, etc.)
+- Les requêtes à l'API nécessitent une authentification par jeton 
