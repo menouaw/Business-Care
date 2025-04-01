@@ -2,6 +2,12 @@
 require_once 'config.php';
 require_once 'db.php';
 
+define('DEFAUT_ITEMS_PER_PAGE', 10);
+define('DEFAULT_DATE_FORMAT', 'd/m/Y H:i');
+define('DEFAULT_CURRENCY', '€');
+define('INVOICE_PREFIX', 'F');
+
+
 /**
  * Formate une date selon un format spécifié
  *
@@ -9,7 +15,7 @@ require_once 'db.php';
  * @param string $format Format de la date souhaité (par défaut 'd/m/Y H:i')
  * @return string Date formatée ou chaîne vide si la date d'entrée est vide
  */
-function formatDate($date, $format = 'd/m/Y H:i') {
+function formatDate($date, $format = DEFAULT_DATE_FORMAT) {
     if (!$date) return '';
     $timestamp = strtotime($date);
     return date($format, $timestamp);
@@ -22,7 +28,7 @@ function formatDate($date, $format = 'd/m/Y H:i') {
  * @param string $currency Symbole de la devise (par défaut '€')
  * @return string Montant formaté avec devise
  */
-function formatMoney($amount, $currency = '€') {
+function formatMoney($amount, $currency = DEFAULT_CURRENCY) {
     return number_format($amount, 2, ',', ' ') . ' ' . $currency;
 }
 
@@ -38,10 +44,8 @@ function sanitizeInput($input) {
             $input[$key] = sanitizeInput($value);
         }
     } else if ($input === null) {
-        // Si l'entrée est null, retourner une chaîne vide
         $input = '';
     } else {
-        // Convertir en chaîne si ce n'est pas déjà le cas
         $input = (string)$input;
         $input = trim($input);
         $input = stripslashes($input);
@@ -276,7 +280,7 @@ function renderPagination($pagination, $urlPattern) {
  * @param int $perPage Nombre d'éléments par page
  * @return array Prestations paginées
  */
-function getPrestations($type = '', $categorie = '', $page = 1, $perPage = 10) {
+function getPrestations($type = '', $categorie = '', $page = 1, $perPage = DEFAUT_ITEMS_PER_PAGE) {
     $where = [];
     $params = [];
     
@@ -345,5 +349,5 @@ function generateInvoiceNumber() {
     $lastId = $result['last_id'] ?? 0;
     $nextId = str_pad($lastId + 1, 4, '0', STR_PAD_LEFT);
     
-    return "F-$date-$nextId";
+    return INVOICE_PREFIX . "-$date-$nextId";
 } 

@@ -22,11 +22,7 @@ function getDbConnection() {
         try {
             $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
         } catch (PDOException $e) {
-            if (DEBUG_MODE) {
-                die("[ERREUR] Connexion a la base de donnees impossible: " . $e->getMessage());
-            } else {
-                die("[ERREUR] Connexion a la base de donnees impossible. Veuillez reessayer plus tard.");
-            }
+            die("[FAILURE] Connexion a la base de donnees impossible. Veuillez reessayer plus tard.");
         }
     }
     return $pdo;
@@ -41,7 +37,7 @@ function getDbConnection() {
  */
 function validateTableName($table) {
     if (!preg_match('/^[a-zA-Z0-9_]+$/', $table)) {
-        throw new Exception("Nom de table invalide");
+        throw new Exception("[FAILURE] Nom de table invalide");
     }
     return $table;
 }
@@ -64,11 +60,7 @@ function executeQuery($sql, $params = []) {
         $stmt->execute($params);
         return $stmt;
     } catch (PDOException $e) {
-        if (DEBUG_MODE) {
-            die("[ERREUR] Impossible d'executer la requete: " . $e->getMessage());
-        } else {
-            die("[ERREUR] Une erreur est survenue lors du traitement de votre requete.");
-        }
+        die("[FAILURE] Impossible d'executer la requete: " . $e->getMessage());
     }
 }
 

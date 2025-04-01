@@ -2,6 +2,11 @@
 require_once 'config.php';
 require_once 'db.php';
 
+define('DEFAUT_ITEMS_PER_PAGE', 10);
+define('DEFAULT_DATE_FORMAT', 'd/m/Y H:i');
+define('DEFAULT_CURRENCY', '€');
+define('INVOICE_PREFIX', 'F');
+
 /**
  * Formate une date selon un format spécifié.
  *
@@ -13,7 +18,7 @@ require_once 'db.php';
  * @param string $format Format de la date souhaité (par défaut 'd/m/Y H:i').
  * @return string Date formatée ou chaîne vide si la date d'entrée est vide.
  */
-function formatDate($date, $format = 'd/m/Y H:i') {
+function formatDate($date, $format = DEFAULT_DATE_FORMAT) {
     if (!$date) return '';
     $timestamp = strtotime($date);
     return date($format, $timestamp);
@@ -26,7 +31,7 @@ function formatDate($date, $format = 'd/m/Y H:i') {
  * @param string $currency Symbole de la devise (par défaut '€')
  * @return string Montant formaté avec devise
  */
-function formatMoney($amount, $currency = '€') {
+function formatMoney($amount, $currency = DEFAULT_CURRENCY) {
     return number_format($amount, 2, ',', ' ') . ' ' . $currency;
 }
 
@@ -242,7 +247,7 @@ function getStatusBadge($status) {
  *         - 'totalItems' (int) : Le nombre total d'enregistrements répondant aux critères.
  *         - 'perPage' (int) : Le nombre d'éléments par page.
  */
-function paginateResults($table, $page, $perPage = 20, $where = '', $orderBy = '') {
+    function paginateResults($table, $page, $perPage = DEFAUT_ITEMS_PER_PAGE, $where = '', $orderBy = '') {
     $totalItems = countTableRows($table, $where);
     $totalPages = ceil($totalItems / $perPage);
     $page = max(1, min($page, $totalPages));
@@ -281,7 +286,7 @@ function renderPagination($pagination, $urlPattern) {
     // Previous button
     $prevDisabled = $pagination['currentPage'] <= 1 ? ' disabled' : '';
     $prevUrl = str_replace('{page}', $pagination['currentPage'] - 1, $urlPattern);
-    $html .= '<li class="page-item' . $prevDisabled . '"><a class="page-link" href="' . $prevUrl . '">Previous</a></li>';
+    $html .= '<li class="page-item' . $prevDisabled . '"><a class="page-link" href="' . $prevUrl . '">Précédent</a></li>';
     
     // numeros de page
     $startPage = max(1, $pagination['currentPage'] - 2);
