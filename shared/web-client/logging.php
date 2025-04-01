@@ -46,7 +46,7 @@ function logSystemActivity($action, $details = '') {
  * @return int|false Identifiant du journal créé ou false en cas d'échec
  */
 function logSecurityEvent($userId, $action, $details = '', $isFailure = false) {
-    $securityPrefix = $isFailure ? 'securite_echec' : 'securite';
+    $securityPrefix = $isFailure ? '[SECURITY FAILURE]' : '[SECURITY]';
     return logActivity($userId, $securityPrefix . ':' . $action, $details);
 }
 
@@ -59,7 +59,7 @@ function logSecurityEvent($userId, $action, $details = '', $isFailure = false) {
  * @return int|false ID du journal créé ou false en cas d'échec
  */
 function logBusinessOperation($userId, $action, $details = '') {
-    return logActivity($userId, 'operation:' . $action, $details);
+    return logActivity($userId, '[BUSINESS OPERATION]' . $action, $details);
 }
 
 /**
@@ -88,5 +88,5 @@ function logReservationActivity($userId, $prestationId, $action, $details = '') 
  */
 function logPaymentActivity($userId, $refTransaction, $montant, $statut) {
     $details = "reference: $refTransaction, montant: $montant, statut: $statut";
-    return logActivity($userId, 'paiement', $details);
+    return logActivity($userId, '[PAYMENT]' . $details);
 } 

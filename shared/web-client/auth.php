@@ -1,6 +1,8 @@
 <?php
 // API pour l'authentification côté client
 require_once 'logging.php';
+require_once 'db.php';
+require_once 'functions.php';
 
 /**
  * Authentifie un utilisateur avec son email et mot de passe
@@ -11,11 +13,7 @@ require_once 'logging.php';
  * @return bool Indique si l'authentification a réussi
  */
 function login($email, $password, $rememberMe = false) {
-    $pdo = getDbConnection();
-    $stmt = $pdo->prepare("SELECT id, nom, prenom, email, mot_de_passe, role_id, entreprise_id, photo_url 
-                          FROM personnes WHERE email = ? AND statut = 'actif'");
-    $stmt->execute([$email]);
-    $user = $stmt->fetch();
+    $user = fetchOne('personnes', "email = '$email' AND statut = 'actif'");
     
     if ($user && password_verify($password, $user['mot_de_passe'])) {
         
@@ -35,14 +33,14 @@ function login($email, $password, $rememberMe = false) {
             setcookie('remember_me', $token, time() + (30 * 24 * 60 * 60), '/', '', true, true);
         }
         
-        logSecurityEvent($user['id'], 'login', 'Connexion réussie');
+        logSecurityEvent($user['id'], 'login', '[SUCCESS] Connexion réussie');
         
         return true;
     } else {
         if ($user) {
-            logSecurityEvent($user['id'], 'login', 'Échec de connexion: mot de passe incorrect', true);
+            logSecurityEvent($user['id'], 'login', '[FAILURE] Mot de passe incorrect', true);
         } else {
-            logSecurityEvent(null, 'login', "Tentative de connexion avec email inexistant: $email", true);
+            logSecurityEvent(null, 'login', "[FAILURE] Email inexistant: $email", true);
         }
         return false;
     }
@@ -55,7 +53,7 @@ function login($email, $password, $rememberMe = false) {
  */
 function logout() {
     if (isset($_SESSION['user_id'])) {
-        logSecurityEvent($_SESSION['user_id'], 'logout', 'Utilisateur déconnecté');
+        logSecurityEvent($_SESSION['user_id'], 'logout', '[SUCCESS] Utilisateur déconnecté');
     }
     
     if (isset($_COOKIE['remember_me'])) {
@@ -78,7 +76,7 @@ function logout() {
 function isAuthenticated() {
     if (isset($_SESSION['user_id'])) {
         if (time() - $_SESSION['last_activity'] > SESSION_LIFETIME) {
-            logSystemActivity('session_timeout', "Session expirée pour l'utilisateur ID: " . $_SESSION['user_id']);
+            logSystemActivity('session_timeout', "[FAILURE] Session expirée pour l'utilisateur ID: " . $_SESSION['user_id']);
             logout();
             return false;
         }
@@ -102,8 +100,7 @@ function isAuthenticated() {
 function requireAuthentication() {
     if (!isAuthenticated()) {
         $_SESSION['redirect_after_login'] = $_SERVER['REQUEST_URI'];
-        header('Location: ' . WEBCLIENT_URL . '/connexion.php');
-        exit;
+        redirectTo(WEBCLIENT_URL . '/connexion.php');
     }
 }
 
@@ -158,7 +155,7 @@ function requireRole($requiredRole) {
     requireAuthentication();
     
     if (!hasRole($requiredRole)) {
-        flashMessage('accès refusé: vous n\'avez pas les permissions nécessaires', 'danger');
+        flashMessage('[ACCESS DENIED] Vous n\'avez pas les permissions nécessaires', 'danger');
         redirectTo(WEBCLIENT_URL . '/index.php');
     }
 }
@@ -190,7 +187,7 @@ function resetPassword($email) {
     $user = fetchOne('personnes', "email = '$email'");
     
     if (!$user) {
-        logSecurityEvent(null, 'password_reset', "Tentative de réinitialisation pour email inexistant: $email", true);
+        logSecurityEvent(null, 'password_reset', "[FAILURE] Tentative de réinitialisation pour email inexistant: $email", true);
         return false;
     }
     
@@ -202,7 +199,7 @@ function resetPassword($email) {
         'expires' => $expires
     ], "id = {$user['id']}");
     
-    logSecurityEvent($user['id'], 'password_reset', 'Demande de réinitialisation de mot de passe initiée');
+    logSecurityEvent($user['id'], 'password_reset', '[SUCCESS] Demande de réinitialisation de mot de passe initiée');
     
     // TODO: envoyer un email de reinitialisation de mot de passe avec lien contenant le token
     
@@ -216,10 +213,7 @@ function resetPassword($email) {
  * @return void
  */
 function loadUserPreferences($userId) {
-    $pdo = getDbConnection();
-    $stmt = $pdo->prepare("SELECT langue FROM preferences_utilisateurs WHERE personne_id = ?");
-    $stmt->execute([$userId]);
-    $result = $stmt->fetch();
+    $result = fetchOne('preferences_utilisateurs', "personne_id = $userId");
     
     if ($result) {
         $_SESSION['user_language'] = $result['langue'];
@@ -237,10 +231,13 @@ function createRememberMeToken($userId) {
     $token = bin2hex(random_bytes(32));
     $expires = date('Y-m-d H:i:s', strtotime('+30 days'));
     
-    $stmt = $pdo->prepare("INSERT INTO remember_me_tokens (user_id, token, expires_at) VALUES (?, ?, ?)");
-    $stmt->execute([$userId, $token, $expires]);
+    insertRow('remember_me_tokens', [
+        'user_id' => $userId,
+        'token' => $token,
+        'expires_at' => $expires
+    ]);
     
-    logSecurityEvent($userId, 'remember_token', 'Création de jeton "Se souvenir de moi"');
+    logSecurityEvent($userId, 'remember_token', '[SUCCESS] Création de jeton "Se souvenir de moi"');
     
     return $token;
 }
@@ -252,10 +249,7 @@ function createRememberMeToken($userId) {
  * @return bool Indique si le jeton est valide et l'authentification réussie
  */
 function validateRememberMeToken($token) {
-    $pdo = getDbConnection();
-    $stmt = $pdo->prepare("SELECT user_id FROM remember_me_tokens WHERE token = ? AND expires_at > NOW()");
-    $stmt->execute([$token]);
-    $result = $stmt->fetch();
+    $result = fetchOne('remember_me_tokens', "token = '$token' AND expires_at > NOW()");
     
     if ($result) {
         $user = getUserInfo($result['user_id']);
@@ -271,7 +265,7 @@ function validateRememberMeToken($token) {
             // charger les préférences utilisateur
             loadUserPreferences($user['id']);
             
-            logSecurityEvent($user['id'], 'auto_login', 'Connexion automatique via jeton "Se souvenir de moi"');
+            logSecurityEvent($user['id'], 'auto_login', '[SUCCESS] Connexion automatique via jeton "Se souvenir de moi"');
             return true;
         }
     }
@@ -285,7 +279,6 @@ function validateRememberMeToken($token) {
  * @return bool Indique si la suppression a réussi
  */
 function deleteRememberMeToken($token) {
-    $pdo = getDbConnection();
-    $stmt = $pdo->prepare("DELETE FROM remember_me_tokens WHERE token = ?");
-    return $stmt->execute([$token]);
+    $result = deleteRow('remember_me_tokens', "token = '$token'");
+    return $result > 0;
 } 
