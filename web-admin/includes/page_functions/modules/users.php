@@ -1,6 +1,5 @@
 <?php
 require_once __DIR__ . '/../../init.php';
-require_once __DIR__ . '/../../../../shared/web-admin/logging.php';
 
 /**
  * Recupere la liste des utilisateurs avec pagination et filtrage
