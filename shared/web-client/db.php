@@ -2,13 +2,13 @@
 require_once 'config.php';
 
 /**
- * Retourne une instance PDO pour la connexion à la base de données.
+ * Fournit une instance PDO pour la connexion à la base de données.
  *
- * La connexion est établie en utilisant les constantes de configuration (DB_HOST, DB_NAME, DB_CHARSET, DB_USER, DB_PASS)
- * et est mise en cache pour éviter des connexions répétées. En cas d'erreur lors de l'établissement de la connexion,
- * le script est interrompu avec un message adapté au mode DEBUG.
+ * Établit la connexion en utilisant les constantes de configuration (DB_HOST, DB_NAME, DB_CHARSET, DB_USER, DB_PASS)
+ * et conserve cette instance pour éviter des reconnections multiples. En cas d'échec de connexion, le script s'interrompt
+ * en affichant un message d'erreur préfixé par "[FAILURE]".
  *
- * @return PDO La connexion PDO active.
+ * @return PDO Connexion PDO active.
  */
 function getDbConnection() {
     static $pdo = null;
@@ -43,11 +43,13 @@ function validateTableName($table) {
 }
 
 /**
- * Exécute une requête SQL préparée via PDO
+ * Exécute une requête SQL préparée via PDO et retourne le résultat.
  *
- * @param string $sql Requête SQL à préparer et exécuter
- * @param array $params Valeurs à lier aux paramètres de la requête
- * @return PDOStatement Instance de PDOStatement représentant le résultat de la requête
+ * La requête SQL fournie est préparée et exécutée en y liant les paramètres spécifiés. En cas d'échec lors de la préparation ou de l'exécution, le script est immédiatement interrompu avec un message d'erreur préfixé par "[FAILURE]".
+ *
+ * @param string $sql La requête SQL à exécuter.
+ * @param array $params Les valeurs à lier aux paramètres de la requête.
+ * @return PDOStatement Objet PDOStatement contenant le résultat de la requête.
  */
 function executeQuery($sql, $params = []) {
     try {

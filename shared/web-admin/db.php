@@ -2,11 +2,10 @@
 require_once 'config.php';
 
 /**
- * Retourne une instance PDO pour la connexion à la base de données.
+ * Retourne une instance PDO pour se connecter à la base de données.
  *
- * La connexion est établie en utilisant les constantes de configuration (DB_HOST, DB_NAME, DB_CHARSET, DB_USER, DB_PASS)
- * et est mise en cache pour éviter des connexions répétées. En cas d'erreur lors de l'établissement de la connexion,
- * le script est interrompu avec un message adapté au mode DEBUG.
+ * Établit une connexion à la base de données en utilisant les constantes de configuration (DB_HOST, DB_NAME, DB_CHARSET, DB_USER, DB_PASS)
+ * et la met en cache afin d'éviter des connexions répétées. En cas d'échec, le script s'interrompt avec un message d'erreur standard.
  *
  * @return PDO La connexion PDO active.
  */
@@ -45,9 +44,7 @@ function validateTableName($table) {
 /**
  * Exécute une requête SQL préparée via PDO.
  *
- * Cette fonction prépare et exécute une requête SQL avec les valeurs fournies et retourne
- * l'objet PDOStatement résultant. En cas d'erreur, le script est interrompu avec un message
- * d'erreur dépendant du mode de débogage.
+ * Cette fonction prépare la requête SQL fournie et l'exécute avec les paramètres donnés. En cas d'erreur lors de l'exécution, le script est interrompu avec un message d'erreur standardisé.
  *
  * @param string $sql Requête SQL à préparer et exécuter.
  * @param array $params Valeurs à lier aux paramètres de la requête.

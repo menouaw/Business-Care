@@ -39,14 +39,14 @@ function logSystemActivity($action, $details = '') {
 /**
  * Journalise un événement de sécurité.
  *
- * Enregistre un événement de sécurité dans le système de journalisation en préfixant l'action
- * avec "securite_echec" si l'opération a échoué, ou "securite" sinon.
+ * Enregistre une action de sécurité dans le système de journalisation en préfixant l'action avec "[SECURITY FAILURE]"
+ * si l'opération a échoué (lorsque $isFailure est true), ou avec "[SECURITY]" sinon.
  *
  * @param int|null $userId Identifiant de l'utilisateur concerné.
  * @param string $action Type d'action de sécurité.
- * @param string $details Informations supplémentaires.
+ * @param string $details Informations complémentaires sur l'événement.
  * @param bool $isFailure Indique si l'opération a échoué.
- * @return int|false Identifiant du journal créé ou false en cas d'échec.
+ * @return int|false Identifiant du log créé ou false en cas d'échec.
  */
 function logSecurityEvent($userId, $action, $details = '', $isFailure = false) {
     $securityPrefix = $isFailure ? '[SECURITY FAILURE]' : '[SECURITY]';
@@ -56,12 +56,12 @@ function logSecurityEvent($userId, $action, $details = '', $isFailure = false) {
 /**
  * Journalise une opération métier.
  *
- * La fonction enregistre une opération en ajoutant automatiquement le préfixe "operation:" au type d'action fourni.
+ * Enregistre une opération métier en ajoutant le préfixe "[BUSINESS OPERATION]" au libellé de l'action fournie.
  *
- * @param int|null $userId Identifiant de l'utilisateur concerné.
- * @param string $action Type d'opération métier.
- * @param string $details Informations supplémentaires sur l'opération.
- * @return int|false ID du journal créé ou false en cas d'échec.
+ * @param int|null $userId Identifiant de l'utilisateur concerné (ou null si non applicable).
+ * @param string $action Libellé de l'opération métier.
+ * @param string $details Informations complémentaires sur l'opération.
+ * @return int|false L'identifiant du log créé ou false en cas d'échec.
  */
 function logBusinessOperation($userId, $action, $details = '') {
     return logActivity($userId, '[BUSINESS OPERATION]' . $action, $details);
