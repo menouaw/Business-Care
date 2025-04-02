@@ -51,14 +51,12 @@ if (($action === 'edit' || $action === 'view') && $id > 0) {
     }
 }
 
-// recupere les entreprises paginees
 $result = companiesGetList($page, 10, $search);
 $companies = $result['companies'];
 $totalPages = $result['totalPages'];
 $totalCompanies = $result['totalItems'];
 $page = $result['currentPage'];
 
-// inclusion du header
 $pageTitle = "Gestion des entreprises";
 include_once '../../templates/header.php';
 ?>

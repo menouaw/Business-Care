@@ -60,12 +60,13 @@ function servicesGetList($page = 1, $perPage = 10, $search = '', $type = '') {
 }
 
 /**
- * Recupere les details d'un service
+ * Recupere les details d'un service, et optionnellement les rendez-vous et evaluations associes.
  * 
  * @param int $id Identifiant du service
- * @return array|false Donnees du service ou false si non trouve
+ * @param bool $fetchRelated Indique s'il faut recuperer les donnees associees (rendez-vous, evaluations)
+ * @return array|false Donnees du service (et donnees associees si demande) ou false si non trouve
  */
-function servicesGetDetails($id) {
+function servicesGetDetails($id, $fetchRelated = false) {
     $pdo = getDbConnection();
     $stmt = $pdo->prepare("SELECT * FROM prestations WHERE id = ?");
     $stmt->execute([$id]);
@@ -74,8 +75,29 @@ function servicesGetDetails($id) {
     if (!$service) {
         return false;
     }
+
+    $result = ['service' => $service];
+
+    if ($fetchRelated) {
+        // Recupere les rendez-vous associes
+        $stmt = $pdo->prepare("SELECT r.*, p.nom as nom_personne, p.prenom as prenom_personne 
+                              FROM rendez_vous r 
+                              LEFT JOIN personnes p ON r.personne_id = p.id 
+                              WHERE r.prestation_id = ? 
+                              ORDER BY r.date_rdv DESC");
+        $stmt->execute([$id]);
+        $result['appointments'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        $stmt = $pdo->prepare("SELECT e.*, p.nom as nom_personne, p.prenom as prenom_personne 
+                              FROM evaluations e 
+                              LEFT JOIN personnes p ON e.personne_id = p.id 
+                              WHERE e.prestation_id = ? 
+                              ORDER BY e.date_evaluation DESC");
+        $stmt->execute([$id]);
+        $result['evaluations'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
     
-    return $service;
+    return $result;
 }
 
 /**
@@ -201,6 +223,41 @@ function servicesSave($data, $id = 0) {
 }
 
 /**
+ * Gère la soumission du formulaire d'ajout/modification de service.
+ *
+ * Valide le token CSRF, prépare les données, et appelle servicesSave.
+ * Retourne un tableau avec le résultat de l'opération (succès, message/erreurs).
+ *
+ * @param array $postData Données du formulaire ($_POST)
+ * @param int $id ID du service (0 pour ajout)
+ * @return array Résultat de l'opération ['success' => bool, 'message' => string|null, 'errors' => array|null]
+ */
+function servicesHandlePostRequest($postData, $id) {
+    if (!validateToken($postData['csrf_token'] ?? '')) {
+        return [
+            'success' => false,
+            'errors' => ["Erreur de sécurité, veuillez réessayer."]
+        ];
+    }
+    
+    $data = [
+        'nom' => $postData['nom'] ?? '',
+        'description' => $postData['description'] ?? '',
+        'prix' => $postData['prix'] ?? '',
+        'duree' => $postData['duree'] ?? null,
+        'type' => $postData['type'] ?? '',
+        'categorie' => $postData['categorie'] ?? null,
+        'statut' => 'actif', // Statut par défaut
+        'niveau_difficulte' => $postData['niveau_difficulte'] ?? null,
+        'capacite_max' => $postData['capacite_max'] ?? null,
+        'materiel_necessaire' => $postData['materiel_necessaire'] ?? null,
+        'prerequis' => $postData['prerequis'] ?? null
+    ];
+
+    return servicesSave($data, $id);
+}
+
+/**
  * Supprime un service après vérification des dépendances associées.
  *
  * Cette fonction tente de supprimer un service identifié par son ID, après avoir vérifié
@@ -215,12 +272,12 @@ function servicesSave($data, $id = 0) {
 function servicesDelete($id) {
     $pdo = getDbConnection();
     
-    // verifie si le service a des rendez-vous associes
+    // Verifie si le service a des rendez-vous associes
     $stmt = $pdo->prepare("SELECT COUNT(id) FROM rendez_vous WHERE prestation_id = ?");
     $stmt->execute([$id]);
     $appointmentCount = $stmt->fetchColumn();
     
-    // verifie si le service a des evaluations associees
+    // Verifie si le service a des evaluations associees
     $stmt = $pdo->prepare("SELECT COUNT(id) FROM evaluations WHERE prestation_id = ?");
     $stmt->execute([$id]);
     $evaluationCount = $stmt->fetchColumn();
@@ -232,23 +289,43 @@ function servicesDelete($id) {
             'success' => false,
             'message' => "Impossible de supprimer ce service car il a des rendez-vous associes"
         ];
-    } else if ($evaluationCount > 0) {
+    } 
+    
+    if ($evaluationCount > 0) {
         logBusinessOperation($_SESSION['user_id'], 'service_delete_attempt', 
             "Tentative échouée de suppression service ID: $id - Évaluations associées existent");
         return [
             'success' => false,
             'message' => "Impossible de supprimer ce service car il a des evaluations associees"
         ];
-    } else {
+    }
+    
+    // Si aucune dépendance, procéder à la suppression
+    try {
         $stmt = $pdo->prepare("DELETE FROM prestations WHERE id = ?");
         $stmt->execute([$id]);
         
-        logBusinessOperation($_SESSION['user_id'], 'service_delete', 
-            "Suppression service ID: $id");
-            
-        return [
-            'success' => true,
-            'message' => "Le service a ete supprime avec succes"
-        ];
+        if ($stmt->rowCount() > 0) {
+            logBusinessOperation($_SESSION['user_id'], 'service_delete', 
+                "Suppression service ID: $id");
+            return [
+                'success' => true,
+                'message' => "Le service a ete supprime avec succes"
+            ];
+        } else {
+            // Cas où l'ID n'existe pas (ou autre erreur non PDOException)
+             logBusinessOperation($_SESSION['user_id'], 'service_delete_attempt', 
+                "Tentative échouée de suppression service ID: $id - Service non trouvé?");
+            return [
+                'success' => false,
+                'message' => "Impossible de supprimer le service (peut-être déjà supprimé?)"
+            ];
+        }
+    } catch (PDOException $e) {
+         logSystemActivity('error', "Erreur BDD dans servicesDelete: " . $e->getMessage());
+         return [
+            'success' => false,
+            'message' => "Erreur de base de données lors de la suppression."
+         ];
     }
 } 

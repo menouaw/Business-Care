@@ -1,108 +1,61 @@
 <?php
-require_once '../../includes/init.php';
 require_once '../../includes/page_functions/modules/services.php';
 
-// verifie si l'utilisateur est connecte
-requireAuthentication();
+requireRole(ROLE_ADMIN);
 
-// recupere les param de la requete
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 $type = isset($_GET['type']) ? $_GET['type'] : '';
 $action = isset($_GET['action']) ? $_GET['action'] : '';
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
-// initialisation des variables
 $errors = [];
-$service = null;
+$serviceData = null; 
+$service = null; 
+$appointments = [];
+$evaluations = [];
 
-// traitement du formulaire de creation/edition
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // verification du jeton CSRF
-    if (!validateToken($_POST['csrf_token'] ?? '')) {
-        flashMessage("Erreur de sécurité, veuillez réessayer", "danger");
-        header('Location: ' . WEBADMIN_URL . '/modules/services/');
-        exit;
-    }
-    
-    $data = [
-        'nom' => $_POST['nom'] ?? '',
-        'description' => $_POST['description'] ?? '',
-        'prix' => $_POST['prix'] ?? '',
-        'duree' => $_POST['duree'] ?? null,
-        'type' => $_POST['type'] ?? '',
-        'categorie' => $_POST['categorie'] ?? null,
-        'statut' => 'actif',
-        'niveau_difficulte' => $_POST['niveau_difficulte'] ?? null,
-        'capacite_max' => $_POST['capacite_max'] ?? null,
-        'materiel_necessaire' => $_POST['materiel_necessaire'] ?? null,
-        'prerequis' => $_POST['prerequis'] ?? null
-    ];
-
-    // sauvegarde du service
-    $result = servicesSave($data, $id);
+    $result = servicesHandlePostRequest($_POST, $id);
     
     if ($result['success']) {
         flashMessage($result['message'], "success");
-        header('Location: ' . WEBADMIN_URL . '/modules/services/');
-        exit;
+        redirectTo(WEBADMIN_URL . '/modules/services/');
     } else {
         $errors = $result['errors'];
+        $service = $_POST; 
     }
 }
 
-// traitement de la suppression
 if ($action === 'delete' && $id > 0) {
     $result = servicesDelete($id);
     flashMessage($result['message'], $result['success'] ? "success" : "danger");
-    header('Location: ' . WEBADMIN_URL . '/modules/services/');
-    exit;
+    redirectTo(WEBADMIN_URL . '/modules/services/');
 }
 
-// recuperation des donnees pour l'edition
 if (($action === 'edit' || $action === 'view') && $id > 0) {
-    $service = servicesGetDetails($id);
+    $serviceData = servicesGetDetails($id, $action === 'view'); 
     
-    if (!$service) {
+    if (!$serviceData) {
         flashMessage("Service non trouve", "danger");
-        header('Location: ' . WEBADMIN_URL . '/modules/services/');
-        exit;
-    }
-    
-    if ($action === 'view') {
-        $pdo = getDbConnection();
-        
-        // recupere les rendez-vous associes
-        $stmt = $pdo->prepare("SELECT r.*, p.nom as nom_personne, p.prenom as prenom_personne 
-                              FROM rendez_vous r 
-                              LEFT JOIN personnes p ON r.personne_id = p.id 
-                              WHERE r.prestation_id = ? 
-                              ORDER BY r.date_rdv DESC");
-        $stmt->execute([$id]);
-        $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
-        // recupere les evaluations associees
-        $stmt = $pdo->prepare("SELECT e.*, p.nom as nom_personne, p.prenom as prenom_personne 
-                              FROM evaluations e 
-                              LEFT JOIN personnes p ON e.personne_id = p.id 
-                              WHERE e.prestation_id = ? 
-                              ORDER BY e.date_evaluation DESC");
-        $stmt->execute([$id]);
-        $evaluations = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        redirectTo(WEBADMIN_URL . '/modules/services/');
+    } else {
+        $service = $serviceData['service']; 
+        if ($action === 'view') {
+            $appointments = $serviceData['appointments'] ?? [];
+            $evaluations = $serviceData['evaluations'] ?? [];
+        }
     }
 }
 
-// recupere les services pagines
-$result = servicesGetList($page, 10, $search, $type);
-$services = $result['services'];
-$totalPages = $result['totalPages'];
-$totalServices = $result['totalItems'];
-$page = $result['currentPage'];
+$listResult = servicesGetList($page, 10, $search, $type);
+$services = $listResult['services'];
+$totalPages = $listResult['totalPages'];
+$totalServices = $listResult['totalItems'];
+$page = $listResult['currentPage'];
 
-// recuperation des types de services pour le filtre
 $serviceTypes = servicesGetTypes();
 
-// inclusion du header
 $pageTitle = "Gestion des services";
 include_once '../../templates/header.php';
 ?>
