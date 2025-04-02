@@ -42,8 +42,8 @@
   
   /* icones */
   .feather {
-  width: 16px;
-  height: 16px;
+  width: 1rem;
+  height: 1rem;
   vertical-align: text-bottom;
   }
   
@@ -56,14 +56,14 @@
   bottom: 0;
   left: 0;
   z-index: 100;
-  padding: 48px 0 0;
+  padding: 3rem 0 0;
   box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.1);
   }
   
   .sidebar-sticky {
   position: relative;
   top: 0;
-  height: calc(100vh - 48px);
+  height: calc(100vh - 3rem);
   padding-top: var(--spacing-sm);
   overflow-x: hidden;
   overflow-y: auto;
@@ -75,7 +75,7 @@
   }
   
   .sidebar .nav-link .feather {
-  margin-right: 4px;
+  margin-right: 0.25rem;
   color: var(--color-gray-500);
   }
   
@@ -136,7 +136,7 @@
   
   .form-control-dark:focus {
   border-color: transparent;
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.25);
+  box-shadow: 0 0 0 0.1875rem rgba(255, 255, 255, 0.25);
   }
   
   /* alignement du header */
@@ -147,8 +147,8 @@
   /* menu utilisateur */
   .navbar .form-control-dark {
   width: 100%;
-  max-width: 400px;
-  margin-right: 10px;
+  max-width: 25rem;
+  margin-right: 0.625rem;
   }
   
   .navbar .navbar-nav.flex-row {
@@ -267,21 +267,36 @@
   * ------------------------------------------------ */
   /* page de connexion */
   .login-page {
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   align-items: center;
-    background-color: #f5f5f5;
+  justify-content: center;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: var(--spacing-md);
   }
   
   .form-signin {
   width: 100%;
-    max-width: 330px;
-  padding: 15px;
+  max-width: 25rem;
+  padding: var(--spacing-xl);
   margin: auto;
+  background-color: #ffffff;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.25rem 0.9375rem rgba(0, 0, 0, 0.1);
+  }
+  
+  .form-signin img {
+  width: 5.625rem;
+  height: 5.625rem;
+  margin-bottom: var(--spacing-lg);
   }
   
   .form-signin .form-floating:focus-within {
   z-index: 2;
+  }
+  
+  .form-signin .form-control {
+  border-radius: 0.25rem;
   }
   
   .form-signin input[type="email"] {
@@ -291,22 +306,53 @@
   }
   
   .form-signin input[type="password"] {
-  margin-bottom: 10px;
+  margin-bottom: var(--spacing-md);
   border-top-left-radius: 0;
   border-top-right-radius: 0;
+  }
+  
+  .form-signin .btn-primary {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+  }
+  
+  .form-signin .btn-primary:hover {
+  background-color: #3a5ccc;
+  border-color: #3a5ccc;
+  }
+  
+  .form-signin .checkbox {
+  font-weight: 400;
+  }
+  
+  .form-signin p a {
+  color: var(--color-primary);
+  text-decoration: none;
+  }
+  
+  .form-signin p a:hover {
+  text-decoration: underline;
+  }
+  
+  .form-signin .text-muted {
+  color: var(--color-gray-500) !important;
+  font-size: 0.8rem;
   }
   
   /* page d'installation de l'admin */
   .install-page {
     background-color: #f5f5f5;
-    padding-top: 40px;
-    padding-bottom: 40px;
+    padding-top: 2.5rem;
+    padding-bottom: 2.5rem;
   }
   
   .form-install {
     width: 100%;
-    max-width: 500px;
-    padding: 15px;
+    max-width: 31.25rem;
+    padding: 1rem;
     margin: 0 auto;
   }
   

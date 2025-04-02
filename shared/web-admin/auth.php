@@ -117,7 +117,7 @@ function isAuthenticated() {
  */
 function requireAuthentication() {
     if (!isAuthenticated()) {
-        logSystemActivity('auth_required', '[FAILURE] Redirection vers la page de connexion - Accès à une page protégée: ' . $_SERVER['REQUEST_URI']);
+        logSystemActivity('[SECURITY] auth_required', '[FAILURE] Redirection vers la page de connexion - Accès à une page protégée: ' . $_SERVER['REQUEST_URI']);
         $_SESSION['redirect_after_login'] = $_SERVER['REQUEST_URI'];
         redirectTo(WEBADMIN_URL . '/login.php');
     }

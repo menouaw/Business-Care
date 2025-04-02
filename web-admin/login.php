@@ -20,7 +20,7 @@ if ($loginResult['success']) {
 if (isset($_GET['timeout']) && $_GET['timeout'] == 1) {
     $error = 'Votre session a expire. Veuillez vous reconnecter.';
 } elseif (isset($_GET['error']) && $_GET['error'] == 'permission_denied') {
-    $error = 'Accès refusé. Vous n\'avez pas les permissions nécessaires.';
+    $error = 'Accès refusé.';
 }
 ?>
 <!DOCTYPE html>
