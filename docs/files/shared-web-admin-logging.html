@@ -295,8 +295,8 @@
     <span class="phpdocumentor-signature__visibility"></span>
                     <span class="phpdocumentor-signature__name">logSecurityEvent</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type">int|null&nbsp;</span><span class="phpdocumentor-signature__argument__name">$userId</span></span><span class="phpdocumentor-signature__argument"><span>, </span><span class="phpdocumentor-signature__argument__return-type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$action</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$details</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">&#039;&#039;</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">bool&nbsp;</span><span class="phpdocumentor-signature__argument__name">$isFailure</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">false</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">int|false</span></code>
 
-        <section class="phpdocumentor-description"><p>Enregistre un événement de sécurité dans le système de journalisation en préfixant l'action
-avec &quot;securite_echec&quot; si l'opération a échoué, ou &quot;securite&quot; sinon.</p>
+        <section class="phpdocumentor-description"><p>Enregistre une action de sécurité dans le système de journalisation en préfixant l'action avec &quot;[SECURITY FAILURE]&quot;
+si l'opération a échoué (lorsque $isFailure est true), ou avec &quot;[SECURITY]&quot; sinon.</p>
 </section>
 
         <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
@@ -324,7 +324,7 @@ avec &quot;securite_echec&quot; si l'opération a échoué, ou &quot;securite&qu
                 : <span class="phpdocumentor-signature__argument__return-type">string</span>
                  = <span class="phpdocumentor-signature__argument__default-value">&#039;&#039;</span>            </dt>
             <dd class="phpdocumentor-argument-list__definition">
-                    <section class="phpdocumentor-description"><p>Informations supplémentaires.</p>
+                    <section class="phpdocumentor-description"><p>Informations complémentaires sur l'événement.</p>
 </section>
 
             </dd>
@@ -345,7 +345,7 @@ avec &quot;securite_echec&quot; si l'opération a échoué, ou &quot;securite&qu
         <h5 class="phpdocumentor-return-value__heading">Return values</h5>
         <span class="phpdocumentor-signature__response_type">int|false</span>
                     &mdash;
-                <section class="phpdocumentor-description"><p>Identifiant du journal créé ou false en cas d'échec.</p>
+                <section class="phpdocumentor-description"><p>Identifiant du log créé ou false en cas d'échec.</p>
 </section>
 
             </section>
@@ -371,7 +371,7 @@ avec &quot;securite_echec&quot; si l'opération a échoué, ou &quot;securite&qu
     <span class="phpdocumentor-signature__visibility"></span>
                     <span class="phpdocumentor-signature__name">logBusinessOperation</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type">int|null&nbsp;</span><span class="phpdocumentor-signature__argument__name">$userId</span></span><span class="phpdocumentor-signature__argument"><span>, </span><span class="phpdocumentor-signature__argument__return-type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$action</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$details</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">&#039;&#039;</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">int|false</span></code>
 
-        <section class="phpdocumentor-description"><p>La fonction enregistre une opération en ajoutant automatiquement le préfixe &quot;operation:&quot; au type d'action fourni.</p>
+        <section class="phpdocumentor-description"><p>Enregistre une opération métier en ajoutant le préfixe &quot;[BUSINESS OPERATION]&quot; au libellé de l'action fournie.</p>
 </section>
 
         <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
@@ -381,7 +381,7 @@ avec &quot;securite_echec&quot; si l'opération a échoué, ou &quot;securite&qu
                 : <span class="phpdocumentor-signature__argument__return-type">int|null</span>
                             </dt>
             <dd class="phpdocumentor-argument-list__definition">
-                    <section class="phpdocumentor-description"><p>Identifiant de l'utilisateur concerné.</p>
+                    <section class="phpdocumentor-description"><p>Identifiant de l'utilisateur concerné (ou null si non applicable).</p>
 </section>
 
             </dd>
@@ -390,7 +390,7 @@ avec &quot;securite_echec&quot; si l'opération a échoué, ou &quot;securite&qu
                 : <span class="phpdocumentor-signature__argument__return-type">string</span>
                             </dt>
             <dd class="phpdocumentor-argument-list__definition">
-                    <section class="phpdocumentor-description"><p>Type d'opération métier.</p>
+                    <section class="phpdocumentor-description"><p>Libellé de l'opération métier.</p>
 </section>
 
             </dd>
@@ -399,7 +399,7 @@ avec &quot;securite_echec&quot; si l'opération a échoué, ou &quot;securite&qu
                 : <span class="phpdocumentor-signature__argument__return-type">string</span>
                  = <span class="phpdocumentor-signature__argument__default-value">&#039;&#039;</span>            </dt>
             <dd class="phpdocumentor-argument-list__definition">
-                    <section class="phpdocumentor-description"><p>Informations supplémentaires sur l'opération.</p>
+                    <section class="phpdocumentor-description"><p>Informations complémentaires sur l'opération.</p>
 </section>
 
             </dd>
@@ -411,7 +411,7 @@ avec &quot;securite_echec&quot; si l'opération a échoué, ou &quot;securite&qu
         <h5 class="phpdocumentor-return-value__heading">Return values</h5>
         <span class="phpdocumentor-signature__response_type">int|false</span>
                     &mdash;
-                <section class="phpdocumentor-description"><p>ID du journal créé ou false en cas d'échec.</p>
+                <section class="phpdocumentor-description"><p>L'identifiant du log créé ou false en cas d'échec.</p>
 </section>
 
             </section>

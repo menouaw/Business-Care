@@ -124,29 +124,51 @@ function requireAuthentication() {
 }
 
 /**
- * Vérifie si l'utilisateur authentifié dispose de la permission nécessaire.
+ * Vérifie si l'utilisateur authentifié dispose du rôle spécifié.
  *
- * Actuellement, la vérification ignore le paramètre $requiredRole et se contente de
- * confirmer que l'utilisateur possède le rôle administrateur (role_id = 3) dans la session.
- *
- * @param int $requiredRole Identifiant du rôle requis (non utilisé dans l'implémentation actuelle)
- * @return bool Retourne true si l'utilisateur est authentifié et est administrateur, sinon false.
+ * @param int $requiredRole Identifiant du rôle requis.
+ * @return bool Retourne true si l'utilisateur est authentifié et a le rôle requis, sinon false.
  */
-function hasPermission($requiredRole) {
+function hasRole($requiredRole) {
     if (!isAuthenticated()) {
-        logSecurityEvent(null, 'permission_check', '[FAILURE] Vérification des permissions échouée - Utilisateur non authentifié', true);
+        logSecurityEvent(null, 'role_check', '[FAILURE] Vérification de rôle échouée - Utilisateur non authentifié', true);
         return false;
     }
-    
-    $hasPermission = $_SESSION['user_role'] == ROLE_ADMIN;
-    
-    if (!$hasPermission) {
-        logSecurityEvent($_SESSION['user_id'], 'permission_check', "[FAILURE] Accès refusé - Rôle requis: $requiredRole, Rôle actuel: {$_SESSION['user_role']}", true);
+
+    $hasRequiredRole = isset($_SESSION['user_role']) && $_SESSION['user_role'] == $requiredRole;
+
+    if (!$hasRequiredRole) {
+        logSecurityEvent($_SESSION['user_id'], 'role_check', "[FAILURE] Rôle insuffisant - Requis: $requiredRole, Actuel: {$_SESSION['user_role']}", true);
     } else {
-        logSecurityEvent($_SESSION['user_id'], 'permission_check', "[SUCCESS] Accès autorisé - Rôle requis: $requiredRole, Rôle actuel: {$_SESSION['user_role']}");
+        logSecurityEvent($_SESSION['user_id'], 'role_check', "[SUCCESS] Rôle suffisant - Requis: $requiredRole, Actuel: {$_SESSION['user_role']}");
     }
-    
-    return $hasPermission;
+
+    return $hasRequiredRole;
+}
+
+/**
+ * Vérifie que l'utilisateur est authentifié et possède le rôle requis, redirige sinon.
+ *
+ * Appelle requireAuthentication pour s'assurer que l'utilisateur est connecté.
+ * Si l'utilisateur n'a pas le rôle requis, enregistre l'événement et redirige
+ * vers la page de connexion administrateur avec une erreur.
+ *
+ * @param int $requiredRole Identifiant du rôle requis.
+ * @return void
+ */
+function requireRole($requiredRole) {
+    requireAuthentication();
+
+    if (!hasRole($requiredRole)) {
+        logSecurityEvent(
+            $_SESSION['user_id'] ?? null,
+            'permission_denied', 
+            '[FAILURE] Accès refusé à ' . $_SERVER['REQUEST_URI'] . " - Rôle requis: $requiredRole", 
+            true
+        );
+        
+        redirectTo(WEBADMIN_URL . '/login.php?error=permission_denied');
+    }
 }
 
 /**

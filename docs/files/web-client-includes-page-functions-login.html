@@ -82,10 +82,13 @@
     </ul>
 
     <article class="phpdocumentor-element -file">
-        <h2 class="phpdocumentor-content__title">companies.php</h2>
+        <h2 class="phpdocumentor-content__title">login.php</h2>
 
-        
+            <p class="phpdocumentor-summary">fonctions pour la gestion de l&#039;authentification</p>
 
+
+    <section class="phpdocumentor-description"><p>ce fichier contient les fonctions spécifiques à la page de connexion</p>
+</section>
 
 
 
@@ -95,7 +98,7 @@
 
 <h3 id="toc">
     Table of Contents
-    <a href="files/web-admin-includes-page-functions-modules-companies.html#toc" class="headerlink"><i class="fas fa-link"></i></a>
+    <a href="files/web-client-includes-page-functions-login.html#toc" class="headerlink"><i class="fas fa-link"></i></a>
 
 </h3>
 
@@ -111,37 +114,37 @@
 
 <h4 id="toc-functions">
     Functions
-    <a href="files/web-admin-includes-page-functions-modules-companies.html#toc-functions" class="headerlink"><i class="fas fa-link"></i></a>
+    <a href="files/web-client-includes-page-functions-login.html#toc-functions" class="headerlink"><i class="fas fa-link"></i></a>
 
 </h4>
 <dl class="phpdocumentor-table-of-contents">
             <dt class="phpdocumentor-table-of-contents__entry -function -">
-    <a class="" href="namespaces/default.html#function_companiesGetList">companiesGetList()</a>
+    <a class="" href="namespaces/default.html#function_processLoginForm">processLoginForm()</a>
     <span>
                                 &nbsp;: array&lt;string|int, mixed&gt;    </span>
 </dt>
-<dd>Recupere la liste des entreprises avec pagination et filtrage</dd>
+<dd>traite la soumission du formulaire de connexion</dd>
 
             <dt class="phpdocumentor-table-of-contents__entry -function -">
-    <a class="" href="namespaces/default.html#function_companiesGetDetails">companiesGetDetails()</a>
-    <span>
-                                &nbsp;: array&lt;string|int, mixed&gt;|false    </span>
-</dt>
-<dd>Recupere les details d&#039;une entreprise avec ses contrats et utilisateurs associes</dd>
-
-            <dt class="phpdocumentor-table-of-contents__entry -function -">
-    <a class="" href="namespaces/default.html#function_companiesSave">companiesSave()</a>
+    <a class="" href="namespaces/default.html#function_processPasswordResetForm">processPasswordResetForm()</a>
     <span>
                                 &nbsp;: array&lt;string|int, mixed&gt;    </span>
 </dt>
-<dd>Crée ou met à jour une entreprise.</dd>
+<dd>traite la soumission du formulaire de récupération de mot de passe</dd>
 
             <dt class="phpdocumentor-table-of-contents__entry -function -">
-    <a class="" href="namespaces/default.html#function_companiesDelete">companiesDelete()</a>
+    <a class="" href="namespaces/default.html#function_validateResetToken">validateResetToken()</a>
+    <span>
+                                &nbsp;: bool|array&lt;string|int, mixed&gt;    </span>
+</dt>
+<dd>vérifie si un token de réinitialisation de mot de passe est valide</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -function -">
+    <a class="" href="namespaces/default.html#function_processNewPasswordForm">processNewPasswordForm()</a>
     <span>
                                 &nbsp;: array&lt;string|int, mixed&gt;    </span>
 </dt>
-<dd>Supprime une entreprise en vérifiant l&#039;absence d&#039;associations.</dd>
+<dd>traite la soumission du formulaire de définition du nouveau mot de passe</dd>
 
     </dl>
 
@@ -152,161 +155,38 @@
             <section class="phpdocumentor-functions">
         <h3 class="phpdocumentor-elements__header" id="functions">
             Functions
-            <a href="files/web-admin-includes-page-functions-modules-companies.html#functions" class="headerlink"><i class="fas fa-link"></i></a>
+            <a href="files/web-client-includes-page-functions-login.html#functions" class="headerlink"><i class="fas fa-link"></i></a>
 
         </h3>
                     <article class="phpdocumentor-element -function - ">
-    <h4 class="phpdocumentor-element__name" id="function_companiesGetList">
-        companiesGetList()
-        <a href="namespaces/default.html#function_companiesGetList" class="headerlink"><i class="fas fa-link"></i></a>
+    <h4 class="phpdocumentor-element__name" id="function_processLoginForm">
+        processLoginForm()
+        <a href="namespaces/default.html#function_processLoginForm" class="headerlink"><i class="fas fa-link"></i></a>
 
     </h4>
     <aside class="phpdocumentor-element-found-in">
-    <abbr class="phpdocumentor-element-found-in__file" title="web-admin/includes/page_functions/modules/companies.php"><a href="files/web-admin-includes-page-functions-modules-companies.html"><abbr title="web-admin/includes/page_functions/modules/companies.php">companies.php</abbr></a></abbr>
+    <abbr class="phpdocumentor-element-found-in__file" title="web-client/includes/page_functions/login.php"><a href="files/web-client-includes-page-functions-login.html"><abbr title="web-client/includes/page_functions/login.php">login.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">12</span>
+    <span class="phpdocumentor-element-found-in__line">15</span>
 
     </aside>
 
-        <p class="phpdocumentor-summary">Recupere la liste des entreprises avec pagination et filtrage</p>
+        <p class="phpdocumentor-summary">traite la soumission du formulaire de connexion</p>
 
     
     <code class="phpdocumentor-code phpdocumentor-signature ">
     <span class="phpdocumentor-signature__visibility"></span>
-                    <span class="phpdocumentor-signature__name">companiesGetList</span><span>(</span><span class="phpdocumentor-signature__argument"><span>[</span><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$page</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">1</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$perPage</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">10</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$search</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">&#039;&#039;</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span></code>
+                    <span class="phpdocumentor-signature__name">processLoginForm</span><span>(</span><span class="phpdocumentor-signature__argument"><span>[</span><span class="phpdocumentor-signature__argument__return-type">array&lt;string|int, mixed&gt;&nbsp;</span><span class="phpdocumentor-signature__argument__name">$formData</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">null</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span></code>
 
     
         <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
     <dl class="phpdocumentor-argument-list">
                     <dt class="phpdocumentor-argument-list__entry">
-                <span class="phpdocumentor-signature__argument__name">$page</span>
-                : <span class="phpdocumentor-signature__argument__return-type">int</span>
-                 = <span class="phpdocumentor-signature__argument__default-value">1</span>            </dt>
-            <dd class="phpdocumentor-argument-list__definition">
-                    <section class="phpdocumentor-description"><p>Numero de la page</p>
-</section>
-
-            </dd>
-                    <dt class="phpdocumentor-argument-list__entry">
-                <span class="phpdocumentor-signature__argument__name">$perPage</span>
-                : <span class="phpdocumentor-signature__argument__return-type">int</span>
-                 = <span class="phpdocumentor-signature__argument__default-value">10</span>            </dt>
-            <dd class="phpdocumentor-argument-list__definition">
-                    <section class="phpdocumentor-description"><p>Nombre d'elements par page</p>
-</section>
-
-            </dd>
-                    <dt class="phpdocumentor-argument-list__entry">
-                <span class="phpdocumentor-signature__argument__name">$search</span>
-                : <span class="phpdocumentor-signature__argument__return-type">string</span>
-                 = <span class="phpdocumentor-signature__argument__default-value">&#039;&#039;</span>            </dt>
-            <dd class="phpdocumentor-argument-list__definition">
-                    <section class="phpdocumentor-description"><p>Terme de recherche</p>
-</section>
-
-            </dd>
-            </dl>
-
-    
-
-            <section>
-        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
-        <span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span>
-                    &mdash;
-                <section class="phpdocumentor-description"><p>Donnees de pagination et liste des entreprises</p>
-</section>
-
-            </section>
-
-</article>
-                    <article class="phpdocumentor-element -function - ">
-    <h4 class="phpdocumentor-element__name" id="function_companiesGetDetails">
-        companiesGetDetails()
-        <a href="namespaces/default.html#function_companiesGetDetails" class="headerlink"><i class="fas fa-link"></i></a>
-
-    </h4>
-    <aside class="phpdocumentor-element-found-in">
-    <abbr class="phpdocumentor-element-found-in__file" title="web-admin/includes/page_functions/modules/companies.php"><a href="files/web-admin-includes-page-functions-modules-companies.html"><abbr title="web-admin/includes/page_functions/modules/companies.php">companies.php</abbr></a></abbr>
-    :
-    <span class="phpdocumentor-element-found-in__line">65</span>
-
-    </aside>
-
-        <p class="phpdocumentor-summary">Recupere les details d&#039;une entreprise avec ses contrats et utilisateurs associes</p>
-
-    
-    <code class="phpdocumentor-code phpdocumentor-signature ">
-    <span class="phpdocumentor-signature__visibility"></span>
-                    <span class="phpdocumentor-signature__name">companiesGetDetails</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$id</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;|false</span></code>
-
-    
-        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
-    <dl class="phpdocumentor-argument-list">
-                    <dt class="phpdocumentor-argument-list__entry">
-                <span class="phpdocumentor-signature__argument__name">$id</span>
-                : <span class="phpdocumentor-signature__argument__return-type">int</span>
-                            </dt>
-            <dd class="phpdocumentor-argument-list__definition">
-                    <section class="phpdocumentor-description"><p>Identifiant de l'entreprise</p>
-</section>
-
-            </dd>
-            </dl>
-
-    
-
-            <section>
-        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
-        <span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;|false</span>
-                    &mdash;
-                <section class="phpdocumentor-description"><p>Donnees de l'entreprise ou false si non trouvee</p>
-</section>
-
-            </section>
-
-</article>
-                    <article class="phpdocumentor-element -function - ">
-    <h4 class="phpdocumentor-element__name" id="function_companiesSave">
-        companiesSave()
-        <a href="namespaces/default.html#function_companiesSave" class="headerlink"><i class="fas fa-link"></i></a>
-
-    </h4>
-    <aside class="phpdocumentor-element-found-in">
-    <abbr class="phpdocumentor-element-found-in__file" title="web-admin/includes/page_functions/modules/companies.php"><a href="files/web-admin-includes-page-functions-modules-companies.html"><abbr title="web-admin/includes/page_functions/modules/companies.php">companies.php</abbr></a></abbr>
-    :
-    <span class="phpdocumentor-element-found-in__line">99</span>
-
-    </aside>
-
-        <p class="phpdocumentor-summary">Crée ou met à jour une entreprise.</p>
-
-    
-    <code class="phpdocumentor-code phpdocumentor-signature ">
-    <span class="phpdocumentor-signature__visibility"></span>
-                    <span class="phpdocumentor-signature__name">companiesSave</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type">array&lt;string|int, mixed&gt;&nbsp;</span><span class="phpdocumentor-signature__argument__name">$data</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$id</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">0</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span></code>
-
-        <section class="phpdocumentor-description"><p>Insère une nouvelle entreprise ou modifie une entreprise existante dans la base de données en fonction de l'identifiant fourni.
-Le tableau $data doit contenir les informations de l'entreprise, avec le champ 'nom' étant obligatoire. En cas d'erreur de validation
-ou de problème de base de données, la fonction retourne un tableau indiquant l'échec de l'opération ainsi que les messages d'erreur.</p>
-</section>
-
-        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
-    <dl class="phpdocumentor-argument-list">
-                    <dt class="phpdocumentor-argument-list__entry">
-                <span class="phpdocumentor-signature__argument__name">$data</span>
+                <span class="phpdocumentor-signature__argument__name">$formData</span>
                 : <span class="phpdocumentor-signature__argument__return-type">array&lt;string|int, mixed&gt;</span>
-                            </dt>
+                 = <span class="phpdocumentor-signature__argument__default-value">null</span>            </dt>
             <dd class="phpdocumentor-argument-list__definition">
-                    <section class="phpdocumentor-description"><p>Tableau associatif des informations de l'entreprise.</p>
-</section>
-
-            </dd>
-                    <dt class="phpdocumentor-argument-list__entry">
-                <span class="phpdocumentor-signature__argument__name">$id</span>
-                : <span class="phpdocumentor-signature__argument__return-type">int</span>
-                 = <span class="phpdocumentor-signature__argument__default-value">0</span>            </dt>
-            <dd class="phpdocumentor-argument-list__definition">
-                    <section class="phpdocumentor-description"><p>Identifiant de l'entreprise (0 pour création, supérieur à 0 pour mise à jour).</p>
+                    <section class="phpdocumentor-description"><p>données du formulaire</p>
 </section>
 
             </dd>
@@ -318,46 +198,41 @@ ou de problème de base de données, la fonction retourne un tableau indiquant l
         <h5 class="phpdocumentor-return-value__heading">Return values</h5>
         <span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span>
                     &mdash;
-                <section class="phpdocumentor-description"><p>Tableau contenant le statut de l'opération et un message de confirmation ou une liste d'erreurs.</p>
+                <section class="phpdocumentor-description"><p>résultat du traitement (success, message)</p>
 </section>
 
             </section>
 
 </article>
                     <article class="phpdocumentor-element -function - ">
-    <h4 class="phpdocumentor-element__name" id="function_companiesDelete">
-        companiesDelete()
-        <a href="namespaces/default.html#function_companiesDelete" class="headerlink"><i class="fas fa-link"></i></a>
+    <h4 class="phpdocumentor-element__name" id="function_processPasswordResetForm">
+        processPasswordResetForm()
+        <a href="namespaces/default.html#function_processPasswordResetForm" class="headerlink"><i class="fas fa-link"></i></a>
 
     </h4>
     <aside class="phpdocumentor-element-found-in">
-    <abbr class="phpdocumentor-element-found-in__file" title="web-admin/includes/page_functions/modules/companies.php"><a href="files/web-admin-includes-page-functions-modules-companies.html"><abbr title="web-admin/includes/page_functions/modules/companies.php">companies.php</abbr></a></abbr>
+    <abbr class="phpdocumentor-element-found-in__file" title="web-client/includes/page_functions/login.php"><a href="files/web-client-includes-page-functions-login.html"><abbr title="web-client/includes/page_functions/login.php">login.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">202</span>
+    <span class="phpdocumentor-element-found-in__line">78</span>
 
     </aside>
 
-        <p class="phpdocumentor-summary">Supprime une entreprise en vérifiant l&#039;absence d&#039;associations.</p>
+        <p class="phpdocumentor-summary">traite la soumission du formulaire de récupération de mot de passe</p>
 
     
     <code class="phpdocumentor-code phpdocumentor-signature ">
     <span class="phpdocumentor-signature__visibility"></span>
-                    <span class="phpdocumentor-signature__name">companiesDelete</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$id</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span></code>
+                    <span class="phpdocumentor-signature__name">processPasswordResetForm</span><span>(</span><span class="phpdocumentor-signature__argument"><span>[</span><span class="phpdocumentor-signature__argument__return-type">array&lt;string|int, mixed&gt;&nbsp;</span><span class="phpdocumentor-signature__argument__name">$formData</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">null</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span></code>
 
-        <section class="phpdocumentor-description"><p>Cette fonction vérifie d'abord qu'aucun utilisateur ou contrat n'est associé à l'entreprise identifiée par son ID.
-Si des associations existent, elle loggue une tentative échouée et renvoie un tableau indiquant l'échec de l'opération
-avec un message explicatif. Sinon, l'entreprise est supprimée, une opération de suppression est logguée,
-et la fonction renvoie un tableau confirmant la réussite de l'opération.</p>
-</section>
-
+    
         <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
     <dl class="phpdocumentor-argument-list">
                     <dt class="phpdocumentor-argument-list__entry">
-                <span class="phpdocumentor-signature__argument__name">$id</span>
-                : <span class="phpdocumentor-signature__argument__return-type">int</span>
-                            </dt>
+                <span class="phpdocumentor-signature__argument__name">$formData</span>
+                : <span class="phpdocumentor-signature__argument__return-type">array&lt;string|int, mixed&gt;</span>
+                 = <span class="phpdocumentor-signature__argument__default-value">null</span>            </dt>
             <dd class="phpdocumentor-argument-list__definition">
-                    <section class="phpdocumentor-description"><p>L'identifiant de l'entreprise.</p>
+                    <section class="phpdocumentor-description"><p>données du formulaire</p>
 </section>
 
             </dd>
@@ -369,8 +244,99 @@ et la fonction renvoie un tableau confirmant la réussite de l'opération.</p>
         <h5 class="phpdocumentor-return-value__heading">Return values</h5>
         <span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span>
                     &mdash;
-                <section class="phpdocumentor-description"><p>Un tableau associatif contenant la clé 'success' (booléen) indiquant le résultat de l'opération
-et la clé 'message' (string) avec des détails sur le résultat.</p>
+                <section class="phpdocumentor-description"><p>résultat du traitement (success, message)</p>
+</section>
+
+            </section>
+
+</article>
+                    <article class="phpdocumentor-element -function - ">
+    <h4 class="phpdocumentor-element__name" id="function_validateResetToken">
+        validateResetToken()
+        <a href="namespaces/default.html#function_validateResetToken" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="web-client/includes/page_functions/login.php"><a href="files/web-client-includes-page-functions-login.html"><abbr title="web-client/includes/page_functions/login.php">login.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">123</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">vérifie si un token de réinitialisation de mot de passe est valide</p>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility"></span>
+                    <span class="phpdocumentor-signature__name">validateResetToken</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$token</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">bool|array&lt;string|int, mixed&gt;</span></code>
+
+    
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-signature__argument__name">$token</span>
+                : <span class="phpdocumentor-signature__argument__return-type">string</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>token de réinitialisation</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">bool|array&lt;string|int, mixed&gt;</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>false si invalide, données utilisateur si valide</p>
+</section>
+
+            </section>
+
+</article>
+                    <article class="phpdocumentor-element -function - ">
+    <h4 class="phpdocumentor-element__name" id="function_processNewPasswordForm">
+        processNewPasswordForm()
+        <a href="namespaces/default.html#function_processNewPasswordForm" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="web-client/includes/page_functions/login.php"><a href="files/web-client-includes-page-functions-login.html"><abbr title="web-client/includes/page_functions/login.php">login.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">139</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">traite la soumission du formulaire de définition du nouveau mot de passe</p>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility"></span>
+                    <span class="phpdocumentor-signature__name">processNewPasswordForm</span><span>(</span><span class="phpdocumentor-signature__argument"><span>[</span><span class="phpdocumentor-signature__argument__return-type">array&lt;string|int, mixed&gt;&nbsp;</span><span class="phpdocumentor-signature__argument__name">$formData</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">null</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span></code>
+
+    
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-signature__argument__name">$formData</span>
+                : <span class="phpdocumentor-signature__argument__return-type">array&lt;string|int, mixed&gt;</span>
+                 = <span class="phpdocumentor-signature__argument__default-value">null</span>            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>données du formulaire</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>résultat du traitement (success, message)</p>
 </section>
 
             </section>
@@ -382,7 +348,7 @@ et la clé 'message' (string) avec des détails sur le résultat.</p>
     <div class="phpdocumentor-modal-bg" data-exit-button></div>
     <div class="phpdocumentor-modal-container">
         <div class="phpdocumentor-modal-content">
-            <pre style="max-height: 500px; overflow-y: scroll" data-src="files/web-admin/includes/page_functions/modules/companies.php.txt" class="language-php line-numbers linkable-line-numbers"></pre>
+            <pre style="max-height: 500px; overflow-y: scroll" data-src="files/web-client/includes/page_functions/login.php.txt" class="language-php line-numbers linkable-line-numbers"></pre>
         </div>
         <button data-exit-button class="phpdocumentor-modal__close">&times;</button>
     </div>
@@ -481,7 +447,7 @@ et la clé 'message' (string) avec des détails sur le résultat.</p>
             <li class="phpdocumentor-on-this-page-section__title">Table Of Contents</li>
             <li>
                 <ul class="phpdocumentor-list -clean">
-                                                                                                                                                                                        <li><a href="files/web-admin-includes-page-functions-modules-companies.html#toc-functions">Functions</a></li>
+                                                                                                                                                                                        <li><a href="files/web-client-includes-page-functions-login.html#toc-functions">Functions</a></li>
                                     </ul>
             </li>
 
@@ -489,10 +455,10 @@ et la clé 'message' (string) avec des détails sur le résultat.</p>
                             <li class="phpdocumentor-on-this-page-section__title">Functions</li>
                 <li>
                     <ul class="phpdocumentor-list -clean">
-                                                    <li class=""><a href="namespaces/default.html#function_companiesDelete">companiesDelete()</a></li>
-                                                    <li class=""><a href="namespaces/default.html#function_companiesGetDetails">companiesGetDetails()</a></li>
-                                                    <li class=""><a href="namespaces/default.html#function_companiesGetList">companiesGetList()</a></li>
-                                                    <li class=""><a href="namespaces/default.html#function_companiesSave">companiesSave()</a></li>
+                                                    <li class=""><a href="namespaces/default.html#function_processLoginForm">processLoginForm()</a></li>
+                                                    <li class=""><a href="namespaces/default.html#function_processNewPasswordForm">processNewPasswordForm()</a></li>
+                                                    <li class=""><a href="namespaces/default.html#function_processPasswordResetForm">processPasswordResetForm()</a></li>
+                                                    <li class=""><a href="namespaces/default.html#function_validateResetToken">validateResetToken()</a></li>
                                             </ul>
                 </li>
                     </ul>
@@ -512,7 +478,7 @@ et la clé 'message' (string) avec des détails sur le résultat.</p>
     </section>
 </section>
         </div>
-        <a href="files/web-admin-includes-page-functions-modules-companies.html#top" class="phpdocumentor-back-to-top"><i class="fas fa-chevron-circle-up"></i></a>
+        <a href="files/web-client-includes-page-functions-login.html#top" class="phpdocumentor-back-to-top"><i class="fas fa-chevron-circle-up"></i></a>
 
     </main>
 

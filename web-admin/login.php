@@ -1,19 +1,15 @@
 <?php
-require_once 'includes/init.php';
 require_once 'includes/page_functions/login.php';
 
-// Verifier si l'utilisateur est deja connecte
-if (isAuthenticated()) {
+if (isAuthenticated() && !(isset($_GET['error']) && $_GET['error'] == 'permission_denied')) {
     $redirectUrl = $_SESSION['redirect_after_login'] ?? 'index.php';
     unset($_SESSION['redirect_after_login']);
     redirectTo($redirectUrl);
 }
 
-// Traiter le formulaire de connexion
 $loginResult = processLoginForm();
 $error = $loginResult['error'];
 
-// Si connexion reussie, rediriger
 if ($loginResult['success']) {
     $redirectUrl = $_SESSION['redirect_after_login'] ?? 'index.php';
     unset($_SESSION['redirect_after_login']);
@@ -23,6 +19,8 @@ if ($loginResult['success']) {
 // Si l'utilisateur a ete deconnecte pour inactivite
 if (isset($_GET['timeout']) && $_GET['timeout'] == 1) {
     $error = 'Votre session a expire. Veuillez vous reconnecter.';
+} elseif (isset($_GET['error']) && $_GET['error'] == 'permission_denied') {
+    $error = 'Accès refusé. Vous n\'avez pas les permissions nécessaires.';
 }
 ?>
 <!DOCTYPE html>

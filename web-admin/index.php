@@ -1,17 +1,11 @@
 <?php
-require_once 'includes/init.php';
 require_once 'includes/page_functions/dashboard.php';
 
-// verifie si l'utilisateur est connecte, redirige vers la connexion si non
-if (!isAuthenticated()) {
-    redirectTo('login.php');
-}
+requireRole(ROLE_ADMIN);
 
-// recupere les donnees du tableau de bord
 $stats = getDashboardStats();
 $recentActivities = getDashboardRecentActivities(10);
 
-// inclut l'en-tete
 $pageTitle = "Tableau de bord";
 include 'templates/header.php';
 ?>

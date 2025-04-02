@@ -120,7 +120,7 @@
     <span>
                                 &nbsp;: <abbr title="\PDO">PDO</abbr>    </span>
 </dt>
-<dd>Retourne une instance PDO pour la connexion à la base de données.</dd>
+<dd>Retourne une instance PDO pour se connecter à la base de données.</dd>
 
             <dt class="phpdocumentor-table-of-contents__entry -function -">
     <a class="" href="namespaces/default.html#function_validateTableName">validateTableName()</a>
@@ -220,20 +220,19 @@
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="shared/web-admin/db.php"><a href="files/shared-web-admin-db.html"><abbr title="shared/web-admin/db.php">db.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">13</span>
+    <span class="phpdocumentor-element-found-in__line">12</span>
 
     </aside>
 
-        <p class="phpdocumentor-summary">Retourne une instance PDO pour la connexion à la base de données.</p>
+        <p class="phpdocumentor-summary">Retourne une instance PDO pour se connecter à la base de données.</p>
 
     
     <code class="phpdocumentor-code phpdocumentor-signature ">
     <span class="phpdocumentor-signature__visibility"></span>
                     <span class="phpdocumentor-signature__name">getDbConnection</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type"><abbr title="\PDO">PDO</abbr></span></code>
 
-        <section class="phpdocumentor-description"><p>La connexion est établie en utilisant les constantes de configuration (DB_HOST, DB_NAME, DB_CHARSET, DB_USER, DB_PASS)
-et est mise en cache pour éviter des connexions répétées. En cas d'erreur lors de l'établissement de la connexion,
-le script est interrompu avec un message adapté au mode DEBUG.</p>
+        <section class="phpdocumentor-description"><p>Établit une connexion à la base de données en utilisant les constantes de configuration (DB_HOST, DB_NAME, DB_CHARSET, DB_USER, DB_PASS)
+et la met en cache afin d'éviter des connexions répétées. En cas d'échec, le script s'interrompt avec un message d'erreur standard.</p>
 </section>
 
     
@@ -258,7 +257,7 @@ le script est interrompu avec un message adapté au mode DEBUG.</p>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="shared/web-admin/db.php"><a href="files/shared-web-admin-db.html"><abbr title="shared/web-admin/db.php">db.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">42</span>
+    <span class="phpdocumentor-element-found-in__line">37</span>
 
     </aside>
 
@@ -321,7 +320,7 @@ le script est interrompu avec un message adapté au mode DEBUG.</p>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="shared/web-admin/db.php"><a href="files/shared-web-admin-db.html"><abbr title="shared/web-admin/db.php">db.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">60</span>
+    <span class="phpdocumentor-element-found-in__line">53</span>
 
     </aside>
 
@@ -332,9 +331,7 @@ le script est interrompu avec un message adapté au mode DEBUG.</p>
     <span class="phpdocumentor-signature__visibility"></span>
                     <span class="phpdocumentor-signature__name">executeQuery</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$sql</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">array&lt;string|int, mixed&gt;&nbsp;</span><span class="phpdocumentor-signature__argument__name">$params</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">[]</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type"><abbr title="\PDOStatement">PDOStatement</abbr></span></code>
 
-        <section class="phpdocumentor-description"><p>Cette fonction prépare et exécute une requête SQL avec les valeurs fournies et retourne
-l'objet PDOStatement résultant. En cas d'erreur, le script est interrompu avec un message
-d'erreur dépendant du mode de débogage.</p>
+        <section class="phpdocumentor-description"><p>Cette fonction prépare la requête SQL fournie et l'exécute avec les paramètres donnés. En cas d'erreur lors de l'exécution, le script est interrompu avec un message d'erreur standardisé.</p>
 </section>
 
         <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
@@ -380,7 +377,7 @@ d'erreur dépendant du mode de débogage.</p>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="shared/web-admin/db.php"><a href="files/shared-web-admin-db.html"><abbr title="shared/web-admin/db.php">db.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">86</span>
+    <span class="phpdocumentor-element-found-in__line">75</span>
 
     </aside>
 
@@ -439,7 +436,7 @@ ou compte tous les enregistrements si aucune clause n'est spécifiée.</p>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="shared/web-admin/db.php"><a href="files/shared-web-admin-db.html"><abbr title="shared/web-admin/db.php">db.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">114</span>
+    <span class="phpdocumentor-element-found-in__line">103</span>
 
     </aside>
 
@@ -526,7 +523,7 @@ Noter qu'une valeur de 0 pour le paramètre limit désactive la limitation du no
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="shared/web-admin/db.php"><a href="files/shared-web-admin-db.html"><abbr title="shared/web-admin/db.php">db.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">147</span>
+    <span class="phpdocumentor-element-found-in__line">136</span>
 
     </aside>
 
@@ -594,7 +591,7 @@ Elle retourne le premier enregistrement trouvé sous forme de tableau associatif
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="shared/web-admin/db.php"><a href="files/shared-web-admin-db.html"><abbr title="shared/web-admin/db.php">db.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">173</span>
+    <span class="phpdocumentor-element-found-in__line">162</span>
 
     </aside>
 
@@ -670,7 +667,7 @@ En cas de succès, elle retourne l'identifiant de la nouvelle ligne insérée, s
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="shared/web-admin/db.php"><a href="files/shared-web-admin-db.html"><abbr title="shared/web-admin/db.php">db.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">196</span>
+    <span class="phpdocumentor-element-found-in__line">185</span>
 
     </aside>
 
@@ -743,7 +740,7 @@ En cas de succès, elle retourne l'identifiant de la nouvelle ligne insérée, s
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="shared/web-admin/db.php"><a href="files/shared-web-admin-db.html"><abbr title="shared/web-admin/db.php">db.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">221</span>
+    <span class="phpdocumentor-element-found-in__line">210</span>
 
     </aside>
 
@@ -809,7 +806,7 @@ En cas de succès, elle retourne l'identifiant de la nouvelle ligne insérée, s
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="shared/web-admin/db.php"><a href="files/shared-web-admin-db.html"><abbr title="shared/web-admin/db.php">db.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">235</span>
+    <span class="phpdocumentor-element-found-in__line">224</span>
 
     </aside>
 
@@ -835,7 +832,7 @@ En cas de succès, elle retourne l'identifiant de la nouvelle ligne insérée, s
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="shared/web-admin/db.php"><a href="files/shared-web-admin-db.html"><abbr title="shared/web-admin/db.php">db.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">244</span>
+    <span class="phpdocumentor-element-found-in__line">233</span>
 
     </aside>
 
@@ -861,7 +858,7 @@ En cas de succès, elle retourne l'identifiant de la nouvelle ligne insérée, s
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="shared/web-admin/db.php"><a href="files/shared-web-admin-db.html"><abbr title="shared/web-admin/db.php">db.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">253</span>
+    <span class="phpdocumentor-element-found-in__line">242</span>
 
     </aside>
 

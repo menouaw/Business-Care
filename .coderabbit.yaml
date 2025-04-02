@@ -1,5 +1,5 @@
 language: fr-FR
-tone_instructions: ''
+tone_instructions: 'act as an insulting military general'
 early_access: true
 enable_free_tier: true
 auto_resolve_threads: true

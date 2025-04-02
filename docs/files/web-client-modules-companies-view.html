@@ -82,7 +82,7 @@
     </ul>
 
     <article class="phpdocumentor-element -file">
-        <h2 class="phpdocumentor-content__title">login.php</h2>
+        <h2 class="phpdocumentor-content__title">view.php</h2>
 
         
 
@@ -95,7 +95,7 @@
 
 <h3 id="toc">
     Table of Contents
-    <a href="files/web-admin-includes-page-functions-login.html#toc" class="headerlink"><i class="fas fa-link"></i></a>
+    <a href="files/web-client-modules-companies-view.html#toc" class="headerlink"><i class="fas fa-link"></i></a>
 
 </h3>
 
@@ -109,83 +109,17 @@
 
 
 
-<h4 id="toc-functions">
-    Functions
-    <a href="files/web-admin-includes-page-functions-login.html#toc-functions" class="headerlink"><i class="fas fa-link"></i></a>
-
-</h4>
-<dl class="phpdocumentor-table-of-contents">
-            <dt class="phpdocumentor-table-of-contents__entry -function -">
-    <a class="" href="namespaces/default.html#function_processLoginForm">processLoginForm()</a>
-    <span>
-                                &nbsp;: array&lt;string|int, mixed&gt;    </span>
-</dt>
-<dd>Traite la soumission du formulaire de connexion.</dd>
-
-    </dl>
 
 
 
         
 
-            <section class="phpdocumentor-functions">
-        <h3 class="phpdocumentor-elements__header" id="functions">
-            Functions
-            <a href="files/web-admin-includes-page-functions-login.html#functions" class="headerlink"><i class="fas fa-link"></i></a>
-
-        </h3>
-                    <article class="phpdocumentor-element -function - ">
-    <h4 class="phpdocumentor-element__name" id="function_processLoginForm">
-        processLoginForm()
-        <a href="namespaces/default.html#function_processLoginForm" class="headerlink"><i class="fas fa-link"></i></a>
-
-    </h4>
-    <aside class="phpdocumentor-element-found-in">
-    <abbr class="phpdocumentor-element-found-in__file" title="web-admin/includes/page_functions/login.php"><a href="files/web-admin-includes-page-functions-login.html"><abbr title="web-admin/includes/page_functions/login.php">login.php</abbr></a></abbr>
-    :
-    <span class="phpdocumentor-element-found-in__line">18</span>
-
-    </aside>
-
-        <p class="phpdocumentor-summary">Traite la soumission du formulaire de connexion.</p>
-
-    
-    <code class="phpdocumentor-code phpdocumentor-signature ">
-    <span class="phpdocumentor-signature__visibility"></span>
-                    <span class="phpdocumentor-signature__name">processLoginForm</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span></code>
-
-        <section class="phpdocumentor-description"><p>Cette fonction gère le traitement des informations d'identification envoyées via une requête POST, en vérifiant que l'email et le mot de passe sont renseignés.
-En cas d'informations manquantes, un message d'erreur est généré et un événement de tentative échouée est logué.
-Si les informations sont complètes, la fonction tente de connecter l'utilisateur via la fonction login().
-Un échec de connexion en raison d'informations incorrectes entraîne également un message d'erreur.
-La fonction vérifie aussi la présence d'un indicateur de timeout dans une requête GET pour signaler une expiration de session,
-mettant à jour le message d'erreur et loguant cet événement.</p>
-</section>
-
-    
-    
-
-            <section>
-        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
-        <span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span>
-                    &mdash;
-                <section class="phpdocumentor-description"><p>Retourne un tableau associatif contenant :</p>
-<ul>
-<li>'success' (bool) : true si la connexion a réussi, false sinon.</li>
-<li>'error' (string) : message d'erreur en cas d'échec (chaîne vide en cas de succès).</li>
-</ul>
-</section>
-
-            </section>
-
-</article>
-            </section>
-
+        
         <div class="phpdocumentor-modal" id="source-view">
     <div class="phpdocumentor-modal-bg" data-exit-button></div>
     <div class="phpdocumentor-modal-container">
         <div class="phpdocumentor-modal-content">
-            <pre style="max-height: 500px; overflow-y: scroll" data-src="files/web-admin/includes/page_functions/login.php.txt" class="language-php line-numbers linkable-line-numbers"></pre>
+            <pre style="max-height: 500px; overflow-y: scroll" data-src="files/web-client/modules/companies/view.php.txt" class="language-php line-numbers linkable-line-numbers"></pre>
         </div>
         <button data-exit-button class="phpdocumentor-modal__close">&times;</button>
     </div>
@@ -284,17 +218,10 @@ mettant à jour le message d'erreur et loguant cet événement.</p>
             <li class="phpdocumentor-on-this-page-section__title">Table Of Contents</li>
             <li>
                 <ul class="phpdocumentor-list -clean">
-                                                                                                                                                                                        <li><a href="files/web-admin-includes-page-functions-login.html#toc-functions">Functions</a></li>
-                                    </ul>
+                                                                                                                                                                                </ul>
             </li>
 
             
-                            <li class="phpdocumentor-on-this-page-section__title">Functions</li>
-                <li>
-                    <ul class="phpdocumentor-list -clean">
-                                                    <li class=""><a href="namespaces/default.html#function_processLoginForm">processLoginForm()</a></li>
-                                            </ul>
-                </li>
                     </ul>
     </section>
 
@@ -312,7 +239,7 @@ mettant à jour le message d'erreur et loguant cet événement.</p>
     </section>
 </section>
         </div>
-        <a href="files/web-admin-includes-page-functions-login.html#top" class="phpdocumentor-back-to-top"><i class="fas fa-chevron-circle-up"></i></a>
+        <a href="files/web-client-modules-companies-view.html#top" class="phpdocumentor-back-to-top"><i class="fas fa-chevron-circle-up"></i></a>
 
     </main>
 
