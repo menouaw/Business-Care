@@ -11,44 +11,34 @@ require_once __DIR__ . '/../../init.php';
  * @return array Donnees de pagination et liste des services
  */
 function servicesGetList($page = 1, $perPage = 10, $search = '', $type = '') {
-    $where = '';
+    $whereClauses = [];
     $params = [];
-    $conditions = [];
 
     if ($search) {
-        $conditions[] = "(nom LIKE ? OR description LIKE ?)";
-        $params[] = "%$search%";
-        $params[] = "%$search%";
+        $whereClauses[] = "(nom LIKE ? OR description LIKE ?)";
+        $params[] = "%{$search}%";
+        $params[] = "%{$search}%";
     }
 
     if ($type) {
-        $conditions[] = "type = ?";
+        $whereClauses[] = "type = ?";
         $params[] = $type;
     }
     
-    if (!empty($conditions)) {
-        $where = "WHERE " . implode(' AND ', $conditions);
-    }
+    $whereSql = !empty($whereClauses) ? implode(' AND ', $whereClauses) : '1';
 
-    // recupere les services pagines
+    $countSql = "SELECT COUNT(id) FROM prestations WHERE {$whereSql}";
+    $totalServices = executeQuery($countSql, $params)->fetchColumn();
+    
+    $totalPages = ceil($totalServices / $perPage);
+    $page = max(1, min($page, $totalPages)); 
     $offset = ($page - 1) * $perPage;
 
-    $pdo = getDbConnection();
-    $countSql = "SELECT COUNT(id) FROM prestations $where";
-
-    $countStmt = $pdo->prepare($countSql);
-    $countStmt->execute($params);
-    $totalServices = $countStmt->fetchColumn();
-    $totalPages = ceil($totalServices / $perPage);
-    $page = max(1, min($page, $totalPages));
-
-    $sql = "SELECT * FROM prestations $where ORDER BY nom ASC LIMIT ?, ?";
+    $sql = "SELECT * FROM prestations WHERE {$whereSql} ORDER BY nom ASC LIMIT ?, ?";
     $params[] = $offset;
     $params[] = $perPage;
 
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute($params);
-    $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $services = executeQuery($sql, $params)->fetchAll();
 
     return [
         'services' => $services,
@@ -67,11 +57,8 @@ function servicesGetList($page = 1, $perPage = 10, $search = '', $type = '') {
  * @return array|false Donnees du service (et donnees associees si demande) ou false si non trouve
  */
 function servicesGetDetails($id, $fetchRelated = false) {
-    $pdo = getDbConnection();
-    $stmt = $pdo->prepare("SELECT * FROM prestations WHERE id = ?");
-    $stmt->execute([$id]);
-    $service = $stmt->fetch(PDO::FETCH_ASSOC);
-    
+    $service = executeQuery("SELECT * FROM prestations WHERE id = ? LIMIT 1", [$id])->fetch();
+
     if (!$service) {
         return false;
     }
@@ -79,22 +66,19 @@ function servicesGetDetails($id, $fetchRelated = false) {
     $result = ['service' => $service];
 
     if ($fetchRelated) {
-        // Recupere les rendez-vous associes
-        $stmt = $pdo->prepare("SELECT r.*, p.nom as nom_personne, p.prenom as prenom_personne 
-                              FROM rendez_vous r 
-                              LEFT JOIN personnes p ON r.personne_id = p.id 
-                              WHERE r.prestation_id = ? 
-                              ORDER BY r.date_rdv DESC");
-        $stmt->execute([$id]);
-        $result['appointments'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $sqlAppointments = "SELECT r.*, p.nom as nom_personne, p.prenom as prenom_personne 
+                            FROM rendez_vous r 
+                            LEFT JOIN personnes p ON r.personne_id = p.id 
+                            WHERE r.prestation_id = ? 
+                            ORDER BY r.date_rdv DESC";
+        $result['appointments'] = executeQuery($sqlAppointments, [$id])->fetchAll();
         
-        $stmt = $pdo->prepare("SELECT e.*, p.nom as nom_personne, p.prenom as prenom_personne 
-                              FROM evaluations e 
-                              LEFT JOIN personnes p ON e.personne_id = p.id 
-                              WHERE e.prestation_id = ? 
-                              ORDER BY e.date_evaluation DESC");
-        $stmt->execute([$id]);
-        $result['evaluations'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $sqlEvaluations = "SELECT e.*, p.nom as nom_personne, p.prenom as prenom_personne 
+                           FROM evaluations e 
+                           LEFT JOIN personnes p ON e.personne_id = p.id 
+                           WHERE e.prestation_id = ? 
+                           ORDER BY e.date_evaluation DESC";
+        $result['evaluations'] = executeQuery($sqlEvaluations, [$id])->fetchAll();
     }
     
     return $result;
@@ -106,10 +90,8 @@ function servicesGetDetails($id, $fetchRelated = false) {
  * @return array Liste des types
  */
 function servicesGetTypes() {
-    $pdo = getDbConnection();
-    $stmt = $pdo->prepare("SELECT DISTINCT type FROM prestations ORDER BY type");
-    $stmt->execute();
-    return $stmt->fetchAll(PDO::FETCH_COLUMN);
+    $sql = "SELECT DISTINCT type FROM prestations ORDER BY type";
+    return executeQuery($sql)->fetchAll(PDO::FETCH_COLUMN);
 }
 
 /**
@@ -117,13 +99,11 @@ function servicesGetTypes() {
  *
  * Cette fonction vérifie que les données obligatoires (nom, prix et type) sont présentes et valides.
  * En cas d'erreur de validation, elle retourne un tableau contenant les messages d'erreur.
- * Si les validations réussissent, elle effectue une mise à jour si un identifiant supérieur à 0 est fourni,
- * ou crée un nouveau service sinon. En cas d'échec de l'opération en base de données, un tableau d'erreurs est retourné.
+ * Si les validations réussissent, elle utilise updateRow ou insertRow pour effectuer l'opération.
  *
- * @param array $data Les informations du service, incluant notamment 'nom', 'prix', 'type', et d'autres champs optionnels.
- * @param int $id L'identifiant du service à mettre à jour, ou 0 pour créer un nouveau service.
- * @return array Tableau associatif indiquant le succès de l'opération. En cas de succès, il contient une clé 'message';
- *               en cas d'erreur, une clé 'errors' avec la liste des messages d'erreur.
+ * @param array $data Les informations du service.
+ * @param int $id L'identifiant du service à mettre à jour, ou 0 pour créer.
+ * @return array Résultat ['success' => bool, 'message' => string|null, 'errors' => array|null]
  */
 function servicesSave($data, $id = 0) {
     $errors = [];
@@ -132,8 +112,8 @@ function servicesSave($data, $id = 0) {
         $errors[] = "Le nom du service est obligatoire";
     }
     
-    if (empty($data['prix']) || !is_numeric($data['prix'])) {
-        $errors[] = "Le prix du service est obligatoire et doit etre un nombre";
+    if (!isset($data['prix']) || !is_numeric($data['prix']) || $data['prix'] < 0) {
+        $errors[] = "Le prix du service est obligatoire et doit être un nombre positif ou nul";
     }
     
     if (empty($data['type'])) {
@@ -147,73 +127,49 @@ function servicesSave($data, $id = 0) {
         ];
     }
     
-    $pdo = getDbConnection();
-    
+    $dbData = [
+        'nom' => $data['nom'], 
+        'description' => $data['description'], 
+        'prix' => $data['prix'],
+        'duree' => $data['duree'] ? (int)$data['duree'] : null,
+        'type' => $data['type'],
+        'categorie' => $data['categorie'],
+        'niveau_difficulte' => $data['niveau_difficulte'],
+        'capacite_max' => $data['capacite_max'] ? (int)$data['capacite_max'] : null,
+        'materiel_necessaire' => $data['materiel_necessaire'],
+        'prerequis' => $data['prerequis']
+    ];
+
     try {
-        // cas de mise a jour
         if ($id > 0) {
-            $sql = "UPDATE prestations SET 
-                    nom = ?, description = ?, prix = ?, duree = ?, 
-                    type = ?, categorie = ?, niveau_difficulte = ?, 
-                    capacite_max = ?, materiel_necessaire = ?, prerequis = ? 
-                    WHERE id = ?";
+            $affectedRows = updateRow('prestations', $dbData, "id = ?", [$id]);
             
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([
-                $data['nom'], 
-                $data['description'], 
-                $data['prix'],
-                $data['duree'],
-                $data['type'],
-                $data['categorie'],
-                $data['niveau_difficulte'],
-                $data['capacite_max'],
-                $data['materiel_necessaire'],
-                $data['prerequis'],
-                $id
-            ]);
-            
-            logBusinessOperation($_SESSION['user_id'], 'service_update', 
-                "Mise à jour service: {$data['nom']} (ID: $id), type: {$data['type']}, prix: {$data['prix']}€");
-            
-            $message = "Le service a ete mis a jour avec succes";
+            if ($affectedRows !== false) {
+                 logBusinessOperation($_SESSION['user_id'], 'service_update', 
+                    "Mise à jour service: {$dbData['nom']} (ID: $id), type: {$dbData['type']}, prix: {$dbData['prix']}€");
+                $message = "Le service a ete mis a jour avec succes";
+                 return ['success' => true, 'message' => $message];
+            } else {
+                throw new Exception("La mise à jour a échoué ou aucune ligne n'a été modifiée.");
+            }
         } 
-        // cas de creation
         else {
-            $sql = "INSERT INTO prestations (nom, description, prix, duree, type, 
-                   categorie, niveau_difficulte, capacite_max, materiel_necessaire, prerequis) 
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $newId = insertRow('prestations', $dbData);
             
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([
-                $data['nom'], 
-                $data['description'], 
-                $data['prix'],
-                $data['duree'],
-                $data['type'],
-                $data['categorie'],
-                $data['niveau_difficulte'],
-                $data['capacite_max'],
-                $data['materiel_necessaire'],
-                $data['prerequis']
-            ]);
-            
-            $newId = $pdo->lastInsertId();
-            logBusinessOperation($_SESSION['user_id'], 'service_create', 
-                "Création service: {$data['nom']} (ID: $newId), type: {$data['type']}, prix: {$data['prix']}€");
-            
-            $message = "Le service a ete cree avec succes";
+            if ($newId) {
+                logBusinessOperation($_SESSION['user_id'], 'service_create', 
+                    "Création service: {$dbData['nom']} (ID: $newId), type: {$dbData['type']}, prix: {$dbData['prix']}€");
+                $message = "Le service a ete cree avec succes";
+                 return ['success' => true, 'message' => $message, 'newId' => $newId];
+            } else {
+                 throw new Exception("L'insertion a échoué.");
+            }
         }
         
-        return [
-            'success' => true,
-            'message' => $message
-        ];
-    } catch (PDOException $e) {
-        $errors[] = "Erreur de base de données : " . $e->getMessage();
-        
-        // log l'erreur pour l'administrateur
-        logSystemActivity('error', "Erreur BDD dans services/index.php : " . $e->getMessage());
+    } catch (Exception $e) {
+        $errorMessage = "Erreur de base de données : " . $e->getMessage();
+        $errors[] = $errorMessage;
+        logSystemActivity('error', "Erreur BDD dans servicesSave: " . $e->getMessage());
         
         return [
             'success' => false,
@@ -247,7 +203,7 @@ function servicesHandlePostRequest($postData, $id) {
         'duree' => $postData['duree'] ?? null,
         'type' => $postData['type'] ?? '',
         'categorie' => $postData['categorie'] ?? null,
-        'statut' => 'actif', // Statut par défaut
+        'statut' => 'actif',
         'niveau_difficulte' => $postData['niveau_difficulte'] ?? null,
         'capacite_max' => $postData['capacite_max'] ?? null,
         'materiel_necessaire' => $postData['materiel_necessaire'] ?? null,
@@ -260,28 +216,14 @@ function servicesHandlePostRequest($postData, $id) {
 /**
  * Supprime un service après vérification des dépendances associées.
  *
- * Cette fonction tente de supprimer un service identifié par son ID, après avoir vérifié
- * qu'il n'a aucun rendez-vous ou évaluation associé. Si des dépendances sont présentes,
- * la suppression est annulée et une opération d'échec est consignée. Sinon, le service
- * est supprimé et l'opération de suppression est enregistrée.
+ * Utilise les fonctions de db.php pour vérifier les dépendances et supprimer.
  *
  * @param int $id L'identifiant du service à supprimer.
- * @return array Un tableau associatif contenant un booléen sous la clé 'success' indiquant
- *               si l'opération a réussi et un message descriptif sous la clé 'message'.
+ * @return array Résultat ['success' => bool, 'message' => string]
  */
 function servicesDelete($id) {
-    $pdo = getDbConnection();
-    
-    // Verifie si le service a des rendez-vous associes
-    $stmt = $pdo->prepare("SELECT COUNT(id) FROM rendez_vous WHERE prestation_id = ?");
-    $stmt->execute([$id]);
-    $appointmentCount = $stmt->fetchColumn();
-    
-    // Verifie si le service a des evaluations associees
-    $stmt = $pdo->prepare("SELECT COUNT(id) FROM evaluations WHERE prestation_id = ?");
-    $stmt->execute([$id]);
-    $evaluationCount = $stmt->fetchColumn();
-    
+    $appointmentCount = executeQuery("SELECT COUNT(id) FROM rendez_vous WHERE prestation_id = ?", [$id])->fetchColumn();
+
     if ($appointmentCount > 0) {
         logBusinessOperation($_SESSION['user_id'], 'service_delete_attempt', 
             "Tentative échouée de suppression service ID: $id - Rendez-vous associés existent");
@@ -291,7 +233,9 @@ function servicesDelete($id) {
         ];
     } 
     
-    if ($evaluationCount > 0) {
+    $evaluationCount = executeQuery("SELECT COUNT(id) FROM evaluations WHERE prestation_id = ?", [$id])->fetchColumn();
+
+    if ($evaluationCount > 0) { 
         logBusinessOperation($_SESSION['user_id'], 'service_delete_attempt', 
             "Tentative échouée de suppression service ID: $id - Évaluations associées existent");
         return [
@@ -300,12 +244,10 @@ function servicesDelete($id) {
         ];
     }
     
-    // Si aucune dépendance, procéder à la suppression
     try {
-        $stmt = $pdo->prepare("DELETE FROM prestations WHERE id = ?");
-        $stmt->execute([$id]);
+        $deletedRows = deleteRow('prestations', "id = ?", [$id]);
         
-        if ($stmt->rowCount() > 0) {
+        if ($deletedRows > 0) {
             logBusinessOperation($_SESSION['user_id'], 'service_delete', 
                 "Suppression service ID: $id");
             return [
@@ -313,15 +255,14 @@ function servicesDelete($id) {
                 'message' => "Le service a ete supprime avec succes"
             ];
         } else {
-            // Cas où l'ID n'existe pas (ou autre erreur non PDOException)
              logBusinessOperation($_SESSION['user_id'], 'service_delete_attempt', 
-                "Tentative échouée de suppression service ID: $id - Service non trouvé?");
+                "Tentative échouée de suppression service ID: $id - Service non trouvé ou déjà supprimé?");
             return [
                 'success' => false,
-                'message' => "Impossible de supprimer le service (peut-être déjà supprimé?)"
+                'message' => "Impossible de supprimer le service (non trouvé ou déjà supprimé)"
             ];
         }
-    } catch (PDOException $e) {
+    } catch (Exception $e) {
          logSystemActivity('error', "Erreur BDD dans servicesDelete: " . $e->getMessage());
          return [
             'success' => false,

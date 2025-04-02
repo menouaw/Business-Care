@@ -1,31 +1,20 @@
 <?php
-require_once '../../includes/init.php';
 require_once '../../includes/page_functions/modules/users.php';
 
-// verifie si l'utilsateur est connecte
-requireAuthentication();
-if (!hasPermission('admin')) {
-    flashMessage('Vous n\'avez pas les permissions pour acceder a cette page.', 'danger');
-    header('Location: ' . WEBADMIN_URL);
-    exit;
-}
+requireRole(ROLE_ADMIN);
 
-// recupere les param de la requete
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 $role = isset($_GET['role']) ? (int)$_GET['role'] : 0;
 
-// recupere les utilisateurs pagines avec filtrage
 $result = usersGetList($page, 10, $search, $role);
 $users = $result['users'];
 $totalPages = $result['totalPages'];
 $totalUsers = $result['totalItems'];
 $page = $result['currentPage'];
 
-// recupere tous les rôles pour le dropdown de filtrage
 $roles = usersGetRoles();
 
-// definit le titre de la page et inclut l'en-tete
 $pageTitle = "Gestion des utilisateurs";
 include '../../templates/header.php';
 ?>
