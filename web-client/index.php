@@ -1,4 +1,5 @@
 <?php
+
 /**
  * page d'accueil
  *
@@ -38,10 +39,10 @@ include_once __DIR__ . '/templates/header.php';
                     <h1 class="display-4">Améliorez la qualité de vie au travail</h1>
                     <p class="lead">Business Care propose des solutions pour améliorer la santé, le bien-être et la cohésion en milieu professionnel.</p>
                     <?php if (!$isLoggedIn): ?>
-                    <div class="mt-4">
-                        <a href="login.php" class="btn btn-light btn-lg me-2">Connexion</a>
-                        <a href="inscription.php" class="btn btn-outline-light btn-lg">Inscription</a>
-                    </div>
+                        <div class="mt-4">
+                            <a href="login.php" class="btn btn-light btn-lg me-2">Connexion</a>
+                            <a href="inscription.php" class="btn btn-outline-light btn-lg">Inscription</a>
+                        </div>
                     <?php endif; ?>
                 </div>
                 <div class="col-md-6 text-end">
@@ -58,7 +59,7 @@ include_once __DIR__ . '/templates/header.php';
                 <h2>Nos services</h2>
                 <p class="lead">Des solutions adaptées à tous les besoins</p>
             </div>
-            
+
             <div class="row g-4">
                 <div class="col-md-4">
                     <div class="card h-100 service-card">
@@ -71,7 +72,7 @@ include_once __DIR__ . '/templates/header.php';
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="col-md-4">
                     <div class="card h-100 service-card">
                         <div class="card-body text-center">
@@ -83,7 +84,7 @@ include_once __DIR__ . '/templates/header.php';
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="col-md-4">
                     <div class="card h-100 service-card">
                         <div class="card-body text-center">
@@ -106,7 +107,7 @@ include_once __DIR__ . '/templates/header.php';
                 <h2>Nos offres</h2>
                 <p class="lead">Des formules adaptées à toutes les entreprises</p>
             </div>
-            
+
             <div class="row g-4">
                 <div class="col-md-4">
                     <div class="card h-100 pricing-card">
@@ -127,7 +128,7 @@ include_once __DIR__ . '/templates/header.php';
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="col-md-4">
                     <div class="card h-100 pricing-card border-primary">
                         <div class="card-header text-center bg-primary text-white">
@@ -149,7 +150,7 @@ include_once __DIR__ . '/templates/header.php';
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="col-md-4">
                     <div class="card h-100 pricing-card">
                         <div class="card-header text-center bg-primary text-white">
@@ -182,7 +183,7 @@ include_once __DIR__ . '/templates/header.php';
                 <h2>Ils nous font confiance</h2>
                 <p class="lead">Ce que nos clients disent de nous</p>
             </div>
-            
+
             <div class="row">
                 <div class="col-lg-10 mx-auto">
                     <div id="testimonialCarousel" class="carousel slide" data-bs-ride="carousel">
@@ -251,106 +252,106 @@ include_once __DIR__ . '/templates/header.php';
     </section>
 
     <?php if ($isLoggedIn): ?>
-    <!-- section tableau de bord (si connecté) -->
-    <section class="dashboard py-5">
-        <div class="container">
-            <div class="section-title text-center mb-5">
-                <h2>Votre espace personnel</h2>
-                <p class="lead">Accédez rapidement à vos fonctionnalités</p>
+        <!-- section tableau de bord (si connecté) -->
+        <section class="dashboard py-5">
+            <div class="container">
+                <div class="section-title text-center mb-5">
+                    <h2>Votre espace personnel</h2>
+                    <p class="lead">Accédez rapidement à vos fonctionnalités</p>
+                </div>
+
+                <div class="row g-4">
+                    <?php if ($userRole === 'entreprise'): ?>
+                        <!-- dashboard entreprise -->
+                        <div class="col-md-4">
+                            <div class="card dashboard-card">
+                                <div class="card-body">
+                                    <h3 class="card-title"><i class="fas fa-file-contract text-primary me-2"></i> Contrats</h3>
+                                    <p class="card-text">Gérez vos contrats et abonnements</p>
+                                    <a href="modules/companies/contracts.php" class="btn btn-sm btn-outline-primary">Accéder</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card dashboard-card">
+                                <div class="card-body">
+                                    <h3 class="card-title"><i class="fas fa-users text-primary me-2"></i> Salariés</h3>
+                                    <p class="card-text">Gérez les accès de vos collaborateurs</p>
+                                    <a href="modules/companies/employees.php" class="btn btn-sm btn-outline-primary">Accéder</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card dashboard-card">
+                                <div class="card-body">
+                                    <h3 class="card-title"><i class="fas fa-chart-line text-primary me-2"></i> Statistiques</h3>
+                                    <p class="card-text">Suivez l'utilisation des services</p>
+                                    <a href="modules/companies/stats.php" class="btn btn-sm btn-outline-primary">Accéder</a>
+                                </div>
+                            </div>
+                        </div>
+                    <?php elseif ($userRole === 'salarie'): ?>
+                        <!-- dashboard salarié -->
+                        <div class="col-md-4">
+                            <div class="card dashboard-card">
+                                <div class="card-body">
+                                    <h3 class="card-title"><i class="fas fa-calendar-check text-primary me-2"></i> Réservations</h3>
+                                    <p class="card-text">Réservez des prestations et services</p>
+                                    <a href="modules/employees/reservations.php" class="btn btn-sm btn-outline-primary">Accéder</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card dashboard-card">
+                                <div class="card-body">
+                                    <h3 class="card-title"><i class="fas fa-running text-primary me-2"></i> Défis sportifs</h3>
+                                    <p class="card-text">Participez à des challenges sportifs</p>
+                                    <a href="modules/employees/challenges.php" class="btn btn-sm btn-outline-primary">Accéder</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card dashboard-card">
+                                <div class="card-body">
+                                    <h3 class="card-title"><i class="fas fa-comments text-primary me-2"></i> Communautés</h3>
+                                    <p class="card-text">Échangez avec d'autres salariés</p>
+                                    <a href="modules/employees/communities.php" class="btn btn-sm btn-outline-primary">Accéder</a>
+                                </div>
+                            </div>
+                        </div>
+                    <?php elseif ($userRole === 'prestataire'): ?>
+                        <!-- dashboard prestataire -->
+                        <div class="col-md-4">
+                            <div class="card dashboard-card">
+                                <div class="card-body">
+                                    <h3 class="card-title"><i class="fas fa-calendar-alt text-primary me-2"></i> Planning</h3>
+                                    <p class="card-text">Gérez votre calendrier et disponibilités</p>
+                                    <a href="modules/providers/calendar.php" class="btn btn-sm btn-outline-primary">Accéder</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card dashboard-card">
+                                <div class="card-body">
+                                    <h3 class="card-title"><i class="fas fa-clipboard-list text-primary me-2"></i> Prestations</h3>
+                                    <p class="card-text">Suivez vos prestations en cours</p>
+                                    <a href="modules/providers/services.php" class="btn btn-sm btn-outline-primary">Accéder</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card dashboard-card">
+                                <div class="card-body">
+                                    <h3 class="card-title"><i class="fas fa-file-invoice-dollar text-primary me-2"></i> Facturation</h3>
+                                    <p class="card-text">Consultez vos factures et paiements</p>
+                                    <a href="modules/providers/invoices.php" class="btn btn-sm btn-outline-primary">Accéder</a>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+                </div>
             </div>
-            
-            <div class="row g-4">
-                <?php if ($userRole === 'entreprise'): ?>
-                <!-- dashboard entreprise -->
-                <div class="col-md-4">
-                    <div class="card dashboard-card">
-                        <div class="card-body">
-                            <h3 class="card-title"><i class="fas fa-file-contract text-primary me-2"></i> Contrats</h3>
-                            <p class="card-text">Gérez vos contrats et abonnements</p>
-                            <a href="modules/companies/contracts.php" class="btn btn-sm btn-outline-primary">Accéder</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card dashboard-card">
-                        <div class="card-body">
-                            <h3 class="card-title"><i class="fas fa-users text-primary me-2"></i> Salariés</h3>
-                            <p class="card-text">Gérez les accès de vos collaborateurs</p>
-                            <a href="modules/companies/employees.php" class="btn btn-sm btn-outline-primary">Accéder</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card dashboard-card">
-                        <div class="card-body">
-                            <h3 class="card-title"><i class="fas fa-chart-line text-primary me-2"></i> Statistiques</h3>
-                            <p class="card-text">Suivez l'utilisation des services</p>
-                            <a href="modules/companies/stats.php" class="btn btn-sm btn-outline-primary">Accéder</a>
-                        </div>
-                    </div>
-                </div>
-                <?php elseif ($userRole === 'salarie'): ?>
-                <!-- dashboard salarié -->
-                <div class="col-md-4">
-                    <div class="card dashboard-card">
-                        <div class="card-body">
-                            <h3 class="card-title"><i class="fas fa-calendar-check text-primary me-2"></i> Réservations</h3>
-                            <p class="card-text">Réservez des prestations et services</p>
-                            <a href="modules/employees/reservations.php" class="btn btn-sm btn-outline-primary">Accéder</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card dashboard-card">
-                        <div class="card-body">
-                            <h3 class="card-title"><i class="fas fa-running text-primary me-2"></i> Défis sportifs</h3>
-                            <p class="card-text">Participez à des challenges sportifs</p>
-                            <a href="modules/employees/challenges.php" class="btn btn-sm btn-outline-primary">Accéder</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card dashboard-card">
-                        <div class="card-body">
-                            <h3 class="card-title"><i class="fas fa-comments text-primary me-2"></i> Communautés</h3>
-                            <p class="card-text">Échangez avec d'autres salariés</p>
-                            <a href="modules/employees/communities.php" class="btn btn-sm btn-outline-primary">Accéder</a>
-                        </div>
-                    </div>
-                </div>
-                <?php elseif ($userRole === 'prestataire'): ?>
-                <!-- dashboard prestataire -->
-                <div class="col-md-4">
-                    <div class="card dashboard-card">
-                        <div class="card-body">
-                            <h3 class="card-title"><i class="fas fa-calendar-alt text-primary me-2"></i> Planning</h3>
-                            <p class="card-text">Gérez votre calendrier et disponibilités</p>
-                            <a href="modules/providers/calendar.php" class="btn btn-sm btn-outline-primary">Accéder</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card dashboard-card">
-                        <div class="card-body">
-                            <h3 class="card-title"><i class="fas fa-clipboard-list text-primary me-2"></i> Prestations</h3>
-                            <p class="card-text">Suivez vos prestations en cours</p>
-                            <a href="modules/providers/services.php" class="btn btn-sm btn-outline-primary">Accéder</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card dashboard-card">
-                        <div class="card-body">
-                            <h3 class="card-title"><i class="fas fa-file-invoice-dollar text-primary me-2"></i> Facturation</h3>
-                            <p class="card-text">Consultez vos factures et paiements</p>
-                            <a href="modules/providers/invoices.php" class="btn btn-sm btn-outline-primary">Accéder</a>
-                        </div>
-                    </div>
-                </div>
-                <?php endif; ?>
-            </div>
-        </div>
-    </section>
+        </section>
     <?php endif; ?>
 </main>
 

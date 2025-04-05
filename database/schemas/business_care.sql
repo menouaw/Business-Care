@@ -253,3 +253,14 @@ CREATE TABLE preferences_utilisateurs (
     FOREIGN KEY (personne_id) REFERENCES personnes(id),
     UNIQUE KEY unique_personne_id (personne_id)
 );
+
+-- Table de jointure entre contrats et prestations
+CREATE TABLE contrats_prestations (
+    contrat_id INT NOT NULL,
+    prestation_id INT NOT NULL,
+    PRIMARY KEY (contrat_id, prestation_id),
+    FOREIGN KEY (contrat_id) REFERENCES contrats(id) ON DELETE CASCADE,
+    FOREIGN KEY (prestation_id) REFERENCES prestations(id) ON DELETE CASCADE
+);
+
+

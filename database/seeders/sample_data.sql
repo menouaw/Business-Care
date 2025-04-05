@@ -14,7 +14,7 @@ TRUNCATE TABLE devis;
 TRUNCATE TABLE contrats;
 TRUNCATE TABLE personnes;
 TRUNCATE TABLE prestations;
-TRUNCATE TABLE entreprises;
+TRUNCATE TABLE entreprises; 
 TRUNCATE TABLE roles;
 TRUNCATE TABLE preferences_utilisateurs;
 SET FOREIGN_KEY_CHECKS = 1;
@@ -48,6 +48,7 @@ INSERT INTO prestations (nom, description, prix, duree, type, categorie, niveau_
 ('Atelier Ergonomie', 'Formation sur l''amenagement du poste de travail', 160.00, 90, 'atelier', 'Ergonomie', 'debutant', 25, 'Aucun', 'Aucun'),
 ('Webinar Sommeil', 'Formation en ligne sur l''amelioration du sommeil', 130.00, 60, 'webinar', 'Bien-etre', 'debutant', 40, 'Ordinateur, connexion internet', 'Aucun'),
 ('Conference Leadership', 'Conference sur le leadership bienveillant', 250.00, 120, 'conference', 'Management', 'avance', 80, 'Aucun', 'Experience en management');
+
 
 INSERT INTO personnes (nom, prenom, email, mot_de_passe, telephone, date_naissance, genre, photo_url, role_id, entreprise_id, statut, derniere_connexion) VALUES
 ('Admin', 'System', 'admin@businesscare.fr', '$2y$10$CGP1gfg0khtXjAZcJFC6iO3oYisjwlPfkm8tQ8Q/OxWpFdR7tOiqO', '00 00 00 00 00', '1990-01-01', 'Autre', '/photos/admin.jpg', 1, NULL, 'actif', '2024-03-17 18:30:00'),
@@ -170,3 +171,6 @@ INSERT INTO notifications (personne_id, titre, message, type, lien, lu, date_lec
 (8, 'Nouvel evenement', 'Un nouvel evenement est disponible', 'info', '/evenements/3', false, NULL),
 (9, 'Rappel de rendez-vous', 'Votre rendez-vous est prevu demain', 'warning', '/rendez-vous/9', false, NULL),
 (10, 'Nouvelle evaluation', 'Vous avez reçu une nouvelle evaluation', 'info', '/evaluations/10', true, '2024-03-26 15:30:00');
+
+INSERT INTO contrats_prestations (contrat_id, prestation_id) VALUES
+(11, 10); -- Contrat 1 -> Conférence leadership
