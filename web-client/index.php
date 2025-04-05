@@ -53,7 +53,7 @@ include_once __DIR__ . '/templates/header.php';
     </section>
 
     <!-- section services -->
-    <section class="services py-5">
+    <section id="services" class="services py-5">
         <div class="container">
             <div class="section-title text-center mb-5">
                 <h2>Nos services</h2>
@@ -101,7 +101,7 @@ include_once __DIR__ . '/templates/header.php';
     </section>
 
     <!-- section offres -->
-    <section class="pricing py-5 bg-light">
+    <section id="offres" class="pricing py-5 bg-light">
         <div class="container">
             <div class="section-title text-center mb-5">
                 <h2>Nos offres</h2>
@@ -123,7 +123,7 @@ include_once __DIR__ . '/templates/header.php';
                                 <li><i class="fas fa-check text-success me-2"></i> 2 rendez-vous médicaux par salarié</li>
                             </ul>
                             <div class="text-center mt-auto">
-                                <a href="modules/companies/devis.php" class="btn btn-outline-primary">Demander un devis</a>
+                                <a href="modules/companies/quotes.php?offer=starter" class="btn btn-outline-primary">Demander un devis</a>
                             </div>
                         </div>
                     </div>
@@ -145,7 +145,7 @@ include_once __DIR__ . '/templates/header.php';
                                 <li><i class="fas fa-check text-success me-2"></i> Programme personnalisé</li>
                             </ul>
                             <div class="text-center mt-auto">
-                                <a href="modules/companies/devis.php" class="btn btn-primary">Demander un devis</a>
+                                <a href="modules/companies/quotes.php?offer=basic" class="btn btn-primary">Demander un devis</a>
                             </div>
                         </div>
                     </div>
@@ -167,7 +167,7 @@ include_once __DIR__ . '/templates/header.php';
                                 <li><i class="fas fa-check text-success me-2"></i> Service sur mesure</li>
                             </ul>
                             <div class="text-center mt-auto">
-                                <a href="modules/companies/devis.php" class="btn btn-outline-primary">Demander un devis</a>
+                                <a href="modules/companies/quotes.php?offer=premium" class="btn btn-outline-primary">Demander un devis</a>
                             </div>
                         </div>
                     </div>
@@ -260,11 +260,11 @@ include_once __DIR__ . '/templates/header.php';
                     <p class="lead">Accédez rapidement à vos fonctionnalités</p>
                 </div>
 
-                <div class="row g-4">
+                <div class="row g-4 <?php if ($userRole === 'entreprise') echo 'justify-content-center'; ?>">
                     <?php if ($userRole === 'entreprise'): ?>
                         <!-- dashboard entreprise -->
                         <div class="col-md-4">
-                            <div class="card dashboard-card">
+                            <div class="card dashboard-card h-100">
                                 <div class="card-body">
                                     <h3 class="card-title"><i class="fas fa-file-contract text-primary me-2"></i> Contrats</h3>
                                     <p class="card-text">Gérez vos contrats et abonnements</p>
@@ -273,7 +273,7 @@ include_once __DIR__ . '/templates/header.php';
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="card dashboard-card">
+                            <div class="card dashboard-card h-100">
                                 <div class="card-body">
                                     <h3 class="card-title"><i class="fas fa-users text-primary me-2"></i> Salariés</h3>
                                     <p class="card-text">Gérez les accès de vos collaborateurs</p>
@@ -281,15 +281,7 @@ include_once __DIR__ . '/templates/header.php';
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-4">
-                            <div class="card dashboard-card">
-                                <div class="card-body">
-                                    <h3 class="card-title"><i class="fas fa-chart-line text-primary me-2"></i> Statistiques</h3>
-                                    <p class="card-text">Suivez l'utilisation des services</p>
-                                    <a href="modules/companies/stats.php" class="btn btn-sm btn-outline-primary">Accéder</a>
-                                </div>
-                            </div>
-                        </div>
+
                     <?php elseif ($userRole === 'salarie'): ?>
                         <!-- dashboard salarié -->
                         <div class="col-md-4">

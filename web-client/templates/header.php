@@ -86,10 +86,10 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
                         <a class="nav-link" href="<?= WEBCLIENT_URL ?>">Accueil</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="<?= WEBCLIENT_URL ?>/services.php">Services</a>
+                        <a class="nav-link" href="<?= WEBCLIENT_URL ?>/index.php#services">Services</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="<?= WEBCLIENT_URL ?>/tarifs.php">Tarifs</a>
+                        <a class="nav-link" href="<?= WEBCLIENT_URL ?>/index.php#offres">Tarifs</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="<?= WEBCLIENT_URL ?>/contact.php">Contact</a>
@@ -107,7 +107,6 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
                                     <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/companies/invoices.php">Factures</a></li>
                                     <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/companies/contracts.php">Contrats</a></li>
                                     <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/companies/employees.php">Gestion des salariés</a></li>
-                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/companies/stats.php">Statistiques</a></li>
                                     <li>
                                         <hr class="dropdown-divider">
                                     </li>

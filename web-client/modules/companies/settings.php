@@ -128,6 +128,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $pageTitle = "Paramètres - Espace Entreprise";
 include_once __DIR__ . '/../../templates/header.php';
 
+if (!$entrepriseId) {
+    // Rediriger vers la page de connexion ou afficher un message plus convivial
+    // Utilisation d'une URL absolue (ajustez si votre projet n'est pas dans /Business-Care/)
+    header('Location: http://localhost/Business-Care/web-client/login.php?error=session_expired');
+    exit;
+}
+
 ?>
 
 <main class="container py-4">

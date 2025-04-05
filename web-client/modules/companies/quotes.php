@@ -32,15 +32,21 @@ requireRole(ROLE_ENTREPRISE);
 // Récupérer l'ID de l'entreprise depuis la session
 $entrepriseId = $_SESSION['user_entreprise'];
 
+// Récupérer l'offre pré-sélectionnée depuis l'URL, si elle existe
+$preselectedOfferKey = isset($_GET['offer']) ? trim($_GET['offer']) : null;
+
 // Récupérer la liste des types de contrats ou services disponibles pour un devis
 // (Simplifié ici, pourrait être récupéré depuis la DB)
 $available_services = [
-    'Starter Pack' => 'Pour les petites équipes (jusqu\'à 30 salariés)',
-    'Basic Pack' => 'Solution équilibrée (jusqu\'à 250 salariés)',
-    'Premium Pack' => 'Offre complète pour grandes entreprises (251+ salariés)',
-    'Consultation Ponctuelle' => 'Besoin spécifique hors contrat',
-    'Événement Sur Mesure' => 'Organisation d\'un événement spécifique'
+    'starter' => 'Starter Pack - Pour les petites équipes (jusqu\'à 30 salariés)',
+    'basic' => 'Basic Pack - Solution équilibrée (jusqu\'à 250 salariés)',
+    'premium' => 'Premium Pack - Offre complète pour grandes entreprises (251+ salariés)',
+    'consultation' => 'Consultation Ponctuelle - Besoin spécifique hors contrat',
+    'evenement' => 'Événement Sur Mesure - Organisation d\'un événement spécifique'
 ];
+
+// Convertir les clés simplifiées (starter, basic, premium) en clés complètes utilisées dans $available_services si nécessaire.
+// (Ici, j'utilise les clés simplifiées directement dans $available_services pour correspondre à l'URL)
 
 // Traitement du formulaire de demande de devis
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -73,9 +79,15 @@ include_once __DIR__ . '/../../templates/header.php';
 ?>
 
 <main class="container py-4">
-    <h1 class="mb-4">Demander un devis</h1>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">Demander un devis</h1>
+        <a href="index.php" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Retour
+        </a>
+    </div>
 
-    <?php echo displayFlashMessages(); ?>
+    <?php // echo displayFlashMessages(); // Supprimé car géré par header.php 
+    ?>
 
     <div class="card border-0 shadow-sm">
         <div class="card-header bg-white">
@@ -89,10 +101,19 @@ include_once __DIR__ . '/../../templates/header.php';
                     <div class="col-md-6">
                         <label for="service_souhaite" class="form-label">Type de service/contrat souhaité*</label>
                         <select class="form-select" id="service_souhaite" name="service_souhaite" required>
-                            <option value="" disabled selected>Sélectionnez une option...</option>
+                            <option value="" disabled <?php if (!$preselectedOfferKey && !isset($submittedData['service_souhaite'])) echo 'selected'; ?>>Sélectionnez une option...</option>
                             <?php foreach ($available_services as $key => $description): ?>
-                                <option value="<?php echo htmlspecialchars($key); ?>" <?php echo (isset($submittedData['service_souhaite']) && $submittedData['service_souhaite'] == $key) ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars($key); ?> (<?php echo htmlspecialchars($description); ?>)
+                                <?php
+                                // Déterminer si cette option doit être sélectionnée
+                                $isSelected = false;
+                                if ($preselectedOfferKey === $key) { // Sélection via URL
+                                    $isSelected = true;
+                                } elseif (isset($submittedData['service_souhaite']) && $submittedData['service_souhaite'] == $key) { // Sélection via soumission échouée
+                                    $isSelected = true;
+                                }
+                                ?>
+                                <option value="<?php echo htmlspecialchars($key); ?>" <?php if ($isSelected) echo 'selected'; ?>>
+                                    <?php echo htmlspecialchars($description); ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
