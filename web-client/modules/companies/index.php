@@ -16,39 +16,28 @@
  * Accès restreint aux utilisateurs avec le rôle ROLE_ENTREPRISE.
  */
 
-// Inclure les fonctions spécifiques au module entreprises
 require_once __DIR__ . '/../../includes/page_functions/modules/companies.php';
 
-// vérifier que l'utilisateur est connecté et a le rôle entreprise
 requireRole(ROLE_ENTREPRISE);
 
-// récupérer les informations de l'entreprise
 $entrepriseId = $_SESSION['user_entreprise'];
 $entreprise = getCompanyDetails($entrepriseId);
 
-// DEBUG: Vérifier l'ID entreprise utilisé
 error_log("[DEBUG index.php] ID Entreprise utilisé pour contrats: " . $entrepriseId);
 
-// récupérer les contrats actifs
 $contrats = getCompanyContracts($entrepriseId, 'actif');
 
-// DEBUG: Vérifier le retour de getCompanyContracts
 error_log("[DEBUG index.php] Contenu de \$contrats: " . print_r($contrats, true));
 
-// récupérer les dernières factures
 $factures = getCompanyInvoices($entrepriseId);
 
-// récupérer les employés rattachés
 $employeesData = getCompanyEmployees($entrepriseId, 1, 100);
 $employes = $employeesData['employees'];
 
-// nombre total d'employés
 $totalEmployes = count($employes);
 
-// récupérer les activités récentes
 $activites = getCompanyRecentActivity($entrepriseId, 5);
 
-// définir le titre de la page
 $pageTitle = "Tableau de bord - Espace Entreprise";
 
 // inclure l'en-tête
@@ -104,24 +93,7 @@ include_once __DIR__ . '/../../templates/header.php';
                 </div>
             </div>
 
-            <div class="col-md-6 col-lg-3">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <div class="icon-box bg-warning bg-opacity-10 text-warning rounded p-3 me-3">
-                                <i class="fas fa-calendar-check fa-2x"></i>
-                            </div>
-                            <div>
-                                <h6 class="card-subtitle text-muted mb-1">Prestations</h6>
-                                <h2 class="card-title mb-0">--</h2>
-                            </div>
-                        </div>
-                        <div class="mt-3">
-                            <a href="prestations.php" class="btn btn-sm btn-outline-warning">Réserver</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
+          
 
             <div class="col-md-6 col-lg-3">
                 <div class="card border-0 shadow-sm h-100">
@@ -231,17 +203,17 @@ include_once __DIR__ . '/../../templates/header.php';
                     <div class="card-body">
                         <div class="row g-3">
                             <div class="col-md-4">
-                                <a href="devis.php" class="btn btn-primary d-block py-3">
+                                <a href="quotes.php" class="btn btn-primary d-block py-3">
                                     <i class="fas fa-file-invoice me-2"></i>Demander un devis
                                 </a>
                             </div>
                             <div class="col-md-4">
-                                <a href="add-employee.php" class="btn btn-success d-block py-3">
+                                <a href="employees.php" class="btn btn-success d-block py-3">
                                     <i class="fas fa-user-plus me-2"></i>Ajouter des salariés
                                 </a>
                             </div>
                             <div class="col-md-4">
-                                <a href="contact-support.php" class="btn btn-info d-block py-3">
+                                <a href="contact.php" class="btn btn-info d-block py-3">
                                     <i class="fas fa-headset me-2"></i>Contacter le support
                                 </a>
                             </div>

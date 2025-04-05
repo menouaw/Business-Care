@@ -1,12 +1,8 @@
 <?php
 
 /**
- * Espace Entreprise - Paramètres (Module Entreprise)
- *
- * Permet à l'utilisateur représentant l'entreprise de :
- * - Consulter les informations de l'entreprise.
- * - Mettre à jour ses propres informations de profil (nom, email).
- * - Changer son mot de passe.
+ * Gestion des paramètres pour l'espace entreprise.
+ * Permet à l'utilisateur entreprise de voir/modifier son profil et mot de passe.
  */
 
 require_once __DIR__ . '/../../includes/init.php';
@@ -16,10 +12,11 @@ require_once __DIR__ . '/../../includes/page_functions/modules/companies.php';
 
 requireRole(ROLE_ENTREPRISE);
 
+// Récupération des IDs importants
 $entrepriseId = $_SESSION['user_entreprise'];
 $userId = $_SESSION['user_id'];
 
-// Récupérer les détails de l'entreprise
+// Récupérer les détails de l'entreprise (pour affichage)
 $companyDetails = getCompanyDetails($entrepriseId);
 if (!$companyDetails) {
     flashMessage("Impossible de récupérer les informations de l'entreprise.", 'danger');
@@ -27,7 +24,7 @@ if (!$companyDetails) {
     redirectTo('index.php');
 }
 
-// Récupérer les détails de l'utilisateur courant depuis la base de données
+// Récupérer les détails de l'utilisateur connecté (pour formulaire profil)
 $currentUser = getUserById($userId);
 if (!$currentUser) {
     // Gérer le cas où l'utilisateur n'est pas trouvé (peu probable si loggué)
@@ -35,6 +32,7 @@ if (!$currentUser) {
     redirectTo('index.php'); // Ou une page d'erreur
 }
 
+// Initialisation des erreurs et données soumises
 $profileErrors = [];
 $passwordErrors = [];
 // Pré-remplir avec les données actuelles de la BDD
@@ -44,7 +42,7 @@ $profileSubmittedData = [
     'email' => $currentUser['email'] ?? ''
 ];
 
-// --- Traitement des formulaires ---
+// --- Traitement des formulaires POST ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Vérification CSRF Token commune pour tous les formulaires POST de cette page
     if (!verifyCsrfToken()) {
@@ -52,6 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         redirectTo('settings.php'); // Recharger la page pour obtenir un nouveau token
     }
 
+    // Traitement Mise à jour Profil
     if (isset($_POST['update_profile'])) { // Identifier le formulaire soumis
         // La vérification CSRF est déjà faite au-dessus
         $profileSubmittedData = sanitizeInput($_POST);
@@ -74,13 +73,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'prenom' => $profileSubmittedData['prenom'],
                 'email' => $profileSubmittedData['email']
             ];
-            // Appeler la fonction de mise à jour du profil utilisateur
             $updateSuccess = updateUserProfile($userId, $updateData);
 
             if ($updateSuccess) {
                 flashMessage('Profil mis à jour avec succès.', 'success');
-                // Mettre à jour les infos en session si nécessaire
-                // Mettre à jour le nom affiché (par exemple, prénom + nom)
+
                 $_SESSION['user_name'] = $profileSubmittedData['prenom'] . ' ' . $profileSubmittedData['nom'];
                 $_SESSION['user_email'] = $profileSubmittedData['email'];
                 redirectTo('settings.php');
@@ -89,7 +86,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
     } elseif (isset($_POST['change_password'])) { // Identifier le formulaire soumis
-        // La vérification CSRF est déjà faite au-dessus
         $passwordData = sanitizeInput($_POST);
 
         // Validation
@@ -105,35 +101,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // TODO: Ajouter validation de complexité si nécessaire
 
         if (empty($passwordErrors)) {
-            // Appeler la fonction de changement de mot de passe
             $changeSuccess = changeUserPassword($userId, $passwordData['current_password'], $passwordData['new_password']);
 
             if ($changeSuccess) {
                 flashMessage('Mot de passe modifié avec succès.', 'success');
                 redirectTo('settings.php');
             } else {
-                // Si la fonction changeUserPassword échoue et qu'il n'y avait pas d'autres erreurs
-                // de validation avant (ex: mots de passe non identiques), 
-                // on suppose que c'est le mot de passe actuel qui est incorrect.
+               
                 if (empty($passwordErrors)) {
                     $passwordErrors[] = "Le mot de passe actuel fourni est incorrect.";
                 }
-                // Si d'autres erreurs étaient déjà présentes (ex: nouveaux mots de passe différents),
-                // elles seront affichées, ce qui est le comportement attendu.
+                
             }
         }
     }
 }
 
+// Définition titre et inclusion header
 $pageTitle = "Paramètres - Espace Entreprise";
 include_once __DIR__ . '/../../templates/header.php';
-
-if (!$entrepriseId) {
-    // Rediriger vers la page de connexion ou afficher un message plus convivial
-    // Utilisation d'une URL absolue (ajustez si votre projet n'est pas dans /Business-Care/)
-    header('Location: http://localhost/Business-Care/web-client/login.php?error=session_expired');
-    exit;
-}
 
 ?>
 
@@ -145,11 +131,10 @@ if (!$entrepriseId) {
         </a>
     </div>
 
-    <?php // displayFlashMessages(); // Supprimé car géré par header.php 
+    <?php 
     ?>
 
     <style>
-        /* Masquer le bouton "Retour en haut" spécifiquement sur cette page */
         #back-to-top {
             display: none !important;
         }

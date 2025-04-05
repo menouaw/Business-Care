@@ -1,21 +1,8 @@
 <?php
 
 /**
- * Espace Entreprise - Gestion des Factures (Module Entreprise)
- *
- * Ce fichier permet aux entreprises de consulter leurs factures.
- * Il gère deux vues principales basées sur le paramètre GET 'action':
- *
- * - 'list' (défaut): Affiche deux listes de factures :
- *      - Factures en cours (statuts: en_attente, retard, impayee).
- *      - Historique des factures (statuts: payee, annulee).
- * - 'view': Affiche les détails d'une facture spécifique (ID requis via GET 'id').
- *      - Inclut les informations de l'entreprise, les détails de la facture,
- *        les lignes (si disponibles), le total et les conditions de paiement.
- *      - Propose un bouton "Payer maintenant" pour les factures éligibles.
- *
- * Récupère les données via les fonctions `getCompanyInvoices` et `getInvoiceDetailsForCompany`.
- * Accès restreint aux utilisateurs avec le rôle ROLE_ENTREPRISE.
+ * Affichage des factures pour l'espace entreprise.
+ * Gère la vue liste (par défaut) et la vue détaillée d'une facture.
  */
 
 require_once __DIR__ . '/../../includes/init.php'; // Functions, config, etc.
@@ -23,24 +10,25 @@ require_once __DIR__ . '/../../includes/page_functions/modules/companies.php';
 
 requireRole(ROLE_ENTREPRISE);
 
+// Récupération ID entreprise
 $entrepriseId = $_SESSION['user_entreprise'];
 
-// Determine the requested action (list or view)
-$action = isset($_GET['action']) ? sanitizeInput($_GET['action']) : 'list'; // 'list' by default
+// Détermination de l'action (list ou view) et ID facture si view
+$action = isset($_GET['action']) ? sanitizeInput($_GET['action']) : 'list';
 $invoiceId = null;
 if ($action === 'view' && isset($_GET['id'])) {
     $invoiceId = filter_var($_GET['id'], FILTER_VALIDATE_INT);
 }
 
-// Initializations
+// Initialisations pour les données
 $invoiceToView = null;
 $currentFactures = [];
 $historicalFactures = [];
 
-// --- Data Preparation ---
+// --- Récupération des données en fonction de l'action ---
 
+// Cas: Affichage détail facture
 if ($action === 'view' && $invoiceId) {
-    // Fetch details for a specific invoice
     $invoiceToView = getInvoiceDetailsForCompany($entrepriseId, $invoiceId);
     if (!$invoiceToView) {
         // getInvoiceDetailsForCompany already sets a flash message if needed

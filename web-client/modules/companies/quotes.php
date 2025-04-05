@@ -45,36 +45,25 @@ $available_services = [
     'evenement' => 'Événement Sur Mesure - Organisation d\'un événement spécifique'
 ];
 
-// Convertir les clés simplifiées (starter, basic, premium) en clés complètes utilisées dans $available_services si nécessaire.
-// (Ici, j'utilise les clés simplifiées directement dans $available_services pour correspondre à l'URL)
 
-// Traitement du formulaire de demande de devis
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Récupérer et nettoyer les données du formulaire
     $formData = getFormData();
 
-    // Ajouter l'ID de l'entreprise aux données
     $formData['entreprise_id'] = $entrepriseId;
 
-    // Appeler la fonction pour traiter la demande de devis
     $result = requestCompanyQuote($formData);
 
     if ($result['success']) {
         flashMessage($result['message'], 'success');
-        // Rediriger vers une page de confirmation ou la liste des devis
         redirectTo(WEBCLIENT_URL . '/modules/companies/quotes.php'); // Ou une page listant les devis
     } else {
-        // Afficher les erreurs
         flashMessage($result['message'], 'danger');
-        // Les données soumises peuvent être ré-affichées dans le formulaire si nécessaire
         $submittedData = $formData;
     }
 }
 
-// Définir le titre de la page
 $pageTitle = "Demander un devis - Espace Entreprise";
 
-// Inclure l'en-tête
 include_once __DIR__ . '/../../templates/header.php';
 ?>
 
@@ -86,7 +75,7 @@ include_once __DIR__ . '/../../templates/header.php';
         </a>
     </div>
 
-    <?php // echo displayFlashMessages(); // Supprimé car géré par header.php 
+    <?php 
     ?>
 
     <div class="card border-0 shadow-sm">
@@ -104,9 +93,8 @@ include_once __DIR__ . '/../../templates/header.php';
                             <option value="" disabled <?php if (!$preselectedOfferKey && !isset($submittedData['service_souhaite'])) echo 'selected'; ?>>Sélectionnez une option...</option>
                             <?php foreach ($available_services as $key => $description): ?>
                                 <?php
-                                // Déterminer si cette option doit être sélectionnée
                                 $isSelected = false;
-                                if ($preselectedOfferKey === $key) { // Sélection via URL
+                                if ($preselectedOfferKey === $key) {
                                     $isSelected = true;
                                 } elseif (isset($submittedData['service_souhaite']) && $submittedData['service_souhaite'] == $key) { // Sélection via soumission échouée
                                     $isSelected = true;

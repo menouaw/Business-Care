@@ -43,7 +43,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Traitement du formulaire d'AJOUT
     if ($action === 'add') {
-        // Validation...
         if (empty($submittedData['nom'])) $errors[] = "Le nom est obligatoire.";
         if (empty($submittedData['prenom'])) $errors[] = "Le prénom est obligatoire.";
         if (empty($submittedData['email']) || !filter_var($submittedData['email'], FILTER_VALIDATE_EMAIL)) $errors[] = "Une adresse email valide est obligatoire.";

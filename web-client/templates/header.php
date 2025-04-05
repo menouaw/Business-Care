@@ -92,7 +92,7 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
                         <a class="nav-link" href="<?= WEBCLIENT_URL ?>/index.php#offres">Tarifs</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="<?= WEBCLIENT_URL ?>/contact.php">Contact</a>
+                        <a class="nav-link" href="<?= WEBCLIENT_URL ?>/modules/companies/contact.php">Contact</a>
                     </li>
 
                     <?php if ($isLoggedIn): ?>

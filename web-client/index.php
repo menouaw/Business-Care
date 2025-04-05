@@ -245,7 +245,7 @@ include_once __DIR__ . '/templates/header.php';
                     <p class="lead mb-0">Contactez-nous dès aujourd'hui pour discuter de vos besoins spécifiques.</p>
                 </div>
                 <div class="col-lg-4 text-lg-end text-center mt-3 mt-lg-0">
-                    <a href="contact.php" class="btn btn-light btn-lg">Nous contacter</a>
+                    <a href="modules/companies/contact.php" class="btn btn-light btn-lg">Nous contacter</a>
                 </div>
             </div>
         </div>
@@ -319,15 +319,6 @@ include_once __DIR__ . '/templates/header.php';
                                     <h3 class="card-title"><i class="fas fa-calendar-alt text-primary me-2"></i> Planning</h3>
                                     <p class="card-text">Gérez votre calendrier et disponibilités</p>
                                     <a href="modules/providers/calendar.php" class="btn btn-sm btn-outline-primary">Accéder</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="card dashboard-card">
-                                <div class="card-body">
-                                    <h3 class="card-title"><i class="fas fa-clipboard-list text-primary me-2"></i> Prestations</h3>
-                                    <p class="card-text">Suivez vos prestations en cours</p>
-                                    <a href="modules/providers/services.php" class="btn btn-sm btn-outline-primary">Accéder</a>
                                 </div>
                             </div>
                         </div>
