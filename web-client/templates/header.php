@@ -145,7 +145,7 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
                         <?php endif; ?>
                     <?php endif; ?>
                 </ul>
-                
+
                 <!-- Partie droite : connexion ou profil/déconnexion -->
                 <ul class="navbar-nav ms-auto">
                     <?php if ($isLoggedIn): ?>

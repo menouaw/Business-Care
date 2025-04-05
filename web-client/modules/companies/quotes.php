@@ -1,7 +1,25 @@
 <?php
 
 /**
- * Page de demande de devis pour les entreprises clientes
+ * Espace Entreprise - Demande de Devis (Module Entreprise)
+ *
+ * Ce fichier gère le formulaire de demande de devis pour les entreprises clientes.
+ * Il permet à une entreprise connectée de :
+ * - Visualiser un formulaire pour spécifier ses besoins (type de service, nb salariés, description).
+ * - Soumettre une demande de devis qui sera traitée par la fonction `requestCompanyQuote`.
+ *
+ * Processus :
+ * 1. Vérifie l'authentification et le rôle ROLE_ENTREPRISE.
+ * 2. Récupère l'ID de l'entreprise depuis la session.
+ * 3. Définit les services disponibles pour la sélection (actuellement en dur).
+ * 4. Traite la soumission du formulaire (POST) :
+ *    - Valide les données.
+ *    - Appelle `requestCompanyQuote` pour enregistrer la demande.
+ *    - Affiche un message de succès ou d'erreur via flash messages.
+ *    - Redirige en cas de succès.
+ * 5. Affiche le formulaire de demande de devis (GET ou après échec POST).
+ *
+ * Accès restreint aux utilisateurs avec le rôle ROLE_ENTREPRISE.
  */
 
 // Inclure les fonctions nécessaires
@@ -117,5 +135,3 @@ include_once __DIR__ . '/../../templates/header.php';
 // Inclure le pied de page
 include_once __DIR__ . '/../../templates/footer.php';
 ?>
-
-

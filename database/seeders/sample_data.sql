@@ -67,6 +67,7 @@ INSERT INTO personnes (nom, prenom, email, mot_de_passe, telephone, date_naissan
 ('Durand', 'Lea', 'lea.durand@ecosolutions.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 90 12 34 56', '1994-11-10', 'F', '/photos/lea.durand.jpg', 2, 9, 'actif', '2024-03-17 22:15:00'),
 ('Moreau', 'Hugo', 'hugo.moreau@financeplus.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 01 23 45 67', '1996-06-25', 'M', '/photos/hugo.moreau.jpg', 2, 10, 'actif', '2024-03-17 23:00:00'),
 ('Duamel', 'Heloise', 'duamelle.heloise@businesscare.fr', '$2y$10$CGP1gfg0khtXjAZcJFC6iO3oYisjwlPfkm8tQ8Q/OxWpFdR7tOiqO', '06 12 34 56 78', '1995-03-15', 'F', '/photos/mdubois.jpg', 2, 10, 'actif', '2024-04-03 09:15:00');
+('Dupois', 'Jacques', 'jacques.dupois@businesscare.fr', '$2y$10$CGP1gfg0khtXjAZcJFC6iO3oYisjwlPfkm8tQ8Q/OxWpFdR7tOiqO', '06 12 34 56 78', '1995-03-15', 'M', '/photos/mdupois.jpg', 2, 10, 'inactif', '2024-04-03 09:15:00');
 
 
 INSERT INTO contrats (entreprise_id, date_debut, date_fin, montant_mensuel, nombre_salaries, type_contrat, statut, conditions_particulieres) VALUES

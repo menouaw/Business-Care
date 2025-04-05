@@ -1,9 +1,19 @@
 <?php
 
 /**
- * tableau de bord - entreprises
+ * Tableau de Bord - Espace Entreprise (Module Entreprise)
  *
- * page d'accueil du module entreprises
+ * Page d'accueil de l'espace entreprise. Affiche un résumé des informations
+ * clés et des actions rapides pour l'entreprise connectée.
+ *
+ * Contenu Affiché :
+ * - Cartes récapitulatives (Salariés, Contrats Actifs, Prestations, Factures).
+ * - Liste des contrats actifs récents.
+ * - Liste des dernières factures.
+ * - Boutons d'actions rapides (Demander devis, Ajouter salarié, Contacter support).
+ *
+ * Récupère les données via les fonctions du module `companies.php`.
+ * Accès restreint aux utilisateurs avec le rôle ROLE_ENTREPRISE.
  */
 
 // Inclure les fonctions spécifiques au module entreprises
@@ -220,7 +230,7 @@ include_once __DIR__ . '/../../templates/header.php';
                                 </a>
                             </div>
                             <div class="col-md-4">
-                                <a href="gestion-salaries.php" class="btn btn-success d-block py-3">
+                                <a href="add-employee.php" class="btn btn-success d-block py-3">
                                     <i class="fas fa-user-plus me-2"></i>Ajouter des salariés
                                 </a>
                             </div>

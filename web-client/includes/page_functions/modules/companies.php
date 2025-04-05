@@ -398,8 +398,9 @@ function getCompanyContracts($company_id, $status = 'active', $page = 1, $limit 
     }
 
     $where = "c.entreprise_id = :company_id";
-    $params = [':company_id' => $company_id];
-    $countParams = [':company_id' => $company_id]; // Params pour le comptage
+$params = ['company_id' => $company_id];
+$countParams = ['company_id' => $company_id];
+
 
     // Construction de la clause WHERE et des paramètres
     if ($status === 'active') {
@@ -425,7 +426,7 @@ function getCompanyContracts($company_id, $status = 'active', $page = 1, $limit 
         $totalResult = executeQuery($countQuery, $countParams)->fetch();
         $total = $totalResult['total'] ?? 0;
         $totalPages = ceil($total / $limit);
-        // Ajuster la page si elle dépasse le nombre total de pages
+        // Ajuster la page si elle dépasse
         $page = max(1, min($page, $totalPages > 0 ? $totalPages : 1));
         $offset = ($page - 1) * $limit;
 
@@ -495,23 +496,26 @@ function getCompanyContracts($company_id, $status = 'active', $page = 1, $limit 
 
 /**
  * Récupère les employés d'une entreprise
- * 
+ *
  * @param int $company_id identifiant de l'entreprise
  * @param int $page numéro de page
  * @param int $limit nombre d'éléments par page
  * @param string $search terme de recherche
+ * @param string $statusFilter Filtre de statut ('actif', 'inactif', 'suspendu', 'tous') // Updated docblock
  * @return array liste des employés et infos de pagination
  */
-function getCompanyEmployees($company_id, $page = 1, $limit = 20, $search = '')
+function getCompanyEmployees($company_id, $page = 1, $limit = 20, $search = '', $statusFilter = 'actif') // Changed 'actifs' to 'actif' to match usage
 {
-    // Sanitize inputs
+    // Ensure scalar types for parameters that might affect the query string or param array
     $company_id = filter_var(sanitizeInput($company_id), FILTER_VALIDATE_INT);
     $page = max(1, (int)sanitizeInput($page));
     $limit = max(1, (int)sanitizeInput($limit));
-    $search = sanitizeInput($search);
+    // Explicitly cast search and statusFilter to string after sanitization
+    $search = (string) sanitizeInput(trim($search));
+    $statusFilter = (string) sanitizeInput($statusFilter);
 
     if (!$company_id) {
-        // Vérification de l'ID d'entreprise, s'il n'est pas valide, on retourne une structure vide
+        flashMessage("Identifiant d'entreprise invalide", "danger");
         return [
             'employees' => [],
             'pagination' => [
@@ -524,82 +528,100 @@ function getCompanyEmployees($company_id, $page = 1, $limit = 20, $search = '')
         ];
     }
 
-    // --- Préparation de la requête et des paramètres ---
-    $baseQuery = "FROM personnes p WHERE p.entreprise_id = :company_id AND p.role_id = :role_id";
-    $params = ['company_id' => $company_id, 'role_id' => ROLE_SALARIE];
-    $countParams = ['company_id' => $company_id, 'role_id' => ROLE_SALARIE]; // Séparer pour le count
-    $whereClause = '';
+    // Base de la requête
+    $sqlBase = " FROM personnes p WHERE p.entreprise_id = :company_id AND p.role_id = :role_id";
+    $params = [
+        ':company_id' => $company_id,
+        ':role_id' => ROLE_SALARIE
+    ];
+    $countParams = [
+        ':company_id' => $company_id,
+        ':role_id' => ROLE_SALARIE
+    ];
 
-    // Ajout de la recherche si spécifiée
+    // Appliquer le filtre de statut (Using guaranteed string $statusFilter)
+    $validStatusFilters = ['actif', 'inactif', 'suspendu', 'tous']; // Define valid filters
+    if (in_array($statusFilter, $validStatusFilters) && $statusFilter !== 'tous') {
+        $sqlBase .= " AND p.statut = :status";
+        $params[':status'] = $statusFilter;
+        $countParams[':status'] = $statusFilter;
+    } // If 'tous' or invalid, do not filter by status
+
+    // Filtre de recherche (Using guaranteed string $search)
     if (!empty($search)) {
-        $searchTerm = "%" . $search . "%";
-        $whereClause = " AND (p.nom LIKE :search OR p.prenom LIKE :search OR p.email LIKE :search)";
-        $params['search'] = $searchTerm;
-        $countParams['search'] = $searchTerm;
+        $searchWild = '%' . $search . '%';
+        $sqlBase .= " AND (p.nom LIKE :search OR p.prenom LIKE :search OR p.email LIKE :search)";
+        $params[':search'] = $searchWild;
+        $countParams[':search'] = $searchWild;
     }
 
     try {
-        // --- 1. Compter le total --- 
-        $countQuery = "SELECT COUNT(id) as total " . $baseQuery . $whereClause;
-        $totalResult = executeQuery($countQuery, $countParams)->fetch(PDO::FETCH_ASSOC);
+        // 1. Compter le total des enregistrements
+        $countQuery = "SELECT COUNT(*) as total" . $sqlBase;
+        $totalResult = executeQuery($countQuery, $countParams)->fetch();
         $total = $totalResult['total'] ?? 0;
         $totalPages = ceil($total / $limit);
-        // Ajuster la page si elle dépasse le nombre total de pages
+        // Ensure page is within valid range
         $page = max(1, min($page, $totalPages > 0 ? $totalPages : 1));
         $offset = ($page - 1) * $limit;
 
-        // --- 2. Récupérer les employés pour la page actuelle --- 
-        $query = "SELECT p.id, p.nom, p.prenom, p.email, p.telephone, p.photo_url, p.statut, 
-                p.created_at, p.derniere_connexion "
-            . $baseQuery . $whereClause
-            . " ORDER BY p.nom, p.prenom ASC LIMIT :limit OFFSET :offset";
+        // 2. Récupérer les employés pour la page actuelle
+        // Ensure limit and offset are integers before binding
+        $limitParam = (int) $limit;
+        $offsetParam = (int) $offset;
 
-        // Ajouter limit et offset aux paramètres de la requête principale
-        $params['limit'] = $limit;
-        $params['offset'] = $offset;
+        $query = "SELECT p.* " . $sqlBase . " ORDER BY p.nom ASC, p.prenom ASC LIMIT :limit OFFSET :offset";
+        // Prepare the final parameter array for this query
+        $queryParams = $params; // Start with base/filter params
+        $queryParams[':limit'] = $limitParam;
+        $queryParams[':offset'] = $offsetParam;
 
-        $employees = executeQuery($query, $params)->fetchAll(PDO::FETCH_ASSOC);
 
-        // --- 3. Formatage des données employé --- 
+        // DEBUG Logs (peuvent être retirés plus tard)
+        error_log("DEBUG EMPLOYEES Query String: " . $query);
+        // Log the actual parameters being used for the query execution
+        error_log("DEBUG EMPLOYEES Params Array: " . print_r($queryParams, true));
+
+        // Execute with the final parameters
+        $employees = executeQuery($query, $queryParams)->fetchAll(PDO::FETCH_ASSOC);
+
+        // Formatage
         foreach ($employees as &$employee) {
-            if (isset($employee['statut'])) {
+            if (!isset($employee['derniere_connexion_formatee']) && isset($employee['derniere_connexion'])) {
+                $employee['derniere_connexion_formatee'] = formatDate($employee['derniere_connexion'], 'd/m/Y H:i');
+            } else if (!isset($employee['derniere_connexion_formatee'])) {
+                $employee['derniere_connexion_formatee'] = 'Jamais'; // Add default if null
+            }
+            if (!isset($employee['statut_badge']) && isset($employee['statut'])) {
                 $employee['statut_badge'] = getStatusBadge($employee['statut']);
             }
-            if (isset($employee['created_at'])) {
-                $employee['created_at_formatee'] = formatDate($employee['created_at']);
-            }
-            if (isset($employee['derniere_connexion'])) {
-                $employee['derniere_connexion_formatee'] = formatDate($employee['derniere_connexion']);
-            }
-
-            // Récupération du nombre de rendez-vous (optimisable si beaucoup d'employés)
-            $appointmentsQuery = "SELECT 
-                                COUNT(id) as total,
-                                SUM(CASE WHEN date_rdv >= CURDATE() THEN 1 ELSE 0 END) as a_venir
-                                FROM rendez_vous
-                                WHERE personne_id = :employee_id";
-            $appointmentsInfo = executeQuery($appointmentsQuery, [':employee_id' => $employee['id']])->fetch(PDO::FETCH_ASSOC);
-            $employee['rendez_vous'] = [
-                'total' => $appointmentsInfo['total'] ?? 0,
-                'a_venir' => $appointmentsInfo['a_venir'] ?? 0
-            ];
         }
-        unset($employee); // Détacher la référence
+        unset($employee);
 
-        // --- 4. Préparer les données de pagination --- 
+        // 3. Préparer les données pour la pagination HTML
         $paginationData = [
             'currentPage' => $page,
             'totalPages' => $totalPages,
             'totalItems' => $total,
             'perPage' => $limit
         ];
-        // Construction de l'URL pour la pagination (sans company_id car on est déjà dans le contexte)
-        $urlPattern = "?page={page}";
+
+        // Construire l'URL avec les bons paramètres, y compris le filtre de statut
+        $urlParams = [];
+        // Only add status if it's a valid filter (including 'tous')
+        if (in_array($statusFilter, $validStatusFilters)) {
+            $urlParams['statut'] = $statusFilter;
+        }
         if (!empty($search)) {
-            $urlPattern .= "&search=" . urlencode($search);
+            $urlParams['search'] = $search; // Use original $search string for URL
+        }
+        $urlPattern = "employees.php?page={page}";
+        if (!empty($urlParams)) {
+            // Use http_build_query for proper encoding
+            $urlPattern .= "&" . http_build_query($urlParams);
         }
 
-        // --- 5. Retourner le résultat complet --- 
+        // 4. Retourner les résultats
         return [
             'employees' => $employees,
             'pagination' => [
@@ -610,17 +632,23 @@ function getCompanyEmployees($company_id, $page = 1, $limit = 20, $search = '')
             ],
             'pagination_html' => renderPagination($paginationData, $urlPattern)
         ];
-    } catch (Exception $e) {
-        logSystemActivity('error', "Erreur récupération employés entreprise #$company_id: " . $e->getMessage());
-        flashMessage("Une erreur est survenue lors de la récupération des employés", "danger");
+    } catch (PDOException $e) { // Catch PDOException specifically for DB errors
+        // Log the specific PDO error
+        logSystemActivity('error', "PDO Error in getCompanyEmployees: " . $e->getMessage() . " | Query: " . $query . " | Params: " . print_r($queryParams, true));
+        flashMessage("Une erreur de base de données est survenue lors de la récupération des employés.", "danger");
+        // Return empty structure on PDO error
         return [
             'employees' => [],
-            'pagination' => [
-                'current' => 1,
-                'limit' => $limit,
-                'total' => 0,
-                'totalPages' => 0
-            ],
+            'pagination' => ['current' => 1, 'limit' => $limit, 'total' => 0, 'totalPages' => 0],
+            'pagination_html' => ''
+        ];
+    } catch (Exception $e) { // Catch other general exceptions
+        logSystemActivity('error', "General Error in getCompanyEmployees: " . $e->getMessage());
+        flashMessage("Une erreur générale est survenue lors de la récupération des employés.", "danger");
+        // Return empty structure on general error
+        return [
+            'employees' => [],
+            'pagination' => ['current' => 1, 'limit' => $limit, 'total' => 0, 'totalPages' => 0],
             'pagination_html' => ''
         ];
     }
@@ -644,6 +672,7 @@ function addCompanyEmployee($company_id, $employee_data)
         return false;
     }
 
+    
     // Vérification que l'entreprise existe
     $company = fetchOne('entreprises', "id = :id", [':id' => $company_id]);
     if (!$company) {
@@ -1667,6 +1696,342 @@ function getInvoiceDetailsForCompany($company_id, $invoice_id)
     } catch (Exception $e) {
         logSystemActivity('error', "Erreur récupération détail facture #$invoice_id pour entreprise #$company_id: " . $e->getMessage());
         flashMessage("Une erreur est survenue lors de la récupération des détails de la facture.", "danger");
+        return false;
+    }
+}
+
+/**
+ * Récupère les détails d'un employé spécifique d'une entreprise.
+ * Vérifie que l'employé appartient bien à l'entreprise et a le rôle salarié.
+ *
+ * @param int $company_id ID de l'entreprise.
+ * @param int $employee_id ID de l'employé.
+ * @return array|false Détails de l'employé ou false si non trouvé ou accès refusé.
+ */
+function getCompanyEmployeeDetails($company_id, $employee_id)
+{
+    // Validation des IDs
+    $company_id = filter_var(sanitizeInput($company_id), FILTER_VALIDATE_INT);
+    $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
+
+    if (!$company_id || !$employee_id) {
+        flashMessage("Identifiants invalides.", "danger");
+        return false;
+    }
+
+    try {
+        // Requête pour récupérer l'employé
+        $query = "SELECT p.* 
+                  FROM personnes p
+                  WHERE p.id = :employee_id 
+                    AND p.entreprise_id = :company_id 
+                    AND p.role_id = :role_id";
+
+        $employee = executeQuery($query, [
+            ':employee_id' => $employee_id,
+            ':company_id' => $company_id,
+            ':role_id' => ROLE_SALARIE
+        ])->fetch(PDO::FETCH_ASSOC);
+
+        if (!$employee) {
+            // Soit l'employé n'existe pas, soit il n'appartient pas à cette entreprise/rôle
+            flashMessage("Employé non trouvé ou accès non autorisé.", "warning");
+            //redirectTo('employees.php'); // Redirection supprimée ici
+            return false; // Retourne false au lieu de rediriger
+        }
+
+        // Formater les données pour l'affichage
+        if (isset($employee['date_naissance']) && $employee['date_naissance']) {
+            $employee['date_naissance_formatee'] = formatDate($employee['date_naissance'], 'd/m/Y');
+        }
+        if (isset($employee['derniere_connexion']) && $employee['derniere_connexion']) {
+            $employee['derniere_connexion_formatee'] = formatDate($employee['derniere_connexion'], 'd/m/Y H:i');
+        } else {
+            $employee['derniere_connexion_formatee'] = 'Jamais';
+        }
+        if (isset($employee['statut'])) {
+            $employee['statut_badge'] = getStatusBadge($employee['statut']);
+        }
+        // Formater le genre
+        switch ($employee['genre']) {
+            case 'M':
+                $employee['genre_formate'] = 'Masculin';
+                break;
+            case 'F':
+                $employee['genre_formate'] = 'Féminin';
+                break;
+            case 'Autre':
+                $employee['genre_formate'] = 'Autre';
+                break;
+            default:
+                $employee['genre_formate'] = 'Non spécifié';
+        }
+
+
+        return $employee;
+    } catch (Exception $e) {
+        logSystemActivity('error', "Erreur récupération détail employé #$employee_id pour entreprise #$company_id: " . $e->getMessage());
+        flashMessage("Une erreur est survenue lors de la récupération des détails de l'employé.", "danger");
+        return false;
+    }
+}
+
+/**
+ * Met à jour les informations d'un employé spécifique d'une entreprise.
+ *
+ * @param int $company_id ID de l'entreprise.
+ * @param int $employee_id ID de l'employé à mettre à jour.
+ * @param array $employee_data Données à mettre à jour.
+ * @return bool True si la mise à jour réussit, False sinon.
+ */
+function updateCompanyEmployee($company_id, $employee_id, $employee_data)
+{
+    // Validation des IDs
+    $company_id = filter_var(sanitizeInput($company_id), FILTER_VALIDATE_INT);
+    $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
+
+    if (!$company_id || !$employee_id || empty($employee_data)) {
+        flashMessage("Données invalides pour la mise à jour.", "danger");
+        return false;
+    }
+
+    // Liste des champs modifiables par l'entreprise
+    $allowedFields = [
+        'nom',
+        'prenom',
+        'email',
+        'telephone',
+        'date_naissance',
+        'genre',
+        'statut'
+        // 'photo_url' // Pourrait être ajouté
+    ];
+
+    // Nettoyer et filtrer les données soumises
+    $employee_data = sanitizeInput($employee_data);
+    $filteredData = array_intersect_key($employee_data, array_flip($allowedFields));
+
+    // Assurer que les champs vides sont null si applicable
+    if (isset($filteredData['telephone']) && $filteredData['telephone'] === '') {
+        $filteredData['telephone'] = null;
+    }
+    if (isset($filteredData['date_naissance']) && $filteredData['date_naissance'] === '') {
+        $filteredData['date_naissance'] = null;
+    }
+    if (isset($filteredData['genre']) && $filteredData['genre'] === '') {
+        $filteredData['genre'] = null;
+    }
+
+    if (empty($filteredData)) {
+        flashMessage("Aucune donnée valide à mettre à jour.", "warning");
+        return false;
+    }
+
+    try {
+        // Vérifier si l'email est modifié et s'il est unique (sauf pour l'employé actuel)
+        if (isset($filteredData['email'])) {
+            $existingUser = fetchOne('personnes', "email = :email AND id != :id", [':email' => $filteredData['email'], ':id' => $employee_id]);
+            if ($existingUser) {
+                flashMessage("Cette adresse email est déjà utilisée par un autre utilisateur.", "danger");
+                return false;
+            }
+        }
+
+        // Condition WHERE pour s'assurer qu'on met à jour le bon employé DANS la bonne entreprise
+        $whereCondition = 'id = :id AND entreprise_id = :entreprise_id AND role_id = :role_id';
+        $whereParams = [
+            'id' => $employee_id,
+            'entreprise_id' => $company_id,
+            'role_id' => ROLE_SALARIE
+        ];
+
+        // Utilisation de la fonction updateRow
+        $affectedRows = updateRow('personnes', $filteredData, $whereCondition, $whereParams);
+
+        if ($affectedRows === false) {
+            // Erreur lors de l'exécution de la requête (déjà loguée par updateRow probablement)
+            flashMessage("Erreur lors de la mise à jour de l'employé.", "danger");
+            return false;
+        } elseif ($affectedRows > 0) {
+            // Vérification plus stricte de l'ID utilisateur pour le log
+            $userIdForLog = (isset($_SESSION['user_id']) && filter_var($_SESSION['user_id'], FILTER_VALIDATE_INT) && $_SESSION['user_id'] > 0)
+                ? $_SESSION['user_id']
+                : null;
+            logBusinessOperation(
+                $userIdForLog,
+                'update_employee',
+                "Mise à jour employé #{$employee_id} par entreprise #{$company_id}"
+            );
+            flashMessage("Les informations de l'employé ont été mises à jour avec succès.", "success");
+            return true;
+        } else {
+            // Aucune ligne affectée - soit les données étaient identiques, soit l'employé n'existait pas/pas dans la bonne entreprise
+            // On vérifie si l'employé existe toujours pour distinguer les cas
+            $existsCheck = fetchOne('personnes', 'id = :id AND entreprise_id = :entreprise_id AND role_id = :role_id', $whereParams);
+            if ($existsCheck) {
+                flashMessage("Aucune modification n'a été détectée.", "info");
+                return true; // Considéré comme un succès car aucune erreur
+            } else {
+                flashMessage("Employé non trouvé ou accès non autorisé.", "danger");
+                return false;
+            }
+        }
+    } catch (Exception $e) {
+        logSystemActivity('error', "Erreur mise à jour employé #$employee_id: " . $e->getMessage());
+        flashMessage("Une erreur technique est survenue lors de la mise à jour.", "danger");
+        return false;
+    }
+}
+
+/**
+ * Supprime un employé spécifique d'une entreprise.
+ *
+ * @param int $company_id ID de l'entreprise.
+ * @param int $employee_id ID de l'employé à supprimer.
+ * @return bool True si la suppression réussit, False sinon.
+ */
+function deleteCompanyEmployee($company_id, $employee_id)
+{
+    // Validation des IDs
+    $company_id = filter_var(sanitizeInput($company_id), FILTER_VALIDATE_INT);
+    $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
+
+    if (!$company_id || !$employee_id) {
+        flashMessage("Identifiants invalides pour la suppression.", "danger");
+        return false;
+    }
+
+    try {
+        // Condition WHERE pour s'assurer qu'on supprime le bon employé DANS la bonne entreprise et avec le bon rôle
+        $whereCondition = 'id = :id AND entreprise_id = :entreprise_id AND role_id = :role_id';
+        $whereParams = [
+            'id' => $employee_id,
+            'entreprise_id' => $company_id,
+            'role_id' => ROLE_SALARIE
+        ];
+
+        // Correction: Vérifier si l'employé existe en utilisant executeQuery directement
+        $checkSql = "SELECT 1 FROM personnes WHERE " . $whereCondition . " LIMIT 1";
+        $stmtCheck = executeQuery($checkSql, $whereParams);
+        $employeeExists = $stmtCheck->fetch(); // fetch retourne false si aucune ligne
+        // $employeeExists = fetchOne('personnes', $whereCondition, $whereParams); // Ancien appel incorrect
+
+        if (!$employeeExists) {
+            flashMessage("Employé non trouvé ou accès non autorisé pour la suppression.", "danger");
+            return false;
+        }
+
+        // Récupérer les infos de l'employé AVANT suppression pour le log
+        // (Optionnel, mais utile pour le message flash/log)
+        // Si fetch() a réussi, on peut supposer que l'ID est valide pour une récupération simple
+        // Ou on pourrait récupérer plus d'infos dans la requête de check ci-dessus
+        $employeeInfoQuery = "SELECT nom, prenom FROM personnes WHERE id = :id LIMIT 1";
+        $employeeInfoStmt = executeQuery($employeeInfoQuery, ['id' => $employee_id]);
+        $employeeInfo = $employeeInfoStmt->fetch();
+        $employeeFullName = $employeeInfo ? ($employeeInfo['prenom'] . ' ' . $employeeInfo['nom']) : "#{$employee_id}";
+
+        // Modification: Utiliser updateRow pour passer le statut à 'supprime' (Soft Delete)
+        $updateData = ['statut' => 'supprime'];
+        $affectedRows = updateRow('personnes', $updateData, $whereCondition, $whereParams);
+        // $affectedRows = deleteRow('personnes', $whereCondition, $whereParams); // Ancien appel à deleteRow
+
+        if ($affectedRows === false) {
+            // Erreur lors de l'exécution (déjà loguée par updateRow probablement)
+            flashMessage("Erreur lors de la désactivation de l'employé.", "danger");
+            return false;
+        } elseif ($affectedRows > 0) {
+            // Vérification plus stricte de l'ID utilisateur pour le log
+            $userIdForLog = (isset($_SESSION['user_id']) && filter_var($_SESSION['user_id'], FILTER_VALIDATE_INT) && $_SESSION['user_id'] > 0)
+                ? $_SESSION['user_id']
+                : null;
+            logBusinessOperation(
+                $userIdForLog,
+                'soft_delete_employee', // Action modifiée pour refléter la suppression logique
+                "Désactivation employé {$employeeFullName} (ID: {$employee_id}) par entreprise #{$company_id}"
+            );
+            // Message modifié
+            flashMessage("L'employé '{$employeeFullName}' a été désactivé avec succès.", "success");
+            return true;
+        } else {
+            // Aucune ligne affectée
+            flashMessage("La désactivation n'a pas pu être effectuée (employé déjà désactivé ou non trouvé ?).", "warning");
+            return false;
+        }
+    } catch (Exception $e) {
+        logSystemActivity('error', "Erreur suppression employé #$employee_id: " . $e->getMessage());
+        flashMessage("Une erreur technique est survenue lors de la suppression.", "danger");
+        return false;
+    }
+}
+
+/**
+ * Réactive un employé spécifique d'une entreprise (annule la suppression logique).
+ *
+ * @param int $company_id ID de l'entreprise.
+ * @param int $employee_id ID de l'employé à réactiver.
+ * @return bool True si la réactivation réussit, False sinon.
+ */
+function reactivateCompanyEmployee($company_id, $employee_id)
+{
+    // Validation des IDs
+    $company_id = filter_var(sanitizeInput($company_id), FILTER_VALIDATE_INT);
+    $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
+
+    if (!$company_id || !$employee_id) {
+        flashMessage("Identifiants invalides pour la réactivation.", "danger");
+        return false;
+    }
+
+    try {
+        // Condition WHERE pour s'assurer qu'on réactive le bon employé DANS la bonne entreprise et qu'il est bien supprimé
+        $whereCondition = 'id = :id AND entreprise_id = :entreprise_id AND role_id = :role_id AND statut = :statut_supprime';
+        $whereParams = [
+            'id' => $employee_id,
+            'entreprise_id' => $company_id,
+            'role_id' => ROLE_SALARIE,
+            'statut_supprime' => 'supprime' // Vérifier qu'il est bien supprimé avant de réactiver
+        ];
+
+        // Vérifier si l'employé existe et correspond aux critères
+        $employeeCheck = fetchOne('personnes', $whereCondition, $whereParams);
+        if (!$employeeCheck) {
+            flashMessage("Employé non trouvé, non supprimé, ou accès non autorisé pour la réactivation.", "warning");
+            return false;
+        }
+
+        // Données à mettre à jour : passer le statut à 'actif'
+        $updateData = ['statut' => 'actif'];
+
+        // Condition WHERE pour la mise à jour (plus simple car on a déjà vérifié)
+        $updateWhereCondition = 'id = :id AND entreprise_id = :entreprise_id';
+        $updateWhereParams = [
+            'id' => $employee_id,
+            'entreprise_id' => $company_id
+        ];
+
+        $affectedRows = updateRow('personnes', $updateData, $updateWhereCondition, $updateWhereParams);
+
+        if ($affectedRows === false) {
+            flashMessage("Erreur lors de la réactivation de l'employé.", "danger");
+            return false;
+        } elseif ($affectedRows > 0) {
+            $userIdForLog = (isset($_SESSION['user_id']) && filter_var($_SESSION['user_id'], FILTER_VALIDATE_INT) && $_SESSION['user_id'] > 0)
+                ? $_SESSION['user_id']
+                : null;
+            logBusinessOperation(
+                $userIdForLog,
+                'reactivate_employee',
+                "Réactivation employé #{$employee_id} par entreprise #{$company_id}"
+            );
+            flashMessage("L'employé '{$employeeCheck['prenom']} {$employeeCheck['nom']}' a été réactivé avec succès.", "success");
+            return true;
+        } else {
+            flashMessage("La réactivation n'a pas pu être effectuée (employé déjà actif ?).", "warning");
+            return false;
+        }
+    } catch (Exception $e) {
+        logSystemActivity('error', "Erreur réactivation employé #$employee_id: " . $e->getMessage());
+        flashMessage("Une erreur technique est survenue lors de la réactivation.", "danger");
         return false;
     }
 }
