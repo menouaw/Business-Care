@@ -9,9 +9,10 @@ require_once __DIR__ . '/../../init.php';
  * @param string $search Terme de recherche
  * @param int $roleId Filtre par role
  * @param int $entrepriseId Filtre par entreprise
+ * @param string $statut Filtre par statut ('actif', 'inactif', etc.)
  * @return array Donnees de pagination et liste des utilisateurs
  */
-function usersGetList($page = 1, $perPage = 10, $search = '', $roleId = 0, $entrepriseId = 0) {
+function usersGetList($page = 1, $perPage = 10, $search = '', $roleId = 0, $entrepriseId = 0, $statut = '') {
         $params = [];
     $conditions = [];
 
@@ -30,6 +31,11 @@ function usersGetList($page = 1, $perPage = 10, $search = '', $roleId = 0, $entr
     if ($entrepriseId > 0) {
         $conditions[] = "p.entreprise_id = ?";
         $params[] = (int)$entrepriseId;
+    }
+    
+    if ($statut && in_array($statut, USER_STATUSES)) {
+        $conditions[] = "p.statut = ?";
+        $params[] = $statut;
     }
     
     $whereSql = !empty($conditions) ? "WHERE " . implode(' AND ', $conditions) : '';
@@ -80,26 +86,107 @@ function usersGetDetails($id) {
     
     $sqlHistory = "SELECT * FROM logs 
                    WHERE personne_id = ? AND action LIKE '%login%' 
-                   ORDER BY created_at DESC LIMIT 10"; // Adjusted action check
+                   ORDER BY created_at DESC LIMIT 10"; 
     $user['login_history'] = executeQuery($sqlHistory, [$id])->fetchAll();
     
     if (isset($user['role_id']) && $user['role_id'] == ROLE_PRESTATAIRE) { 
-        $sqlPrestations = "SELECT pr.* 
-                           FROM prestations pr
-                           WHERE pr.praticien_id = ?
-                           ORDER BY pr.created_at DESC LIMIT 10"; // Assuming prestation has praticien_id
-                           // Original query had `services s` and `p.*` - might need adjustment based on actual `prestations` table
-        $user['prestations'] = executeQuery($sqlPrestations, [$id])->fetchAll();
+        $sqlAppointments = "SELECT rv.*, pr.nom as prestation_nom, cust.prenom as client_prenom, cust.nom as client_nom
+                           FROM rendez_vous rv
+                           LEFT JOIN prestations pr ON rv.prestation_id = pr.id
+                           LEFT JOIN personnes cust ON rv.personne_id = cust.id
+                           WHERE rv.praticien_id = ?
+                           ORDER BY rv.date_rdv DESC LIMIT 10";
+        $user['appointments_given'] = executeQuery($sqlAppointments, [$id])->fetchAll();
     }
     
     if (isset($user['role_id']) && $user['role_id'] == ROLE_SALARIE) { 
-        $sqlReservations = "SELECT rv.*, pr.nom as prestation_nom, p.prenom as praticien_prenom, p.nom as praticien_nom
+        $sqlReservations = "SELECT rv.*, pr.nom as prestation_nom, p.id as praticien_id, p.prenom as praticien_prenom, p.nom as praticien_nom
                             FROM rendez_vous rv
                             LEFT JOIN prestations pr ON rv.prestation_id = pr.id
-                            LEFT JOIN personnes p ON pr.praticien_id = p.id
+                            LEFT JOIN personnes p ON rv.praticien_id = p.id
                             WHERE rv.personne_id = ?
                             ORDER BY rv.date_rdv DESC LIMIT 10";
         $user['reservations'] = executeQuery($sqlReservations, [$id])->fetchAll();
+
+        $sqlEvaluations = "SELECT e.*, pr.nom as prestation_nom 
+                           FROM evaluations e
+                           JOIN prestations pr ON e.prestation_id = pr.id
+                           WHERE e.personne_id = ? 
+                           ORDER BY e.date_evaluation DESC 
+                           LIMIT 10";
+        $user['evaluations_submitted'] = executeQuery($sqlEvaluations, [$id])->fetchAll();
+
+        $sqlDonations = "SELECT * FROM dons WHERE personne_id = ? ORDER BY date_don DESC LIMIT 10";
+        $user['donations_made'] = executeQuery($sqlDonations, [$id])->fetchAll();
+    }
+    
+    if (isset($user['role_id']) && $user['role_id'] == ROLE_ENTREPRISE && isset($user['entreprise_id'])) {
+        $entrepriseId = $user['entreprise_id'];
+        
+        $sqlContracts = "SELECT * FROM contrats WHERE entreprise_id = ? ORDER BY date_debut DESC LIMIT 5";
+        $user['company_contracts'] = executeQuery($sqlContracts, [$entrepriseId])->fetchAll();
+        
+        $sqlInvoices = "SELECT * FROM factures WHERE entreprise_id = ? ORDER BY date_emission DESC LIMIT 10";
+        $user['company_invoices'] = executeQuery($sqlInvoices, [$entrepriseId])->fetchAll();
+        
+        $sqlEmployees = "SELECT id, nom, prenom, email, statut FROM personnes 
+                         WHERE entreprise_id = ? AND role_id = ? 
+                         ORDER BY nom, prenom LIMIT 10";
+        $user['company_employees'] = executeQuery($sqlEmployees, [$entrepriseId, ROLE_SALARIE])->fetchAll();
+        
+        $sqlQuotes = "SELECT * FROM devis WHERE entreprise_id = ? ORDER BY date_creation DESC LIMIT 10";
+        $user['company_quotes'] = executeQuery($sqlQuotes, [$entrepriseId])->fetchAll();
+
+        $sqlCurrentContract = "SELECT id, statut, date_fin FROM contrats 
+                               WHERE entreprise_id = ? AND statut = 'actif' 
+                               ORDER BY date_debut DESC LIMIT 1";
+        $user['current_contract_status'] = executeQuery($sqlCurrentContract, [$entrepriseId])->fetch();
+        
+        $sqlActiveEmployees = "SELECT COUNT(id) as count FROM personnes WHERE entreprise_id = ? AND role_id = ? AND statut = 'actif'";
+        $user['stats_active_employees'] = executeQuery($sqlActiveEmployees, [$entrepriseId, ROLE_SALARIE])->fetchColumn();
+
+        $sqlRecentReservations = "SELECT COUNT(rv.id) as count FROM rendez_vous rv 
+                                  JOIN personnes p ON rv.personne_id = p.id 
+                                  WHERE p.entreprise_id = ? AND rv.date_rdv >= DATE_SUB(NOW(), INTERVAL 30 DAY)";
+        $user['stats_recent_reservations'] = executeQuery($sqlRecentReservations, [$entrepriseId])->fetchColumn();
+        
+        $sqlTopPrestations = "SELECT pr.nom, COUNT(rv.id) as count 
+                              FROM rendez_vous rv 
+                              JOIN personnes p ON rv.personne_id = p.id
+                              JOIN prestations pr ON rv.prestation_id = pr.id
+                              WHERE p.entreprise_id = ?
+                              GROUP BY pr.id, pr.nom
+                              ORDER BY count DESC LIMIT 3";
+        $user['stats_top_prestations'] = executeQuery($sqlTopPrestations, [$entrepriseId])->fetchAll();
+
+        $sqlAvgSatisfaction = "SELECT AVG(e.note) as avg_score 
+                               FROM evaluations e
+                               JOIN personnes p ON e.personne_id = p.id
+                               WHERE p.entreprise_id = ?";
+        $avgScore = executeQuery($sqlAvgSatisfaction, [$entrepriseId])->fetchColumn();
+        $user['stats_avg_satisfaction'] = ($avgScore !== null) ? round($avgScore, 2) : null;
+    }
+    
+    if (isset($user['role_id']) && $user['role_id'] == ROLE_ADMIN) {
+        $sqlAdminActions = "SELECT action, details, ip_address, created_at 
+                            FROM logs 
+                            WHERE personne_id = ? 
+                            AND action NOT LIKE '%login%' 
+                            AND action NOT LIKE '%logout%'
+                            AND action NOT LIKE '%session_timeout%'
+                            AND action NOT LIKE '%role_check%'      
+                            AND action NOT LIKE '%user_info%'       
+                            ORDER BY created_at DESC 
+                            LIMIT 15";
+        $user['admin_actions'] = executeQuery($sqlAdminActions, [$id])->fetchAll();
+
+        $sqlSecurityActions = "SELECT action, details, ip_address, created_at 
+                               FROM logs 
+                               WHERE personne_id = ? 
+                               AND (action LIKE '[SECURITY]%' OR action LIKE '[SECURITY FAILURE]%')
+                               ORDER BY created_at DESC 
+                               LIMIT 10";
+        $user['security_actions'] = executeQuery($sqlSecurityActions, [$id])->fetchAll();
     }
     
     return $user;
@@ -168,12 +255,9 @@ function usersSave($data, $id = 0) {
         'prenom' => $data['prenom'], 
         'email' => $data['email'], 
         'telephone' => $data['telephone'] ?? null,
-        'adresse' => $data['adresse'] ?? null, 
-        'code_postal' => $data['code_postal'] ?? null, 
-        'ville' => $data['ville'] ?? null, 
         'role_id' => (int)$data['role_id'],
         'entreprise_id' => !empty($data['entreprise_id']) ? (int)$data['entreprise_id'] : null, 
-        'statut' => $data['statut'] ?? 'inactif' // Default to inactive?
+        'statut' => $data['statut'] ?? 'inactif'
     ];
             
     $passwordChanged = false;
@@ -184,10 +268,10 @@ function usersSave($data, $id = 0) {
 
     try {
         if ($id > 0) {
-            $affectedRows = updateRow('personnes', $dbData, "id = ?", [$id]);
+            $affectedRows = updateRow('personnes', $dbData, "id = :where_id", ['where_id' => $id]);
             
             if ($affectedRows !== false) { 
-                 logBusinessOperation($_SESSION['user_id'], 'user_update', 
+                 logBusinessOperation($_SESSION['user_id'], ':user_update', 
                     "[SUCCESS] Mise à jour utilisateur: {$dbData['prenom']} {$dbData['nom']} (ID: $id), role: {$dbData['role_id']}");
                 if ($passwordChanged && $id != ($_SESSION['user_id'] ?? 0)) { 
                      logSecurityEvent($_SESSION['user_id'], 'password_change_admin', 
@@ -203,7 +287,7 @@ function usersSave($data, $id = 0) {
             $newId = insertRow('personnes', $dbData);
             
             if ($newId) {
-                logBusinessOperation($_SESSION['user_id'], 'user_create', 
+                logBusinessOperation($_SESSION['user_id'], ':user_create', 
                     "[SUCCESS] Création utilisateur: {$dbData['prenom']} {$dbData['nom']} (ID: $newId), role: {$dbData['role_id']}");
                 logSecurityEvent($_SESSION['user_id'], 'account_creation', 
                     "[SUCCESS] Création compte pour {$dbData['email']} (ID: $newId, role: {$dbData['role_id']}) par admin ID: {$_SESSION['user_id']}");
@@ -239,25 +323,17 @@ function usersDelete($id) {
         return ['success' => false, 'message' => "Vous ne pouvez pas supprimer votre propre compte."];
     }
 
-    $prestationsCount = executeQuery("SELECT COUNT(id) FROM prestations WHERE praticien_id = ?", [$id])->fetchColumn();
-    
-    $reservationsCount = executeQuery("SELECT COUNT(id) FROM rendez_vous WHERE personne_id = ?", [$id])->fetchColumn();
-    
-    if ($prestationsCount > 0) {
-        logBusinessOperation($_SESSION['user_id'], 'user_delete_attempt', 
-            "[ERROR] Tentative échouée de suppression utilisateur ID: $id - Prestations associées existent");
-        return [
-            'success' => false,
-            'message' => "Impossible de supprimer cet utilisateur car il a des prestations associees"
-        ];
-    } 
-    
+    $reservationsCount = executeQuery(
+        "SELECT COUNT(id) FROM rendez_vous WHERE personne_id = ? OR praticien_id = ?",
+        [$id, $id]
+    )->fetchColumn();
+
     if ($reservationsCount > 0) {
-        logBusinessOperation($_SESSION['user_id'], 'user_delete_attempt', 
-            "[ERROR] Tentative échouée de suppression utilisateur ID: $id - Rendez-vous associés existent");
+        logBusinessOperation($_SESSION['user_id'], 'user_delete_attempt',
+            "[ERROR] Tentative échouée de suppression utilisateur ID: $id - Rendez-vous associés existent (client ou praticien)");
         return [
             'success' => false,
-            'message' => "Impossible de supprimer cet utilisateur car il a des rendez-vous associes"
+            'message' => "Impossible de supprimer cet utilisateur car il a des rendez-vous associés (en tant que client ou praticien)"
         ];
     }
     
@@ -278,7 +354,7 @@ function usersDelete($id) {
                 "[SUCCESS] Suppression compte utilisateur ID: $id par admin ID: {$_SESSION['user_id']}");
             return [
                 'success' => true,
-                'message' => "L'utilisateur et ses données associées (logs, tokens, préférences) ont été supprimés avec succès"
+                'message' => "L'utilisateur et ses données associées ont été supprimés avec succès"
             ];
         } else {
             rollbackTransaction(); 
