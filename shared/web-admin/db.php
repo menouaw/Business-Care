@@ -175,13 +175,18 @@ function insertRow($table, $data) {
 }
 
 /**
- * Met à jour des lignes dans une table
- * 
- * @param string $table Nom de la table
- * @param array $data Données à mettre à jour sous forme de tableau associatif (keys = column names)
- * @param string $where Clause WHERE pour cibler les lignes (doit utiliser des placeholders nommés, ex: `id = :where_id`)
- * @param array $whereParams Paramètres associatifs pour la clause WHERE (keys = placeholder names sans le ':')
- * @return int Nombre de lignes affectées
+ * Met à jour les enregistrements d'une table avec les données fournies.
+ *
+ * Cette fonction valide le nom de la table, construit dynamiquement la clause SET en encapsulant les noms de colonnes avec des backticks et en utilisant des placeholders préfixés par "set_", puis exécute une requête SQL UPDATE avec une clause WHERE personnalisée. Si le tableau de données est vide, une exception est levée. En cas d'erreur lors de l'exécution de la requête, l'erreur est loguée et une exception PDO est relancée.
+ *
+ * @param string $table Nom de la table cible.
+ * @param array $data Tableau associatif contenant les colonnes et leurs nouvelles valeurs.
+ * @param string $where Clause SQL WHERE avec des placeholders nommés (ex: "id = :where_id").
+ * @param array $whereParams Tableau associatif des valeurs pour les placeholders de la clause WHERE.
+ * @return int Nombre d'enregistrements mis à jour.
+ *
+ * @throws Exception Si le tableau $data est vide.
+ * @throws PDOException Si une erreur survient lors de l'exécution de la requête.
  */
 function updateRow($table, $data, $where, $whereParams = []) {
     $table = validateTableName($table);

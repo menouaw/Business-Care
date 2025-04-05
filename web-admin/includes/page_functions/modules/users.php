@@ -2,15 +2,24 @@
 require_once __DIR__ . '/../../init.php';
 
 /**
- * Recupere la liste des utilisateurs avec pagination et filtrage
- * 
- * @param int $page Numero de la page
- * @param int $perPage Nombre d'elements par page
- * @param string $search Terme de recherche
- * @param int $roleId Filtre par role
- * @param int $entrepriseId Filtre par entreprise
- * @param string $statut Filtre par statut ('actif', 'inactif', etc.)
- * @return array Donnees de pagination et liste des utilisateurs
+ * Récupère une liste paginée d'utilisateurs avec possibilité de filtrer par recherche, rôle, entreprise et statut.
+ *
+ * La fonction construit dynamiquement une clause SQL en fonction des filtres fournis pour retourner non seulement
+ * la liste des utilisateurs, mais également les informations de pagination telles que le numéro de page actuel,
+ * le nombre total de pages, le nombre total d'utilisateurs correspondants aux critères, et le nombre d'éléments par page.
+ *
+ * @param int $page Numéro de la page (défaut : 1).
+ * @param int $perPage Nombre d'éléments par page (défaut : 10).
+ * @param string $search Terme de recherche utilisé pour filtrer les utilisateurs par nom, prénom ou email.
+ * @param int $roleId Identifiant du rôle pour filtrer les résultats (0 pour ignorer ce filtre).
+ * @param int $entrepriseId Identifiant de l'entreprise pour filtrer les résultats (0 pour ignorer ce filtre).
+ * @param string $statut Statut de l'utilisateur pour filtrer les résultats (e.g., 'actif', 'inactif', 'en_attente', 'suspendu').
+ * @return array Tableau associatif contenant :
+ *               - 'users': Liste des utilisateurs avec leur rôle et le nom de leur entreprise.
+ *               - 'currentPage': Numéro de la page courante.
+ *               - 'totalPages': Nombre total de pages calculé.
+ *               - 'totalItems': Nombre total d'utilisateurs répondant aux critères de filtrage.
+ *               - 'perPage': Nombre d'utilisateurs affichés par page.
  */
 function usersGetList($page = 1, $perPage = 10, $search = '', $roleId = 0, $entrepriseId = 0, $statut = '') {
         $params = [];
@@ -67,10 +76,18 @@ function usersGetList($page = 1, $perPage = 10, $search = '', $roleId = 0, $entr
 }
 
 /**
- * Recupere les details d'un utilisateur
- * 
- * @param int $id Identifiant de l'utilisateur
- * @return array|false Donnees de l'utilisateur ou false si non trouve
+ * Récupère les détails complets d'un utilisateur et des informations complémentaires selon son rôle.
+ *
+ * Cette fonction renvoie les informations personnelles de l'utilisateur, incluant son rôle et le nom de l'entreprise associée le cas échéant,
+ * ainsi que son historique de connexion. En fonction du rôle de l'utilisateur, des données supplémentaires sont ajoutées :
+ * - Pour un prestataire : les rendez-vous donnés.
+ * - Pour un salarié : les réservations effectuées, les évaluations soumises et les dons réalisés.
+ * - Pour une entreprise : les contrats, factures, employés, devis, ainsi que diverses statistiques (contrat actuel, nombre d'employés actifs,
+ *   réservations récentes, prestations les plus sollicitées et moyenne de satisfaction).
+ * - Pour un administrateur : les actions administratives (hors connexions) et les actions liées à la sécurité.
+ *
+ * @param int $id L'identifiant de l'utilisateur.
+ * @return array|false Les données détaillées de l'utilisateur ou false si l'utilisateur n'est pas trouvé.
  */
 function usersGetDetails($id) {
     $sqlUser = "SELECT p.*, r.nom as role_name, e.nom as entreprise_nom
@@ -213,11 +230,17 @@ function usersGetEntreprises() {
 /**
  * Crée ou met à jour un utilisateur dans la base de données.
  *
- * Utilise insertRow ou updateRow de db.php.
+ * Valide les informations fournies dans le tableau de données ($data) pour s'assurer que les champs obligatoires
+ * (nom, prénom, email, et mot de passe lors de la création) ainsi que le rôle et, le cas échéant, l'entreprise sont corrects.
+ * Vérifie également l'unicité de l'email avant de procéder à l'insertion ou à la mise à jour dans la table 'personnes'.
+ * En cas de données invalides, retourne immédiatement un tableau d'erreurs sans modifier la base.
+ * Si l'opération est réussie, consigne l'action dans les logs business et de sécurité et retourne un tableau indiquant le succès
+ * de l'opération. Pour une création, le résultat inclut la clé 'newId' correspondant au nouvel identifiant de l'utilisateur.
  *
- * @param array $data Tableau associatif des informations de l'utilisateur.
- * @param int $id Identifiant de l'utilisateur (0 pour création).
- * @return array Résultat ['success' => bool, 'message' => string|null, 'errors' => array|null]
+ * @param array $data Informations de l'utilisateur incluant au minimum 'nom', 'prenom', 'email', 'mot_de_passe' (lors de la création), 'role_id'
+ *                    et éventuellement 'entreprise_id' et 'statut'.
+ * @param int $id Identifiant de l'utilisateur à mettre à jour ou 0 pour créer un nouvel utilisateur.
+ * @return array Tableau contenant 'success' (bool) et, selon le résultat, 'message' (string|null) ou 'errors' (array|null).
  */
 function usersSave($data, $id = 0) {
     $errors = [];
@@ -311,12 +334,13 @@ function usersSave($data, $id = 0) {
 }
 
 /**
- * Supprime un utilisateur après vérification de l'absence d'associations.
+ * Supprime un utilisateur en vérifiant l'absence de rendez-vous associés et en empêchant la suppression du compte connecté.
  *
- * Utilise executeQuery et deleteRow.
+ * La fonction empêche la suppression du compte actuellement connecté et vérifie qu'aucun rendez-vous (en tant que client ou praticien) n'est associé à l'utilisateur.
+ * Si aucune association n'est détectée, elle supprime l'utilisateur ainsi que ses données liées (logs, tokens de connexion et préférences) à l'aide d'une transaction pour garantir la cohérence des opérations.
  *
  * @param int $id Identifiant de l'utilisateur à supprimer.
- * @return array Résultat ['success' => bool, 'message' => string]
+ * @return array Tableau contenant 'success' (booléen indiquant le résultat) et 'message' (description du résultat de l'opération).
  */
 function usersDelete($id) {
     if ($id == ($_SESSION['user_id'] ?? 0)) {
