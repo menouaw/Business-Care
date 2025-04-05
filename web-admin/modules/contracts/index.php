@@ -1,11 +1,8 @@
 <?php
-require_once '../../includes/init.php';
 require_once '../../includes/page_functions/modules/contracts.php';
 
-// verifie si l'utilisateur est connecte
-requireAuthentication();
+requireRole(ROLE_ADMIN);
 
-// recupere les param de la requete
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 $statut = isset($_GET['statut']) ? $_GET['statut'] : '';
@@ -13,7 +10,6 @@ $entreprise = isset($_GET['entreprise']) ? (int)$_GET['entreprise'] : 0;
 $action = isset($_GET['action']) ? $_GET['action'] : '';
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
-// traitement du formulaire de creation/edition
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = [
         'entreprise_id' => $_POST['entreprise_id'] ?? '',
@@ -36,15 +32,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// traitement de la suppression
 if ($action === 'delete' && $id > 0) {
     $result = contractsDelete($id);
     flashMessage($result['message'], $result['success'] ? "success" : "danger");
-    header('Location: ' . WEBADMIN_URL . '/modules/contracts/');
-    exit;
+    redirectTo(WEBADMIN_URL . '/modules/contracts/');
 }
 
-// recuperation des donnees pour l'edition
 $contract = null;
 if (($action === 'edit' || $action === 'view') && $id > 0) {
     $contract = contractsGetDetails($id);
@@ -55,17 +48,14 @@ if (($action === 'edit' || $action === 'view') && $id > 0) {
     }
 }
 
-// recupere les contrats pagines
 $result = contractsGetList($page, 10, $search, $statut, $entreprise);
 $contracts = $result['contracts'];
 $totalPages = $result['totalPages'];
 $totalContracts = $result['totalItems'];
 $page = $result['currentPage'];
 
-// recuperation des entreprises pour le formulaire et le filtre
 $entreprises = contractsGetEntreprises();
 
-// inclusion du header
 $pageTitle = "Gestion des contrats";
 include_once '../../templates/header.php';
 ?>

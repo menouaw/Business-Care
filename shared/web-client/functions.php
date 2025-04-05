@@ -2,7 +2,7 @@
 require_once 'config.php';
 require_once 'db.php';
 
-define('DEFAUT_ITEMS_PER_PAGE', 10);
+define('DEFAULT_ITEMS_PER_PAGE', 10);
 define('DEFAULT_DATE_FORMAT', 'd/m/Y H:i');
 define('DEFAULT_CURRENCY', '€');
 define('INVOICE_PREFIX', 'F');
@@ -293,7 +293,7 @@ function renderPagination($pagination, $urlPattern) {
  * @param int $perPage Nombre d'éléments par page, par défaut défini par la constante DEFAUT_ITEMS_PER_PAGE.
  * @return array Tableau contenant les prestations paginées ainsi que les informations de pagination.
  */
-function getPrestations($type = '', $categorie = '', $page = 1, $perPage = DEFAUT_ITEMS_PER_PAGE) {
+function getPrestations($type = '', $categorie = '', $page = 1, $perPage = DEFAULT_ITEMS_PER_PAGE) {
     $where = [];
     $params = [];
     

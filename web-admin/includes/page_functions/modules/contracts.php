@@ -12,7 +12,6 @@ require_once __DIR__ . '/../../init.php';
  * @return array Donnees de pagination et liste des contrats
  */
 function contractsGetList($page = 1, $perPage = 10, $search = '', $statut = '', $entrepriseId = 0) {
-    $where = '';
     $params = [];
     $conditions = [];
 
@@ -28,37 +27,32 @@ function contractsGetList($page = 1, $perPage = 10, $search = '', $statut = '', 
 
     if ($search) {
         $conditions[] = "(e.nom LIKE ? OR c.type_contrat LIKE ?)";
-        $params[] = "%$search%";
-        $params[] = "%$search%";
+        $params[] = "%{$search}%";
+        $params[] = "%{$search}%";
     }
     
-    if (!empty($conditions)) {
-        $where = "WHERE " . implode(' AND ', $conditions);
-    }
+    $whereSql = !empty($conditions) ? "WHERE " . implode(' AND ', $conditions) : '';
 
-    // recupere les contrats pagines
     $offset = ($page - 1) * $perPage;
 
     $pdo = getDbConnection();
-    $countSql = "SELECT COUNT(c.id) FROM contrats c LEFT JOIN entreprises e ON c.entreprise_id = e.id $where";
+    $countSql = "SELECT COUNT(c.id) FROM contrats c LEFT JOIN entreprises e ON c.entreprise_id = e.id $whereSql";
 
     $countStmt = $pdo->prepare($countSql);
     $countStmt->execute($params);
     $totalContracts = $countStmt->fetchColumn();
     $totalPages = ceil($totalContracts / $perPage);
-    $page = max(1, min($page, $totalPages));
+    $page = max(1, min($page, $totalPages)); 
+    $offset = ($page - 1) * $perPage;
 
     $sql = "SELECT c.*, e.nom as nom_entreprise 
             FROM contrats c 
             LEFT JOIN entreprises e ON c.entreprise_id = e.id
-            $where
+            {$whereSql}
             ORDER BY c.date_debut DESC LIMIT ?, ?";
-    $params[] = $offset;
-    $params[] = $perPage;
+    $paramsWithPagination = array_merge($params, [$offset, $perPage]);
 
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute($params);
-    $contracts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $contracts = executeQuery($sql, $paramsWithPagination)->fetchAll();
 
     return [
         'contracts' => $contracts,
@@ -76,19 +70,11 @@ function contractsGetList($page = 1, $perPage = 10, $search = '', $statut = '', 
  * @return array|false Donnees du contrat ou false si non trouve
  */
 function contractsGetDetails($id) {
-    $pdo = getDbConnection();
-    $stmt = $pdo->prepare("SELECT c.*, e.nom as nom_entreprise 
-                          FROM contrats c 
-                          LEFT JOIN entreprises e ON c.entreprise_id = e.id 
-                          WHERE c.id = ?");
-    $stmt->execute([$id]);
-    $contract = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-    if (!$contract) {
-        return false;
-    }
-    
-    return $contract;
+    $sql = "SELECT c.*, e.nom as nom_entreprise 
+            FROM contrats c 
+            LEFT JOIN entreprises e ON c.entreprise_id = e.id 
+            WHERE c.id = ? LIMIT 1";
+    return executeQuery($sql, [$id])->fetch();
 }
 
 /**
@@ -97,34 +83,28 @@ function contractsGetDetails($id) {
  * @return array Liste des entreprises
  */
 function contractsGetEntreprises() {
-    $pdo = getDbConnection();
-    $stmt = $pdo->prepare("SELECT id, nom FROM entreprises ORDER BY nom");
-    $stmt->execute();
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    return fetchAll('entreprises', '', 'nom ASC'); 
 }
 
 /**
  * Crée ou met à jour un contrat dans la base de données.
  *
- * Valide les informations du contrat et vérifie que l'entreprise associée existe. Si le paramètre
- * $id est égal à 0, un nouveau contrat est créé. Sinon, le contrat identifié par $id est mis à jour.
- * La fonction s'assure que les champs obligatoires (entreprise, date de début, type de contrat) sont fournis
- * et que la date de fin, si spécifiée, n'est pas antérieure à la date de début. En cas d'erreur de validation
- * ou de problème lors de l'opération en base de données, un tableau contenant des messages d'erreur est
- * retourné.
+ * Utilise insertRow ou updateRow de db.php.
  *
- * @param array $data Données du contrat, comprenant l'identifiant de l'entreprise, les dates de début et fin,
- * les informations financières et opérationnelles, le type de contrat, le statut et les conditions particulières.
- * @param int $id Identifiant du contrat à mettre à jour (0 pour créer un nouveau contrat).
- *
- * @return array Résultat de l'opération. En cas de succès, le tableau contient 'success' à true et un message
- * de confirmation. En cas d'erreur, 'success' est false et le tableau contient un ou plusieurs messages d'erreur.
+ * @param array $data Données du contrat.
+ * @param int $id Identifiant du contrat (0 pour création).
+ * @return array Résultat ['success' => bool, 'message' => string|null, 'errors' => array|null]
  */
 function contractsSave($data, $id = 0) {
     $errors = [];
     
     if (empty($data['entreprise_id'])) {
         $errors[] = "L'entreprise est obligatoire";
+    } else {
+        $companyExists = fetchOne('entreprises', 'id = ?', '', [(int)$data['entreprise_id']]);
+        if (!$companyExists) {
+            $errors[] = "L'entreprise sélectionnée n'existe pas";
+        }
     }
     
     if (empty($data['date_debut'])) {
@@ -146,78 +126,47 @@ function contractsSave($data, $id = 0) {
         ];
     }
     
-    $pdo = getDbConnection();
-    
-    // verification que l'entreprise existe
-    $stmt = $pdo->prepare("SELECT id FROM entreprises WHERE id = ?");
-    $stmt->execute([$data['entreprise_id']]);
-    if ($stmt->rowCount() === 0) {
-        return [
-            'success' => false,
-            'errors' => ["L'entreprise selectionnee n'existe pas"]
-        ];
-    }
-    
+    $dbData = [
+        'entreprise_id' => (int)$data['entreprise_id'],
+        'date_debut' => $data['date_debut'],
+        'date_fin' => !empty($data['date_fin']) ? $data['date_fin'] : null,
+        'montant_mensuel' => !empty($data['montant_mensuel']) ? (float)$data['montant_mensuel'] : null,
+        'nombre_salaries' => !empty($data['nombre_salaries']) ? (int)$data['nombre_salaries'] : null,
+        'type_contrat' => $data['type_contrat'],
+        'statut' => $data['statut'] ?? 'en_attente', // Default status
+        'conditions_particulieres' => $data['conditions_particulieres'] ?? null
+    ];
+
     try {
-        // cas de mise a jour
         if ($id > 0) {
-            $sql = "UPDATE contrats SET 
-                    entreprise_id = ?, date_debut = ?, date_fin = ?, montant_mensuel = ?, 
-                    nombre_salaries = ?, type_contrat = ?, statut = ?, conditions_particulieres = ? 
-                    WHERE id = ?";
+            $affectedRows = updateRow('contrats', $dbData, "id = ?", [$id]);
             
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([
-                $data['entreprise_id'],
-                $data['date_debut'],
-                $data['date_fin'],
-                $data['montant_mensuel'],
-                $data['nombre_salaries'],
-                $data['type_contrat'],
-                $data['statut'],
-                $data['conditions_particulieres'],
-                $id
-            ]);
-            
-            logBusinessOperation($_SESSION['user_id'], 'contract_update', 
-                "Mise à jour contrat ID: $id, entreprise ID: {$data['entreprise_id']}, type: {$data['type_contrat']}");
-            
-            $message = "Le contrat a ete mis a jour avec succes";
+            if ($affectedRows !== false) {
+                logBusinessOperation($_SESSION['user_id'], 'contract_update', 
+                    "[SUCCESS] Mise à jour contrat ID: $id, entreprise ID: {$dbData['entreprise_id']}, type: {$dbData['type_contrat']}");
+                $message = "Le contrat a ete mis a jour avec succes";
+                return ['success' => true, 'message' => $message];
+            } else {
+                throw new Exception("La mise à jour a échoué ou aucune ligne n'a été modifiée.");
+            }
         } 
-        // cas de creation
         else {
-            $sql = "INSERT INTO contrats (entreprise_id, date_debut, date_fin, montant_mensuel, 
-                    nombre_salaries, type_contrat, statut, conditions_particulieres) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            $newId = insertRow('contrats', $dbData);
             
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([
-                $data['entreprise_id'],
-                $data['date_debut'],
-                $data['date_fin'],
-                $data['montant_mensuel'],
-                $data['nombre_salaries'],
-                $data['type_contrat'],
-                $data['statut'],
-                $data['conditions_particulieres']
-            ]);
-            
-            $newId = $pdo->lastInsertId();
-            logBusinessOperation($_SESSION['user_id'], 'contract_create', 
-                "Création contrat ID: $newId, entreprise ID: {$data['entreprise_id']}, type: {$data['type_contrat']}");
-            
-            $message = "Le contrat a ete cree avec succes";
+            if ($newId) {
+                logBusinessOperation($_SESSION['user_id'], 'contract_create', 
+                    "[SUCCESS] Création contrat ID: $newId, entreprise ID: {$dbData['entreprise_id']}, type: {$dbData['type_contrat']}");
+                $message = "Le contrat a ete cree avec succes";
+                return ['success' => true, 'message' => $message, 'newId' => $newId];
+            } else {
+                 throw new Exception("L'insertion a échoué.");
+            }
         }
         
-        return [
-            'success' => true,
-            'message' => $message
-        ];
-    } catch (PDOException $e) {
-        $errors[] = "Erreur de base de données : " . $e->getMessage();
-        
-        // log l'erreur pour l'administrateur
-        logSystemActivity('error', "Erreur BDD dans contracts/index.php : " . $e->getMessage());
+    } catch (Exception $e) {
+        $errorMessage = "Erreur de base de données : " . $e->getMessage();
+        $errors[] = $errorMessage;
+        logSystemActivity('error', "[ERROR] Erreur BDD dans contractsSave: " . $e->getMessage());
         
         return [
             'success' => false,
@@ -229,48 +178,44 @@ function contractsSave($data, $id = 0) {
 /**
  * Supprime un contrat de la base de données.
  * 
- * Vérifie l'existence du contrat identifié par l'ID fourni. Si le contrat n'existe pas,
- * l'opération est loguée comme une tentative échouée et un message d'erreur est retourné.
- * Sinon, le contrat est supprimé, l'opération est loguée, et un message de succès est renvoyé.
+ * Utilise deleteRow de db.php après vérification.
  *
  * @param int $id Identifiant unique du contrat à supprimer.
- * @return array Tableau associatif contenant une clé 'success' (booléen) indiquant le résultat et
- *               une clé 'message' (chaîne) décrivant le résultat de l'opération.
+ * @return array Résultat ['success' => bool, 'message' => string]
  */
 function contractsDelete($id) {
-    $pdo = getDbConnection();
-    
-    // verification que le contrat existe
-    $stmt = $pdo->prepare("SELECT id FROM contrats WHERE id = ?");
-    $stmt->execute([$id]);
-    
-    if ($stmt->rowCount() === 0) {
-        logBusinessOperation($_SESSION['user_id'], 'contract_delete_attempt', 
-            "Tentative échouée de suppression de contrat inexistant ID: $id");
-        return [
+
+    try {
+        $deletedRows = deleteRow('contrats', "id = ?", [$id]);
+        
+        if ($deletedRows > 0) {
+            logBusinessOperation($_SESSION['user_id'], 'contract_delete', 
+                "Suppression contrat ID: $id");
+            return [
+                'success' => true,
+                'message' => "Le contrat a ete supprime avec succes"
+            ];
+        } else {
+            logBusinessOperation($_SESSION['user_id'], 'contract_delete_attempt', 
+                "[ERROR] Tentative échouée de suppression contrat ID: $id - Contrat non trouvé?");
+            return [
+                'success' => false,
+                'message' => "Impossible de supprimer le contrat (non trouvé ou déjà supprimé)"
+            ];
+        }
+    } catch (Exception $e) {
+         logSystemActivity('error', "[ERROR] Erreur BDD dans contractsDelete: " . $e->getMessage());
+         return [
             'success' => false,
-            'message' => "Contrat non trouve"
-        ];
+            'message' => "Erreur de base de données lors de la suppression."
+         ];
     }
-    
-    // suppression du contrat
-    $stmt = $pdo->prepare("DELETE FROM contrats WHERE id = ?");
-    $stmt->execute([$id]);
-    
-    logBusinessOperation($_SESSION['user_id'], 'contract_delete', 
-        "Suppression contrat ID: $id");
-    
-    return [
-        'success' => true,
-        'message' => "Le contrat a ete supprime avec succes"
-    ];
 }
 
 /**
  * Met à jour le statut d'un contrat.
  *
- * Vérifie que le nouveau statut est l'une des valeurs autorisées ("actif", "inactif", "en_attente", "suspendu", "expire", "resilie"). 
- * Si le statut est invalide, la mise à jour n'est pas effectuée et l'opération est loguée comme une tentative échouée.
+ * Utilise updateRow de db.php.
  *
  * @param int $id Identifiant du contrat.
  * @param string $status Nouveau statut du contrat.
@@ -281,16 +226,22 @@ function contractsUpdateStatus($id, $status) {
     
     if (!in_array($status, $validStatuses)) {
         logBusinessOperation($_SESSION['user_id'], 'contract_status_update_attempt', 
-            "Tentative échouée de mise à jour de statut contrat ID: $id avec valeur invalide: $status");
+            "[ERROR] Tentative échouée de mise à jour de statut contrat ID: $id avec valeur invalide: $status");
         return false;
     }
     
-    $result = updateRow('contrats', ['statut' => $status], "id = $id");
+    $affectedRows = updateRow('contrats', ['statut' => $status], "id = ?", [$id]);
     
-    if ($result) {
+    if ($affectedRows > 0) { 
         logBusinessOperation($_SESSION['user_id'], 'contract_status_update', 
-            "Mise à jour statut contrat ID: $id - Nouveau statut: $status");
+            "[SUCCESS] Mise à jour statut contrat ID: $id - Nouveau statut: $status");
+        return true; 
+    } elseif ($affectedRows === 0) {
+         logBusinessOperation($_SESSION['user_id'], 'contract_status_update_noop', 
+            "[INFO] Mise à jour statut contrat ID: $id - Statut déjà {$status} ou contrat non trouvé?");
+        return false; 
+    } else { 
+        logSystemActivity('error', "[ERROR] Erreur lors de la mise à jour du statut du contrat ID: $id");
+        return false;
     }
-    
-    return $result;
 } 
