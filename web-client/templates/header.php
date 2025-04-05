@@ -202,7 +202,6 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
                                 <span class="d-none d-lg-inline-block ms-1"><?= $_SESSION['user_name'] ?? 'Mon compte' ?></span>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/profile.php"><i class="fas fa-user me-2"></i>Mon profil</a></li>
                                 <?php
                                 // Déterminer le lien des paramètres en fonction du rôle
                                 $settings_link = WEBCLIENT_URL . '/profile.php'; // Lien par défaut si pas de settings spécifique au rôle

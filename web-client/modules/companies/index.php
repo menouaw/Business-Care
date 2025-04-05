@@ -68,7 +68,7 @@ include_once __DIR__ . '/../../templates/header.php';
                             </div>
                         </div>
                         <div class="mt-3">
-                            <a href="liste-salaries.php" class="btn btn-sm btn-outline-primary">Voir tous</a>
+                            <a href="employees.php" class="btn btn-sm btn-outline-primary">Voir tous</a>
                         </div>
                     </div>
                 </div>
