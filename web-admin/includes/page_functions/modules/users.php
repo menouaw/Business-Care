@@ -9,9 +9,10 @@ require_once __DIR__ . '/../../init.php';
  * @param string $search Terme de recherche
  * @param int $roleId Filtre par role
  * @param int $entrepriseId Filtre par entreprise
+ * @param string $statut Filtre par statut ('actif', 'inactif', etc.)
  * @return array Donnees de pagination et liste des utilisateurs
  */
-function usersGetList($page = 1, $perPage = 10, $search = '', $roleId = 0, $entrepriseId = 0) {
+function usersGetList($page = 1, $perPage = 10, $search = '', $roleId = 0, $entrepriseId = 0, $statut = '') {
         $params = [];
     $conditions = [];
 
@@ -30,6 +31,11 @@ function usersGetList($page = 1, $perPage = 10, $search = '', $roleId = 0, $entr
     if ($entrepriseId > 0) {
         $conditions[] = "p.entreprise_id = ?";
         $params[] = (int)$entrepriseId;
+    }
+    
+    if ($statut && in_array($statut, ['actif', 'inactif', 'en_attente', 'suspendu'])) {
+        $conditions[] = "p.statut = ?";
+        $params[] = $statut;
     }
     
     $whereSql = !empty($conditions) ? "WHERE " . implode(' AND ', $conditions) : '';

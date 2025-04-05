@@ -148,10 +148,7 @@ include '../../templates/header.php';
                             <div class="col-md-6">
                                 <label for="statut" class="form-label">Statut <span class="text-danger">*</span></label>
                                 <select class="form-select" id="statut" name="statut" required>
-                                    <?php
-                                    $statuses = ['actif', 'inactif', 'en_attente', 'suspendu'];
-                                    foreach ($statuses as $status):
-                                    ?>
+                                    <?php foreach (USER_STATUSES as $status): ?>
                                         <option value="<?php echo $status; ?>" <?php echo (isset($formData['statut']) && $formData['statut'] === $status) ? 'selected' : ''; ?>>
                                             <?php echo ucfirst($status); ?>
                                         </option>

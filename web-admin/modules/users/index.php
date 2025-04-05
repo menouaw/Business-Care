@@ -4,16 +4,18 @@ require_once '../../includes/page_functions/modules/users.php';
 requireRole(ROLE_ADMIN);
 
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$search = isset($_GET['search']) ? $_GET['search'] : '';
+$search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $role = isset($_GET['role']) ? (int)$_GET['role'] : 0;
+$statut = isset($_GET['statut']) ? trim($_GET['statut']) : '';
 
-$result = usersGetList($page, 10, $search, $role);
+$possibleStatuses = USER_STATUSES;
+$result = usersGetList($page, 10, $search, $role, 0, $statut);
+$roles = usersGetRoles();
+
 $users = $result['users'];
 $totalPages = $result['totalPages'];
 $totalUsers = $result['totalItems'];
 $page = $result['currentPage'];
-
-$roles = usersGetRoles();
 
 $pageTitle = "Gestion des utilisateurs";
 include '../../templates/header.php';
@@ -37,25 +39,30 @@ include '../../templates/header.php';
             
             <div class="card mb-4">
                 <div class="card-body">
-                    <form action="" method="get" class="row g-3">
-                        <div class="col-md-6">
-                            <div class="input-group">
-                                <input type="text" class="form-control" name="search" value="<?php echo htmlspecialchars($search); ?>" placeholder="Rechercher des utilisateurs...">
-                                <button type="submit" class="btn btn-outline-secondary">
-                                    <i class="fas fa-search"></i>
-                                </button>
-                            </div>
+                    <form action="" method="get" class="row g-3 align-items-center">
+                        <div class="col-md-3">
+                            <input type="text" class="form-control form-control-sm" name="search" value="<?php echo htmlspecialchars($search); ?>" placeholder="Rechercher...">
                         </div>
-                        <div class="col-md-4">
-                            <select name="role" class="form-select">
+                        <div class="col-md-3">
+                            <select name="role" class="form-select form-select-sm">
                                 <option value="0">Tous les rôles</option>
                                 <?php foreach ($roles as $r): ?>
                                 <option value="<?php echo $r['id']; ?>" <?php echo $role == $r['id'] ? 'selected' : ''; ?>><?php echo htmlspecialchars($r['nom']); ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
-                        <div class="col-md-2">
-                            <a href="index.php" class="btn btn-outline-secondary w-100">Reinitialiser</a>
+                        <div class="col-md-3">
+                            <select name="statut" class="form-select form-select-sm">
+                                <option value="">Tous les statuts</option>
+                                <?php foreach (USER_STATUSES as $s): ?>
+                                <option value="<?php echo $s; ?>" <?php echo $statut == $s ? 'selected' : ''; ?>><?php echo ucfirst(htmlspecialchars($s)); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex">
+                            <button type="submit" class="btn btn-sm btn-primary w-100">
+                                <i class="fas fa-search"></i> Rechercher
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -119,7 +126,7 @@ include '../../templates/header.php';
                     <nav aria-label="Page navigation">
                         <ul class="pagination justify-content-center">
                             <li class="page-item <?php echo $page <= 1 ? 'disabled' : ''; ?>">
-                                <a class="page-link" href="?page=<?php echo $page - 1; ?>&search=<?php echo urlencode($search); ?>&role=<?php echo $role; ?>">Precedent</a>
+                                <a class="page-link" href="?page=<?php echo $page - 1; ?>&search=<?php echo urlencode($search); ?>&role=<?php echo $role; ?>&statut=<?php echo urlencode($statut); ?>">Precedent</a>
                             </li>
                             
                             <?php
@@ -129,12 +136,12 @@ include '../../templates/header.php';
                             for ($i = $startPage; $i <= $endPage; $i++):
                             ?>
                             <li class="page-item <?php echo $i == $page ? 'active' : ''; ?>">
-                                <a class="page-link" href="?page=<?php echo $i; ?>&search=<?php echo urlencode($search); ?>&role=<?php echo $role; ?>"><?php echo $i; ?></a>
+                                <a class="page-link" href="?page=<?php echo $i; ?>&search=<?php echo urlencode($search); ?>&role=<?php echo $role; ?>&statut=<?php echo urlencode($statut); ?>"><?php echo $i; ?></a>
                             </li>
                             <?php endfor; ?>
                             
                             <li class="page-item <?php echo $page >= $totalPages ? 'disabled' : ''; ?>">
-                                <a class="page-link" href="?page=<?php echo $page + 1; ?>&search=<?php echo urlencode($search); ?>&role=<?php echo $role; ?>">Next</a>
+                                <a class="page-link" href="?page=<?php echo $page + 1; ?>&search=<?php echo urlencode($search); ?>&role=<?php echo $role; ?>&statut=<?php echo urlencode($statut); ?>">Suivant</a>
                             </li>
                         </ul>
                     </nav>
