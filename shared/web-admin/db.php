@@ -9,7 +9,8 @@ require_once 'config.php';
  *
  * @return PDO La connexion PDO active.
  */
-function getDbConnection() {
+function getDbConnection()
+{
     static $pdo = null;
     if ($pdo === null) {
         $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
@@ -34,7 +35,8 @@ function getDbConnection() {
  * @return string Nom de table validé
  * @throws Exception Si le nom de table est invalide
  */
-function validateTableName($table) {
+function validateTableName($table)
+{
     if (!preg_match('/^[a-zA-Z0-9_]+$/', $table)) {
         throw new Exception("[FAILURE] Nom de table invalide");
     }
@@ -50,7 +52,8 @@ function validateTableName($table) {
  * @param array $params Valeurs à lier aux paramètres de la requête.
  * @return PDOStatement Instance de PDOStatement représentant le résultat de la requête.
  */
-function executeQuery($sql, $params = []) {
+function executeQuery($sql, $params = [])
+{
     try {
         $pdo = getDbConnection();
         $stmt = $pdo->prepare($sql);
@@ -72,15 +75,16 @@ function executeQuery($sql, $params = []) {
  * @param string $where Clause SQL optionnelle pour filtrer les enregistrements.
  * @return int Nombre d'enregistrements répondant aux critères.
  */
-function countTableRows($table, $where = '') {
+function countTableRows($table, $where = '')
+{
     $table = validateTableName($table);
-    
+
     $sql = "SELECT COUNT(*) FROM $table";
     $params = [];
     if ($where) {
         $sql .= " WHERE $where";
     }
-    
+
     $stmt = executeQuery($sql, $params);
     return $stmt->fetchColumn();
 }
@@ -100,9 +104,10 @@ function countTableRows($table, $where = '') {
  * @param int $offset (Optionnel) Position de départ pour la récupération des enregistrements.
  * @return array Tableau contenant l'ensemble des enregistrements récupérés.
  */
-function fetchAll($table, $where = '', $orderBy = '', $limit = 0, $offset = 0) {
+function fetchAll($table, $where = '', $orderBy = '', $limit = 0, $offset = 0)
+{
     $table = validateTableName($table);
-    
+
     $sql = "SELECT * FROM $table";
     if ($where) {
         $sql .= " WHERE $where";
@@ -116,7 +121,7 @@ function fetchAll($table, $where = '', $orderBy = '', $limit = 0, $offset = 0) {
             $sql .= " OFFSET $offset";
         }
     }
-    
+
     $stmt = executeQuery($sql);
     return $stmt->fetchAll();
 }
@@ -136,7 +141,7 @@ function fetchAll($table, $where = '', $orderBy = '', $limit = 0, $offset = 0) {
  */
 function fetchOne($table, $where, $orderBy = '', $params = []) {
     $table = validateTableName($table);
-    
+
     $sql = "SELECT * FROM $table WHERE $where";
     if ($orderBy) {
         $sql .= " ORDER BY $orderBy";
@@ -160,16 +165,17 @@ function fetchOne($table, $where, $orderBy = '', $params = []) {
  *
  * @throws Exception Si la validation du nom de la table échoue ou en cas d'erreur lors de l'exécution de la requête.
  */
-function insertRow($table, $data) {
+function insertRow($table, $data)
+{
     $table = validateTableName($table);
-    
+
     $fields = array_keys($data);
     $placeholders = array_map(function ($field) {
         return ":$field";
     }, $fields);
-    
+
     $sql = "INSERT INTO $table (" . implode(', ', $fields) . ") VALUES (" . implode(', ', $placeholders) . ")";
-    
+
     $stmt = executeQuery($sql, $data);
     return $stmt->rowCount() > 0 ? getDbConnection()->lastInsertId() : false;
 }
@@ -188,7 +194,8 @@ function insertRow($table, $data) {
  * @throws Exception Si le tableau $data est vide.
  * @throws PDOException Si une erreur survient lors de l'exécution de la requête.
  */
-function updateRow($table, $data, $where, $whereParams = []) {
+function updateRow($table, $data, $where, $whereParams = [])
+{
     $table = validateTableName($table);
     
     if (empty($data)) {
@@ -228,11 +235,12 @@ function updateRow($table, $data, $where, $whereParams = []) {
  * @param array $params Valeurs associées à la clause WHERE.
  * @return int Le nombre de lignes supprimées.
  */
-function deleteRow($table, $where, $params = []) {
+function deleteRow($table, $where, $params = [])
+{
     $table = validateTableName($table);
-    
+
     $sql = "DELETE FROM $table WHERE $where";
-    
+
     $stmt = executeQuery($sql, $params);
     return $stmt->rowCount();
 }
@@ -242,7 +250,8 @@ function deleteRow($table, $where, $params = []) {
  * 
  * @return void
  */
-function beginTransaction() {
+function beginTransaction()
+{
     getDbConnection()->beginTransaction();
 }
 
@@ -251,7 +260,8 @@ function beginTransaction() {
  * 
  * @return void
  */
-function commitTransaction() {
+function commitTransaction()
+{
     getDbConnection()->commit();
 }
 
@@ -260,6 +270,7 @@ function commitTransaction() {
  * 
  * @return void
  */
-function rollbackTransaction() {
+function rollbackTransaction()
+{
     getDbConnection()->rollBack();
-} 
+}

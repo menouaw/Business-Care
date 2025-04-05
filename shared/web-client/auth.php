@@ -1,7 +1,6 @@
 <?php
 // API pour l'authentification côté client
 require_once 'logging.php';
-require_once 'db.php';
 require_once 'functions.php';
 
 /**
@@ -17,11 +16,12 @@ require_once 'functions.php';
  * @param bool $rememberMe Indique si l'utilisateur doit être mémorisé pour une reconnexion automatique. Par défaut à false.
  * @return bool Retourne true si l'authentification réussit, sinon false.
  */
-function login($email, $password, $rememberMe = false) {
+function login($email, $password, $rememberMe = false)
+{
     $user = fetchOne('personnes', "email = '$email' AND statut = 'actif'");
-    
+
     if ($user && password_verify($password, $user['mot_de_passe'])) {
-        
+
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['user_name'] = $user['prenom'] . ' ' . $user['nom'];
         $_SESSION['user_email'] = $user['email'];
@@ -29,17 +29,17 @@ function login($email, $password, $rememberMe = false) {
         $_SESSION['user_entreprise'] = $user['entreprise_id'];
         $_SESSION['user_photo'] = $user['photo_url'];
         $_SESSION['last_activity'] = time();
-        
+
         // stocker les préférences utilisateur
         loadUserPreferences($user['id']);
-        
+
         if ($rememberMe) {
             $token = createRememberMeToken($user['id']);
             setcookie('remember_me', $token, time() + (30 * 24 * 60 * 60), '/', '', true, true);
         }
-        
+
         logSecurityEvent($user['id'], 'login', '[SUCCESS] Connexion réussie');
-        
+
         return true;
     } else {
         if ($user) {
@@ -60,20 +60,21 @@ function login($email, $password, $rememberMe = false) {
  *
  * @return bool Vrai si la déconnexion a été effectuée avec succès.
  */
-function logout() {
+function logout()
+{
     if (isset($_SESSION['user_id'])) {
         logSecurityEvent($_SESSION['user_id'], 'logout', '[SUCCESS] Utilisateur déconnecté');
     }
-    
+
     if (isset($_COOKIE['remember_me'])) {
         deleteRememberMeToken($_COOKIE['remember_me']);
         setcookie('remember_me', '', time() - 3600, '/', '', true, true);
     }
-    
+
     session_unset();
     session_destroy();
     session_start();
-    
+
     return true;
 }
 
@@ -87,22 +88,23 @@ function logout() {
  *
  * @return bool Retourne true si l'utilisateur est authentifié, false sinon.
  */
-function isAuthenticated() {
+function isAuthenticated()
+{
     if (isset($_SESSION['user_id'])) {
         if (time() - $_SESSION['last_activity'] > SESSION_LIFETIME) {
             logSystemActivity('session_timeout', "[FAILURE] Session expirée pour l'utilisateur ID: " . $_SESSION['user_id']);
             logout();
             return false;
         }
-        
+
         $_SESSION['last_activity'] = time();
         return true;
     }
-    
+
     if (isset($_COOKIE['remember_me'])) {
         return validateRememberMeToken($_COOKIE['remember_me']);
     }
-    
+
     return false;
 }
 
@@ -111,7 +113,8 @@ function isAuthenticated() {
  *
  * @return void
  */
-function requireAuthentication() {
+function requireAuthentication()
+{
     if (!isAuthenticated()) {
         $_SESSION['redirect_after_login'] = $_SERVER['REQUEST_URI'];
         redirectTo(WEBCLIENT_URL . '/connexion.php');
@@ -124,11 +127,12 @@ function requireAuthentication() {
  * @param int $requiredRole Identifiant du rôle requis
  * @return bool Retourne true si l'utilisateur est authentifié et a le rôle requis
  */
-function hasRole($requiredRole) {
+function hasRole($requiredRole)
+{
     if (!isAuthenticated()) {
         return false;
     }
-    
+
     return $_SESSION['user_role'] == $requiredRole;
 }
 
@@ -137,7 +141,8 @@ function hasRole($requiredRole) {
  *
  * @return bool Retourne true si l'utilisateur est un représentant d'entreprise
  */
-function isEntrepriseUser() {
+function isEntrepriseUser()
+{
     return hasRole(ROLE_ENTREPRISE);
 }
 
@@ -146,7 +151,8 @@ function isEntrepriseUser() {
  *
  * @return bool Retourne true si l'utilisateur est un salarié
  */
-function isSalarieUser() {
+function isSalarieUser()
+{
     return hasRole(ROLE_SALARIE);
 }
 
@@ -155,7 +161,8 @@ function isSalarieUser() {
  *
  * @return bool Retourne true si l'utilisateur est un prestataire
  */
-function isPrestataireUser() {
+function isPrestataireUser()
+{
     return hasRole(ROLE_PRESTATAIRE);
 }
 
@@ -170,9 +177,10 @@ function isPrestataireUser() {
  *
  * @return void
  */
-function requireRole($requiredRole) {
+function requireRole($requiredRole)
+{
     requireAuthentication();
-    
+
     if (!hasRole($requiredRole)) {
         flashMessage('[ACCESS DENIED] Vous n\'avez pas les permissions nécessaires', 'danger');
         redirectTo(WEBCLIENT_URL . '/index.php');
@@ -185,14 +193,15 @@ function requireRole($requiredRole) {
  * @param int|null $userId ID de l'utilisateur (utilise l'utilisateur courant si null)
  * @return array|false Informations de l'utilisateur ou false si non trouvé/authentifié
  */
-function getUserInfo($userId = null) {
+function getUserInfo($userId = null)
+{
     if ($userId === null) {
         if (!isAuthenticated()) {
             return false;
         }
         $userId = $_SESSION['user_id'];
     }
-    
+
     return fetchOne('personnes', "id = $userId");
 }
 
@@ -207,26 +216,27 @@ function getUserInfo($userId = null) {
  * @param string $email L'adresse email de l'utilisateur concerné.
  * @return bool Retourne true si la procédure a été initiée avec succès, false sinon.
  */
-function resetPassword($email) {
+function resetPassword($email)
+{
     $user = fetchOne('personnes', "email = '$email'");
-    
+
     if (!$user) {
         logSecurityEvent(null, 'password_reset', "[FAILURE] Tentative de réinitialisation pour email inexistant: $email", true);
         return false;
     }
-    
+
     $token = bin2hex(random_bytes(32));
     $expires = date('Y-m-d H:i:s', strtotime('+1 hour'));
-    
+
     updateRow('personnes', [
         'token' => $token,
         'expires' => $expires
     ], "id = {$user['id']}");
-    
+
     logSecurityEvent($user['id'], 'password_reset', '[SUCCESS] Demande de réinitialisation de mot de passe initiée');
-    
+
     // TODO: envoyer un email de reinitialisation de mot de passe avec lien contenant le token
-    
+
     return true;
 }
 
@@ -240,9 +250,10 @@ function resetPassword($email) {
  *
  * @return void
  */
-function loadUserPreferences($userId) {
+function loadUserPreferences($userId)
+{
     $result = fetchOne('preferences_utilisateurs', "personne_id = $userId");
-    
+
     if ($result) {
         $_SESSION['user_language'] = $result['langue'];
     }
@@ -257,19 +268,20 @@ function loadUserPreferences($userId) {
  * @param int $userId L'identifiant de l'utilisateur pour lequel générer le jeton.
  * @return string Le jeton généré.
  */
-function createRememberMeToken($userId) {
+function createRememberMeToken($userId)
+{
     $pdo = getDbConnection();
     $token = bin2hex(random_bytes(32));
     $expires = date('Y-m-d H:i:s', strtotime('+30 days'));
-    
+
     insertRow('remember_me_tokens', [
         'user_id' => $userId,
         'token' => $token,
         'expires_at' => $expires
     ]);
-    
+
     logSecurityEvent($userId, 'remember_token', '[SUCCESS] Création de jeton "Se souvenir de moi"');
-    
+
     return $token;
 }
 
@@ -279,9 +291,10 @@ function createRememberMeToken($userId) {
  * @param string $token Jeton à valider
  * @return bool Indique si le jeton est valide et l'authentification réussie
  */
-function validateRememberMeToken($token) {
+function validateRememberMeToken($token)
+{
     $result = fetchOne('remember_me_tokens', "token = '$token' AND expires_at > NOW()");
-    
+
     if ($result) {
         $user = getUserInfo($result['user_id']);
         if ($user) {
@@ -292,10 +305,10 @@ function validateRememberMeToken($token) {
             $_SESSION['user_entreprise'] = $user['entreprise_id'];
             $_SESSION['user_photo'] = $user['photo_url'];
             $_SESSION['last_activity'] = time();
-            
+
             // charger les préférences utilisateur
             loadUserPreferences($user['id']);
-            
+
             logSecurityEvent($user['id'], 'auto_login', '[SUCCESS] Connexion automatique via jeton "Se souvenir de moi"');
             return true;
         }
@@ -309,7 +322,8 @@ function validateRememberMeToken($token) {
  * @param string $token Jeton à supprimer
  * @return bool Indique si la suppression a réussi
  */
-function deleteRememberMeToken($token) {
+function deleteRememberMeToken($token)
+{
     $result = deleteRow('remember_me_tokens', "token = '$token'");
     return $result > 0;
-} 
+}
