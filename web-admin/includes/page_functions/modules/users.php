@@ -398,18 +398,3 @@ function usersDelete($id) {
          ];
     }
 } 
-
-/**
- * Récupère les détails d'un utilisateur spécifique par son ID.
- *
- * @param int $id Identifiant de l'utilisateur.
- * @return array|false Tableau des informations de l'utilisateur ou false si non trouvé.
- */
-function usersGetUserById($id) {
-    $sql = "SELECT p.*, r.nom as role_name, e.nom as entreprise_nom
-            FROM personnes p
-            LEFT JOIN roles r ON p.role_id = r.id
-            LEFT JOIN entreprises e ON p.entreprise_id = e.id
-            WHERE p.id = ? LIMIT 1";
-    return executeQuery($sql, [$id])->fetch();
-} 
