@@ -33,7 +33,7 @@ function usersGetList($page = 1, $perPage = 10, $search = '', $roleId = 0, $entr
         $params[] = (int)$entrepriseId;
     }
     
-    if ($statut && in_array($statut, ['actif', 'inactif', 'en_attente', 'suspendu'])) {
+    if ($statut && in_array($statut, USER_STATUSES)) {
         $conditions[] = "p.statut = ?";
         $params[] = $statut;
     }
