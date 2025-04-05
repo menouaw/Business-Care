@@ -94,7 +94,7 @@ if ($contractId > 0) {
         <!-- Services Inclus -->
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-white">
-                <h5 class="mb-0">Services inclus</h5>
+                <h5 class="mb-0">Prestations incluses</h5>
             </div>
             <div class="card-body">
                 <?php if (!empty($contract['services'])):
@@ -124,7 +124,7 @@ if ($contractId > 0) {
                     </div>
                 <?php else:
                 ?>
-                    <p class="text-muted text-center my-3">Aucun service spécifique n'est listé pour ce contrat.</p>
+                    <p class="text-muted text-center my-3">Aucune prestation spécifique n'est listée pour ce contrat.</p>
                 <?php endif; ?>
             </div>
         </div>
@@ -134,10 +134,8 @@ if ($contractId > 0) {
     </main>
 <?php
 
-    // Footer
     include_once __DIR__ . '/../../templates/footer.php';
 
-    // Fin script vue détail
     exit;
 } else {
 
@@ -153,10 +151,8 @@ if ($contractId > 0) {
     $contrats = $contractsData['contracts'];
     $mainPaginationInfo = $contractsData['pagination']; // Récupérer infos
 
-    // Construire le bon URL Pattern pour la pagination principale
     $mainUrlPattern = "?status=" . urlencode($filter_status) . "&page={page}";
 
-    // Préparer les données pour renderPagination (principale)
     $mainPaginationDataForRender = [
         'currentPage' => $mainPaginationInfo['current'],
         'totalPages' => $mainPaginationInfo['totalPages'],
@@ -164,19 +160,15 @@ if ($contractId > 0) {
         'perPage' => $mainPaginationInfo['limit']
     ];
 
-    // Générer le HTML de pagination correct pour la liste principale
     $mainPaginationHtmlCorrected = renderPagination($mainPaginationDataForRender, $mainUrlPattern);
 
-    // Récupérer l'historique (contrats expirés et résiliés) AVEC pagination
     $historyLimit = 5; // Limite à 5
     $historyContractsData = getCompanyContracts($entrepriseId, 'history', $currentHistoryPage, $historyLimit);
     $historyContracts = $historyContractsData['contracts'];
     $historyPaginationInfo = $historyContractsData['pagination']; // Récupérer juste les infos
 
-    // Construire le bon URL Pattern pour la pagination de l'historique
     $historyUrlPattern = "?status=" . urlencode($filter_status) . "&hpage={page}";
 
-    // Préparer les données pour renderPagination (pour l'historique)
     $historyPaginationDataForRender = [
         'currentPage' => $historyPaginationInfo['current'],
         'totalPages' => $historyPaginationInfo['totalPages'],
@@ -184,10 +176,8 @@ if ($contractId > 0) {
         'perPage' => $historyPaginationInfo['limit']
     ];
 
-    // Générer le HTML de pagination correct pour l'historique
     $historyPaginationHtmlCorrected = renderPagination($historyPaginationDataForRender, $historyUrlPattern);
 
-    // Assurer le formatage pour l'historique
     foreach ($historyContracts as &$hist) { // Utiliser $historyContracts directement
         if (!isset($hist['reference'])) $hist['reference'] = 'CT-' . str_pad($hist['id'], 6, '0', STR_PAD_LEFT);
         if (!isset($hist['date_debut_formatee']) && isset($hist['date_debut'])) $hist['date_debut_formatee'] = formatDate($hist['date_debut'], 'd/m/Y');
@@ -269,13 +259,12 @@ if ($contractId > 0) {
                             </tbody>
                         </table>
                     </div>
-                    <?= $mainPaginationHtmlCorrected // Afficher les liens de pagination pour la liste principale 
+                    <?= $mainPaginationHtmlCorrected 
                     ?>
                 <?php endif; ?>
             </div>
         </div>
 
-        <!-- Historique des Contrats Précédents (Expirés/Résiliés) -->
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-header bg-white">
                 <h5 class="mb-0">Historique des contrats précédents</h5>

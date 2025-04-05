@@ -177,4 +177,6 @@ INSERT INTO notifications (personne_id, titre, message, type, lien, lu, date_lec
 (10, 'Nouvelle evaluation', 'Vous avez reçu une nouvelle evaluation', 'info', '/evaluations/10', true, '2024-03-26 15:30:00');
 
 INSERT INTO contrats_prestations (contrat_id, prestation_id) VALUES
-(1, 10); 
+(10, 10),
+(11, 1),
+(12, 2);
