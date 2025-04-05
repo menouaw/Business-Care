@@ -116,7 +116,7 @@ include_once __DIR__ . '/../../templates/header.php';
                             </div>
                             <div>
                                 <h6 class="card-subtitle text-muted mb-1">Factures</h6>
-                                <h2 class="card-title mb-0"><?= count($factures) ?></h2>
+                                <h2 class="card-title mb-0"><?= count($factures['invoices']) ?></h2>
                             </div>
                         </div>
                         <div class="mt-3">
@@ -133,7 +133,7 @@ include_once __DIR__ . '/../../templates/header.php';
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0">Contrats actifs</h5>
-                        <a href="contrats.php" class="btn btn-sm btn-outline-primary">Tous les contrats</a>
+                        <a href="contracts.php" class="btn btn-sm btn-outline-primary">Tous les contrats</a>
                     </div>
                     <div class="card-body">
                         <?php if (empty($contrats)): ?>
@@ -150,7 +150,7 @@ include_once __DIR__ . '/../../templates/header.php';
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <?php foreach ($contrats as $contrat): ?>
+                                        <?php foreach ($contrats['contracts'] as $contrat): ?>
                                             <tr>
                                                 <td><?= ucfirst($contrat['type_contrat']) ?></td>
                                                 <td><?= formatDate($contrat['date_debut'], 'd/m/Y') ?></td>
@@ -171,10 +171,10 @@ include_once __DIR__ . '/../../templates/header.php';
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0">Dernières factures</h5>
-                        <a href="factures.php" class="btn btn-sm btn-outline-primary">Toutes les factures</a>
+                        <a href="invoices.php" class="btn btn-sm btn-outline-primary">Toutes les factures</a>
                     </div>
                     <div class="card-body">
-                        <?php if (empty($factures)): ?>
+                        <?php if (empty($factures['invoices'])): ?>
                             <p class="text-center text-muted my-5">Aucune facture disponible</p>
                         <?php else: ?>
                             <div class="table-responsive">
@@ -188,7 +188,7 @@ include_once __DIR__ . '/../../templates/header.php';
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <?php foreach (array_slice($factures, 0, 5) as $facture): ?>
+                                        <?php foreach (array_slice($factures['invoices'], 0, 5) as $facture): ?>
                                             <tr>
                                                 <td><?= $facture['reference'] ?? $facture['numero_facture'] ?? 'N/A' ?></td>
                                                 <td><?= $facture['date_emission_formatee'] ?? formatDate($facture['date_emission'], 'd/m/Y') ?></td>

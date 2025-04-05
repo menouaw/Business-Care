@@ -915,88 +915,178 @@ function getCompanyRecentActivity($company_id, $limit = 10)
 }
 
 /**
- * Récupère les factures d'une entreprise
+ * Récupère les factures d'une entreprise avec pagination et filtres de date.
  * 
  * @param int $company_id identifiant de l'entreprise
+ * @param int $page Numéro de la page actuelle
+ * @param int $limit Nombre d'éléments par page
  * @param string|null $start_date date de début (format Y-m-d)
  * @param string|null $end_date date de fin (format Y-m-d)
- * @return array liste des factures
+ * @param string|array|null $status Filtre par statut de facture (string ou array)
+ * @return array liste des factures, informations de pagination et HTML de pagination
  */
-function getCompanyInvoices($company_id, $start_date = null, $end_date = null)
+function getCompanyInvoices($company_id, $page = 1, $limit = 20, $start_date = null, $end_date = null, $status = null)
 {
-    // Validation de l'ID
+    // Validation de l'ID et des paramètres de pagination/date/statut
     $company_id = filter_var(sanitizeInput($company_id), FILTER_VALIDATE_INT);
+    $page = max(1, (int)sanitizeInput($page));
+    $limit = max(1, (int)sanitizeInput($limit));
+    $start_date = $start_date ? sanitizeInput($start_date) : null;
+    $end_date = $end_date ? sanitizeInput($end_date) : null;
+    $status = $status ? sanitizeInput($status) : null;
+
     if (!$company_id) {
         flashMessage("Identifiant d'entreprise invalide", "danger");
-        return [];
+        return [
+            'invoices' => [],
+            'pagination' => [
+                'current' => 1,
+                'limit' => $limit,
+                'total' => 0,
+                'totalPages' => 0
+            ],
+            'pagination_html' => ''
+        ];
     }
 
     try {
-        // Construction de la requête de base utilisant les colonnes existantes de 'factures'
+        // Construction de la clause WHERE et des paramètres pour le comptage et la sélection
+        $where = "f.entreprise_id = :company_id";
+        $params = ['company_id' => $company_id];
+        $countParams = ['company_id' => $company_id];
+        $urlParams = []; // Pour l'URL de pagination
+
+        // Filtre par date de début
+        if ($start_date) {
+            $where .= " AND f.date_emission >= :start_date";
+            $startDateSql = date('Y-m-d', strtotime($start_date));
+            $params['start_date'] = $startDateSql;
+            $countParams['start_date'] = $startDateSql;
+            $urlParams['start_date'] = $start_date;
+        }
+
+        // Filtre par date de fin
+        if ($end_date) {
+            $where .= " AND f.date_emission <= :end_date";
+            $endDateSql = date('Y-m-d', strtotime($end_date));
+            $params['end_date'] = $endDateSql;
+            $countParams['end_date'] = $endDateSql;
+            $urlParams['end_date'] = $end_date;
+        }
+
+        // Filtre par statut(s)
+        if ($status) {
+            $allowed_statuses = ['en_attente', 'payee', 'annulee', 'retard', 'impayee'];
+
+            if (is_array($status)) {
+                // Filtrer pour ne garder que les statuts autorisés
+                $valid_statuses = array_intersect($status, $allowed_statuses);
+                if (!empty($valid_statuses)) {
+                    $placeholders = [];
+                    $statusParams = [];
+                    foreach ($valid_statuses as $index => $st) {
+                        $key = "status_" . $index;
+                        $placeholders[] = ":" . $key;
+                        $statusParams[$key] = $st;
+                    }
+                    $where .= " AND f.statut IN (" . implode(', ', $placeholders) . ")";
+                    $params = array_merge($params, $statusParams);
+                    $countParams = array_merge($countParams, $statusParams);
+                    // Pour l'URL, on utilise la notation status[]=...
+                    $urlParams['status'] = $valid_statuses;
+                }
+            } elseif (is_string($status) && in_array($status, $allowed_statuses)) {
+                // Cas où un seul statut est passé en string
+                $where .= " AND f.statut = :status";
+                $params['status'] = $status;
+                $countParams['status'] = $status;
+                $urlParams['status'] = $status;
+            }
+        }
+
+        // 1. Compter le total des factures
+        $countQuery = "SELECT COUNT(f.id) as total FROM factures f WHERE " . $where;
+        $totalResult = executeQuery($countQuery, $countParams)->fetch();
+        $total = $totalResult['total'] ?? 0;
+        $totalPages = ceil($total / $limit);
+        // Ajuster la page si elle dépasse
+        $page = max(1, min($page, $totalPages > 0 ? $totalPages : 1));
+        $offset = ($page - 1) * $limit;
+
+        // 2. Récupérer les factures pour la page actuelle
         $query = "SELECT f.id, f.numero_facture, f.date_emission, f.date_echeance,
                 f.montant_ht, f.montant_total, f.statut, f.devis_id
                 FROM factures f
-                WHERE f.entreprise_id = :company_id"; // Filtrer par entreprise_id dans factures
+                WHERE " . $where . "
+                ORDER BY f.date_emission DESC
+                LIMIT :limit OFFSET :offset";
 
-        $params = [':company_id' => $company_id];
-
-        // Ajout des filtres de date si spécifiés
-        if ($start_date) {
-            $query .= " AND f.date_emission >= :start_date";
-            // Formater la date pour SQL
-            $params[':start_date'] = date('Y-m-d', strtotime($start_date));
-        }
-
-        if ($end_date) {
-            $query .= " AND f.date_emission <= :end_date";
-            // Formater la date pour SQL
-            $params[':end_date'] = date('Y-m-d', strtotime($end_date));
-        }
-
-        $query .= " ORDER BY f.date_emission DESC";
+        $params[':limit'] = $limit;
+        $params[':offset'] = $offset;
 
         $invoices = executeQuery($query, $params)->fetchAll();
 
-        // Formater les dates et les montants pour l'affichage
+        // 3. Formater les données
         foreach ($invoices as &$invoice) {
-            // On ne peut pas récupérer la référence du contrat directement ici
-            // $invoice['contrat_reference'] = '...';
-
-            // Si on veut lier au devis (si pertinent)
             if ($invoice['devis_id']) {
                 $invoice['devis_reference'] = 'DV-' . str_pad($invoice['devis_id'], 6, '0', STR_PAD_LEFT);
             } else {
                 $invoice['devis_reference'] = 'N/A';
             }
-
-
-            // Formater les dates
             if (isset($invoice['date_emission'])) {
                 $invoice['date_emission_formatee'] = formatDate($invoice['date_emission'], 'd/m/Y');
             }
             if (isset($invoice['date_echeance'])) {
                 $invoice['date_echeance_formatee'] = formatDate($invoice['date_echeance'], 'd/m/Y');
             }
-
-            // Formater les montants
             if (isset($invoice['montant_ht'])) {
                 $invoice['montant_ht_formate'] = formatMoney($invoice['montant_ht']);
             }
             if (isset($invoice['montant_total'])) {
                 $invoice['montant_total_formate'] = formatMoney($invoice['montant_total']);
             }
-
-            // Ajouter le badge de statut
             if (isset($invoice['statut'])) {
                 $invoice['statut_badge'] = getStatusBadge($invoice['statut']);
             }
         }
+        unset($invoice); // Détacher la référence
 
-        return $invoices;
+        // 4. Préparer les données de pagination HTML
+        $paginationData = [
+            'currentPage' => $page,
+            'totalPages' => $totalPages,
+            'totalItems' => $total,
+            'perPage' => $limit
+        ];
+        $urlPattern = "?page={page}";
+        if (!empty($urlParams)) {
+            $urlPattern .= '&' . http_build_query($urlParams);
+        }
+
+        // 5. Retourner les résultats
+        return [
+            'invoices' => $invoices,
+            'pagination' => [
+                'current' => $page,
+                'limit' => $limit,
+                'total' => $total,
+                'totalPages' => $totalPages
+            ],
+            'pagination_html' => renderPagination($paginationData, $urlPattern)
+        ];
     } catch (Exception $e) {
         logSystemActivity('error', "Erreur récupération factures: " . $e->getMessage());
         flashMessage("Une erreur est survenue lors de la récupération des factures", "danger");
-        return [];
+        return [
+            'invoices' => [],
+            'pagination' => [
+                'current' => 1,
+                'limit' => $limit,
+                'total' => 0,
+                'totalPages' => 0
+            ],
+            'pagination_html' => ''
+        ];
     }
 }
 
@@ -1506,5 +1596,77 @@ function notifyAdminsNewQuoteRequest($devisId, $entrepriseId, $detailsMessage = 
         logSystemActivity('info', "Notification envoyée aux admins pour devis #$devisId");
     } catch (Exception $e) {
         logSystemActivity('error', "Erreur notification admin pour devis #$devisId: " . $e->getMessage());
+    }
+}
+
+/**
+ * Récupère les détails d'une facture spécifique pour une entreprise donnée.
+ * Vérifie que la facture appartient bien à l'entreprise.
+ *
+ * @param int $company_id ID de l'entreprise connectée.
+ * @param int $invoice_id ID de la facture demandée.
+ * @return array|false Détails de la facture ou false si non trouvée ou accès refusé.
+ */
+function getInvoiceDetailsForCompany($company_id, $invoice_id)
+{
+    // Validation des IDs
+    $company_id = filter_var(sanitizeInput($company_id), FILTER_VALIDATE_INT);
+    $invoice_id = filter_var(sanitizeInput($invoice_id), FILTER_VALIDATE_INT);
+
+    if (!$company_id || !$invoice_id) {
+        flashMessage("Identifiants invalides.", "danger");
+        return false;
+    }
+
+    try {
+        // Requête pour récupérer la facture et les informations de l'entreprise associée
+        $query = "SELECT f.*, 
+                       e.nom AS entreprise_nom, e.siret AS entreprise_siret, 
+                       e.adresse AS entreprise_adresse, e.code_postal AS entreprise_code_postal, e.ville AS entreprise_ville
+                FROM factures f
+                JOIN entreprises e ON f.entreprise_id = e.id
+                WHERE f.id = :invoice_id AND f.entreprise_id = :company_id";
+
+        $invoice = executeQuery($query, [
+            ':invoice_id' => $invoice_id,
+            ':company_id' => $company_id
+        ])->fetch(PDO::FETCH_ASSOC);
+
+        if (!$invoice) {
+            // Soit la facture n'existe pas, soit elle n'appartient pas à cette entreprise
+            flashMessage("Facture non trouvée ou accès non autorisé.", "warning");
+            return false;
+        }
+
+        // Formater les données pour l'affichage
+        $invoice['numero_facture_complet'] = $invoice['numero_facture'] ?? ('INV-' . str_pad($invoice['id'], 6, '0', STR_PAD_LEFT));
+        if (isset($invoice['date_emission'])) {
+            $invoice['date_emission_formatee'] = formatDate($invoice['date_emission'], 'd/m/Y');
+        }
+        if (isset($invoice['date_echeance'])) {
+            $invoice['date_echeance_formatee'] = formatDate($invoice['date_echeance'], 'd/m/Y');
+        }
+        if (isset($invoice['montant_ht'])) {
+            $invoice['montant_ht_formate'] = formatMoney($invoice['montant_ht']);
+        }
+        if (isset($invoice['montant_total'])) {
+            $invoice['montant_total_formate'] = formatMoney($invoice['montant_total']);
+        }
+        if (isset($invoice['statut'])) {
+            $invoice['statut_badge'] = getStatusBadge($invoice['statut']);
+        }
+        if (isset($invoice['tva'])) {
+            $invoice['tva_formatee'] = $invoice['tva'] . '%'; // Simple formatage du pourcentage
+        }
+
+        // TODO: Si la structure le permettait, on récupérerait les lignes de la facture ici.
+        // $invoice['lignes'] = getInvoiceLines($invoice_id);
+        $invoice['lignes'] = []; // Placeholder
+
+        return $invoice;
+    } catch (Exception $e) {
+        logSystemActivity('error', "Erreur récupération détail facture #$invoice_id pour entreprise #$company_id: " . $e->getMessage());
+        flashMessage("Une erreur est survenue lors de la récupération des détails de la facture.", "danger");
+        return false;
     }
 }
