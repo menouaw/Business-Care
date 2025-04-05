@@ -131,10 +131,22 @@ include_once __DIR__ . '/../../templates/header.php';
 ?>
 
 <main class="container py-4">
-    <h1 class="mb-4">Paramètres</h1>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">Paramètres</h1>
+        <a href="index.php" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Retour
+        </a>
+    </div>
 
     <?php // displayFlashMessages(); // Supprimé car géré par header.php 
     ?>
+
+    <style>
+        /* Masquer le bouton "Retour en haut" spécifiquement sur cette page */
+        #back-to-top {
+            display: none !important;
+        }
+    </style>
 
     <div class="row g-4">
         <!-- Section Informations Entreprise -->

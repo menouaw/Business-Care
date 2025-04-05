@@ -111,7 +111,7 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
                                     <li>
                                         <hr class="dropdown-divider">
                                     </li>
-                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/companies/devis.php">Demander un devis</a></li>
+                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/companies/quotes.php">Demander un devis</a></li>
                                 </ul>
                             </li>
                         <?php elseif ($userRole === 'salarie'): ?>
