@@ -131,9 +131,10 @@ function fetchAll($table, $where = '', $orderBy = '', $limit = 0, $offset = 0) {
  * @param string $table Nom de la table concernée.
  * @param string $where Condition SQL pour filtrer les enregistrements.
  * @param string $orderBy Clause SQL pour ordonner les résultats (facultative).
+ * @param array $params Paramètres à lier à la clause WHERE.
  * @return array|false Tableau associatif représentant l'enregistrement trouvé ou false si aucun enregistrement ne correspond.
  */
-function fetchOne($table, $where, $orderBy = '') {
+function fetchOne($table, $where, $orderBy = '', $params = []) {
     $table = validateTableName($table);
     
     $sql = "SELECT * FROM $table WHERE $where";
@@ -142,7 +143,7 @@ function fetchOne($table, $where, $orderBy = '') {
     }
     $sql .= " LIMIT 1";
     
-    $stmt = executeQuery($sql);
+    $stmt = executeQuery($sql, $params);
     return $stmt->fetch();
 }
 
