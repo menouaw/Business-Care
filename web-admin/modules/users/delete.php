@@ -43,7 +43,7 @@ if ($userId <= 0) {
     redirectTo(WEBADMIN_URL . '/modules/users/index.php');
 }
 
-$user = usersGetUserById($userId);
+$user = usersGetDetails($userId);
 if (!$user) {
     flashMessage('Utilisateur non trouvé.', 'warning');
     redirectTo(WEBADMIN_URL . '/modules/users/index.php');
