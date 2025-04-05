@@ -144,7 +144,7 @@ include '../../templates/header.php';
                                 <label for="statut" class="form-label">Statut <span class="text-danger">*</span></label>
                                 <select class="form-select" id="statut" name="statut" required>
                                     <?php foreach (USER_STATUSES as $status): ?>
-                                        <option value="<?php echo $status; ?>" <?php echo (isset($formData['statut']) && $formData['statut'] === $status) ? 'selected' : ($status === 'actif'); ?>
+                                        <option value="<?php echo $status; ?>" <?php echo ($formData['statut'] === $status) ? 'selected' : ''; ?>>
                                             <?php echo ucfirst($status); ?>
                                         </option>
                                     <?php endforeach; ?>

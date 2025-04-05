@@ -43,18 +43,13 @@ include '../../templates/header.php';
                              <i class="fas fa-trash"></i> Supprimer
                          </button>
                     </form>
-                    <?php
-                    $companyButtonAdded = false;
-                    if (($user['role_id'] == ROLE_ENTREPRISE || $user['role_id'] == ROLE_SALARIE) && isset($user['entreprise_id'])):
-                        $companyButtonAdded = true;
-                    ?>
+                    <?php if (isset($user['entreprise_id'])): ?>
                         <a href="<?php echo WEBADMIN_URL; ?>/modules/entreprises/view.php?id=<?php echo $user['entreprise_id']; ?>" class="btn btn-sm btn-secondary ms-2" data-bs-toggle="tooltip" title="Voir le Profil de l'Entreprise Associée">
                             <i class="fas fa-building"></i> Voir Entreprise
                         </a>
-                    <?php endif; ?>
-                    <?php if ($user['role_id'] == ROLE_ENTREPRISE && isset($user['entreprise_id'])): 
-                    ?>
-                        <div class="btn-group <?php echo !$companyButtonAdded ? 'ms-2' : ''; ?>" role="group" aria-label="Company Quick Actions">
+                        
+                        <?php if ($user['role_id'] == ROLE_ENTREPRISE): ?>
+                        <div class="btn-group" role="group" aria-label="Company Quick Actions">
                             <a href="<?php echo WEBADMIN_URL; ?>/modules/entreprises/edit.php?id=<?php echo $user['entreprise_id']; ?>" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" title="Modifier l'Entreprise Associée">
                                 <i class="fas fa-pencil-alt"></i>
                             </a>
@@ -62,6 +57,7 @@ include '../../templates/header.php';
                                 <i class="fas fa-plus-circle"></i>
                             </a>
                         </div>
+                        <?php endif; ?>
                     <?php endif; ?>
                      <a href="index.php" class="btn btn-sm btn-outline-secondary ms-2" data-bs-toggle="tooltip" title="Retour à la liste des utilisateurs">
                         <i class="fas fa-arrow-left"></i> Retour

@@ -42,7 +42,7 @@ function usersGetList($page = 1, $perPage = 10, $search = '', $roleId = 0, $entr
         $params[] = (int)$entrepriseId;
     }
     
-    if ($statut && in_array($statut, ['actif', 'inactif', 'en_attente', 'suspendu'])) {
+    if ($statut && in_array($statut, USER_STATUSES)) {
         $conditions[] = "p.statut = ?";
         $params[] = $statut;
     }
@@ -294,7 +294,7 @@ function usersSave($data, $id = 0) {
             $affectedRows = updateRow('personnes', $dbData, "id = :where_id", ['where_id' => $id]);
             
             if ($affectedRows !== false) { 
-                 logBusinessOperation($_SESSION['user_id'], 'user_update', 
+                 logBusinessOperation($_SESSION['user_id'], ':user_update', 
                     "[SUCCESS] Mise à jour utilisateur: {$dbData['prenom']} {$dbData['nom']} (ID: $id), role: {$dbData['role_id']}");
                 if ($passwordChanged && $id != ($_SESSION['user_id'] ?? 0)) { 
                      logSecurityEvent($_SESSION['user_id'], 'password_change_admin', 
