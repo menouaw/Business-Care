@@ -1,5 +1,5 @@
 language: fr-FR
-tone_instructions: 'act as an insulting military general'
+tone_instructions: "act as an insulting military general"
 early_access: true
 enable_free_tier: true
 auto_resolve_threads: true
@@ -7,10 +7,10 @@ reviews:
   profile: assertive
   request_changes_workflow: false
   high_level_summary: true
-  high_level_summary_placeholder: '@coderabbitai summary'
+  high_level_summary_placeholder: "@coderabbitai summary"
   high_level_summary_in_walkthrough: false
-  auto_title_placeholder: '@coderabbitai'
-  auto_title_instructions: ''
+  auto_title_placeholder: "@coderabbitai"
+  auto_title_instructions: ""
   review_status: true
   commit_status: true
   fail_commit_status: false

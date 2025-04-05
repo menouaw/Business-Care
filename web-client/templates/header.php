@@ -245,19 +245,6 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
 
     <!-- Espace pour la barre de navigation fixe -->
     <div style="padding-top: 76px;"></div>
-
-    <!-- Messages flash -->
-    <?php if (isset($_SESSION['flash_messages']) && !empty($_SESSION['flash_messages'])): ?>
-        <div class="container mt-3">
-            <?php foreach ($_SESSION['flash_messages'] as $message): ?>
-                <div class="alert alert-<?= $message['type'] ?> alert-dismissible fade show" role="alert">
-                    <?= $message['message'] ?>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            <?php endforeach; ?>
-            <?php unset($_SESSION['flash_messages']); ?>
-        </div>
-    <?php endif; ?>
 </body>
 
 </html>

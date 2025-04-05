@@ -1,5 +1,9 @@
 <?php
 
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 /**
  * Espace Entreprise - Demande de Devis (Module Entreprise)
  *
@@ -35,16 +39,28 @@ $entrepriseId = $_SESSION['user_entreprise'];
 // Récupérer l'offre pré-sélectionnée depuis l'URL, si elle existe
 $preselectedOfferKey = isset($_GET['offer']) ? trim($_GET['offer']) : null;
 
-// Récupérer la liste des types de contrats ou services disponibles pour un devis
-// (Simplifié ici, pourrait être récupéré depuis la DB)
-$available_services = [
-    'starter' => 'Starter Pack - Pour les petites équipes (jusqu\'à 30 salariés)',
-    'basic' => 'Basic Pack - Solution équilibrée (jusqu\'à 250 salariés)',
-    'premium' => 'Premium Pack - Offre complète pour grandes entreprises (251+ salariés)',
-    'consultation' => 'Consultation Ponctuelle - Besoin spécifique hors contrat',
-    'evenement' => 'Événement Sur Mesure - Organisation d\'un événement spécifique'
-];
+// Récupérer la liste des types de contrats ou services disponibles pour un devis depuis la DB
+$available_services = [];
+$query = "SELECT id, nom, description FROM services WHERE actif = 1 ORDER BY ordre";
 
+// Utiliser executeQuery pour exécuter la requête spécifique, puis fetchAll() sur le statement
+try {
+    $stmt = executeQuery($query);
+    $servicesResult = $stmt->fetchAll();
+} catch (Exception $e) {
+    // Gérer l'erreur (par exemple, loguer et afficher un message générique)
+    error_log("Erreur lors de la récupération des services: " . $e->getMessage());
+    flashMessage("Une erreur est survenue lors de la récupération des services disponibles. Veuillez réessayer plus tard.", "danger");
+    $servicesResult = []; // Assurer que $servicesResult est un tableau vide pour éviter des erreurs plus loin
+}
+
+if ($servicesResult) {
+    foreach ($servicesResult as $service) {
+        // Utiliser l'ID comme clé et une combinaison nom/description comme valeur
+        $available_services[$service['id']] = $service['nom'] . (isset($service['description']) && !empty($service['description']) ? ' - ' . $service['description'] : '');
+    }
+}
+// S'il n'y a pas de services actifs, $available_services restera vide, ce qui est géré dans le foreach plus bas.
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $formData = getFormData();
@@ -75,7 +91,7 @@ include_once __DIR__ . '/../../templates/header.php';
         </a>
     </div>
 
-    <?php 
+    <?php
     ?>
 
     <div class="card border-0 shadow-sm">
@@ -94,7 +110,7 @@ include_once __DIR__ . '/../../templates/header.php';
                             <?php foreach ($available_services as $key => $description): ?>
                                 <?php
                                 $isSelected = false;
-                                if ($preselectedOfferKey === $key) {
+                                if ($preselectedOfferKey === $key) { // Sélection via URL
                                     $isSelected = true;
                                 } elseif (isset($submittedData['service_souhaite']) && $submittedData['service_souhaite'] == $key) { // Sélection via soumission échouée
                                     $isSelected = true;

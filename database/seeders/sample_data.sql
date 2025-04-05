@@ -379,37 +379,10 @@ INSERT INTO contrats_prestations (contrat_id, prestation_id) VALUES
 (10, 10),
 (11, 1),
 (12, 2);
-(12, 'Nouveau Rendez-vous', 'Votre rendez-vous a ete confirme', 'success', '/rendez-vous/1', false, NULL),
-(13, 'Paiement Reçu', 'Votre paiement a ete reçu avec succes', 'success', '/factures/1', true, '2024-03-17 10:30:00'),
-(14, 'Nouvel evenement', 'Un nouvel evenement est disponible', 'info', '/evenements/2', false, NULL),
-(15, 'Rappel de rendez-vous', 'Votre rendez-vous est prevu demain', 'warning', '/rendez-vous/3', false, NULL),
-(16, 'Nouvelle evaluation', 'Vous avez reçu une nouvelle evaluation', 'info', '/evaluations/5', true, '2024-03-25 14:45:00'),
-(17, 'Nouveau Rendez-vous', 'Votre rendez-vous a ete confirme', 'success', '/rendez-vous/6', false, NULL),
-(18, 'Paiement Reçu', 'Votre paiement a ete reçu avec succes', 'success', '/factures/2', true, '2024-03-18 11:20:00'),
-(19, 'Nouvel evenement', 'Un nouvel evenement est disponible', 'info', '/evenements/3', false, NULL),
-(20, 'Rappel de rendez-vous', 'Votre rendez-vous est prevu demain', 'warning', '/rendez-vous/9', false, NULL),
-(21, 'Nouvelle evaluation', 'Vous avez reçu une nouvelle evaluation', 'info', '/evaluations/10', true, '2024-03-26 15:30:00'),
-(12, 'Mise a jour statut RDV', 'Votre RDV du 20/04/2024 est terminé', 'info', '/rendez-vous/1', false, NULL),
-(14, 'Mise a jour statut RDV', 'Votre RDV du 22/04/2024 est terminé', 'info', '/rendez-vous/7', false, NULL),
-(15, 'Mise a jour statut RDV', 'Votre RDV du 23/04/2024 est terminé', 'info', '/rendez-vous/10', false, NULL),
-(16, 'Mise a jour statut RDV', 'Votre RDV du 24/04/2024 a été annulé', 'warning', '/rendez-vous/13', false, NULL),
-(22, 'Nouvelle Facture', 'Une nouvelle facture est disponible', 'info', '/factures/14', false, NULL),
-(24, 'Don Materiel Reçu', 'Votre don (plante) a bien été réceptionné.', 'success', '/dons/12', false, NULL),
-(18, 'Don Materiel Refusé', 'Votre don (halteres) n\'a pas pu être accepté.', 'error', '/dons/7', false, NULL),
-(13, 'Bienvenue', 'Bienvenue sur la plateforme Business Care !', 'success', '/', true, NOW()),
-(25, 'Alerte Contrat', 'Votre contrat arrive à expiration bientôt', 'warning', '/contrats/8', false, NULL),
-(1, 'Nouvel utilisateur', 'Le compte pour M. Dupont a été créé', 'info', '/users/view.php?id=12', false, NULL),
-(1, 'Erreur systeme', 'Une erreur critique s\'est produite', 'error', '/admin/logs', false, NULL),
-(12, 'Prestation annulée', 'L\'atelier Yoga de demain est annulé.', 'warning', '/prestations/2', false, NULL),
-(19, 'Message Communauté', 'Nouveau message dans Running Club', 'info', '/communaute/2', false, NULL),
-(3, 'Evaluation reçue', 'Vous avez reçu une note de 5/5 pour Consultation Psychologique', 'success', '/evaluations/received', false, NULL),
-(4, 'Evaluation reçue', 'Vous avez reçu une note de 4/5 pour Meditation en Groupe', 'success', '/evaluations/received', false, NULL),
-(15, 'Mot de passe modifié', 'Votre mot de passe a été modifié avec succès', 'success', '/profil', true, NOW()),
-(20, 'Invitation Evenement', 'Vous êtes invité à la Conference Addictions', 'info', '/evenements/5', false, NULL),
-(26, 'Facture en Retard', 'La facture FACT-2024-006 est en retard', 'error', '/factures/6', false, NULL),
-(28, 'Rendez-vous confirmé', 'Votre RDV Sophrologie du 11/05/2024 est confirmé', 'success', '/rendez-vous/21', false, NULL);
 
-INSERT INTO contrats_prestations (contrat_id, prestation_id) VALUES
-(10, 10),
-(11, 1),
-(12, 2);
+INSERT INTO services (nom, description, actif, ordre) VALUES
+('Starter Pack', 'Pour les petites équipes (jusqu\'à 30 salariés)', TRUE, 10),
+('Basic Pack', 'Solution équilibrée (jusqu\'à 250 salariés)', TRUE, 20),
+('Premium Pack', 'Offre complète pour grandes entreprises (251+ salariés)', TRUE, 30),
+('Consultation Ponctuelle', 'Besoin spécifique hors contrat', TRUE, 40),
+('Événement Sur Mesure', 'Organisation d\'un événement spécifique', TRUE, 50);
