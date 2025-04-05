@@ -17,6 +17,7 @@ TRUNCATE TABLE prestations;
 TRUNCATE TABLE entreprises; 
 TRUNCATE TABLE roles;
 TRUNCATE TABLE preferences_utilisateurs;
+TRUNCATE TABLE contrats_prestations;
 SET FOREIGN_KEY_CHECKS = 1;
 
 INSERT INTO roles (nom, description) VALUES
@@ -64,7 +65,9 @@ INSERT INTO personnes (nom, prenom, email, mot_de_passe, telephone, date_naissan
 ('Richard', 'Julie', 'julie.richard@santepro.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 78 90 12 34', '1987-09-30', 'F', '/photos/julie.richard.jpg', 2, 7, 'actif', '2024-03-17 20:30:00'),
 ('Petit', 'Thomas', 'thomas.petit@bienetreplus.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 89 01 23 45', '1993-02-20', 'M', '/photos/thomas.petit.jpg', 2, 8, 'actif', '2024-03-17 21:45:00'),
 ('Durand', 'Lea', 'lea.durand@ecosolutions.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 90 12 34 56', '1994-11-10', 'F', '/photos/lea.durand.jpg', 2, 9, 'actif', '2024-03-17 22:15:00'),
-('Moreau', 'Hugo', 'hugo.moreau@financeplus.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 01 23 45 67', '1996-06-25', 'M', '/photos/hugo.moreau.jpg', 2, 10, 'actif', '2024-03-17 23:00:00');
+('Moreau', 'Hugo', 'hugo.moreau@financeplus.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 01 23 45 67', '1996-06-25', 'M', '/photos/hugo.moreau.jpg', 2, 10, 'actif', '2024-03-17 23:00:00'),
+('Duamel', 'Heloise', 'duamelle.heloise@businesscare.fr', '$2y$10$CGP1gfg0khtXjAZcJFC6iO3oYisjwlPfkm8tQ8Q/OxWpFdR7tOiqO', '06 12 34 56 78', '1995-03-15', 'F', '/photos/mdubois.jpg', 2, 10, 'actif', '2024-04-03 09:15:00');
+
 
 INSERT INTO contrats (entreprise_id, date_debut, date_fin, montant_mensuel, nombre_salaries, type_contrat, statut, conditions_particulieres) VALUES
 (1, '2024-01-01', '2024-12-31', 5000.00, 150, 'premium', 'actif', 'Acces a toutes les prestations premium'),
@@ -76,8 +79,9 @@ INSERT INTO contrats (entreprise_id, date_debut, date_fin, montant_mensuel, nomb
 (7, '2024-02-15', '2024-12-31', 8500.00, 350, 'entreprise', 'actif', 'Acces illimite aux prestations avec formation personnalisee'),
 (8, '2024-03-01', '2024-12-31', 2800.00, 45, 'standard', 'en_attente', 'Acces aux prestations de base et ateliers'),
 (9, '2024-01-25', '2024-12-31', 3800.00, 90, 'standard', 'actif', 'Acces aux prestations de base et ateliers'),
-(10, '2024-02-20', '2024-12-31', 4200.00, 100, 'premium', 'actif', 'Acces a toutes les prestations avec tarifs preferentiels');
-
+(10, '2024-02-20', '2024-12-31', 4200.00, 100, 'premium', 'actif', 'Acces a toutes les prestations avec tarifs preferentiels'),
+(10, '2024-01-01', '2024-12-31', 5000.00, 150, 'premium', 'actif', 'Acces a toutes les prestations premium'),
+(10, '2023-01-01', '2023-12-31', 5000.00, 150, 'premium', 'expire', 'Acces a toutes les prestations premium');
 INSERT INTO devis (entreprise_id, date_creation, date_validite, montant_total, montant_ht, tva, statut, conditions_paiement, delai_paiement) VALUES
 (1, '2024-01-15', '2024-02-15', 1500.00, 1250.00, 20.00, 'accepte', 'Paiement a 30 jours', 30),
 (2, '2024-02-01', '2024-03-01', 2000.00, 1666.67, 20.00, 'en_attente', 'Paiement a 45 jours', 45),
@@ -173,4 +177,4 @@ INSERT INTO notifications (personne_id, titre, message, type, lien, lu, date_lec
 (10, 'Nouvelle evaluation', 'Vous avez reçu une nouvelle evaluation', 'info', '/evaluations/10', true, '2024-03-26 15:30:00');
 
 INSERT INTO contrats_prestations (contrat_id, prestation_id) VALUES
-(11, 10); -- Contrat 1 -> Conférence leadership
+(1, 10); 

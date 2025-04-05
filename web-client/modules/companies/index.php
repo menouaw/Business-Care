@@ -1,4 +1,5 @@
 <?php
+
 /**
  * tableau de bord - entreprises
  *
@@ -67,7 +68,7 @@ include_once __DIR__ . '/../../templates/header.php';
                     </div>
                 </div>
             </div>
-            
+
             <div class="col-md-6 col-lg-3">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body">
@@ -86,7 +87,7 @@ include_once __DIR__ . '/../../templates/header.php';
                     </div>
                 </div>
             </div>
-            
+
             <div class="col-md-6 col-lg-3">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body">
@@ -105,7 +106,7 @@ include_once __DIR__ . '/../../templates/header.php';
                     </div>
                 </div>
             </div>
-            
+
             <div class="col-md-6 col-lg-3">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body">
@@ -119,7 +120,7 @@ include_once __DIR__ . '/../../templates/header.php';
                             </div>
                         </div>
                         <div class="mt-3">
-                            <a href="factures.php" class="btn btn-sm btn-outline-info">Voir toutes</a>
+                            <a href="invoices.php" class="btn btn-sm btn-outline-info">Voir toutes</a>
                         </div>
                     </div>
                 </div>

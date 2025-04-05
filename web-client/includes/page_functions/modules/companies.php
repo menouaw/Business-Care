@@ -372,63 +372,124 @@ function addCompany($company_data)
  * 
  * @param int $company_id identifiant de l'entreprise
  * @param string $status filtre par statut (active, expired, all, ou autre statut de la table)
- * @return array liste des contrats
+ * @param int $page Numéro de la page actuelle
+ * @param int $limit Nombre d'éléments par page
+ * @return array liste des contrats et informations de pagination
  */
-function getCompanyContracts($company_id, $status = 'active')
+function getCompanyContracts($company_id, $status = 'active', $page = 1, $limit = 20)
 {
-    // Validation de l'ID
+    // Validation de l'ID et des paramètres de pagination
     $company_id = filter_var(sanitizeInput($company_id), FILTER_VALIDATE_INT);
+    $page = max(1, (int)sanitizeInput($page));
+    $limit = max(1, (int)sanitizeInput($limit));
+
     if (!$company_id) {
         flashMessage("Identifiant d'entreprise invalide", "danger");
-        return [];
+        return [
+            'contracts' => [],
+            'pagination' => [
+                'current' => 1,
+                'limit' => $limit,
+                'total' => 0,
+                'totalPages' => 0
+            ],
+            'pagination_html' => ''
+        ];
     }
 
-    // Construction de la condition WHERE de base
     $where = "c.entreprise_id = :company_id";
     $params = [':company_id' => $company_id];
+    $countParams = [':company_id' => $company_id]; // Params pour le comptage
 
-    // Filtrage par statut
+    // Construction de la clause WHERE et des paramètres
     if ($status === 'active') {
         $where .= " AND (c.date_fin IS NULL OR c.date_fin >= CURDATE()) AND c.statut = 'actif'";
     } else if ($status === 'expired') {
-        // Pouruqoi pas ajouter une condition sur la date de fin si nécessaire ?
         $where .= " AND c.statut = 'expire'";
+    } else if ($status === 'history') { // Ajout pour regrouper l'historique
+        $where .= " AND c.statut IN ('expire', 'resilie')";
     } else if ($status !== null && $status !== 'all') {
-        $allowed_statuses = ['actif', 'expire', 'resilie', 'en_attente']; // Statuts de la table contrats
+        $allowed_statuses = ['actif', 'expire', 'resilie', 'en_attente', 'history']; // Ajouter 'history' ici aussi
         if (in_array($status, $allowed_statuses)) {
             $where .= " AND c.statut = :status";
             $params[':status'] = $status;
+            $countParams[':status'] = $status; // Ajouter aussi aux params de comptage
         } else {
-            // Statut invalide, on ne filtre pas ou on retourne une erreur ? Pour l'instant, on ignore.
-            // flashMessage("Statut de filtre invalide: $status", "warning");
+            // Statut invalide, ignorer
         }
-    } // Si $status est null ou 'all', on récupère tout sans filtre de statut
+    }
 
     try {
-        // Requête pour récupérer les contrats et le nombre de prestations associées
+        // 1. Compter le total des enregistrements
+        $countQuery = "SELECT COUNT(DISTINCT c.id) as total FROM contrats c WHERE " . $where;
+        $totalResult = executeQuery($countQuery, $countParams)->fetch();
+        $total = $totalResult['total'] ?? 0;
+        $totalPages = ceil($total / $limit);
+        // Ajuster la page si elle dépasse le nombre total de pages
+        $page = max(1, min($page, $totalPages > 0 ? $totalPages : 1));
+        $offset = ($page - 1) * $limit;
+
+        // 2. Récupérer les contrats pour la page actuelle
         $query = "SELECT c.*, COUNT(cp.prestation_id) as nombre_prestations
                 FROM contrats c
                 LEFT JOIN contrats_prestations cp ON c.id = cp.contrat_id
                 WHERE " . $where . "
-                  -- Group by toutes les colonnes de c.* 
-                  GROUP BY c.id, c.entreprise_id, c.date_debut, c.date_fin, c.montant_mensuel,
-                           c.nombre_salaries, c.type_contrat, c.statut, c.conditions_particulieres,
-                           c.created_at, c.updated_at
-                ORDER BY c.date_debut DESC";
+                GROUP BY c.id, c.entreprise_id, c.date_debut, c.date_fin, c.montant_mensuel,
+                         c.nombre_salaries, c.type_contrat, c.statut, c.conditions_particulieres,
+                         c.created_at, c.updated_at
+                ORDER BY c.date_debut DESC
+                LIMIT :limit OFFSET :offset"; // Ajouter LIMIT et OFFSET
+
+        // Ajouter les paramètres de pagination à $params
+        $params[':limit'] = $limit;
+        $params[':offset'] = $offset;
 
         $contracts = executeQuery($query, $params)->fetchAll(PDO::FETCH_ASSOC);
 
-        // Pour chaque contrat, générer une référence si besoin et récupérer les prestataires associés
+        // Formatage des contrats
         foreach ($contracts as &$contract) {
-            // Générer une référence
             $contract['reference'] = 'CT-' . str_pad($contract['id'], 6, '0', STR_PAD_LEFT);
+            // Ajouter d'autres formatages si nécessaire (dates, badges...)
+            if (!isset($contract['date_debut_formatee']) && isset($contract['date_debut'])) $contract['date_debut_formatee'] = formatDate($contract['date_debut'], 'd/m/Y');
+            if (!isset($contract['date_fin_formatee']) && isset($contract['date_fin'])) $contract['date_fin_formatee'] = formatDate($contract['date_fin'], 'd/m/Y');
+            if (!isset($contract['statut_badge']) && isset($contract['statut'])) $contract['statut_badge'] = getStatusBadge($contract['statut']);
         }
+        unset($contract); // Détacher la référence
 
-        return $contracts;
+        // 3. Préparer les données pour la pagination HTML
+        $paginationData = [
+            'currentPage' => $page,
+            'totalPages' => $totalPages,
+            'totalItems' => $total,
+            'perPage' => $limit
+        ];
+        $urlPattern = "?status=" . urlencode($status) . "&page={page}";
+
+        // 4. Retourner les résultats et les infos de pagination
+        return [
+            'contracts' => $contracts,
+            'pagination' => [
+                'current' => $page,
+                'limit' => $limit,
+                'total' => $total,
+                'totalPages' => $totalPages
+            ],
+            'pagination_html' => renderPagination($paginationData, $urlPattern)
+        ];
     } catch (Exception $e) {
         logSystemActivity('error', "Erreur récupération contrats: " . $e->getMessage());
         flashMessage("Une erreur est survenue lors de la récupération des contrats", "danger");
-        return [];
+        // Retourner une structure vide en cas d'erreur
+        return [
+            'contracts' => [],
+            'pagination' => [
+                'current' => 1,
+                'limit' => $limit,
+                'total' => 0,
+                'totalPages' => 0
+            ],
+            'pagination_html' => ''
+        ];
     }
 }
 
@@ -445,8 +506,8 @@ function getCompanyEmployees($company_id, $page = 1, $limit = 20, $search = '')
 {
     // Sanitize inputs
     $company_id = filter_var(sanitizeInput($company_id), FILTER_VALIDATE_INT);
-    $page = (int)sanitizeInput($page);
-    $limit = (int)sanitizeInput($limit);
+    $page = max(1, (int)sanitizeInput($page));
+    $limit = max(1, (int)sanitizeInput($limit));
     $search = sanitizeInput($search);
 
     if (!$company_id) {
@@ -463,103 +524,106 @@ function getCompanyEmployees($company_id, $page = 1, $limit = 20, $search = '')
         ];
     }
 
-    // Construction de la requête principale avec les jointures nécessaires
-    // Sélectionner les colonnes existantes
-    $query = "SELECT p.id, p.nom, p.prenom, p.email, p.telephone, p.photo_url, p.statut, 
-              p.created_at, p.derniere_connexion
-              FROM personnes p
-              WHERE p.entreprise_id = :company_id AND p.role_id = :role_id";
-
-    $params = [':company_id' => $company_id, ':role_id' => ROLE_SALARIE];
+    // --- Préparation de la requête et des paramètres ---
+    $baseQuery = "FROM personnes p WHERE p.entreprise_id = :company_id AND p.role_id = :role_id";
+    $params = ['company_id' => $company_id, 'role_id' => ROLE_SALARIE];
+    $countParams = ['company_id' => $company_id, 'role_id' => ROLE_SALARIE]; // Séparer pour le count
+    $whereClause = '';
 
     // Ajout de la recherche si spécifiée
     if (!empty($search)) {
         $searchTerm = "%" . $search . "%";
-        $query .= " AND (p.nom LIKE :search OR p.prenom LIKE :search OR p.email LIKE :search)";
-        $params[':search'] = $searchTerm;
+        $whereClause = " AND (p.nom LIKE :search OR p.prenom LIKE :search OR p.email LIKE :search)";
+        $params['search'] = $searchTerm;
+        $countParams['search'] = $searchTerm;
     }
 
-    // Calcul de l'offset pour la pagination
-    $offset = ($page - 1) * $limit;
+    try {
+        // --- 1. Compter le total --- 
+        $countQuery = "SELECT COUNT(id) as total " . $baseQuery . $whereClause;
+        $totalResult = executeQuery($countQuery, $countParams)->fetch(PDO::FETCH_ASSOC);
+        $total = $totalResult['total'] ?? 0;
+        $totalPages = ceil($total / $limit);
+        // Ajuster la page si elle dépasse le nombre total de pages
+        $page = max(1, min($page, $totalPages > 0 ? $totalPages : 1));
+        $offset = ($page - 1) * $limit;
 
-    // Ajout du tri et de la pagination
-    $query .= " ORDER BY p.nom, p.prenom ASC LIMIT :limit OFFSET :offset";
-    $params[':limit'] = $limit;
-    $params[':offset'] = $offset;
+        // --- 2. Récupérer les employés pour la page actuelle --- 
+        $query = "SELECT p.id, p.nom, p.prenom, p.email, p.telephone, p.photo_url, p.statut, 
+                p.created_at, p.derniere_connexion "
+            . $baseQuery . $whereClause
+            . " ORDER BY p.nom, p.prenom ASC LIMIT :limit OFFSET :offset";
 
-    // Exécution de la requête principale
-    $employees = executeQuery($query, $params)->fetchAll(PDO::FETCH_ASSOC);
+        // Ajouter limit et offset aux paramètres de la requête principale
+        $params['limit'] = $limit;
+        $params['offset'] = $offset;
 
-    // Pour chaque employé, ajouter le badge de statut et formater les dates
-    foreach ($employees as &$employee) {
-        // Ajout du badge de statut
-        if (isset($employee['statut'])) {
-            $employee['statut_badge'] = getStatusBadge($employee['statut']);
+        $employees = executeQuery($query, $params)->fetchAll(PDO::FETCH_ASSOC);
+
+        // --- 3. Formatage des données employé --- 
+        foreach ($employees as &$employee) {
+            if (isset($employee['statut'])) {
+                $employee['statut_badge'] = getStatusBadge($employee['statut']);
+            }
+            if (isset($employee['created_at'])) {
+                $employee['created_at_formatee'] = formatDate($employee['created_at']);
+            }
+            if (isset($employee['derniere_connexion'])) {
+                $employee['derniere_connexion_formatee'] = formatDate($employee['derniere_connexion']);
+            }
+
+            // Récupération du nombre de rendez-vous (optimisable si beaucoup d'employés)
+            $appointmentsQuery = "SELECT 
+                                COUNT(id) as total,
+                                SUM(CASE WHEN date_rdv >= CURDATE() THEN 1 ELSE 0 END) as a_venir
+                                FROM rendez_vous
+                                WHERE personne_id = :employee_id";
+            $appointmentsInfo = executeQuery($appointmentsQuery, [':employee_id' => $employee['id']])->fetch(PDO::FETCH_ASSOC);
+            $employee['rendez_vous'] = [
+                'total' => $appointmentsInfo['total'] ?? 0,
+                'a_venir' => $appointmentsInfo['a_venir'] ?? 0
+            ];
+        }
+        unset($employee); // Détacher la référence
+
+        // --- 4. Préparer les données de pagination --- 
+        $paginationData = [
+            'currentPage' => $page,
+            'totalPages' => $totalPages,
+            'totalItems' => $total,
+            'perPage' => $limit
+        ];
+        // Construction de l'URL pour la pagination (sans company_id car on est déjà dans le contexte)
+        $urlPattern = "?page={page}";
+        if (!empty($search)) {
+            $urlPattern .= "&search=" . urlencode($search);
         }
 
-        // Formatage des dates
-        if (isset($employee['created_at'])) { // Utiliser created_at
-            $employee['created_at_formatee'] = formatDate($employee['created_at']); // Créer created_at_formatee
-        }
-        if (isset($employee['derniere_connexion'])) {
-            $employee['derniere_connexion_formatee'] = formatDate($employee['derniere_connexion']);
-        }
-
-        // Récupération du nombre de rendez-vous (semble correct)
-        $appointmentsQuery = "SELECT 
-                            COUNT(id) as total,
-                            SUM(CASE WHEN date_rdv >= CURDATE() THEN 1 ELSE 0 END) as a_venir
-                            FROM rendez_vous
-                            WHERE personne_id = :employee_id";
-        $appointmentsInfo = executeQuery($appointmentsQuery, [':employee_id' => $employee['id']])->fetch(PDO::FETCH_ASSOC);
-
-        $employee['rendez_vous'] = [
-            'total' => $appointmentsInfo['total'] ?? 0,
-            'a_venir' => $appointmentsInfo['a_venir'] ?? 0
+        // --- 5. Retourner le résultat complet --- 
+        return [
+            'employees' => $employees,
+            'pagination' => [
+                'current' => $page,
+                'limit' => $limit,
+                'total' => $total,
+                'totalPages' => $totalPages
+            ],
+            'pagination_html' => renderPagination($paginationData, $urlPattern)
+        ];
+    } catch (Exception $e) {
+        logSystemActivity('error', "Erreur récupération employés entreprise #$company_id: " . $e->getMessage());
+        flashMessage("Une erreur est survenue lors de la récupération des employés", "danger");
+        return [
+            'employees' => [],
+            'pagination' => [
+                'current' => 1,
+                'limit' => $limit,
+                'total' => 0,
+                'totalPages' => 0
+            ],
+            'pagination_html' => ''
         ];
     }
-
-    // Exécution de la requête de comptage
-    $countQuery = "SELECT COUNT(id) as total FROM personnes WHERE entreprise_id = :company_id AND role_id = :role_id";
-    $countParams = [':company_id' => $company_id, ':role_id' => ROLE_SALARIE];
-
-    if (!empty($search)) {
-        $countQuery .= " AND (nom LIKE :search OR prenom LIKE :search OR email LIKE :search)";
-        $countParams[':search'] = $searchTerm;
-    }
-
-    $total = executeQuery($countQuery, $countParams)->fetch(PDO::FETCH_ASSOC)['total'];
-
-    // Calcul des informations de pagination
-    $totalPages = ceil($total / $limit);
-    // S'assurer que la page actuelle n'est pas supérieure au nombre total de pages
-    $page = max(1, min($page, $totalPages > 0 ? $totalPages : 1));
-
-    // Préparer les données pour renderPagination
-    $paginationData = [
-        'currentPage' => $page,
-        'totalPages' => $totalPages,
-        'totalItems' => $total,
-        'perPage' => $limit
-    ];
-
-    // Construction de l'URL pour la pagination
-    $urlPattern = "?company_id=$company_id&page={page}"; // company_id n'est pas nécessaire si on est dans le module company
-    $urlPattern = "?page={page}";
-    if (!empty($search)) {
-        $urlPattern .= "&search=" . urlencode($search);
-    }
-
-    return [
-        'employees' => $employees,
-        'pagination' => [
-            'current' => $page,
-            'limit' => $limit,
-            'total' => $total,
-            'totalPages' => $totalPages
-        ],
-        'pagination_html' => renderPagination($paginationData, $urlPattern)
-    ];
 }
 
 /**
@@ -1134,8 +1198,11 @@ function getContractInvoices($contract_id)
         return [];
     }
 
-    // 1. Trouver l'entreprise liée à ce contrat
-    $contractInfo = fetchOne('contrats', 'id = :id', [':id' => $contract_id]);
+    // Trouver l'entreprise liée à ce contrat
+    $query = "SELECT entreprise_id FROM contrats WHERE id = :id LIMIT 1";
+    $params = [':id' => $contract_id];
+    $contractInfo = executeQuery($query, $params)->fetch(); // Utiliser executeQuery directement
+
     if (!$contractInfo || !$contractInfo['entreprise_id']) {
         return []; // Contrat non trouvé ou non lié à une entreprise
     }
@@ -1153,29 +1220,153 @@ function getContractInvoices($contract_id)
  */
 function getContractHistory($contract_id)
 {
-    // TODO: Implémenter la logique pour récupérer l'historique du contrat.
-    // Nécessite la création de la table 'historique_contrats' dans la base de données.
-    logSystemActivity('warning', "Fonctionnalité getContractHistory non implémentée (table 'historique_contrats' manquante).");
-    return []; // Retourne un tableau vide pour l'instant
+    // Validation de l'ID
+    $contract_id = filter_var(sanitizeInput($contract_id), FILTER_VALIDATE_INT);
+    if (!$contract_id) {
+        return [];
+    }
+
+    try {
+        // Récupérer l'historique depuis la nouvelle table (exemple)
+        $query = 'SELECT * FROM historique_contrats WHERE contrat_id = :cid ORDER BY date_evenement DESC';
+        $params = [':cid' => $contract_id];
+
+        $history = fetchAll($query, $params); // Utiliser fetchAll avec query et params
+        // Ajouter le formatage nécessaire...
+        return $history;
+    } catch (Exception $e) {
+        logSystemActivity('error', "Erreur récupération historique contrat #$contract_id: " . $e->getMessage());
+        return [];
+    }
 }
 
 /**
- * Demande le renouvellement d'un contrat
+ * Enregistre une demande de renouvellement d'un contrat et notifie les admins.
  *
- * @param int $company_id Identifiant de l'entreprise
- * @param array $data Données de la demande
- * @return array Résultat de l'opération
+ * @param int $contract_id Identifiant du contrat à renouveler.
+ * @param int $entreprise_id Identifiant de l'entreprise qui demande.
+ * @param int|null $personne_id Identifiant de la personne qui fait la demande
+ * @param array $data Données supplémentaires (ex: commentaire).
+ * @return array Résultat de l'opération.
  */
-function requestContractRenewal($company_id, $data)
+function requestContractRenewal($contract_id, $entreprise_id, $personne_id = null, $data = [])
 {
-    // TODO: Implémenter la logique pour la demande de renouvellement de contrat.
-    // Nécessite la création des tables 'demandes_renouvellement' et 'historique_contrats'.
-    // Revoir aussi la logique de notification admin pour correspondre à la table 'notifications'.
-    logSystemActivity('warning', "Fonctionnalité requestContractRenewal non implémentée (tables manquantes).");
-    return [
-        'success' => false,
-        'message' => "Fonctionnalité de renouvellement non disponible pour le moment."
-    ]; // Retourne une erreur contrôlée
+    // Validation des IDs
+    $contract_id = filter_var(sanitizeInput($contract_id), FILTER_VALIDATE_INT);
+    $entreprise_id = filter_var(sanitizeInput($entreprise_id), FILTER_VALIDATE_INT);
+    $personne_id = filter_var(sanitizeInput($personne_id), FILTER_VALIDATE_INT);
+    $commentaire = isset($data['commentaire_client']) ? sanitizeInput($data['commentaire_client']) : null;
+
+    if (!$contract_id || !$entreprise_id) {
+        return [
+            'success' => false,
+            'message' => "Informations invalides pour la demande de renouvellement."
+        ];
+    }
+
+    // Vérifier que le contrat existe et appartient à l'entreprise
+    $contract = fetchOne('contrats', 'id = :cid AND entreprise_id = :eid', [':cid' => $contract_id, ':eid' => $entreprise_id]);
+    if (!$contract) {
+        return [
+            'success' => false,
+            'message' => "Contrat non trouvé ou n'appartient pas à votre entreprise."
+        ];
+    }
+
+    // Vérifier si une demande n'est pas déjà en cours pour ce contrat
+    $existingRequest = fetchOne('demandes_renouvellement', 'contrat_id = :cid AND statut = \'en_attente\'', [':cid' => $contract_id]);
+    if ($existingRequest) {
+        return [
+            'success' => false,
+            'message' => "Une demande de renouvellement est déjà en cours pour ce contrat."
+        ];
+    }
+
+    try {
+        // Préparer les données pour l'insertion
+        $insertData = [
+            'contrat_id' => $contract_id,
+            'entreprise_id' => $entreprise_id,
+            'personne_id' => $personne_id, // Peut être null
+            'statut' => 'en_attente',
+            'commentaire_client' => $commentaire
+        ];
+
+        // Insérer la demande
+        $demandeId = insertRow('demandes_renouvellement', $insertData);
+
+        if ($demandeId) {
+            // Notification aux administrateurs
+            notifyAdminsNewRenewalRequest($demandeId, $contract_id, $entreprise_id, $personne_id, $commentaire);
+
+            // Log
+            $userIdForLog = $personne_id ?? null;
+            logBusinessOperation($userIdForLog, 'request_contract_renewal', "Demande de renouvellement #$demandeId pour contrat #$contract_id (Entreprise #$entreprise_id)");
+
+            return [
+                'success' => true,
+                'message' => "Votre demande de renouvellement (N° $demandeId) a été envoyée avec succès."
+            ];
+        } else {
+            return [
+                'success' => false,
+                'message' => "Erreur lors de l'enregistrement de votre demande."
+            ];
+        }
+    } catch (Exception $e) {
+        logSystemActivity('error', "Erreur demande renouvellement contrat #$contract_id: " . $e->getMessage());
+        return [
+            'success' => false,
+            'message' => "Une erreur technique est survenue lors de l'envoi de votre demande."
+        ];
+    }
+}
+
+/**
+ * Notifie les administrateurs d'une nouvelle demande de renouvellement.
+ *
+ * @param int $demandeId ID de la demande créée
+ * @param int $contractId ID du contrat concerné
+ * @param int $entrepriseId ID de l'entreprise
+ * @param int|null $personneId ID de la personne ayant fait la demande
+ * @param string|null $commentaire Commentaire éventuel du client
+ * @return void
+ */
+function notifyAdminsNewRenewalRequest($demandeId, $contractId, $entrepriseId, $personneId = null, $commentaire = null)
+{
+    try {
+        $adminRoleId = ROLE_ADMIN;
+        $admins = fetchAll('personnes', 'role_id = :role_id', [':role_id' => $adminRoleId]);
+
+        // Récupérer le nom de l'entreprise et la référence du contrat pour la notif
+        $entreprise = fetchOne('entreprises', 'id = :id', [':id' => $entrepriseId]);
+        $nomEntreprise = $entreprise ? $entreprise['nom'] : "Entreprise #$entrepriseId";
+        $refContrat = 'CT-' . str_pad($contractId, 6, '0', STR_PAD_LEFT);
+
+        $titre = "Demande de renouvellement contrat (#$refContrat)";
+        $message = "Une demande de renouvellement (ID: $demandeId) pour le contrat $refContrat a été reçue de l'entreprise $nomEntreprise.";
+        if ($personneId) {
+            $personne = fetchOne('personnes', 'id = :id', [':id' => $personneId]);
+            if ($personne) $message .= "\nDemandeur: {$personne['prenom']} {$personne['nom']} (ID: $personneId).";
+        }
+        if ($commentaire) {
+            $message .= "\nCommentaire client: " . $commentaire;
+        }
+        $lien = '/admin/renewals/view/' . $demandeId; // Adapter le lien admin
+
+        foreach ($admins as $admin) {
+            insertRow('notifications', [
+                'personne_id' => $admin['id'],
+                'titre' => $titre,
+                'message' => $message,
+                'type' => 'info',
+                'lien' => $lien
+            ]);
+        }
+        logSystemActivity('info', "Notification envoyée aux admins pour demande renouvellement #$demandeId");
+    } catch (Exception $e) {
+        logSystemActivity('error', "Erreur notification admin pour demande renouvellement #$demandeId: " . $e->getMessage());
+    }
 }
 
 /**
@@ -1295,7 +1486,7 @@ function notifyAdminsNewQuoteRequest($devisId, $entrepriseId, $detailsMessage = 
 {
     // Logique pour trouver les admins et insérer une notification pour chacun
     try {
-        $adminRoleId = ROLE_ADMIN; // Assurez-vous que ROLE_ADMIN est défini
+        $adminRoleId = ROLE_ADMIN;
         $admins = fetchAll('personnes', 'role_id = :role_id', [':role_id' => $adminRoleId]);
         $titre = "Nouvelle demande de devis (#$devisId)";
         // Utiliser les détails dans le message

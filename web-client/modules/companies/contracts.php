@@ -1,54 +1,46 @@
 <?php
 
-/**
- * Page de gestion des contrats pour les entreprises clientes
- * Affiche la liste des contrats OU les détails d'un contrat spécifique.
- */
 
-// Inclure les fonctions nécessaires (base de données, authentification, fonctions spécifiques aux entreprises)
+// Includes
 require_once __DIR__ . '/../../includes/init.php';
 require_once __DIR__ . '/../../includes/page_functions/modules/companies.php';
 
-// Vérifier que l'utilisateur est authentifié et a le rôle entreprise
+// Accès réservé aux entreprises
 requireRole(ROLE_ENTREPRISE);
 
-// Récupérer l'ID de l'entreprise depuis la session
+// ID Entreprise (Session)
 $entrepriseId = $_SESSION['user_entreprise'];
+$personneId = $_SESSION['user_id'];
 
-// --- Validation de l'ID entreprise (importante) ---
+// Validation ID Entreprise
 if (!isset($_SESSION['user_entreprise']) || !filter_var($_SESSION['user_entreprise'], FILTER_VALIDATE_INT) || $_SESSION['user_entreprise'] <= 0) {
-    logSystemActivity('error', "ID entreprise manquant ou invalide en session pour user_id: " . ($_SESSION['user_id'] ?? 'inconnu') . " lors de l'accès à contracts.php");
+    logSystemActivity('error', "ID entreprise manquant ou invalide en session pour user_id: " . ($personneId ?? 'inconnu') . " lors de l'accès à contracts.php");
     flashMessage("Impossible de vérifier votre entreprise. Veuillez vous reconnecter.", "danger");
-    redirectTo(WEBCLIENT_URL . '/index.php'); // Ou page de connexion
+    redirectTo(WEBCLIENT_URL . '/index.php');
     exit;
 }
 
-// Vérifier si un ID de contrat spécifique est demandé
+// Paramètres GET
 $contractId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $action = isset($_GET['action']) ? $_GET['action'] : '';
 
-// ==================================================================
-// ===          AFFICHAGE DES DÉTAILS D'UN CONTRAT                ===
-// ==================================================================
+// === Vue Détails Contrat ===
 if ($contractId > 0) {
 
-    // Récupérer les détails du contrat spécifique
+    // Récupérer données contrat
     $contract = getCompanyContractDetails($entrepriseId, $contractId);
 
-    // Vérifier que le contrat existe et appartient bien à l'entreprise
+    // Vérifier existence et accès
     if (!$contract) {
         flashMessage("Contrat introuvable ou accès non autorisé.", "danger");
-        redirectTo(WEBCLIENT_URL . '/modules/companies/contracts.php'); // Retour à la liste
+        redirectTo(WEBCLIENT_URL . '/modules/companies/contracts.php');
         exit;
     }
 
-    // --- Gestion des actions (ex: téléchargement PDF) ---
-    // TODO: Ajouter ici la logique pour d'autres actions si nécessaire (ex: renouvellement)
-
-    // Définir le titre de la page pour la vue détaillée
+    // Titre page
     $pageTitle = "Détails du contrat #" . htmlspecialchars($contract['reference'] ?? $contractId);
 
-    // Inclure l'en-tête
+    // Header
     include_once __DIR__ . '/../../templates/header.php';
 
 ?>
@@ -62,20 +54,14 @@ if ($contractId > 0) {
             </div>
         </div>
 
-        <?php echo displayFlashMessages(); // Afficher les messages flash (ex: erreur PDF) 
-        ?>
+        <?php echo displayFlashMessages(); ?>
 
         <!-- Informations Générales -->
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-white d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Informations générales</h5>
                 <div class="btn-group">
-                    <?php /* Placeholder pour bouton Renouvellement
-                    if ($contract['statut'] === 'actif' && $contract['date_fin']): ?>
-                        <button type="button" class="btn btn-sm btn-outline-success ms-2" data-bs-toggle="modal" data-bs-target="#renewModal">
-                            <i class="fas fa-sync-alt me-1"></i> Demander un renouvellement
-                        </button>
-                    <?php endif; */ ?>
+                    <?php /* Placeholder: Bouton Renouvellement ? */ ?>
                 </div>
             </div>
             <div class="card-body">
@@ -93,7 +79,8 @@ if ($contractId > 0) {
                         <p class="mb-1"><strong>Date de création:</strong> <?php echo isset($contract['created_at']) ? formatDate($contract['created_at'], 'd/m/Y H:i') : 'N/A'; ?></p>
                     </div>
                 </div>
-                <?php if (!empty($contract['conditions_particulieres'])): ?>
+                <?php if (!empty($contract['conditions_particulieres'])):
+                ?>
                     <div class="mt-4">
                         <h6>Conditions particulières:</h6>
                         <div class="p-3 bg-light rounded border">
@@ -110,7 +97,7 @@ if ($contractId > 0) {
                 <h5 class="mb-0">Services inclus</h5>
             </div>
             <div class="card-body">
-                <?php if (!empty($contract['services'])): // Assumant que getCompanyContractDetails récupère les services 
+                <?php if (!empty($contract['services'])):
                 ?>
                     <div class="table-responsive">
                         <table class="table table-hover">
@@ -123,106 +110,96 @@ if ($contractId > 0) {
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php foreach ($contract['services'] as $service): ?>
+                                <?php foreach ($contract['services'] as $service):
+                                ?>
                                     <tr>
                                         <td><?php echo htmlspecialchars($service['nom'] ?? 'N/A'); ?></td>
                                         <td><?php echo htmlspecialchars($service['description'] ?? '-'); ?></td>
                                         <td><?php echo htmlspecialchars(ucfirst($service['categorie'] ?? '-')); ?></td>
-                                        <td><?php echo htmlspecialchars($service['prix_formate'] ?? 'N/A'); // Assumant formatage dans la fonction
-                                            ?></td>
+                                        <td><?php echo htmlspecialchars($service['prix_formate'] ?? 'N/A'); ?></td>
                                     </tr>
                                 <?php endforeach; ?>
                             </tbody>
                         </table>
                     </div>
-                <?php else: ?>
+                <?php else:
+                ?>
                     <p class="text-muted text-center my-3">Aucun service spécifique n'est listé pour ce contrat.</p>
                 <?php endif; ?>
             </div>
         </div>
 
-        <!-- Factures Liées (Exemple - nécessite la fonction getContractInvoices) -->
-        <?php
-        // $factures = getContractInvoices($contractId); // Activer si la fonction existe
-        $factures = []; // Placeholder pour l'instant
-        ?>
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Factures liées (Exemple)</h5>
-                <a href="invoices.php" class="btn btn-sm btn-outline-primary">
-                    Voir toutes les factures
-                </a>
-            </div>
-            <div class="card-body">
-                <?php if (!empty($factures)): ?>
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>N° Facture</th>
-                                    <th>Date</th>
-                                    <th>Montant Total</th>
-                                    <th>Statut</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach (array_slice($factures, 0, 5) as $facture): // Limiter l'affichage 
-                                ?>
-                                    <tr>
-                                        <td><?php echo htmlspecialchars($facture['numero_facture'] ?? 'N/A'); ?></td>
-                                        <td><?php echo htmlspecialchars($facture['date_emission_formatee'] ?? 'N/A'); ?></td>
-                                        <td><?php echo htmlspecialchars($facture['montant_total_formate'] ?? 'N/A'); ?></td>
-                                        <td><?php echo $facture['statut_badge'] ?? 'N/A'; ?></td>
-                                        <td>
-                                            <a href="invoice.php?id=<?php echo $facture['id']; ?>" class="btn btn-sm btn-outline-info" title="Voir la facture">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <?php // TODO: Bouton payer ? 
-                                            ?>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                <?php else: ?>
-                    <p class="text-muted text-center my-3">Aucune facture récente spécifiquement liée à ce contrat n'est affichée ici (fonctionnalité à implémenter).</p>
-                <?php endif; ?>
-            </div>
-        </div>
 
-        <!-- Historique du contrat (Optionnel - Commenté) -->
-        <?php /*
-         <div class="card shadow-sm"> ... Historique ... </div>
-         */ ?>
-
-        <!-- Modal de renouvellement (Optionnel - Commenté) -->
-        <?php /*
-         <div class="modal fade" id="renewModal" ...> ... Formulaire ... </div>
-         */ ?>
 
     </main>
 <?php
 
-    // Inclure le pied de page pour la vue détaillée
+    // Footer
     include_once __DIR__ . '/../../templates/footer.php';
 
-    // Arrêter l'exécution du script ici pour ne pas afficher la liste en dessous
+    // Fin script vue détail
     exit;
-
-    // ==================================================================
-    // ===           AFFICHAGE DE LA LISTE DES CONTRATS               ===
-    // ==================================================================
 } else {
 
-    // Récupérer tous les contrats de l'entreprise (actifs, inactifs, etc.)
-    $contrats = getCompanyContracts($entrepriseId, null); // Le second paramètre 'null' pour récupérer tous les statuts
+    // === Vue Liste Contrats (Dashboard) ===
 
-    // Définir le titre de la page pour la vue liste
+    $filter_status = isset($_GET['status']) ? sanitizeInput($_GET['status']) : 'actif';
+    $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+    $currentHistoryPage = isset($_GET['hpage']) ? (int)$_GET['hpage'] : 1; // Page pour l'historique
+
+    // Récupérer la liste principale des contrats avec pagination
+    $mainLimit = 5; // Limite à 5
+    $contractsData = getCompanyContracts($entrepriseId, $filter_status, $currentPage, $mainLimit);
+    $contrats = $contractsData['contracts'];
+    $mainPaginationInfo = $contractsData['pagination']; // Récupérer infos
+
+    // Construire le bon URL Pattern pour la pagination principale
+    $mainUrlPattern = "?status=" . urlencode($filter_status) . "&page={page}";
+
+    // Préparer les données pour renderPagination (principale)
+    $mainPaginationDataForRender = [
+        'currentPage' => $mainPaginationInfo['current'],
+        'totalPages' => $mainPaginationInfo['totalPages'],
+        'totalItems' => $mainPaginationInfo['total'],
+        'perPage' => $mainPaginationInfo['limit']
+    ];
+
+    // Générer le HTML de pagination correct pour la liste principale
+    $mainPaginationHtmlCorrected = renderPagination($mainPaginationDataForRender, $mainUrlPattern);
+
+    // Récupérer l'historique (contrats expirés et résiliés) AVEC pagination
+    $historyLimit = 5; // Limite à 5
+    $historyContractsData = getCompanyContracts($entrepriseId, 'history', $currentHistoryPage, $historyLimit);
+    $historyContracts = $historyContractsData['contracts'];
+    $historyPaginationInfo = $historyContractsData['pagination']; // Récupérer juste les infos
+
+    // Construire le bon URL Pattern pour la pagination de l'historique
+    $historyUrlPattern = "?status=" . urlencode($filter_status) . "&hpage={page}";
+
+    // Préparer les données pour renderPagination (pour l'historique)
+    $historyPaginationDataForRender = [
+        'currentPage' => $historyPaginationInfo['current'],
+        'totalPages' => $historyPaginationInfo['totalPages'],
+        'totalItems' => $historyPaginationInfo['total'],
+        'perPage' => $historyPaginationInfo['limit']
+    ];
+
+    // Générer le HTML de pagination correct pour l'historique
+    $historyPaginationHtmlCorrected = renderPagination($historyPaginationDataForRender, $historyUrlPattern);
+
+    // Assurer le formatage pour l'historique
+    foreach ($historyContracts as &$hist) { // Utiliser $historyContracts directement
+        if (!isset($hist['reference'])) $hist['reference'] = 'CT-' . str_pad($hist['id'], 6, '0', STR_PAD_LEFT);
+        if (!isset($hist['date_debut_formatee']) && isset($hist['date_debut'])) $hist['date_debut_formatee'] = formatDate($hist['date_debut'], 'd/m/Y');
+        if (!isset($hist['date_fin_formatee']) && isset($hist['date_fin'])) $hist['date_fin_formatee'] = formatDate($hist['date_fin'], 'd/m/Y');
+        if (!isset($hist['statut_badge']) && isset($hist['statut'])) $hist['statut_badge'] = getStatusBadge($hist['statut']);
+    }
+    unset($hist); // Détacher la référence
+
+    // Titre page
     $pageTitle = "Mes Contrats - Espace Entreprise";
 
-    // Inclure l'en-tête pour la vue liste
+    // Header
     include_once __DIR__ . '/../../templates/header.php';
 ?>
 
@@ -231,19 +208,38 @@ if ($contractId > 0) {
 
         <?php echo displayFlashMessages(); ?>
 
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white">
-                <h5 class="card-title mb-0">Liste de vos contrats</h5>
-                <!-- Ajouter ici des options de filtrage si nécessaire -->
-                <!--càd filtre par statut, date de début, date de fin, etc. -->
+        <!-- Liste Principale des Contrats -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap">
+                <h5 class="card-title mb-0 me-3">Liste de vos contrats</h5>
+
+                <form action="contracts.php" method="GET" class="row g-2 align-items-center">
+                    <div class="col-auto">
+                        <label for="statusFilter" class="col-form-label">Filtrer par statut:</label>
+                    </div>
+                    <div class="col-auto">
+                        <select name="status" id="statusFilter" class="form-select form-select-sm" onchange="this.form.submit()">
+                            <option value="actif" <?= ($filter_status === 'actif') ? 'selected' : '' ?>>Actifs</option>
+                            <option value="en_attente" <?= ($filter_status === 'en_attente') ? 'selected' : '' ?>>En attente</option>
+                            <option value="expire" <?= ($filter_status === 'expire') ? 'selected' : '' ?>>Expirés</option>
+                            <option value="resilie" <?= ($filter_status === 'resilie') ? 'selected' : '' ?>>Résiliés</option>
+                            <option value="all" <?= ($filter_status === 'all') ? 'selected' : '' ?>>Tous</option>
+                        </select>
+                    </div>
+                </form>
             </div>
             <div class="card-body">
-                <?php if (empty($contrats)): ?>
-                    <p class="text-center text-muted my-5">Vous n'avez aucun contrat pour le moment.</p>
+                <?php if (empty($contrats) && $filter_status === 'actif'): // Affiche seulement s'il n'y a pas de contrat *actif*
+                ?>
+                    <p class="text-center text-muted my-5">Vous n'avez aucun contrat actif pour le moment.</p>
                     <div class="text-center">
                         <a href="quotes.php" class="btn btn-primary">Demander un nouveau devis</a>
                     </div>
-                <?php else: ?>
+                <?php elseif (empty($contrats)):
+                ?>
+                    <p class="text-center text-muted my-5">Aucun contrat trouvé pour le statut "<?= htmlspecialchars(ucfirst($filter_status)) ?>".</p>
+                <?php else:
+                ?>
                     <div class="table-responsive">
                         <table class="table table-hover align-middle">
                             <thead>
@@ -257,7 +253,7 @@ if ($contractId > 0) {
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php foreach ($contrats as $contratItem): // Variable renommée pour éviter conflit 
+                                <?php foreach ($contrats as $contratItem):
                                 ?>
                                     <tr>
                                         <td><?= htmlspecialchars($contratItem['reference'] ?? 'N/A') ?></td>
@@ -267,21 +263,64 @@ if ($contractId > 0) {
                                         <td><?= getStatusBadge($contratItem['statut']) ?></td>
                                         <td>
                                             <a href="contracts.php?id=<?= $contratItem['id'] ?>" class="btn btn-sm btn-info me-1" title="Voir les détails"><i class="fas fa-eye"></i></a>
-                                            <!-- Ajouter d'autres boutons d'action si nécessaire -->
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
                             </tbody>
                         </table>
                     </div>
-                    <!-- Ajouter ici la pagination si nécessaire -->
+                    <?= $mainPaginationHtmlCorrected // Afficher les liens de pagination pour la liste principale 
+                    ?>
                 <?php endif; ?>
             </div>
         </div>
+
+        <!-- Historique des Contrats Précédents (Expirés/Résiliés) -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Historique des contrats précédents</h5>
+            </div>
+            <div class="card-body">
+                <?php if (!empty($historyContracts)):
+                ?>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Réf.</th>
+                                    <th>Type</th>
+                                    <th>Début</th>
+                                    <th>Fin</th>
+                                    <th>Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($historyContracts as $hist):
+                                ?>
+                                    <tr>
+                                        <td><a href="contracts.php?id=<?= $hist['id'] ?>"><?= htmlspecialchars($hist['reference']) ?></a></td>
+                                        <td><?= htmlspecialchars(ucfirst($hist['type_contrat'])) ?></td>
+                                        <td><?= $hist['date_debut_formatee'] ?? 'N/A' ?></td>
+                                        <td><?= $hist['date_fin_formatee'] ?? 'N/A' ?></td>
+                                        <td><?= $hist['statut_badge'] ?? 'N/A' ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                    <?= $historyPaginationHtmlCorrected // Afficher les liens de pagination pour l'historique 
+                    ?>
+                <?php else:
+                ?>
+                    <p class="text-muted text-center my-3">Aucun contrat expiré ou résilié trouvé.</p>
+                <?php endif; ?>
+            </div>
+        </div>
+
     </main>
 
 <?php
-    // Inclure le pied de page pour la vue liste
+    // Footer
     include_once __DIR__ . '/../../templates/footer.php';
-} // Fin du else (vue liste)
+}
 ?>
