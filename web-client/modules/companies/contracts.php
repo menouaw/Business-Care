@@ -43,16 +43,6 @@ if ($contractId > 0) {
     }
 
     // --- Gestion des actions (ex: téléchargement PDF) ---
-    if ($action === 'download') {
-        // La fonction generateContractPDF devrait gérer la sortie et l'arrêt du script en cas de succès
-        $result = generateContractPDF($contractId);
-        if (!$result['success']) {
-            // Si la génération échoue, afficher l'erreur sur la page de détail
-            flashMessage($result['message'] ?? "Erreur inconnue lors de la génération du PDF.", "danger");
-        }
-        // Si le téléchargement réussit, la fonction generateContractPDF doit avoir terminé le script.
-        // Si elle échoue, on continue pour afficher la page de détails avec le message flash.
-    }
     // TODO: Ajouter ici la logique pour d'autres actions si nécessaire (ex: renouvellement)
 
     // Définir le titre de la page pour la vue détaillée
@@ -80,9 +70,6 @@ if ($contractId > 0) {
             <div class="card-header bg-white d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Informations générales</h5>
                 <div class="btn-group">
-                    <a href="contracts.php?id=<?php echo $contractId; ?>&action=download" class="btn btn-sm btn-outline-primary" title="Télécharger le contrat en PDF">
-                        <i class="fas fa-file-pdf me-1"></i> Télécharger PDF
-                    </a>
                     <?php /* Placeholder pour bouton Renouvellement
                     if ($contract['statut'] === 'actif' && $contract['date_fin']): ?>
                         <button type="button" class="btn btn-sm btn-outline-success ms-2" data-bs-toggle="modal" data-bs-target="#renewModal">
@@ -280,7 +267,6 @@ if ($contractId > 0) {
                                         <td><?= getStatusBadge($contratItem['statut']) ?></td>
                                         <td>
                                             <a href="contracts.php?id=<?= $contratItem['id'] ?>" class="btn btn-sm btn-info me-1" title="Voir les détails"><i class="fas fa-eye"></i></a>
-                                            <a href="contracts.php?id=<?= $contratItem['id'] ?>&action=download" class="btn btn-sm btn-secondary" title="Télécharger PDF"><i class="fas fa-file-pdf"></i></a>
                                             <!-- Ajouter d'autres boutons d'action si nécessaire -->
                                         </td>
                                     </tr>

@@ -40,11 +40,12 @@ function getCompaniesList($page = 1, $limit = 20, $search = '')
         // Sélection des colonnes existantes et comptages
         $query = "SELECT e.id, e.nom, e.siret, e.adresse, e.code_postal, e.ville, e.telephone, e.email, e.site_web, e.logo_url, e.taille_entreprise, e.secteur_activite, e.date_creation, e.created_at, e.updated_at,
                   COUNT(DISTINCT p.id) as nombre_employes,
-                  COUNT(DISTINCT c.id) as nombre_contrats_actifs -- Renommé pour clarté
+                  COUNT(DISTINCT c.id) as nombre_contrats_actifs 
                   FROM entreprises e 
                   LEFT JOIN personnes p ON e.id = p.entreprise_id AND p.role_id = :role_id
                   LEFT JOIN contrats c ON e.id = c.entreprise_id AND (c.date_fin IS NULL OR c.date_fin >= CURDATE()) AND c.statut = 'actif'
                   WHERE " . $where; // Appliquer la condition WHERE ici
+
 
         $queryParams = ['role_id' => ROLE_SALARIE];
         $queryParams = array_merge($queryParams, $params); // Fusionner les paramètres
@@ -199,7 +200,7 @@ function getCompanyDetails($company_id)
             }
         }
 
-        // Récupération des statistiques d'utilisation (semble correct)
+        // Récupération des statistiques d'utilisation 
         $statsQuery = "SELECT COUNT(r.id) as total_rdv,
                      SUM(CASE WHEN r.statut = 'termine' THEN 1 ELSE 0 END) as rdv_termines,
                      SUM(CASE WHEN r.date_rdv >= CURDATE() THEN 1 ELSE 0 END) as rdv_a_venir,
@@ -249,11 +250,10 @@ function updateCompany($company_id, $company_data)
         'taille_entreprise',
         'secteur_activite',
         'date_creation'
-        // 'statut', // Colonne inexistante
-        // 'description' // Colonne inexistante
+
     ];
 
-    // Sanitize and filter input data
+
     $company_data = sanitizeInput($company_data);
     $filteredData = array_intersect_key($company_data, array_flip($allowedFields));
 
@@ -332,8 +332,7 @@ function addCompany($company_data)
         'taille_entreprise',
         'secteur_activite',
         'date_creation'
-        // 'statut', // Colonne inexistante
-        // 'description' // Colonne inexistante
+
     ];
 
     // Filtrage des données
@@ -344,10 +343,6 @@ function addCompany($company_data)
         $filteredData['date_creation'] = date('Y-m-d');
     }
 
-    // Définition des valeurs par défaut (pour colonnes qui n'existent pas, commenté)
-    /* if (!isset($filteredData['statut'])) {
-        $filteredData['statut'] = 'actif';
-    } */
 
     try {
         // Utilisation de la fonction insertRow du fichier db.php
@@ -396,10 +391,8 @@ function getCompanyContracts($company_id, $status = 'active')
     if ($status === 'active') {
         $where .= " AND (c.date_fin IS NULL OR c.date_fin >= CURDATE()) AND c.statut = 'actif'";
     } else if ($status === 'expired') {
-        // Statut 'expire' dans la table 'contrats' est un ENUM, on filtre sur celui-ci
-        // On peut aussi ajouter une condition sur la date de fin si nécessaire
+        // Pouruqoi pas ajouter une condition sur la date de fin si nécessaire ?
         $where .= " AND c.statut = 'expire'";
-        // Alternative: $where .= " AND c.date_fin < CURDATE()"; // Si le statut 'expire' n'est pas toujours à jour
     } else if ($status !== null && $status !== 'all') {
         $allowed_statuses = ['actif', 'expire', 'resilie', 'en_attente']; // Statuts de la table contrats
         if (in_array($status, $allowed_statuses)) {
@@ -417,7 +410,7 @@ function getCompanyContracts($company_id, $status = 'active')
                 FROM contrats c
                 LEFT JOIN contrats_prestations cp ON c.id = cp.contrat_id
                 WHERE " . $where . "
-                  -- Group by toutes les colonnes de c.*
+                  -- Group by toutes les colonnes de c.* 
                   GROUP BY c.id, c.entreprise_id, c.date_debut, c.date_fin, c.montant_mensuel,
                            c.nombre_salaries, c.type_contrat, c.statut, c.conditions_particulieres,
                            c.created_at, c.updated_at
@@ -429,22 +422,6 @@ function getCompanyContracts($company_id, $status = 'active')
         foreach ($contracts as &$contract) {
             // Générer une référence
             $contract['reference'] = 'CT-' . str_pad($contract['id'], 6, '0', STR_PAD_LEFT);
-
-            // Récupération des prestataires associés (limité pour performance)
-            // Cette requête est complexe et peut être optimisée ou retirée si non essentielle pour la vue liste
-            $providersQuery = "SELECT DISTINCT CONCAT(pr.prenom, ' ', pr.nom) as nom,
-                            pr.id as personne_id, 
-                            COUNT(r.id) as nombre_prestations_par_prestataire
-                            FROM personnes pr
-                            JOIN rendez_vous r ON pr.id = r.personne_id
-                            JOIN prestations p ON r.prestation_id = p.id
-                            JOIN contrats_prestations cp ON p.id = cp.prestation_id AND cp.contrat_id = :contrat_id
-                            WHERE r.personne_id IS NOT NULL -- S'assurer qu'il y a un prestataire lié au RDV
-                            GROUP BY pr.id, nom
-                            ORDER BY nombre_prestations_par_prestataire DESC
-                            LIMIT 5";
-
-            $contract['prestataires'] = executeQuery($providersQuery, [':contrat_id' => $contract['id']])->fetchAll(PDO::FETCH_ASSOC);
         }
 
         return $contracts;
@@ -473,7 +450,7 @@ function getCompanyEmployees($company_id, $page = 1, $limit = 20, $search = '')
     $search = sanitizeInput($search);
 
     if (!$company_id) {
-        // Retourner une structure vide cohérente
+        // Vérification de l'ID d'entreprise, s'il n'est pas valide, on retourne une structure vide
         return [
             'employees' => [],
             'pagination' => [
@@ -859,7 +836,6 @@ function getCompanyRecentActivity($company_id, $limit = 10)
                 'update_company' => 'fas fa-building',
                 'add_contract' => 'fas fa-file-signature',
                 'demande_devis' => 'fas fa-file-invoice-dollar'
-                // Ajouter d'autres actions loguées si nécessaire
             ];
 
             $activity['icone'] = $actionIcons[$activity['action']] ?? 'fas fa-history';
@@ -1145,214 +1121,6 @@ function getCompanyContractDetails($company_id, $contract_id)
 }
 
 /**
- * Génère et envoie un PDF du contrat (Orchestrateur).
- * Appelle la fonction _generateContractPDFContent pour la génération effective.
- *
- * @param int $contract_id Identifiant du contrat
- * @return array Résultat de l'opération (succès/échec avant génération ou si erreur)
- */
-function generateContractPDF($contract_id)
-{
-    // Validation de l'ID
-    $contract_id = filter_var(sanitizeInput($contract_id), FILTER_VALIDATE_INT);
-
-    if (!$contract_id) {
-        return [
-            'success' => false,
-            'message' => "ID de contrat invalide"
-        ];
-    }
-
-    try {
-        // Vérifier que l'utilisateur a accès à ce contrat (si appelé depuis l'espace client)
-        $entrepriseId = $_SESSION['user_entreprise'] ?? null;
-        if (!$entrepriseId && isset($_SESSION['user_role']) && $_SESSION['user_role'] !== ROLE_ADMIN) {
-            // Ou récupérer l'ID entreprise différemment si admin
-            return ['success' => false, 'message' => "Accès non autorisé"];
-        }
-
-        // Récupérer les détails du contrat (incluant entreprise et services)
-        if (!$entrepriseId) {
-            // Logique pour récupérer l'ID entreprise si admin - A FAIRE
-            // Exemple simple (peut nécessiter plus de vérifications) :
-            $contract_base_info = fetchOne('contrats', 'id = :id', [':id' => $contract_id]);
-            if (!$contract_base_info) return ['success' => false, 'message' => "Contrat non trouvé"];
-            $entrepriseId = $contract_base_info['entreprise_id'];
-            // L'appel suivant à getCompanyContractDetails fonctionnera avec cet ID,
-            // mais il faut s'assurer que l'admin A LE DROIT de voir ce contrat spécifique.
-            // La logique d'autorisation pour admin pourrait être plus complexe.
-        }
-
-        $contract = getCompanyContractDetails($entrepriseId, $contract_id);
-
-        if (!$contract) {
-            return [
-                'success' => false,
-                'message' => "Contrat non trouvé ou accès non autorisé"
-            ];
-        }
-
-        // Appeler la fonction helper qui génère le PDF et termine le script
-        _generateContractPDFContent($contract);
-
-        // Normalement, le script s'arrête dans la fonction helper après l'envoi du PDF.
-        // Ce retour ne sera atteint qu'en cas d'échec avant l'appel ou si exit() échoue (improbable).
-        return [
-            'success' => true,
-            'message' => "PDF généré avec succès (théoriquement)"
-        ];
-    } catch (Exception $e) {
-        logSystemActivity('error', "Erreur lors de la tentative de génération PDF contrat #$contract_id: " . $e->getMessage());
-        return [
-            'success' => false,
-            'message' => "Une erreur est survenue lors de la préparation de la génération du PDF."
-            // Ne pas afficher $e->getMessage() à l'utilisateur final directement
-        ];
-    }
-}
-
-/**
- * Fonction helper pour générer le contenu PDF du contrat et l'envoyer.
- * Utilise TCPDF.
- * NOTE: Cette fonction appelle exit() après avoir envoyé le PDF.
- *
- * @param array $contract Données complètes du contrat.
- * @throws Exception Si TCPDF n'est pas trouvé ou si une erreur interne survient.
- */
-function _generateContractPDFContent(array $contract)
-{
-    // Charger la bibliothèque TCPDF
-    // Assurez-vous que TCPDF est installé (via Composer ou téléchargement)
-    $tcpdfPath = __DIR__ . '/../../../vendor/tecnickcom/tcpdf/tcpdf.php'; // Chemin typique Composer
-    if (!file_exists($tcpdfPath)) {
-        // Si téléchargé manuellement, cherchez ailleurs ou lancez une erreur
-        // Exemple : $tcpdfPath = __DIR__ . '/../../../libs/tcpdf/tcpdf.php';
-        // if (!file_exists($tcpdfPath)) { ... }
-        logSystemActivity('critical', "Bibliothèque TCPDF non trouvée à : $tcpdfPath");
-        throw new Exception("Erreur interne: La bibliothèque PDF est manquante.");
-    }
-    require_once $tcpdfPath;
-
-    // Charger les fonctions utilitaires (pour formatDate, formatMoney)
-    $functionsPath = __DIR__ . '/../../shared/web-client/functions.php';
-    if (!file_exists($functionsPath)) {
-        logSystemActivity('critical', "Fichier de fonctions non trouvé à : $functionsPath");
-        throw new Exception("Erreur interne: Le fichier de fonctions est manquant.");
-    }
-    require_once $functionsPath;
-
-    // Créer une instance PDF
-    $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
-
-    // Définir les métadonnées du document
-    $pdf->SetCreator(PDF_CREATOR);
-    $pdf->SetAuthor('Business Care');
-    $pdf->SetTitle('Contrat ' . ($contract['reference'] ?? $contract['id']));
-    $pdf->SetSubject('Détails du contrat de prestation de services');
-    $pdf->SetKeywords('Business Care, Contrat, Prestation, Service');
-
-    // Définir marges (en-tête/pied de page gérés par défaut par TCPDF ou via héritage)
-    $pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
-    $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
-    $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
-
-    // Définir les sauts de page automatiques
-    $pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
-
-    // Définir la police principale
-    $pdf->SetFont('helvetica', '', 10);
-
-    // Ajouter une page
-    $pdf->AddPage();
-
-    // ---- Contenu HTML du contrat ----
-    $html = <<<HTML
-<style>
-    h1 { font-size: 16pt; font-weight: bold; text-align: center; margin-bottom: 20px; color: #333; }
-    h2 { font-size: 12pt; font-weight: bold; margin-top: 15px; margin-bottom: 8px; border-bottom: 1px solid #cccccc; padding-bottom: 3px; color: #555; }
-    p { line-height: 1.5; margin-bottom: 10px; text-align: justify; }
-    strong { font-weight: bold; }
-    table { width: 100%; border-collapse: collapse; margin-top: 12px; margin-bottom: 15px; }
-    th { background-color: #f2f2f2; border: 1px solid #dddddd; text-align: left; padding: 8px; font-weight: bold; color: #444; }
-    td { border: 1px solid #dddddd; text-align: left; padding: 8px; vertical-align: top; }
-    .info-block { margin-bottom: 20px; padding: 10px; border: 1px solid #eee; border-radius: 4px; background-color: #f9f9f9; }
-    .info-block p { margin-bottom: 6px; }
-    .info-label { font-weight: bold; width: 160px; display: inline-block; color: #666; }
-    .conditions { margin-top: 20px; padding: 15px; border: 1px dashed #ccc; background-color: #fafafa; }
-    .page-title { font-size: 18pt; text-align: center; margin-bottom: 25px; font-weight: bold; color: #2c3e50; }
-</style>
-
-<div class="page-title">Contrat de Prestation de Services</div>
-HTML;
-
-    // Informations sur le Contrat
-    $html .= "<h2>Informations Générales du Contrat</h2>";
-    $html .= "<div class=\"info-block\">";
-    $html .= "<p><span class=\"info-label\">Référence Contrat:</span> " . htmlspecialchars($contract['reference'] ?? 'N/A') . "</p>";
-    $html .= "<p><span class=\"info-label\">Type de Contrat:</span> " . htmlspecialchars(ucfirst($contract['type_contrat'] ?? 'N/A')) . "</p>";
-    $html .= "<p><span class=\"info-label\">Date de Début:</span> " . (isset($contract['date_debut']) ? formatDate($contract['date_debut'], 'd/m/Y') : 'N/A') . "</p>";
-    $html .= "<p><span class=\"info-label\">Date de Fin:</span> " . (isset($contract['date_fin']) && $contract['date_fin'] ? formatDate($contract['date_fin'], 'd/m/Y') : 'Indéterminée') . "</p>";
-    $html .= "<p><span class=\"info-label\">Montant Mensuel:</span> " . (isset($contract['montant_mensuel']) ? formatMoney($contract['montant_mensuel']) : 'N/A') . "</p>";
-    $html .= "<p><span class=\"info-label\">Nombre de Salariés:</span> " . htmlspecialchars($contract['nombre_salaries'] ?? 'Non spécifié') . "</p>";
-    $html .= "<p><span class=\"info-label\">Statut:</span> " . htmlspecialchars(ucfirst($contract['statut'] ?? 'N/A')) . "</p>";
-    $html .= "</div>";
-
-    // Informations sur l'Entreprise Cliente
-    $html .= "<h2>Informations sur l'Entreprise Cliente</h2>";
-    $html .= "<div class=\"info-block\">";
-    $html .= "<p><span class=\"info-label\">Nom:</span> " . htmlspecialchars($contract['entreprise_nom'] ?? 'N/A') . "</p>";
-    $html .= "<p><span class=\"info-label\">SIRET:</span> " . htmlspecialchars($contract['entreprise_siret'] ?? 'N/A') . "</p>";
-    $html .= "<p><span class=\"info-label\">Adresse:</span> " . htmlspecialchars($contract['entreprise_adresse'] ?? '') . ", " . htmlspecialchars($contract['entreprise_code_postal'] ?? '') . " " . htmlspecialchars($contract['entreprise_ville'] ?? '') . "</p>";
-    $html .= "</div>";
-
-    // Services Inclus
-    if (!empty($contract['services'])) {
-        $html .= "<h2>Services Inclus dans le Contrat</h2>";
-        $html .= "<table>";
-        $html .= "<thead><tr><th>Service</th><th>Description</th><th>Catégorie</th><th>Prix Indicatif</th></tr></thead>";
-        $html .= "<tbody>";
-        foreach ($contract['services'] as $service) {
-            $html .= "<tr>";
-            $html .= "<td>" . htmlspecialchars($service['nom'] ?? 'N/A') . "</td>";
-            $html .= "<td>" . htmlspecialchars($service['description'] ?? '-') . "</td>";
-            $html .= "<td>" . htmlspecialchars(ucfirst($service['categorie'] ?? '-')) . "</td>";
-            $html .= "<td>" . htmlspecialchars($service['prix_formate'] ?? 'N/A') . "</td>";
-            $html .= "</tr>";
-        }
-        $html .= "</tbody></table>";
-    } else {
-        $html .= "<h2>Services Inclus dans le Contrat</h2>";
-        $html .= "<p>Aucun service spécifique listé pour ce contrat.</p>";
-    }
-    $html .= "<br><br>";
-
-    // Conditions Particulières, elles sont dans la table 'contrats'
-    if (!empty($contract['conditions_particulieres'])) {
-        $html .= "<h2>Conditions Particulières</h2>";
-        $html .= "<div class=\"conditions\">" . nl2br(htmlspecialchars($contract['conditions_particulieres'])) . "</div>";
-    }
-
-    // Ajouter le contenu HTML au PDF
-    $pdf->writeHTML($html, true, false, true, false, '');
-
-
-    // Fermer et générer le document PDF pour téléchargement
-    $filename = 'Contrat_' . preg_replace('/[^a-zA-Z0-9_-]/', '_', $contract['reference'] ?? $contract['id']) . '.pdf'; // Nettoyer nom fichier
-    try {
-        $pdf->Output($filename, 'D');
-    } catch (Exception $e) {
-        // Log l'erreur spécifique de TCPDF si Output échoue
-        logSystemActivity('error', "Erreur TCPDF Output pour contrat #$contract[id]: " . $e->getMessage());
-        // Tenter d'afficher un message d'erreur simple (peut ne pas fonctionner si les en-têtes sont déjà envoyés)
-        if (!headers_sent()) {
-            header('Content-Type: text/plain; charset=utf-8');
-            echo "Erreur lors de la finalisation du PDF. Veuillez contacter le support.";
-        }
-    }
-    exit; // Arrêter l'exécution après avoir envoyé le PDF (ou tenté de l'envoyer)
-}
-
-/**
  * Récupère les factures liées à un contrat (via l'entreprise, car pas de lien direct)
  *
  * @param int $contract_id Identifiant du contrat (utilisé pour trouver l'entreprise)
@@ -1418,7 +1186,38 @@ function requestContractRenewal($company_id, $data)
  */
 function requestCompanyQuote($data)
 {
-    // ... (Validation des données de base) ...
+    // Validation des données de base
+    $errors = [];
+    if (empty($data['entreprise_id'])) {
+        $errors[] = "L'identifiant de l'entreprise est manquant.";
+    } else {
+        $company_id = filter_var(sanitizeInput($data['entreprise_id']), FILTER_VALIDATE_INT);
+        if (!$company_id) {
+            $errors[] = "L'identifiant de l'entreprise est invalide.";
+        } else {
+            // Vérifier si l'entreprise existe réellement
+            $companyExists = fetchOne('entreprises', 'id = :id', [':id' => $company_id]);
+            if (!$companyExists) {
+                $errors[] = "L'entreprise spécifiée n'existe pas.";
+            }
+        }
+    }
+
+    if (empty($data['description_besoin'])) {
+        $errors[] = "La description de votre besoin est requise.";
+    }
+
+    if (empty($data['service_souhaite'])) {
+        $errors[] = "Veuillez indiquer le service ou type de contrat souhaité.";
+    }
+
+    // Si des erreurs sont trouvées, retourner un échec avec les messages
+    if (!empty($errors)) {
+        return [
+            'success' => false,
+            'message' => implode("<br>", $errors) // Concatène les erreurs pour l'affichage
+        ];
+    }
 
     // Sécurité: Valider le token CSRF si vous l'utilisez
     if (!isset($data['csrf_token']) || !validateToken($data['csrf_token'])) {
@@ -1430,7 +1229,6 @@ function requestCompanyQuote($data)
 
     try {
         // Préparer les données pour l'insertion dans la table 'devis'
-        // Utiliser uniquement les colonnes existantes dans 'devis'
         $devisData = [
             'entreprise_id' => $data['entreprise_id'],
             'date_creation' => date('Y-m-d'),
@@ -1442,12 +1240,7 @@ function requestCompanyQuote($data)
         ];
 
         // !! TODO: Ajouter ces colonnes à la table 'devis' si le stockage est nécessaire ?
-        // 'description_demande' => $data['description_besoin'],
-        // 'service_souhaite' => $data['service_souhaite'],
-        // 'nombre_salaries_estime' => $data['nombre_salaries'] ?? null,
-        // 'contact_personne' => $data['contact_personne'] ?? null,
-        // 'contact_email' => $data['contact_email'] ?? null,
-        // 'contact_telephone' => $data['contact_telephone'] ?? null
+
 
         // Insérer le devis dans la base de données
         $devisId = insertRow('devis', $devisData);
