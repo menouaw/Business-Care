@@ -25,6 +25,7 @@ include '../../templates/header.php';
         <?php include '../../templates/sidebar.php'; ?>
 
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <?php echo displayFlashMessages(); ?>
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                 <h1 class="h2">Gestion des utilisateurs</h1>
                 <div class="btn-toolbar mb-2 mb-md-0">
@@ -93,7 +94,7 @@ include '../../templates/header.php';
                                     <td><?php echo htmlspecialchars($user['email']); ?></td>
                                     <td><?php echo htmlspecialchars($user['role_name'] ?? ''); ?></td>
                                     <td><?php echo getStatusBadge($user['statut']); ?></td>
-                                    <td><?php echo $user['derniere_connexion'] ? formatDate($user['derniere_connexion']) : 'Never'; ?></td>
+                                    <td><?php echo $user['derniere_connexion'] ? formatDate($user['derniere_connexion']) : 'Jamais'; ?></td>
                                     <td class="table-actions">
                                         <a href="view.php?id=<?php echo $user['id']; ?>" class="btn btn-sm btn-info" data-bs-toggle="tooltip" title="Voir">
                                             <i class="fas fa-eye"></i>
@@ -101,7 +102,9 @@ include '../../templates/header.php';
                                         <a href="edit.php?id=<?php echo $user['id']; ?>" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="Modifier">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <a href="delete.php?id=<?php echo $user['id']; ?>" class="btn btn-sm btn-danger btn-delete" data-bs-toggle="tooltip" title="Supprimer">
+                                        <a href="delete.php?id=<?php echo $user['id']; ?>&csrf_token=<?php echo generateToken(); ?>" class="btn btn-sm btn-danger btn-delete" 
+                                           data-bs-toggle="tooltip" 
+                                           title="Supprimer"> 
                                             <i class="fas fa-trash"></i>
                                         </a>
                                     </td>

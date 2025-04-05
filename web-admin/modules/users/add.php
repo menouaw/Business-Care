@@ -1,11 +1,10 @@
 <?php
-require_once '../../includes/page_functions/modules/users.php'; // Includes init.php which includes db.php, functions.php, auth.php
+require_once '../../includes/page_functions/modules/users.php'; 
 
 requireRole(ROLE_ADMIN);
 
 $pageTitle = "Ajouter un utilisateur";
 $errors = [];
-// Initialize form data with defaults
 $formData = [
     'prenom' => '',
     'nom' => '',
@@ -13,24 +12,20 @@ $formData = [
     'telephone' => '',
     'role_id' => '',
     'entreprise_id' => '',
-    'statut' => 'actif', // Default status
+    'statut' => 'actif', 
 ];
 
-// Fetch roles and entreprises for dropdowns
 $roles = usersGetRoles();
 $entreprises = usersGetEntreprises();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // 1. Validate CSRF token
     if (!validateToken($_POST['csrf_token'] ?? '')) {
         $errors[] = 'Erreur de sécurité (jeton CSRF invalide).';
         logSecurityEvent($_SESSION['user_id'] ?? null, 'csrf_failure', '[FAILURE] Tentative d\'ajout utilisateur échouée - CSRF invalide', true);
     } else {
-        // 2. Sanitize input and merge with defaults
-        $submittedData = getFormData(); // Sanitizes $_POST
-        $formData = array_merge($formData, $submittedData); // Keep defaults if POST data is missing for some fields
+        $submittedData = getFormData(); 
+        $formData = array_merge($formData, $submittedData); 
 
-        // 3. Server-side validation
         if (empty($formData['prenom'])) $errors[] = "Le prénom est obligatoire.";
         if (empty($formData['nom'])) $errors[] = "Le nom est obligatoire.";
         if (empty($formData['email'])) {
@@ -38,7 +33,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif (!filter_var($formData['email'], FILTER_VALIDATE_EMAIL)) {
              $errors[] = "L'email n'est pas valide.";
         } else {
-             // Check email uniqueness explicitly here for immediate feedback
              $existingUser = fetchOne('personnes', 'email = ?', '', [$formData['email']]);
              if ($existingUser) {
                  $errors[] = "Cet email est déjà utilisé par un autre compte.";
@@ -52,37 +46,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (empty($formData['role_id'])) $errors[] = "Le rôle est obligatoire.";
         if (empty($formData['statut'])) $errors[] = "Le statut est obligatoire.";
 
-        // Validate role_id exists
         if (!empty($formData['role_id']) && !fetchOne('roles', 'id = ?', '', [(int)$formData['role_id']])) {
             $errors[] = "Le rôle sélectionné est invalide.";
         }
-         // Validate entreprise_id exists if provided
-         if (!empty($formData['entreprise_id']) && !fetchOne('entreprises', 'id = ?', '', [(int)$formData['entreprise_id']])) {
-             $errors[] = "L'entreprise sélectionnée est invalide.";
-         }
+        if (!empty($formData['entreprise_id']) && !fetchOne('entreprises', 'id = ?', '', [(int)$formData['entreprise_id']])) {
+            $errors[] = "L'entreprise sélectionnée est invalide.";
+        }
 
-        // 4. If validation passes, attempt to save
         if (empty($errors)) {
-            // usersSave handles password hashing and DB insertion/update
-            $saveResult = usersSave($formData, 0); // 0 indicates creating a new user
+            $saveResult = usersSave($formData, 0); 
 
             if ($saveResult['success']) {
                 flashMessage($saveResult['message'] ?? 'Utilisateur ajouté avec succès !', 'success');
-                // Redirect to the new user's view page
-                 redirectTo('view.php?id=' . $saveResult['newId']);
+                redirectTo('view.php?id=' . $saveResult['newId']);
             } else {
-                // Add errors from usersSave function (like DB errors)
                 $errors = array_merge($errors, $saveResult['errors'] ?? ['Une erreur technique est survenue lors de l\'ajout.']);
-                // Log the detailed error if available
-                 logSystemActivity('user_add_failure', '[ERROR] Échec ajout utilisateur: ' . implode(', ', $errors));
+                logSystemActivity('user_add_failure', '[ERROR] Échec ajout utilisateur: ' . implode(', ', $errors));
             }
         }
     }
 
-     // If errors occurred, prepare a flash message to display on the page
      if (!empty($errors)) {
         flashMessage('Erreurs de validation:<br>' . implode('<br>', array_map('htmlspecialchars', $errors)), 'danger');
-        // We repopulate the form using $formData which now contains submitted values
      }
 }
 
@@ -101,11 +86,11 @@ include '../../templates/header.php';
                 </a>
             </div>
 
-             <?php echo displayFlashMessages(); // Display validation errors or success message here ?>
+             <?php echo displayFlashMessages(); ?>
 
             <div class="card">
                  <div class="card-header">
-                    Informations du Nouvel Utilisateur
+                    Informations
                 </div>
                 <div class="card-body">
                      <form action="add.php" method="post" novalidate>
@@ -133,14 +118,14 @@ include '../../templates/header.php';
                                 <input type="password" class="form-control" id="mot_de_passe" name="mot_de_passe" required>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="mot_de_passe_confirm" class="form-label">Confirmer Mot de passe <span class="text-danger">*</span></label>
+                                <label for="mot_de_passe_confirm" class="form-label">Confirmation <span class="text-danger">*</span></label>
                                 <input type="password" class="form-control" id="mot_de_passe_confirm" name="mot_de_passe_confirm" required>
                             </div>
                         </div>
 
                          <div class="mb-3">
                             <label for="telephone" class="form-label">Téléphone</label>
-                            <input type="tel" class="form-control" id="telephone" name="telephone" placeholder="Format: 0612345678" value="<?php echo htmlspecialchars($formData['telephone']); ?>">
+                            <input type="tel" class="form-control" id="telephone" name="telephone" placeholder="0612345678" value="<?php echo htmlspecialchars($formData['telephone']); ?>">
                         </div>
 
                         <div class="row">
@@ -156,7 +141,7 @@ include '../../templates/header.php';
                                 </select>
                             </div>
                              <div class="col-md-6 mb-3">
-                                <label for="statut" class="form-label">Statut Initial <span class="text-danger">*</span></label>
+                                <label for="statut" class="form-label">Statut <span class="text-danger">*</span></label>
                                 <select class="form-select" id="statut" name="statut" required>
                                     <option value="actif" <?php echo ($formData['statut'] == 'actif') ? 'selected' : ''; ?>>Actif</option>
                                     <option value="en_attente" <?php echo ($formData['statut'] == 'en_attente') ? 'selected' : ''; ?>>En attente</option>
@@ -166,9 +151,9 @@ include '../../templates/header.php';
                         </div>
 
                          <div class="mb-3">
-                            <label for="entreprise_id" class="form-label">Entreprise (si Salarié ou Représentant)</label>
+                            <label for="entreprise_id" class="form-label">Entreprise (si applicable)</label>
                             <select class="form-select" id="entreprise_id" name="entreprise_id">
-                                <option value="">-- Aucune / Non applicable --</option>
+                                <option value="">-- Aucune --</option>
                                 <?php foreach ($entreprises as $entreprise): ?>
                                 <option value="<?php echo $entreprise['id']; ?>" <?php echo ($formData['entreprise_id'] == $entreprise['id']) ? 'selected' : ''; ?>>
                                     <?php echo htmlspecialchars($entreprise['nom']); ?> (ID: <?php echo $entreprise['id']; ?>)

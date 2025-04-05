@@ -33,9 +33,16 @@ include '../../templates/header.php';
                     <a href="edit.php?id=<?php echo $user['id']; ?>" class="btn btn-sm btn-primary me-2" data-bs-toggle="tooltip" title="Modifier cet utilisateur">
                         <i class="fas fa-edit"></i> Modifier
                     </a>
-                    <a href="delete.php?id=<?php echo $user['id']; ?>" class="btn btn-sm btn-danger btn-delete me-2" data-bs-toggle="tooltip" title="Supprimer cet utilisateur" data-user-name="<?php echo htmlspecialchars($user['prenom'] . ' ' . $user['nom']); ?>">
-                        <i class="fas fa-trash"></i> Supprimer
-                    </a>
+                    <form action="delete.php" method="POST" class="d-inline" id="deleteForm">
+                         <input type="hidden" name="id" id="deleteUserId" value="<?php echo $user['id']; ?>">
+                         <input type="hidden" name="csrf_token" value="<?php echo generateToken(); ?>">
+                         <button type="submit" class="btn btn-sm btn-danger btn-delete me-2" 
+                                 data-user-id="<?php echo $user['id']; ?>" 
+                                 data-user-name="<?php echo htmlspecialchars($user['prenom'] . ' ' . $user['nom']); ?>"
+                                 data-bs-toggle="tooltip" title="Supprimer cet utilisateur">
+                             <i class="fas fa-trash"></i> Supprimer
+                         </button>
+                    </form>
                     <?php
                     $companyButtonAdded = false;
                     if (($user['role_id'] == ROLE_ENTREPRISE || $user['role_id'] == ROLE_SALARIE) && isset($user['entreprise_id'])):
@@ -611,6 +618,7 @@ include '../../templates/header.php';
             <?php endif; ?>
             
             <?php include '../../templates/footer.php'; ?>
+
         </main>
     </div>
 </div> 

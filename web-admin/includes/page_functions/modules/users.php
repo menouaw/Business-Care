@@ -317,25 +317,17 @@ function usersDelete($id) {
         return ['success' => false, 'message' => "Vous ne pouvez pas supprimer votre propre compte."];
     }
 
-    $prestationsCount = executeQuery("SELECT COUNT(id) FROM prestations WHERE praticien_id = ?", [$id])->fetchColumn();
-    
-    $reservationsCount = executeQuery("SELECT COUNT(id) FROM rendez_vous WHERE personne_id = ?", [$id])->fetchColumn();
-    
-    if ($prestationsCount > 0) {
-        logBusinessOperation($_SESSION['user_id'], 'user_delete_attempt', 
-            "[ERROR] Tentative échouée de suppression utilisateur ID: $id - Prestations associées existent");
-        return [
-            'success' => false,
-            'message' => "Impossible de supprimer cet utilisateur car il a des prestations associees"
-        ];
-    } 
-    
+    $reservationsCount = executeQuery(
+        "SELECT COUNT(id) FROM rendez_vous WHERE personne_id = ? OR praticien_id = ?",
+        [$id, $id]
+    )->fetchColumn();
+
     if ($reservationsCount > 0) {
-        logBusinessOperation($_SESSION['user_id'], 'user_delete_attempt', 
-            "[ERROR] Tentative échouée de suppression utilisateur ID: $id - Rendez-vous associés existent");
+        logBusinessOperation($_SESSION['user_id'], 'user_delete_attempt',
+            "[ERROR] Tentative échouée de suppression utilisateur ID: $id - Rendez-vous associés existent (client ou praticien)");
         return [
             'success' => false,
-            'message' => "Impossible de supprimer cet utilisateur car il a des rendez-vous associes"
+            'message' => "Impossible de supprimer cet utilisateur car il a des rendez-vous associés (en tant que client ou praticien)"
         ];
     }
     
@@ -356,7 +348,7 @@ function usersDelete($id) {
                 "[SUCCESS] Suppression compte utilisateur ID: $id par admin ID: {$_SESSION['user_id']}");
             return [
                 'success' => true,
-                'message' => "L'utilisateur et ses données associées (logs, tokens, préférences) ont été supprimés avec succès"
+                'message' => "L'utilisateur et ses données associées ont été supprimés avec succès"
             ];
         } else {
             rollbackTransaction(); 
