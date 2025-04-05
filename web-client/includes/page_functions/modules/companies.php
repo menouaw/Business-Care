@@ -130,7 +130,7 @@ function getCompanyDetails($company_id)
                   COUNT(DISTINCT c.id) as nombre_contrats_actifs -- Renommé pour clarté
                   FROM entreprises e
                   LEFT JOIN personnes p ON e.id = p.entreprise_id AND p.role_id = :role_id
-                  LEFT JOIN contrats c ON e.id = c.entreprise_id AND (c.date_fin IS NULL OR c.date_fin >= CURDATE()) AND c.statut = 'actif'
+                  LEFT JOIN contrats c ON e.id = c.entreprise_id AND (c.date_fin IS NULL OR c.date_fin >= CURDATE()) AND c.statut = 'active'
                   WHERE e.id = :company_id
                   -- Group by toutes les colonnes de e.* pour être compatible SQL standard
                   GROUP BY e.id, e.nom, e.siret, e.adresse, e.code_postal, e.ville, e.telephone, e.email, e.site_web, e.logo_url, e.taille_entreprise, e.secteur_activite, e.date_creation, e.created_at, e.updated_at";
@@ -371,12 +371,12 @@ function addCompany($company_data)
  * Récupère les contrats d'une entreprise
  * 
  * @param int $company_id identifiant de l'entreprise
- * @param string $status filtre par statut (active, expired, all, ou autre statut de la table)
+ * @param string|null $status (Ignoré) Ancien filtre par statut. N'est plus utilisé.
  * @param int $page Numéro de la page actuelle
  * @param int $limit Nombre d'éléments par page
  * @return array liste des contrats et informations de pagination
  */
-function getCompanyContracts($company_id, $status = 'active', $page = 1, $limit = 20)
+function getCompanyContracts($company_id, $status = null, $page = 1, $limit = 20) // Status parameter is now ignored
 {
     // Validation de l'ID et des paramètres de pagination
     $company_id = filter_var(sanitizeInput($company_id), FILTER_VALIDATE_INT);
@@ -397,28 +397,17 @@ function getCompanyContracts($company_id, $status = 'active', $page = 1, $limit 
         ];
     }
 
+    // Edit 1: Remove all status filtering logic. Only filter by company ID.
     $where = "c.entreprise_id = :company_id";
-$params = ['company_id' => $company_id];
-$countParams = ['company_id' => $company_id];
+    $params = [':company_id' => $company_id];
+    $countParams = [':company_id' => $company_id];
 
-
-    // Construction de la clause WHERE et des paramètres
-    if ($status === 'active') {
-        $where .= " AND (c.date_fin IS NULL OR c.date_fin >= CURDATE()) AND c.statut = 'actif'";
-    } else if ($status === 'expired') {
-        $where .= " AND c.statut = 'expire'";
-    } else if ($status === 'history') { // Ajout pour regrouper l'historique
-        $where .= " AND c.statut IN ('expire', 'resilie')";
-    } else if ($status !== null && $status !== 'all') {
-        $allowed_statuses = ['actif', 'expire', 'resilie', 'en_attente', 'history']; // Ajouter 'history' ici aussi
-        if (in_array($status, $allowed_statuses)) {
-            $where .= " AND c.statut = :status";
-            $params[':status'] = $status;
-            $countParams[':status'] = $status; // Ajouter aussi aux params de comptage
-        } else {
-            // Statut invalide, ignorer
-        }
-    }
+    // // Construction de la clause WHERE et des paramètres (REMOVED BLOCK)
+    // if ($status === 'actif') { ... }
+    // else if ($status === 'expired') { ... }
+    // else if ($status === 'history') { ... }
+    // else if ($status !== null && $status !== 'all') { ... }
+    // // END REMOVED BLOCK
 
     try {
         // 1. Compter le total des enregistrements
@@ -445,6 +434,11 @@ $countParams = ['company_id' => $company_id];
         $params[':limit'] = $limit;
         $params[':offset'] = $offset;
 
+        // DEBUG: Log la requête et les paramètres pour les contrats
+        // Edit 2: Update the status in the log message to reflect it's ignored or passed value
+        error_log("[DEBUG getCompanyContracts] Status (ignored): $status, Query: $query");
+        error_log("[DEBUG getCompanyContracts] Params: " . print_r($params, true));
+
         $contracts = executeQuery($query, $params)->fetchAll(PDO::FETCH_ASSOC);
 
         // Formatage des contrats
@@ -464,7 +458,8 @@ $countParams = ['company_id' => $company_id];
             'totalItems' => $total,
             'perPage' => $limit
         ];
-        $urlPattern = "?status=" . urlencode($status) . "&page={page}";
+        // Edit 3: Remove status from pagination URL pattern
+        $urlPattern = "?page={page}";
 
         // 4. Retourner les résultats et les infos de pagination
         return [
@@ -672,7 +667,7 @@ function addCompanyEmployee($company_id, $employee_data)
         return false;
     }
 
-    
+
     // Vérification que l'entreprise existe
     $company = fetchOne('entreprises', "id = :id", [':id' => $company_id]);
     if (!$company) {
@@ -2032,6 +2027,146 @@ function reactivateCompanyEmployee($company_id, $employee_id)
     } catch (Exception $e) {
         logSystemActivity('error', "Erreur réactivation employé #$employee_id: " . $e->getMessage());
         flashMessage("Une erreur technique est survenue lors de la réactivation.", "danger");
+        return false;
+    }
+}
+
+/**
+ * Récupère les informations d'un utilisateur par son ID.
+ * NOTE: Placée ici car user_functions.php a été supprimé.
+ *
+ * @param int $userId L'identifiant de l'utilisateur.
+ * @return array|false Les données de l'utilisateur ou false si non trouvé.
+ */
+function getUserById($userId)
+{
+    $userId = filter_var(sanitizeInput($userId), FILTER_VALIDATE_INT);
+    if (!$userId) {
+        return false;
+    }
+
+    try {
+        // Utilise fetchOne de db.php (qui est inclus via init.php)
+        return fetchOne('personnes', 'id = :id', [':id' => $userId]);
+    } catch (Exception $e) {
+        logSystemActivity('error', "Erreur getUserById #$userId: " . $e->getMessage());
+        return false;
+    }
+}
+
+/**
+ * Met à jour le profil d'un utilisateur (nom, email).
+ * NOTE: Placée ici car user_functions.php a été supprimé.
+ *
+ * @param int $userId L'identifiant de l'utilisateur.
+ * @param array $data Données à mettre à jour (ex: ['nom_utilisateur' => 'Nouveau Nom', 'email' => 'nouvel@email.com']).
+ * @return bool True si la mise à jour a réussi, False sinon.
+ */
+function updateUserProfile($userId, $data)
+{
+    $userId = filter_var(sanitizeInput($userId), FILTER_VALIDATE_INT);
+    if (!$userId || empty($data)) {
+        return false;
+    }
+
+    // Adapter les champs autorisés aux colonnes réelles de la table 'personnes'
+    $allowedFields = ['nom_utilisateur', 'email', 'nom', 'prenom', 'telephone'];
+    $updateData = sanitizeInput($data);
+    $filteredData = array_intersect_key($updateData, array_flip($allowedFields));
+
+    // S'assurer que le nom d'utilisateur est bien mappé à la colonne 'nom' ou 'nom_utilisateur'
+    if (isset($filteredData['nom_utilisateur']) && !isset($filteredData['nom'])) {
+        // Si votre table a 'nom' et pas 'nom_utilisateur', faites le mapping ici
+        // $filteredData['nom'] = $filteredData['nom_utilisateur'];
+        // unset($filteredData['nom_utilisateur']);
+        // Ou ajustez $allowedFields ci-dessus
+    }
+
+
+    if (empty($filteredData)) {
+        return false; // Aucune donnée valide à mettre à jour
+    }
+
+    try {
+        // Vérifier l'unicité de l'email si il est modifié
+        if (isset($filteredData['email'])) {
+            $existingUser = fetchOne('personnes', 'email = :email AND id != :id', [
+                ':email' => $filteredData['email'],
+                ':id' => $userId
+            ]);
+            if ($existingUser) {
+                flashMessage('Cette adresse email est déjà utilisée.', 'danger');
+                return false;
+            }
+        }
+
+        // Utilise updateRow de db.php (inclus via init.php)
+        $affectedRows = updateRow('personnes', $filteredData, 'id = :id', [':id' => $userId]);
+
+        if ($affectedRows > 0) {
+            logBusinessOperation($userId, 'update_profile', "Mise à jour profil utilisateur #$userId");
+        }
+
+        // Retourne true même si 0 ligne affectée (si les données n'ont pas changé)
+        return $affectedRows !== false;
+    } catch (Exception $e) {
+        logSystemActivity('error', "Erreur updateUserProfile #$userId: " . $e->getMessage());
+        flashMessage('Une erreur technique est survenue lors de la mise à jour du profil.', 'danger');
+        return false;
+    }
+}
+
+/**
+ * Change le mot de passe d'un utilisateur après vérification de l'actuel.
+ * NOTE: Placée ici car user_functions.php a été supprimé.
+ *
+ * @param int $userId L'identifiant de l'utilisateur.
+ * @param string $currentPassword Le mot de passe actuel fourni par l'utilisateur.
+ * @param string $newPassword Le nouveau mot de passe souhaité.
+ * @return bool True si le changement a réussi, False sinon.
+ */
+function changeUserPassword($userId, $currentPassword, $newPassword)
+{
+    $userId = filter_var(sanitizeInput($userId), FILTER_VALIDATE_INT);
+    if (!$userId || empty($currentPassword) || empty($newPassword)) {
+        return false;
+    }
+
+    try {
+        $user = getUserById($userId); // Utilise la fonction getUserById définie ci-dessus
+        if (!$user || !isset($user['mot_de_passe'])) {
+            return false; // Utilisateur non trouvé ou pas de hash de mdp
+        }
+
+        // Vérifier si le mot de passe actuel est correct
+        if (!password_verify($currentPassword, $user['mot_de_passe'])) {
+            // Le message d'erreur est géré dans settings.php
+            return false;
+        }
+
+        // Vérifier la complexité du nouveau mot de passe si nécessaire
+        // if (strlen($newPassword) < 8) { ... return false; }
+
+        // Hacher le nouveau mot de passe
+        $newPasswordHash = password_hash($newPassword, PASSWORD_DEFAULT);
+        if (!$newPasswordHash) {
+            logSystemActivity('error', "Erreur hachage nouveau mot de passe pour utilisateur #$userId");
+            return false;
+        }
+
+        // Mettre à jour le mot de passe dans la base de données
+        $updateData = ['mot_de_passe' => $newPasswordHash];
+        $affectedRows = updateRow('personnes', $updateData, 'id = :id', [':id' => $userId]);
+
+        if ($affectedRows > 0) {
+            logBusinessOperation($userId, 'change_password', "Changement mot de passe utilisateur #$userId");
+            return true;
+        } else {
+            return false; // La mise à jour a échoué
+        }
+    } catch (Exception $e) {
+        logSystemActivity('error', "Erreur changeUserPassword #$userId: " . $e->getMessage());
+        flashMessage('Une erreur technique est survenue lors du changement de mot de passe.', 'danger');
         return false;
     }
 }

@@ -11,7 +11,7 @@
 
 require_once __DIR__ . '/../../includes/init.php';
 require_once __DIR__ . '/../../includes/page_functions/modules/companies.php';
-// Assurez-vous que user_functions.php est inclus si nécessaire (pour getUserById, etc.)
+// Ligne supprimée car les fonctions user sont maintenant dans companies.php
 // require_once __DIR__ . '/../../includes/user_functions.php'; 
 
 requireRole(ROLE_ENTREPRISE);
@@ -27,43 +27,61 @@ if (!$companyDetails) {
     redirectTo('index.php');
 }
 
-// Récupérer les détails de l'utilisateur courant (simplifié, adaptez selon votre structure)
-// Supposons une fonction getUserById ou similaire
-// $currentUser = getUserById($userId); 
-// Pour l'exemple, utilisons les infos de session
-$currentUser = [
-    'id' => $userId,
-    'nom_utilisateur' => $_SESSION['user_name'], // Adaptez si le nom complet est stocké différemment
-    'email' => $_SESSION['user_email']
-];
+// Récupérer les détails de l'utilisateur courant depuis la base de données
+$currentUser = getUserById($userId);
+if (!$currentUser) {
+    // Gérer le cas où l'utilisateur n'est pas trouvé (peu probable si loggué)
+    flashMessage("Impossible de récupérer les informations de l'utilisateur.", 'danger');
+    redirectTo('index.php'); // Ou une page d'erreur
+}
 
 $profileErrors = [];
 $passwordErrors = [];
-$profileSubmittedData = $currentUser; // Pré-remplir avec les données actuelles
+// Pré-remplir avec les données actuelles de la BDD
+$profileSubmittedData = [
+    'nom' => $currentUser['nom'] ?? '',
+    'prenom' => $currentUser['prenom'] ?? '',
+    'email' => $currentUser['email'] ?? ''
+];
 
-// --- Traitement des formulaires --- 
+// --- Traitement des formulaires ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Vérification CSRF Token commune pour tous les formulaires POST de cette page
+    if (!verifyCsrfToken()) {
+        flashMessage('Erreur de sécurité (jeton CSRF invalide).', 'danger');
+        redirectTo('settings.php'); // Recharger la page pour obtenir un nouveau token
+    }
+
     if (isset($_POST['update_profile'])) { // Identifier le formulaire soumis
-        // TODO: Ajouter la vérification CSRF Token
+        // La vérification CSRF est déjà faite au-dessus
         $profileSubmittedData = sanitizeInput($_POST);
 
         // Validation
-        if (empty($profileSubmittedData['nom_utilisateur'])) {
-            $profileErrors[] = "Le nom d'utilisateur est obligatoire.";
+        if (empty($profileSubmittedData['nom'])) {
+            $profileErrors[] = "Le nom est obligatoire.";
+        }
+        if (empty($profileSubmittedData['prenom'])) {
+            $profileErrors[] = "Le prénom est obligatoire.";
         }
         if (empty($profileSubmittedData['email']) || !filter_var($profileSubmittedData['email'], FILTER_VALIDATE_EMAIL)) {
             $profileErrors[] = "Une adresse email valide est obligatoire.";
         }
 
         if (empty($profileErrors)) {
-            // TODO: Appeler la fonction de mise à jour du profil utilisateur
-            // $updateSuccess = updateUserProfile($userId, ['nom_utilisateur' => $profileSubmittedData['nom_utilisateur'], 'email' => $profileSubmittedData['email']]);
-            $updateSuccess = true; // Simulé pour l'exemple
+            // Préparer les données pour la mise à jour
+            $updateData = [
+                'nom' => $profileSubmittedData['nom'],
+                'prenom' => $profileSubmittedData['prenom'],
+                'email' => $profileSubmittedData['email']
+            ];
+            // Appeler la fonction de mise à jour du profil utilisateur
+            $updateSuccess = updateUserProfile($userId, $updateData);
 
             if ($updateSuccess) {
                 flashMessage('Profil mis à jour avec succès.', 'success');
                 // Mettre à jour les infos en session si nécessaire
-                $_SESSION['user_name'] = $profileSubmittedData['nom_utilisateur'];
+                // Mettre à jour le nom affiché (par exemple, prénom + nom)
+                $_SESSION['user_name'] = $profileSubmittedData['prenom'] . ' ' . $profileSubmittedData['nom'];
                 $_SESSION['user_email'] = $profileSubmittedData['email'];
                 redirectTo('settings.php');
             } else {
@@ -71,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
     } elseif (isset($_POST['change_password'])) { // Identifier le formulaire soumis
-        // TODO: Ajouter la vérification CSRF Token
+        // La vérification CSRF est déjà faite au-dessus
         $passwordData = sanitizeInput($_POST);
 
         // Validation
@@ -87,23 +105,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // TODO: Ajouter validation de complexité si nécessaire
 
         if (empty($passwordErrors)) {
-            // TODO: Appeler la fonction de changement de mot de passe
-            // $changeSuccess = changeUserPassword($userId, $passwordData['current_password'], $passwordData['new_password']);
-            // Simulé pour l'exemple:
-            if ($passwordData['current_password'] === 'password123') { // Simuler vérification mdp actuel
-                $changeSuccess = true;
-            } else {
-                $changeSuccess = false;
-                $passwordErrors[] = "Le mot de passe actuel est incorrect.";
-            }
+            // Appeler la fonction de changement de mot de passe
+            $changeSuccess = changeUserPassword($userId, $passwordData['current_password'], $passwordData['new_password']);
 
             if ($changeSuccess) {
                 flashMessage('Mot de passe modifié avec succès.', 'success');
                 redirectTo('settings.php');
             } else {
-                if (empty($passwordErrors)) { // Ajouter une erreur générique si aucune spécifique n'a été définie
-                    $passwordErrors[] = "Erreur lors de la modification du mot de passe.";
+                // Si la fonction changeUserPassword échoue et qu'il n'y avait pas d'autres erreurs
+                // de validation avant (ex: mots de passe non identiques), 
+                // on suppose que c'est le mot de passe actuel qui est incorrect.
+                if (empty($passwordErrors)) {
+                    $passwordErrors[] = "Le mot de passe actuel fourni est incorrect.";
                 }
+                // Si d'autres erreurs étaient déjà présentes (ex: nouveaux mots de passe différents),
+                // elles seront affichées, ce qui est le comportement attendu.
             }
         }
     }
@@ -117,7 +133,8 @@ include_once __DIR__ . '/../../templates/header.php';
 <main class="container py-4">
     <h1 class="mb-4">Paramètres</h1>
 
-    <?php displayFlashMessages(); ?>
+    <?php // displayFlashMessages(); // Supprimé car géré par header.php 
+    ?>
 
     <div class="row g-4">
         <!-- Section Informations Entreprise -->
@@ -156,12 +173,15 @@ include_once __DIR__ . '/../../templates/header.php';
                     <?php endif; ?>
                     <form action="settings.php" method="POST">
                         <input type="hidden" name="update_profile" value="1">
-                        <?php // TODO: Ajouter input CSRF token: <input type="hidden" name="csrf_token" value="..."> 
-                        ?>
+                        <input type="hidden" name="csrf_token" value="<?= generateCsrfToken() ?>">
 
                         <div class="mb-3">
-                            <label for="nom_utilisateur" class="form-label">Nom d'utilisateur</label>
-                            <input type="text" class="form-control" id="nom_utilisateur" name="nom_utilisateur" value="<?= htmlspecialchars($profileSubmittedData['nom_utilisateur'] ?? '') ?>" required>
+                            <label for="prenom" class="form-label">Prénom</label>
+                            <input type="text" class="form-control" id="prenom" name="prenom" value="<?= htmlspecialchars($profileSubmittedData['prenom'] ?? '') ?>" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="nom" class="form-label">Nom</label>
+                            <input type="text" class="form-control" id="nom" name="nom" value="<?= htmlspecialchars($profileSubmittedData['nom'] ?? '') ?>" required>
                         </div>
                         <div class="mb-3">
                             <label for="email" class="form-label">Email</label>
@@ -188,8 +208,7 @@ include_once __DIR__ . '/../../templates/header.php';
                     <?php endif; ?>
                     <form action="settings.php" method="POST">
                         <input type="hidden" name="change_password" value="1">
-                        <?php // TODO: Ajouter input CSRF token: <input type="hidden" name="csrf_token" value="..."> 
-                        ?>
+                        <input type="hidden" name="csrf_token" value="<?= generateCsrfToken() ?>">
 
                         <div class="mb-3">
                             <label for="current_password" class="form-label">Mot de passe actuel</label>

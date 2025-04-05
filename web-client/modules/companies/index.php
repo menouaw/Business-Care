@@ -26,8 +26,14 @@ requireRole(ROLE_ENTREPRISE);
 $entrepriseId = $_SESSION['user_entreprise'];
 $entreprise = getCompanyDetails($entrepriseId);
 
+// DEBUG: Vérifier l'ID entreprise utilisé
+error_log("[DEBUG index.php] ID Entreprise utilisé pour contrats: " . $entrepriseId);
+
 // récupérer les contrats actifs
-$contrats = getCompanyContracts($entrepriseId, 'active');
+$contrats = getCompanyContracts($entrepriseId, 'actif');
+
+// DEBUG: Vérifier le retour de getCompanyContracts
+error_log("[DEBUG index.php] Contenu de \$contrats: " . print_r($contrats, true));
 
 // récupérer les dernières factures
 $factures = getCompanyInvoices($entrepriseId);
@@ -87,12 +93,12 @@ include_once __DIR__ . '/../../templates/header.php';
                                 <i class="fas fa-file-contract fa-2x"></i>
                             </div>
                             <div>
-                                <h6 class="card-subtitle text-muted mb-1">Contrats actifs</h6>
-                                <h2 class="card-title mb-0"><?= count($contrats) ?></h2>
+                                <h6 class="card-subtitle text-muted mb-1">Contrats </h6>
+                                <h2 class="card-title mb-0"><?= count($contrats['contracts'] ?? []) ?></h2>
                             </div>
                         </div>
                         <div class="mt-3">
-                            <a href="contrats.php" class="btn btn-sm btn-outline-success">Voir tous</a>
+                            <a href="contracts.php" class="btn btn-sm btn-outline-success">Voir tous</a>
                         </div>
                     </div>
                 </div>
@@ -142,11 +148,11 @@ include_once __DIR__ . '/../../templates/header.php';
             <div class="col-lg-6">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                        <h5 class="card-title mb-0">Contrats actifs</h5>
+                        <h5 class="card-title mb-0">Contrats </h5>
                         <a href="contracts.php" class="btn btn-sm btn-outline-primary">Tous les contrats</a>
                     </div>
                     <div class="card-body">
-                        <?php if (empty($contrats)): ?>
+                        <?php if (empty($contrats['contracts'])): ?>
                             <p class="text-center text-muted my-5">Aucun contrat actif</p>
                         <?php else: ?>
                             <div class="table-responsive">

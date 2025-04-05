@@ -204,7 +204,24 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/profile.php"><i class="fas fa-user me-2"></i>Mon profil</a></li>
-                                <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/settings.php"><i class="fas fa-cog me-2"></i>Paramètres</a></li>
+                                <?php
+                                // Déterminer le lien des paramètres en fonction du rôle
+                                $settings_link = WEBCLIENT_URL . '/profile.php'; // Lien par défaut si pas de settings spécifique au rôle
+                                if (isset($userRole)) {
+                                    switch ($userRole) {
+                                        case 'entreprise':
+                                            $settings_link = WEBCLIENT_URL . '/modules/companies/settings.php';
+                                            break;
+                                        case 'salarie':
+                                            $settings_link = WEBCLIENT_URL . '/modules/employees/settings.php'; // Supposant que ce fichier existe/existera
+                                            break;
+                                        case 'prestataire':
+                                            $settings_link = WEBCLIENT_URL . '/modules/providers/settings.php'; // Supposant que ce fichier existe/existera
+                                            break;
+                                    }
+                                }
+                                ?>
+                                <li><a class="dropdown-item" href="<?= $settings_link ?>"><i class="fas fa-cog me-2"></i>Paramètres</a></li>
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>
