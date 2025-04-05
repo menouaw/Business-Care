@@ -132,6 +132,7 @@ CREATE TABLE rendez_vous (
     id INT PRIMARY KEY AUTO_INCREMENT,
     personne_id INT NOT NULL,
     prestation_id INT NOT NULL,
+    praticien_id INT,
     date_rdv DATETIME NOT NULL,
     duree INT NOT NULL,
     lieu VARCHAR(255),
@@ -142,8 +143,10 @@ CREATE TABLE rendez_vous (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (personne_id) REFERENCES personnes(id),
     FOREIGN KEY (prestation_id) REFERENCES prestations(id),
+    FOREIGN KEY (praticien_id) REFERENCES personnes(id),
     INDEX idx_date (date_rdv),
-    INDEX idx_statut (statut)
+    INDEX idx_statut (statut),
+    INDEX idx_praticien (praticien_id)
 );
 
 CREATE TABLE evenements (

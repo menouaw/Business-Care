@@ -80,26 +80,107 @@ function usersGetDetails($id) {
     
     $sqlHistory = "SELECT * FROM logs 
                    WHERE personne_id = ? AND action LIKE '%login%' 
-                   ORDER BY created_at DESC LIMIT 10"; // Adjusted action check
+                   ORDER BY created_at DESC LIMIT 10"; 
     $user['login_history'] = executeQuery($sqlHistory, [$id])->fetchAll();
     
     if (isset($user['role_id']) && $user['role_id'] == ROLE_PRESTATAIRE) { 
-        $sqlPrestations = "SELECT pr.* 
-                           FROM prestations pr
-                           WHERE pr.praticien_id = ?
-                           ORDER BY pr.created_at DESC LIMIT 10"; // Assuming prestation has praticien_id
-                           // Original query had `services s` and `p.*` - might need adjustment based on actual `prestations` table
-        $user['prestations'] = executeQuery($sqlPrestations, [$id])->fetchAll();
+        $sqlAppointments = "SELECT rv.*, pr.nom as prestation_nom, cust.prenom as client_prenom, cust.nom as client_nom
+                           FROM rendez_vous rv
+                           LEFT JOIN prestations pr ON rv.prestation_id = pr.id
+                           LEFT JOIN personnes cust ON rv.personne_id = cust.id
+                           WHERE rv.praticien_id = ?
+                           ORDER BY rv.date_rdv DESC LIMIT 10";
+        $user['appointments_given'] = executeQuery($sqlAppointments, [$id])->fetchAll();
     }
     
     if (isset($user['role_id']) && $user['role_id'] == ROLE_SALARIE) { 
-        $sqlReservations = "SELECT rv.*, pr.nom as prestation_nom, p.prenom as praticien_prenom, p.nom as praticien_nom
+        $sqlReservations = "SELECT rv.*, pr.nom as prestation_nom, p.id as praticien_id, p.prenom as praticien_prenom, p.nom as praticien_nom
                             FROM rendez_vous rv
                             LEFT JOIN prestations pr ON rv.prestation_id = pr.id
-                            LEFT JOIN personnes p ON pr.praticien_id = p.id
+                            LEFT JOIN personnes p ON rv.praticien_id = p.id
                             WHERE rv.personne_id = ?
                             ORDER BY rv.date_rdv DESC LIMIT 10";
         $user['reservations'] = executeQuery($sqlReservations, [$id])->fetchAll();
+
+        $sqlEvaluations = "SELECT e.*, pr.nom as prestation_nom 
+                           FROM evaluations e
+                           JOIN prestations pr ON e.prestation_id = pr.id
+                           WHERE e.personne_id = ? 
+                           ORDER BY e.date_evaluation DESC 
+                           LIMIT 10";
+        $user['evaluations_submitted'] = executeQuery($sqlEvaluations, [$id])->fetchAll();
+
+        $sqlDonations = "SELECT * FROM dons WHERE personne_id = ? ORDER BY date_don DESC LIMIT 10";
+        $user['donations_made'] = executeQuery($sqlDonations, [$id])->fetchAll();
+    }
+    
+    if (isset($user['role_id']) && $user['role_id'] == ROLE_ENTREPRISE && isset($user['entreprise_id'])) {
+        $entrepriseId = $user['entreprise_id'];
+        
+        $sqlContracts = "SELECT * FROM contrats WHERE entreprise_id = ? ORDER BY date_debut DESC LIMIT 5";
+        $user['company_contracts'] = executeQuery($sqlContracts, [$entrepriseId])->fetchAll();
+        
+        $sqlInvoices = "SELECT * FROM factures WHERE entreprise_id = ? ORDER BY date_emission DESC LIMIT 10";
+        $user['company_invoices'] = executeQuery($sqlInvoices, [$entrepriseId])->fetchAll();
+        
+        $sqlEmployees = "SELECT id, nom, prenom, email, statut FROM personnes 
+                         WHERE entreprise_id = ? AND role_id = ? 
+                         ORDER BY nom, prenom LIMIT 10";
+        $user['company_employees'] = executeQuery($sqlEmployees, [$entrepriseId, ROLE_SALARIE])->fetchAll();
+        
+        $sqlQuotes = "SELECT * FROM devis WHERE entreprise_id = ? ORDER BY date_creation DESC LIMIT 10";
+        $user['company_quotes'] = executeQuery($sqlQuotes, [$entrepriseId])->fetchAll();
+
+        $sqlCurrentContract = "SELECT id, statut, date_fin FROM contrats 
+                               WHERE entreprise_id = ? AND statut = 'actif' 
+                               ORDER BY date_debut DESC LIMIT 1";
+        $user['current_contract_status'] = executeQuery($sqlCurrentContract, [$entrepriseId])->fetch();
+        
+        $sqlActiveEmployees = "SELECT COUNT(id) as count FROM personnes WHERE entreprise_id = ? AND role_id = ? AND statut = 'actif'";
+        $user['stats_active_employees'] = executeQuery($sqlActiveEmployees, [$entrepriseId, ROLE_SALARIE])->fetchColumn();
+
+        $sqlRecentReservations = "SELECT COUNT(rv.id) as count FROM rendez_vous rv 
+                                  JOIN personnes p ON rv.personne_id = p.id 
+                                  WHERE p.entreprise_id = ? AND rv.date_rdv >= DATE_SUB(NOW(), INTERVAL 30 DAY)";
+        $user['stats_recent_reservations'] = executeQuery($sqlRecentReservations, [$entrepriseId])->fetchColumn();
+        
+        $sqlTopPrestations = "SELECT pr.nom, COUNT(rv.id) as count 
+                              FROM rendez_vous rv 
+                              JOIN personnes p ON rv.personne_id = p.id
+                              JOIN prestations pr ON rv.prestation_id = pr.id
+                              WHERE p.entreprise_id = ?
+                              GROUP BY pr.id, pr.nom
+                              ORDER BY count DESC LIMIT 3";
+        $user['stats_top_prestations'] = executeQuery($sqlTopPrestations, [$entrepriseId])->fetchAll();
+
+        $sqlAvgSatisfaction = "SELECT AVG(e.note) as avg_score 
+                               FROM evaluations e
+                               JOIN personnes p ON e.personne_id = p.id
+                               WHERE p.entreprise_id = ?";
+        $avgScore = executeQuery($sqlAvgSatisfaction, [$entrepriseId])->fetchColumn();
+        $user['stats_avg_satisfaction'] = ($avgScore !== null) ? round($avgScore, 2) : null;
+    }
+    
+    if (isset($user['role_id']) && $user['role_id'] == ROLE_ADMIN) {
+        $sqlAdminActions = "SELECT action, details, ip_address, created_at 
+                            FROM logs 
+                            WHERE personne_id = ? 
+                            AND action NOT LIKE '%login%' 
+                            AND action NOT LIKE '%logout%'
+                            AND action NOT LIKE '%session_timeout%'
+                            AND action NOT LIKE '%role_check%'      
+                            AND action NOT LIKE '%user_info%'       
+                            ORDER BY created_at DESC 
+                            LIMIT 15";
+        $user['admin_actions'] = executeQuery($sqlAdminActions, [$id])->fetchAll();
+
+        $sqlSecurityActions = "SELECT action, details, ip_address, created_at 
+                               FROM logs 
+                               WHERE personne_id = ? 
+                               AND (action LIKE '[SECURITY]%' OR action LIKE '[SECURITY FAILURE]%')
+                               ORDER BY created_at DESC 
+                               LIMIT 10";
+        $user['security_actions'] = executeQuery($sqlSecurityActions, [$id])->fetchAll();
     }
     
     return $user;
@@ -173,7 +254,7 @@ function usersSave($data, $id = 0) {
         'ville' => $data['ville'] ?? null, 
         'role_id' => (int)$data['role_id'],
         'entreprise_id' => !empty($data['entreprise_id']) ? (int)$data['entreprise_id'] : null, 
-        'statut' => $data['statut'] ?? 'inactif' // Default to inactive?
+        'statut' => $data['statut'] ?? 'inactif'
     ];
             
     $passwordChanged = false;
@@ -297,4 +378,19 @@ function usersDelete($id) {
             'message' => "Erreur de base de données lors de la suppression (Transaction annulée)."
          ];
     }
+} 
+
+/**
+ * Récupère les détails d'un utilisateur spécifique par son ID.
+ *
+ * @param int $id Identifiant de l'utilisateur.
+ * @return array|false Tableau des informations de l'utilisateur ou false si non trouvé.
+ */
+function usersGetUserById($id) {
+    $sql = "SELECT p.*, r.nom as role_name, e.nom as entreprise_nom
+            FROM personnes p
+            LEFT JOIN roles r ON p.role_id = r.id
+            LEFT JOIN entreprises e ON p.entreprise_id = e.id
+            WHERE p.id = ? LIMIT 1";
+    return executeQuery($sql, [$id])->fetch();
 } 
