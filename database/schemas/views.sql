@@ -20,13 +20,16 @@ CREATE VIEW v_rendez_vous_du_jour AS
 SELECT 
     rv.id,
     rv.date_rdv,
-    p.nom as nom_personne,
-    p.prenom as prenom_personne,
+    p_client.nom as nom_client,
+    p_client.prenom as prenom_client,
     pr.nom as nom_prestation,
+    p_praticien.nom as nom_praticien,
+    p_praticien.prenom as prenom_praticien,
     rv.statut
 FROM rendez_vous rv
-JOIN personnes p ON rv.personne_id = p.id
+JOIN personnes p_client ON rv.personne_id = p_client.id
 JOIN prestations pr ON rv.prestation_id = pr.id
+LEFT JOIN personnes p_praticien ON rv.praticien_id = p_praticien.id
 WHERE DATE(rv.date_rdv) = CURDATE()
 ORDER BY rv.date_rdv;
 

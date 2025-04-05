@@ -1,31 +1,22 @@
 <?php
-require_once '../../includes/init.php';
 require_once '../../includes/page_functions/modules/users.php';
 
-// verifie si l'utilsateur est connecte
-requireAuthentication();
-if (!hasPermission('admin')) {
-    flashMessage('Vous n\'avez pas les permissions pour acceder a cette page.', 'danger');
-    header('Location: ' . WEBADMIN_URL);
-    exit;
-}
+requireRole(ROLE_ADMIN);
 
-// recupere les param de la requete
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$search = isset($_GET['search']) ? $_GET['search'] : '';
+$search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $role = isset($_GET['role']) ? (int)$_GET['role'] : 0;
+$statut = isset($_GET['statut']) ? trim($_GET['statut']) : '';
 
-// recupere les utilisateurs pagines avec filtrage
-$result = usersGetList($page, 10, $search, $role);
+$possibleStatuses = USER_STATUSES;
+$result = usersGetList($page, 10, $search, $role, 0, $statut);
+$roles = usersGetRoles();
+
 $users = $result['users'];
 $totalPages = $result['totalPages'];
 $totalUsers = $result['totalItems'];
 $page = $result['currentPage'];
 
-// recupere tous les rôles pour le dropdown de filtrage
-$roles = usersGetRoles();
-
-// definit le titre de la page et inclut l'en-tete
 $pageTitle = "Gestion des utilisateurs";
 include '../../templates/header.php';
 ?>
@@ -36,6 +27,7 @@ include '../../templates/header.php';
         <?php include '../../templates/sidebar.php'; ?>
 
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <?php echo displayFlashMessages(); ?>
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                 <h1 class="h2">Gestion des utilisateurs</h1>
                 <div class="btn-toolbar mb-2 mb-md-0">
@@ -47,25 +39,30 @@ include '../../templates/header.php';
             
             <div class="card mb-4">
                 <div class="card-body">
-                    <form action="" method="get" class="row g-3">
-                        <div class="col-md-6">
-                            <div class="input-group">
-                                <input type="text" class="form-control" name="search" value="<?php echo htmlspecialchars($search); ?>" placeholder="Rechercher des utilisateurs...">
-                                <button type="submit" class="btn btn-outline-secondary">
-                                    <i class="fas fa-search"></i>
-                                </button>
-                            </div>
+                    <form action="" method="get" class="row g-3 align-items-center">
+                        <div class="col-md-3">
+                            <input type="text" class="form-control form-control-sm" name="search" value="<?php echo htmlspecialchars($search); ?>" placeholder="Rechercher...">
                         </div>
-                        <div class="col-md-4">
-                            <select name="role" class="form-select">
+                        <div class="col-md-3">
+                            <select name="role" class="form-select form-select-sm">
                                 <option value="0">Tous les rôles</option>
                                 <?php foreach ($roles as $r): ?>
                                 <option value="<?php echo $r['id']; ?>" <?php echo $role == $r['id'] ? 'selected' : ''; ?>><?php echo htmlspecialchars($r['nom']); ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
-                        <div class="col-md-2">
-                            <a href="index.php" class="btn btn-outline-secondary w-100">Reinitialiser</a>
+                        <div class="col-md-3">
+                            <select name="statut" class="form-select form-select-sm">
+                                <option value="">Tous les statuts</option>
+                                <?php foreach (USER_STATUSES as $s): ?>
+                                <option value="<?php echo $s; ?>" <?php echo $statut == $s ? 'selected' : ''; ?>><?php echo ucfirst(htmlspecialchars($s)); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex">
+                            <button type="submit" class="btn btn-sm btn-primary w-100">
+                                <i class="fas fa-search"></i> Rechercher
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -104,7 +101,7 @@ include '../../templates/header.php';
                                     <td><?php echo htmlspecialchars($user['email']); ?></td>
                                     <td><?php echo htmlspecialchars($user['role_name'] ?? ''); ?></td>
                                     <td><?php echo getStatusBadge($user['statut']); ?></td>
-                                    <td><?php echo $user['derniere_connexion'] ? formatDate($user['derniere_connexion']) : 'Never'; ?></td>
+                                    <td><?php echo $user['derniere_connexion'] ? formatDate($user['derniere_connexion']) : 'Jamais'; ?></td>
                                     <td class="table-actions">
                                         <a href="view.php?id=<?php echo $user['id']; ?>" class="btn btn-sm btn-info" data-bs-toggle="tooltip" title="Voir">
                                             <i class="fas fa-eye"></i>
@@ -112,7 +109,9 @@ include '../../templates/header.php';
                                         <a href="edit.php?id=<?php echo $user['id']; ?>" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="Modifier">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <a href="delete.php?id=<?php echo $user['id']; ?>" class="btn btn-sm btn-danger btn-delete" data-bs-toggle="tooltip" title="Supprimer">
+                                        <a href="delete.php?id=<?php echo $user['id']; ?>&csrf_token=<?php echo generateToken(); ?>" class="btn btn-sm btn-danger btn-delete" 
+                                           data-bs-toggle="tooltip" 
+                                           title="Supprimer"> 
                                             <i class="fas fa-trash"></i>
                                         </a>
                                     </td>
@@ -127,7 +126,7 @@ include '../../templates/header.php';
                     <nav aria-label="Page navigation">
                         <ul class="pagination justify-content-center">
                             <li class="page-item <?php echo $page <= 1 ? 'disabled' : ''; ?>">
-                                <a class="page-link" href="?page=<?php echo $page - 1; ?>&search=<?php echo urlencode($search); ?>&role=<?php echo $role; ?>">Precedent</a>
+                                <a class="page-link" href="?page=<?php echo $page - 1; ?>&search=<?php echo urlencode($search); ?>&role=<?php echo $role; ?>&statut=<?php echo urlencode($statut); ?>">Precedent</a>
                             </li>
                             
                             <?php
@@ -137,12 +136,12 @@ include '../../templates/header.php';
                             for ($i = $startPage; $i <= $endPage; $i++):
                             ?>
                             <li class="page-item <?php echo $i == $page ? 'active' : ''; ?>">
-                                <a class="page-link" href="?page=<?php echo $i; ?>&search=<?php echo urlencode($search); ?>&role=<?php echo $role; ?>"><?php echo $i; ?></a>
+                                <a class="page-link" href="?page=<?php echo $i; ?>&search=<?php echo urlencode($search); ?>&role=<?php echo $role; ?>&statut=<?php echo urlencode($statut); ?>"><?php echo $i; ?></a>
                             </li>
                             <?php endfor; ?>
                             
                             <li class="page-item <?php echo $page >= $totalPages ? 'disabled' : ''; ?>">
-                                <a class="page-link" href="?page=<?php echo $page + 1; ?>&search=<?php echo urlencode($search); ?>&role=<?php echo $role; ?>">Next</a>
+                                <a class="page-link" href="?page=<?php echo $page + 1; ?>&search=<?php echo urlencode($search); ?>&role=<?php echo $role; ?>&statut=<?php echo urlencode($statut); ?>">Suivant</a>
                             </li>
                         </ul>
                     </nav>

@@ -136,10 +136,10 @@ function fetchAll($table, $where = '', $orderBy = '', $limit = 0, $offset = 0)
  * @param string $table Nom de la table concernée.
  * @param string $where Condition SQL pour filtrer les enregistrements.
  * @param string $orderBy Clause SQL pour ordonner les résultats (facultative).
+ * @param array $params Paramètres à lier à la clause WHERE.
  * @return array|false Tableau associatif représentant l'enregistrement trouvé ou false si aucun enregistrement ne correspond.
  */
-function fetchOne($table, $where, $orderBy = '')
-{
+function fetchOne($table, $where, $orderBy = '', $params = []) {
     $table = validateTableName($table);
 
     $sql = "SELECT * FROM $table WHERE $where";
@@ -147,8 +147,8 @@ function fetchOne($table, $where, $orderBy = '')
         $sql .= " ORDER BY $orderBy";
     }
     $sql .= " LIMIT 1";
-
-    $stmt = executeQuery($sql);
+    
+    $stmt = executeQuery($sql, $params);
     return $stmt->fetch();
 }
 
@@ -181,28 +181,48 @@ function insertRow($table, $data)
 }
 
 /**
- * Met à jour des lignes dans une table
- * 
- * @param string $table Nom de la table
- * @param array $data Données à mettre à jour sous forme de tableau associatif
- * @param string $where Clause WHERE pour cibler les lignes à mettre à jour
- * @param array $whereParams Paramètres pour la clause WHERE
- * @return int Nombre de lignes affectées
+ * Met à jour les enregistrements d'une table avec les données fournies.
+ *
+ * Cette fonction valide le nom de la table, construit dynamiquement la clause SET en encapsulant les noms de colonnes avec des backticks et en utilisant des placeholders préfixés par "set_", puis exécute une requête SQL UPDATE avec une clause WHERE personnalisée. Si le tableau de données est vide, une exception est levée. En cas d'erreur lors de l'exécution de la requête, l'erreur est loguée et une exception PDO est relancée.
+ *
+ * @param string $table Nom de la table cible.
+ * @param array $data Tableau associatif contenant les colonnes et leurs nouvelles valeurs.
+ * @param string $where Clause SQL WHERE avec des placeholders nommés (ex: "id = :where_id").
+ * @param array $whereParams Tableau associatif des valeurs pour les placeholders de la clause WHERE.
+ * @return int Nombre d'enregistrements mis à jour.
+ *
+ * @throws Exception Si le tableau $data est vide.
+ * @throws PDOException Si une erreur survient lors de l'exécution de la requête.
  */
 function updateRow($table, $data, $where, $whereParams = [])
 {
     $table = validateTableName($table);
+    
+    if (empty($data)) {
+        throw new Exception("Aucune donnée fournie pour la mise à jour.");
+    }
 
     $fields = array_keys($data);
     $setClause = array_map(function ($field) {
-        return "$field = :$field";
+        return "`$field` = :set_$field"; 
     }, $fields);
+    
+    $sql = "UPDATE `$table` SET " . implode(', ', $setClause) . " WHERE $where";
+    
+    $setParams = [];
+    foreach ($data as $key => $value) {
+        $setParams["set_$key"] = $value;
+    }
 
-    $sql = "UPDATE $table SET " . implode(', ', $setClause) . " WHERE $where";
+    $params = array_merge($setParams, $whereParams);
 
-    $params = array_merge($data, $whereParams);
-    $stmt = executeQuery($sql, $params);
-    return $stmt->rowCount();
+    try {
+        $stmt = executeQuery($sql, $params);
+        return $stmt->rowCount();
+    } catch (PDOException $e) {
+        error_log("Erreur updateRow: " . $e->getMessage() . " SQL: " . $sql . " Params: " . json_encode($params));
+        throw $e;
+    }
 }
 
 /**

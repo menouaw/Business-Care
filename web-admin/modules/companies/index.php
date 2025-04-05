@@ -1,21 +1,16 @@
 <?php
-require_once '../../includes/init.php';
 require_once '../../includes/page_functions/modules/companies.php';
 
-// verifie si l'utilisateur est connecte
-requireAuthentication();
+requireRole(ROLE_ADMIN);
 
-// recupere les param de la requete
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 $action = isset($_GET['action']) ? $_GET['action'] : '';
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
-// initialisation des variables
 $errors = [];
 $company = null;
 
-// traitement du formulaire de creation/edition
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = [
         'nom' => $_POST['nom'] ?? '',
@@ -31,45 +26,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'date_creation' => $_POST['date_creation'] ?? null
     ];
 
-    // sauvegarde de l'entreprise
     $result = companiesSave($data, $id);
     
     if ($result['success']) {
         flashMessage($result['message'], "success");
-        header('Location: ' . WEBADMIN_URL . '/modules/companies/');
-        exit;
+        redirectTo(WEBADMIN_URL . '/modules/companies/');
     } else {
         $errors = $result['errors'];
     }
 }
 
-// traitement de la suppression
 if ($action === 'delete' && $id > 0) {
     $result = companiesDelete($id);
     flashMessage($result['message'], $result['success'] ? "success" : "danger");
-    header('Location: ' . WEBADMIN_URL . '/modules/companies/');
-    exit;
+    redirectTo(WEBADMIN_URL . '/modules/companies/');
 }
 
-// recuperation des donnees pour l'edition/affichage
 if (($action === 'edit' || $action === 'view') && $id > 0) {
     $company = companiesGetDetails($id);
     
     if (!$company) {
         flashMessage("Entreprise non trouvee", "danger");
-        header('Location: ' . WEBADMIN_URL . '/modules/companies/');
-        exit;
+        redirectTo(WEBADMIN_URL . '/modules/companies/');
     }
 }
 
-// recupere les entreprises paginees
 $result = companiesGetList($page, 10, $search);
 $companies = $result['companies'];
 $totalPages = $result['totalPages'];
 $totalCompanies = $result['totalItems'];
 $page = $result['currentPage'];
 
-// inclusion du header
 $pageTitle = "Gestion des entreprises";
 include_once '../../templates/header.php';
 ?>

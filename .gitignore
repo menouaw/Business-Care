@@ -32,6 +32,7 @@ composer.phar
 # fichiers de configuration avec des informations sensibles
 config.php
 .cursor/
+docs/
 
 # fichiers de contenu utilisateur
 /uploads/
