@@ -131,7 +131,7 @@ include '../../templates/header.php';
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <small class="text-muted d-block">Date de Création</small>
-                                    <strong><?php echo formatDate($user['date_creation']); ?></strong>
+                                    <strong><?php echo formatDate($user['created_at']); ?></strong>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <small class="text-muted d-block">Dernière Connexion</small>

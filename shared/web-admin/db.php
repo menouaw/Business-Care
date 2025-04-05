@@ -178,24 +178,39 @@ function insertRow($table, $data) {
  * Met à jour des lignes dans une table
  * 
  * @param string $table Nom de la table
- * @param array $data Données à mettre à jour sous forme de tableau associatif
- * @param string $where Clause WHERE pour cibler les lignes à mettre à jour
- * @param array $whereParams Paramètres pour la clause WHERE
+ * @param array $data Données à mettre à jour sous forme de tableau associatif (keys = column names)
+ * @param string $where Clause WHERE pour cibler les lignes (doit utiliser des placeholders nommés, ex: `id = :where_id`)
+ * @param array $whereParams Paramètres associatifs pour la clause WHERE (keys = placeholder names sans le ':')
  * @return int Nombre de lignes affectées
  */
 function updateRow($table, $data, $where, $whereParams = []) {
     $table = validateTableName($table);
     
+    if (empty($data)) {
+        throw new Exception("Aucune donnée fournie pour la mise à jour.");
+    }
+
     $fields = array_keys($data);
     $setClause = array_map(function ($field) {
-        return "$field = :$field";
+        return "`$field` = :set_$field"; 
     }, $fields);
     
-    $sql = "UPDATE $table SET " . implode(', ', $setClause) . " WHERE $where";
+    $sql = "UPDATE `$table` SET " . implode(', ', $setClause) . " WHERE $where";
     
-    $params = array_merge($data, $whereParams);
-    $stmt = executeQuery($sql, $params);
-    return $stmt->rowCount();
+    $setParams = [];
+    foreach ($data as $key => $value) {
+        $setParams["set_$key"] = $value;
+    }
+
+    $params = array_merge($setParams, $whereParams);
+
+    try {
+        $stmt = executeQuery($sql, $params);
+        return $stmt->rowCount();
+    } catch (PDOException $e) {
+        error_log("Erreur updateRow: " . $e->getMessage() . " SQL: " . $sql . " Params: " . json_encode($params));
+        throw $e;
+    }
 }
 
 /**

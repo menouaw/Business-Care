@@ -262,7 +262,7 @@ function usersSave($data, $id = 0) {
 
     try {
         if ($id > 0) {
-            $affectedRows = updateRow('personnes', $dbData, "id = ?", [$id]);
+            $affectedRows = updateRow('personnes', $dbData, "id = :where_id", ['where_id' => $id]);
             
             if ($affectedRows !== false) { 
                  logBusinessOperation($_SESSION['user_id'], 'user_update', 
@@ -281,7 +281,7 @@ function usersSave($data, $id = 0) {
             $newId = insertRow('personnes', $dbData);
             
             if ($newId) {
-                logBusinessOperation($_SESSION['user_id'], 'user_create', 
+                logBusinessOperation($_SESSION['user_id'], ':user_create', 
                     "[SUCCESS] Création utilisateur: {$dbData['prenom']} {$dbData['nom']} (ID: $newId), role: {$dbData['role_id']}");
                 logSecurityEvent($_SESSION['user_id'], 'account_creation', 
                     "[SUCCESS] Création compte pour {$dbData['email']} (ID: $newId, role: {$dbData['role_id']}) par admin ID: {$_SESSION['user_id']}");
