@@ -269,7 +269,6 @@ CREATE TABLE preferences_utilisateurs (
     UNIQUE KEY unique_personne_id (personne_id)
 );
 
--- Table de jointure entre contrats et prestations
 CREATE TABLE contrats_prestations (
     contrat_id INT NOT NULL,
     prestation_id INT NOT NULL,

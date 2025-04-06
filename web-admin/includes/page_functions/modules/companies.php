@@ -7,21 +7,31 @@ require_once __DIR__ . '/../../init.php';
  * @param int $page Numero de la page
  * @param int $perPage Nombre d'elements par page
  * @param string $search Terme de recherche
+ * @param string $city Filtre par ville
+ * @param string $size Filtre par taille
  * @return array Donnees de pagination et liste des entreprises
  */
-function companiesGetList($page = 1, $perPage = 10, $search = '') {
+function companiesGetList($page = 1, $perPage = 10, $search = '', $city = '', $size = '') {
     $whereClauses = [];
     $params = [];
 
     if ($search) {
-        $whereClauses[] = "(nom LIKE ? OR siret LIKE ? OR ville LIKE ?)";
-        $params[] = "%{$search}%";
+        $whereClauses[] = "(nom LIKE ? OR siret LIKE ?)"; // Removed city from general search
         $params[] = "%{$search}%";
         $params[] = "%{$search}%";
     }
+
+    if ($city) {
+        $whereClauses[] = "ville = ?";
+        $params[] = $city;
+    }
+    
+    if ($size) {
+        $whereClauses[] = "taille_entreprise = ?";
+        $params[] = $size;
+    }
     
     $whereSql = !empty($whereClauses) ? implode(' AND ', $whereClauses) : '1';
-
 
     $countSql = "SELECT COUNT(id) FROM entreprises WHERE {$whereSql}";
     $totalCompanies = executeQuery($countSql, $params)->fetchColumn();
@@ -206,4 +216,24 @@ function companiesDelete($id) {
             'message' => "Erreur de base de données lors de la suppression."
          ];
     }
+}
+
+/**
+ * Recupere la liste des villes distinctes des entreprises
+ *
+ * @return array Liste des villes
+ */
+function companiesGetCities() {
+    $sql = "SELECT DISTINCT ville FROM entreprises WHERE ville IS NOT NULL AND ville != '' ORDER BY ville ASC";
+    return executeQuery($sql)->fetchAll(PDO::FETCH_COLUMN);
+}
+
+/**
+ * Recupere la liste des tailles d'entreprise possibles
+ *
+ * @return array Liste des tailles
+ */
+function companiesGetSizes() {
+    // These could be stored in a config file or database table in the future
+    return ['1-10', '11-50', '51-200', '201-500', '500+'];
 } 
