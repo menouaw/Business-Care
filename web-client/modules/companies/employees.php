@@ -369,7 +369,6 @@ include_once __DIR__ . '/../../templates/header.php';
                 </div>
             </div>
         </div>
-        <!-- TODO: Ajouter d'autres sections si nécessaire -->
 
     <?php
 
