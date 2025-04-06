@@ -141,25 +141,25 @@ function getQueryData()
  */
 function flashMessage($message, $type = 'success')
 {
-    $_SESSION['flash_message'] = [
-        'message' => $message,
-        'type' => $type
-    ];
+    if (!isset($_SESSION['flash_messages'])) {
+        $_SESSION['flash_messages'] = [];
+    }
+    $_SESSION['flash_messages'][] = ['message' => $message, 'type' => $type];
 }
 
 /**
- * Récupère le message flash enregistré en session et le supprime
+ * Récupère tous les messages flash enregistrés en session et les supprime
  * 
- * @return array|null Message flash ou null si aucun message
+ * @return array Tableau de messages flash ou tableau vide si aucun message
  */
-function getFlashMessage()
+function getFlashMessages()
 {
-    if (isset($_SESSION['flash_message'])) {
-        $message = $_SESSION['flash_message'];
-        unset($_SESSION['flash_message']);
-        return $message;
+    if (isset($_SESSION['flash_messages']) && is_array($_SESSION['flash_messages'])) {
+        $messages = $_SESSION['flash_messages'];
+        unset($_SESSION['flash_messages']); // Clear all messages after retrieval
+        return $messages;
     }
-    return null;
+    return []; 
 }
 
 /**
@@ -169,26 +169,35 @@ function getFlashMessage()
  */
 function displayFlashMessages()
 {
-    $flashMessage = getFlashMessage();
-    if (!$flashMessage) return '';
+    $flashMessages = getFlashMessages();
+    if (empty($flashMessages)) return '';
 
-    $type = $flashMessage['type'];
-    $message = $flashMessage['message'];
+    $htmlOutput = '';
 
     static $alertTypes = [
         'success' => 'alert-success',
         'danger' => 'alert-danger',
-        'error' => 'alert-danger', 
+        'error' => 'alert-danger',
         'warning' => 'alert-warning',
         'info' => 'alert-info'
     ];
 
-    $alertClass = $alertTypes[$type] ?? 'alert-info'; // Default to info if type not found
+    foreach ($flashMessages as $flashMessage) {
+        if (!isset($flashMessage['type']) || !isset($flashMessage['message'])) {
+            continue;
+        }
+        $type = $flashMessage['type'];
+        $message = $flashMessage['message'];
 
-    return '<div class="alert ' . $alertClass . ' alert-dismissible fade show" role="alert">'
-        . $message
-        . '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>'
-        . '</div>';
+        $alertClass = $alertTypes[$type] ?? 'alert-info';
+
+        $htmlOutput .= '<div class="alert ' . htmlspecialchars($alertClass) . ' alert-dismissible fade show" role="alert">'
+            . htmlspecialchars($message)
+            . '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>'
+            . '</div>';
+    }
+
+    return $htmlOutput;
 }
 
 /**
