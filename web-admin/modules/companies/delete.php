@@ -3,47 +3,30 @@ require_once '../../includes/page_functions/modules/companies.php';
 
 requireRole(ROLE_ADMIN);
 
-$requestMethod = $_SERVER['REQUEST_METHOD'];
-$params = [];
+$id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+$csrf_token = $_GET['csrf_token'] ?? '';
 
-if ($requestMethod === 'GET') {
-    $params = $_GET;
-} elseif ($requestMethod === 'POST') {
-    $params = $_POST;
-} else {
-    flashMessage('Méthode non autorisée.', 'danger');
-    redirectTo(WEBADMIN_URL . '/modules/companies/index.php');
+if (!validateToken($csrf_token)) {
+    handleCsrfFailureRedirect($id, 'companies', 'suppression entreprise');
 }
 
-if (!isset($params['id']) || !isset($params['csrf_token'])) {
-    flashMessage('Données manquantes pour la suppression.', 'danger');
-    redirectTo(WEBADMIN_URL . '/modules/companies/index.php');
+if ($id <= 0) {
+    flashMessage("Identifiant d'entreprise invalide.", "danger");
+    redirectTo(WEBADMIN_URL . '/modules/companies/');
 }
 
-$companyId = (int)$params['id'];
-$token = $params['csrf_token'];
-
-if (!validateToken($token)) {
-    handleCsrfFailureRedirect($companyId, 'companies', 'suppression entreprise');
-}
-
-if ($companyId <= 0) {
-    flashMessage('Identifiant entreprise invalide.', 'danger');
-    redirectTo(WEBADMIN_URL . '/modules/companies/index.php');
-}
-
-$company = companiesGetDetails($companyId);
+$company = companiesGetDetails($id);
 if (!$company) {
     flashMessage('Entreprise non trouvée.', 'warning');
     redirectTo(WEBADMIN_URL . '/modules/companies/index.php');
 }
 
-$result = companiesDelete($companyId);
+$result = companiesDelete($id);
 
 if ($result['success']) {
     flashMessage($result['message'], 'success');
     redirectTo(WEBADMIN_URL . '/modules/companies/index.php');
 } else {
     flashMessage($result['message'], 'danger');
-    redirectBasedOnReferer($companyId, 'companies'); 
+    redirectBasedOnReferer($id, 'companies'); 
 }

@@ -3,12 +3,13 @@ require_once '../../includes/page_functions/modules/contracts.php';
 
 requireRole(ROLE_ADMIN);
 
-$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$search = isset($_GET['search']) ? $_GET['search'] : '';
-$statut = isset($_GET['statut']) ? $_GET['statut'] : '';
-$entreprise = isset($_GET['entreprise']) ? (int)$_GET['entreprise'] : 0;
-$action = isset($_GET['action']) ? $_GET['action'] : '';
-$id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+$filterData = getQueryData(['page' => 1, 'search' => '', 'statut' => '', 'type_contrat' => '', 'action' => '', 'id' => 0]);
+$page = $filterData['page'];
+$search = $filterData['search'];
+$statut = $filterData['statut'];
+$typeContrat = $filterData['type_contrat'];
+$action = $filterData['action'];
+$id = $filterData['id'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = [
@@ -48,15 +49,16 @@ if (($action === 'edit' || $action === 'view') && $id > 0) {
     }
 }
 
-$result = contractsGetList($page, 10, $search, $statut, $entreprise);
+$result = contractsGetList($page, 10, $search, $statut, $typeContrat);
 $contracts = $result['contracts'];
 $totalPages = $result['totalPages'];
 $totalContracts = $result['totalItems'];
 $page = $result['currentPage'];
+$itemsPerPage = $result['itemsPerPage']; 
 
 $entreprises = contractsGetEntreprises();
 
-$pageTitle = "Gestion des contrats";
+$pageTitle = "Gestion des contrats ({$totalContracts})"; 
 include_once '../../templates/header.php';
 ?>
 
@@ -66,10 +68,10 @@ include_once '../../templates/header.php';
 
 <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 class="h2">Gestion des contrats</h1>
+        <h1 class="h2"><?php echo $pageTitle; ?></h1>
         <div class="btn-toolbar mb-2 mb-md-0">
-            <a href="?action=add" class="btn btn-sm btn-outline-primary">
-                <i class="fas fa-plus"></i> Nouveau contrat
+            <a href="<?php echo WEBADMIN_URL; ?>/modules/contracts/add.php" class="btn btn-sm btn-primary">
+                <i class="fas fa-plus"></i> Ajouter un contrat
             </a>
         </div>
     </div>
@@ -87,7 +89,6 @@ include_once '../../templates/header.php';
     <?php echo displayFlashMessages(); ?>
     
     <?php if ($action === 'add' || $action === 'edit'): ?>
-        <!-- formulaire d'ajout/edition -->
         <div class="card">
             <div class="card-header">
                 <?php echo $action === 'add' ? 'Ajouter un nouveau contrat' : 'Modifier le contrat'; ?>
@@ -166,22 +167,23 @@ include_once '../../templates/header.php';
                     <div class="row">
                         <div class="col-12">
                             <button type="submit" class="btn btn-primary">Enregistrer</button>
-                            <a href="<?php echo WEBADMIN_URL; ?>/modules/contracts/" class="btn btn-secondary">Annuler</a>
+                            <a href="<?php echo WEBADMIN_URL; ?>/modules/contracts/index.php" class="btn btn-secondary">Annuler</a>
                         </div>
                     </div>
                 </form>
             </div>
         </div>
     <?php elseif ($action === 'view' && $contract): ?>
-        <!-- affichage des details d'un contrat -->
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <span>Details du contrat</span>
                 <div>
-                    <a href="?action=edit&id=<?php echo $contract['id']; ?>" class="btn btn-sm btn-primary">
+                    <a href="<?php echo WEBADMIN_URL; ?>/modules/contracts/edit.php?id=<?php echo $contract['id']; ?>" class="btn btn-sm btn-primary">
                         <i class="fas fa-edit"></i> Modifier
                     </a>
-                    <a href="?action=delete&id=<?php echo $contract['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce contrat ?')">
+                    <a href="<?php echo WEBADMIN_URL; ?>/modules/contracts/delete.php?id=<?php echo $contract['id']; ?>&csrf_token=<?php echo generateToken(); ?>" class="btn btn-sm btn-danger btn-delete"
+                       data-bs-toggle="tooltip" title="Supprimer"
+                       onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce contrat ?')">
                         <i class="fas fa-trash"></i> Supprimer
                     </a>
                 </div>
@@ -189,7 +191,7 @@ include_once '../../templates/header.php';
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <p><strong>Entreprise:</strong> <a href="<?php echo WEBADMIN_URL; ?>/modules/companies/?action=view&id=<?php echo $contract['entreprise_id']; ?>"><?php echo htmlspecialchars($contract['nom_entreprise']); ?></a></p>
+                        <p><strong>Entreprise:</strong> <a href="<?php echo WEBADMIN_URL; ?>/modules/companies/view.php?id=<?php echo $contract['entreprise_id']; ?>"><?php echo htmlspecialchars($contract['nom_entreprise']); ?></a></p>
                         <p><strong>Type de contrat:</strong> <?php echo htmlspecialchars(ucfirst($contract['type_contrat'])); ?></p>
                         <p><strong>Date de debut:</strong> <?php echo date('d/m/Y', strtotime($contract['date_debut'])); ?></p>
                         <p><strong>Date de fin:</strong> <?php echo $contract['date_fin'] ? date('d/m/Y', strtotime($contract['date_fin'])) : 'Indeterminee'; ?></p>
@@ -211,7 +213,6 @@ include_once '../../templates/header.php';
                     </div>
                 <?php endif; ?>
                 
-                <!-- calcul de la duree et des stats -->
                 <div class="row mt-4">
                     <div class="col-md-12">
                         <div class="card">
@@ -253,25 +254,29 @@ include_once '../../templates/header.php';
             </div>
         </div>
     <?php else: ?>
-        <!-- liste des contrats -->
         <div class="card mb-4">
             <div class="card-header">
-                <form method="get" class="row g-3">
-                    <div class="col-md-2">
-                        <input type="text" class="form-control" id="search" name="search" placeholder="Rechercher..." value="<?php echo htmlspecialchars($search); ?>">
+                <form method="get" action="<?php echo WEBADMIN_URL; ?>/modules/contracts/index.php" class="row g-3 align-items-center">
+                    <div class="col-md-3">
+                        <label for="search" class="visually-hidden">Rechercher</label>
+                        <input type="text" class="form-control form-control-sm" id="search" name="search" placeholder="Rechercher..." value="<?php echo htmlspecialchars($search); ?>">
                     </div>
                     <div class="col-md-3">
-                        <select class="form-select" id="entreprise" name="entreprise">
-                            <option value="">Toutes les entreprises</option>
-                            <?php foreach ($entreprises as $e): ?>
-                                <option value="<?php echo $e['id']; ?>" <?php echo $entreprise == $e['id'] ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars($e['nom']); ?>
-                                </option>
-                            <?php endforeach; ?>
+                        <label for="type_contrat" class="visually-hidden">Type de contrat</label>
+                        <select class="form-select form-select-sm" id="type_contrat" name="type_contrat">
+                            <option value="">Tous les types</option>
+                            <?php
+                            $typesContratList = ['standard', 'premium', 'entreprise'];
+                            foreach ($typesContratList as $t) {
+                                $selected = ($typeContrat === $t) ? 'selected' : '';
+                                echo "<option value=\"$t\" $selected>" . ucfirst($t) . "</option>";
+                            }
+                            ?>
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <select class="form-select" id="statut" name="statut">
+                        <label for="statut" class="visually-hidden">Statut</label>
+                        <select class="form-select form-select-sm" id="statut" name="statut">
                             <option value="">Tous les statuts</option>
                             <?php
                             $statutsList = ['actif', 'expire', 'resilie', 'en_attente'];
@@ -282,17 +287,20 @@ include_once '../../templates/header.php';
                             ?>
                         </select>
                     </div>
-                    <div class="col-md-4">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-search"></i> Rechercher
+                    <div class="col-md-3 d-flex">
+                        <button type="submit" class="btn btn-sm btn-primary w-100 me-2">
+                            <i class="fas fa-filter"></i> Filtrer
                         </button>
-                        <a href="<?php echo WEBADMIN_URL; ?>/modules/contracts/" class="btn btn-secondary">Reinitialiser</a>
+                         <a href="<?php echo WEBADMIN_URL; ?>/modules/contracts/index.php" class="btn btn-sm btn-secondary" data-bs-toggle="tooltip" title="Réinitialiser les filtres">
+                            <i class="fas fa-undo"></i>
+                        </a>
                     </div>
                 </form>
             </div>
             <div class="card-body">
                 <?php if (count($contracts) > 0): ?>
-                    <table class="table table-striped table-hover">
+                    <div class="table-responsive">
+                    <table class="table table-striped table-hover table-sm">
                         <thead>
                             <tr>
                                 <th>Entreprise</th>
@@ -307,20 +315,23 @@ include_once '../../templates/header.php';
                         <tbody>
                             <?php foreach ($contracts as $contract): ?>
                                 <tr>
-                                    <td><a href="<?php echo WEBADMIN_URL; ?>/modules/companies/?action=view&id=<?php echo $contract['entreprise_id']; ?>"><?php echo htmlspecialchars($contract['nom_entreprise']); ?></a></td>
+                                    <td><a href="<?php echo WEBADMIN_URL; ?>/modules/companies/view.php?id=<?php echo $contract['entreprise_id']; ?>"><?php echo htmlspecialchars($contract['nom_entreprise']); ?></a></td>
                                     <td><?php echo htmlspecialchars(ucfirst($contract['type_contrat'])); ?></td>
                                     <td><?php echo date('d/m/Y', strtotime($contract['date_debut'])); ?></td>
                                     <td><?php echo $contract['date_fin'] ? date('d/m/Y', strtotime($contract['date_fin'])) : '-'; ?></td>
                                     <td><?php echo $contract['montant_mensuel'] ? number_format($contract['montant_mensuel'], 2, ',', ' ') . ' €' : '-'; ?></td>
                                     <td><?php echo getStatusBadge($contract['statut']); ?></td>
-                                    <td>
-                                        <a href="?action=view&id=<?php echo $contract['id']; ?>" class="btn btn-sm btn-info">
+                                    <td class="table-actions">
+                                        <a href="<?php echo WEBADMIN_URL; ?>/modules/contracts/view.php?id=<?php echo $contract['id']; ?>" class="btn btn-sm btn-info" data-bs-toggle="tooltip" title="Voir">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <a href="?action=edit&id=<?php echo $contract['id']; ?>" class="btn btn-sm btn-primary">
+                                        <a href="<?php echo WEBADMIN_URL; ?>/modules/contracts/edit.php?id=<?php echo $contract['id']; ?>" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="Modifier">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <a href="?action=delete&id=<?php echo $contract['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce contrat ?')">
+                                        <a href="<?php echo WEBADMIN_URL; ?>/modules/contracts/delete.php?id=<?php echo $contract['id']; ?>&csrf_token=<?php echo generateToken(); ?>" class="btn btn-sm btn-danger btn-delete" 
+                                           data-bs-toggle="tooltip" 
+                                           title="Supprimer"
+                                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce contrat ?')">
                                             <i class="fas fa-trash"></i>
                                         </a>
                                     </td>
@@ -328,30 +339,30 @@ include_once '../../templates/header.php';
                             <?php endforeach; ?>
                         </tbody>
                     </table>
+                    </div>
                     
-                    <!-- pagination -->
-                    <?php if ($totalPages > 1): ?>
-                        <nav>
-                            <ul class="pagination justify-content-center">
-                                <li class="page-item <?php echo $page <= 1 ? 'disabled' : ''; ?>">
-                                    <a class="page-link" href="?page=<?php echo max(1, $page - 1); ?>&search=<?php echo urlencode($search); ?>&statut=<?php echo urlencode($statut); ?>&entreprise=<?php echo $entreprise; ?>">Precedent</a>
-                                </li>
-                                
-                                <?php for ($i = max(1, $page - 2); $i <= min($page + 2, $totalPages); $i++): ?>
-                                    <li class="page-item <?php echo $i === $page ? 'active' : ''; ?>">
-                                        <a class="page-link" href="?page=<?php echo $i; ?>&search=<?php echo urlencode($search); ?>&statut=<?php echo urlencode($statut); ?>&entreprise=<?php echo $entreprise; ?>"><?php echo $i; ?></a>
-                                    </li>
-                                <?php endfor; ?>
-                                
-                                <li class="page-item <?php echo $page >= $totalPages ? 'disabled' : ''; ?>">
-                                    <a class="page-link" href="?page=<?php echo min($totalPages, $page + 1); ?>&search=<?php echo urlencode($search); ?>&statut=<?php echo urlencode($statut); ?>&entreprise=<?php echo $entreprise; ?>">Suivant</a>
-                                </li>
-                            </ul>
-                        </nav>
-                    <?php endif; ?>
+                    <?php 
+                    // Use renderPagination
+                    $paginationInfo = [
+                        'currentPage' => $page,
+                        'totalPages' => $totalPages,
+                        'totalItems' => $totalContracts,
+                        'itemsPerPage' => $itemsPerPage
+                    ];
+                    $urlPattern = WEBADMIN_URL . '/modules/contracts/index.php?search=' . urlencode($search) . '&statut=' . urlencode($statut) . '&type_contrat=' . urlencode($typeContrat) . '&page={page}';
+                    ?>
+                    <div class="d-flex justify-content-center">
+                        <?php echo renderPagination($paginationInfo, $urlPattern); ?>
+                    </div>
                 <?php else: ?>
+                    <?php
+                    $isFiltering = !empty($search) || !empty($statut) || !empty($typeContrat);
+                    $message = $isFiltering 
+                        ? "Aucun contrat trouvé correspondant à vos critères de recherche."
+                        : "Aucun contrat trouvé. <a href=\"" . WEBADMIN_URL . "/modules/contracts/add.php\" class=\"alert-link\">Ajouter un contrat</a>";
+                    ?>
                     <div class="alert alert-info">
-                        Aucun contrat trouve. <a href="?action=add" class="alert-link">Ajouter un nouveau contrat</a>
+                        <?php echo $message; ?>
                     </div>
                 <?php endif; ?>
             </div>

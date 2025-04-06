@@ -10,7 +10,7 @@ function getDashboardStats() {
         'total_users' => countTableRows('personnes'),
         'total_companies' => countTableRows('entreprises'),
         'total_contracts' => countTableRows('contrats'),
-        'active_contracts' => countTableRows('contrats', "statut = 'actif'")
+        'active_contracts' => countTableRows('contrats', "statut = '" . STATUS_ACTIVE . "'")
     ];
 }
 
@@ -19,6 +19,6 @@ function getDashboardStats() {
  * @param int $limit Nombre d'activites a recuperer
  * @return array Tableau d'activites recentes
  */
-function getDashboardRecentActivities($limit = 10) {
+function getDashboardRecentActivities($limit = DASHBOARD_RECENT_ACTIVITIES_LIMIT) {
     return getRecentActivities($limit);
 } 

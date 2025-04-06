@@ -21,7 +21,7 @@ require_once __DIR__ . '/../../init.php';
  *               - 'totalItems': Nombre total d'utilisateurs répondant aux critères de filtrage.
  *               - 'perPage': Nombre d'utilisateurs affichés par page.
  */
-function usersGetList($page = 1, $perPage = 10, $search = '', $roleId = 0, $entrepriseId = 0, $statut = '') {
+function usersGetList($page = 1, $perPage = DEFAULT_ITEMS_PER_PAGE, $search = '', $roleId = 0, $entrepriseId = 0, $statut = '') {
         $params = [];
     $conditions = [];
 
@@ -244,29 +244,50 @@ function usersGetEntreprises() {
  */
 function usersSave($data, $id = 0) {
     $errors = [];
-    
-    if (empty($data['nom'])) $errors[] = "Le nom est obligatoire";
-    if (empty($data['prenom'])) $errors[] = "Le prenom est obligatoire";
+    $isNewUser = ($id == 0);
+
+    $data['nom'] = trim($data['nom'] ?? '');
+    $data['prenom'] = trim($data['prenom'] ?? '');
+    $data['email'] = trim($data['email'] ?? '');
+    $data['telephone'] = trim($data['telephone'] ?? '');
+    $data['role_id'] = isset($data['role_id']) ? (int)$data['role_id'] : 0;
+    $data['entreprise_id'] = isset($data['entreprise_id']) && $data['entreprise_id'] !== '' ? (int)$data['entreprise_id'] : null;
+    $data['statut'] = $data['statut'] ?? ($isNewUser ? 'actif' : null);
+    $data['mot_de_passe'] = $data['mot_de_passe'] ?? '';
+    $confirmPassword = $data['mot_de_passe_confirm'] ?? ''; 
+
+    if (empty($data['nom'])) $errors['nom'] = "Le nom est obligatoire.";
+    if (empty($data['prenom'])) $errors['prenom'] = "Le prénom est obligatoire.";
+
     if (empty($data['email'])) {
-        $errors[] = "L'email est obligatoire";
+        $errors['email'] = "L'email est obligatoire.";
     } elseif (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-        $errors[] = "L'email n'est pas valide";
+        $errors['email'] = "L'email n'est pas valide.";
     } else {
         $existingUser = fetchOne('personnes', 'email = ? AND id != ?', '', [$data['email'], $id]);
         if ($existingUser) {
-            $errors[] = "Cet email est deja utilise par un autre utilisateur";
-            logSystemActivity('user_duplicate_email', "[ERROR] Tentative d'utilisation d'email déjà existant: {$data['email']}");
+            $errors['email'] = "Cet email est déjà utilisé par un autre utilisateur.";
+            logSystemActivity('user_duplicate_email', "[WARNING] Tentative d'utilisation d'email déjà existant: {$data['email']}");
         }
     }
-    
-    if ($id == 0 && empty($data['mot_de_passe'])) {
-        $errors[] = "Le mot de passe est obligatoire lors de la création";
+
+    if ($isNewUser && empty($data['mot_de_passe'])) {
+        $errors['mot_de_passe'] = "Le mot de passe est obligatoire lors de la création.";
     }
-    if (empty($data['role_id']) || !fetchOne('roles', 'id = ?', '', [(int)$data['role_id']])) {
-        $errors[] = "Le rôle sélectionné est invalide.";
+    if (!empty($data['mot_de_passe']) && $data['mot_de_passe'] !== $confirmPassword) {
+        $errors['mot_de_passe_confirm'] = "Les mots de passe ne correspondent pas.";
     }
-    if (!empty($data['entreprise_id']) && !fetchOne('entreprises', 'id = ?', '', [(int)$data['entreprise_id']])) {
-         $errors[] = "L'entreprise sélectionnée est invalide.";
+
+    if (empty($data['role_id']) || !fetchOne('roles', 'id = ?', '', [$data['role_id']])) {
+        $errors['role_id'] = "Le rôle sélectionné est invalide.";
+    }
+
+    if ($data['entreprise_id'] !== null && !fetchOne('entreprises', 'id = ?', '', [$data['entreprise_id']])) {
+         $errors['entreprise_id'] = "L'entreprise sélectionnée est invalide.";
+    }
+
+    if (empty($data['statut']) || !in_array($data['statut'], USER_STATUSES)) {
+        $errors['statut'] = "Le statut sélectionné est invalide.";
     }
 
     if (!empty($errors)) {
@@ -274,13 +295,13 @@ function usersSave($data, $id = 0) {
     }
     
     $dbData = [
-        'nom' => $data['nom'], 
-        'prenom' => $data['prenom'], 
-        'email' => $data['email'], 
-        'telephone' => $data['telephone'] ?? null,
-        'role_id' => (int)$data['role_id'],
-        'entreprise_id' => !empty($data['entreprise_id']) ? (int)$data['entreprise_id'] : null, 
-        'statut' => $data['statut'] ?? 'inactif'
+        'nom' => $data['nom'],
+        'prenom' => $data['prenom'],
+        'email' => $data['email'],
+        'telephone' => $data['telephone'] ?: null,
+        'role_id' => $data['role_id'],
+        'entreprise_id' => $data['entreprise_id'],
+        'statut' => $data['statut'],
     ];
             
     $passwordChanged = false;
@@ -290,31 +311,38 @@ function usersSave($data, $id = 0) {
     }
 
     try {
-        if ($id > 0) {
+        beginTransaction();
+
+        if (!$isNewUser) {
             $affectedRows = updateRow('personnes', $dbData, "id = :where_id", ['where_id' => $id]);
             
             if ($affectedRows !== false) { 
-                 logBusinessOperation($_SESSION['user_id'], ':user_update', 
-                    "[SUCCESS] Mise à jour utilisateur: {$dbData['prenom']} {$dbData['nom']} (ID: $id), role: {$dbData['role_id']}");
+                 logBusinessOperation($_SESSION['user_id'], 'user_update',
+                    "[SUCCESS] Mise à jour utilisateur: {$dbData['prenom']} {$dbData['nom']} (ID: $id), role: {$dbData['role_id']}, statut: {$dbData['statut']}");
                 if ($passwordChanged && $id != ($_SESSION['user_id'] ?? 0)) { 
-                     logSecurityEvent($_SESSION['user_id'], 'password_change_admin', 
+                     logSecurityEvent($_SESSION['user_id'], 'password_change_admin',
                         "[SUCCESS] Modification mot de passe pour utilisateur ID: $id par admin ID: {$_SESSION['user_id']}");
+                } elseif ($passwordChanged && $id == ($_SESSION['user_id'] ?? 0)) {
+                    logSecurityEvent($_SESSION['user_id'], 'password_change_self',
+                       "[SUCCESS] Modification de son propre mot de passe par utilisateur ID: $id");
                 }
-                $message = "L'utilisateur a ete mis a jour avec succes";
-                 return ['success' => true, 'message' => $message];
+                $message = "L'utilisateur a été mis à jour avec succès.";
+                 commitTransaction();
+                 return ['success' => true, 'message' => $message, 'userId' => $id];
             } else {
-                throw new Exception("La mise à jour a échoué ou aucune ligne n'a été modifiée.");
+                 throw new Exception("La mise à jour a échoué ou aucune donnée n'a été modifiée.");
             }
-        } 
-        else {
+        }
+        else { 
             $newId = insertRow('personnes', $dbData);
             
             if ($newId) {
-                logBusinessOperation($_SESSION['user_id'], ':user_create', 
-                    "[SUCCESS] Création utilisateur: {$dbData['prenom']} {$dbData['nom']} (ID: $newId), role: {$dbData['role_id']}");
-                logSecurityEvent($_SESSION['user_id'], 'account_creation', 
+                logBusinessOperation($_SESSION['user_id'], 'user_create',
+                    "[SUCCESS] Création utilisateur: {$dbData['prenom']} {$dbData['nom']} (ID: $newId), role: {$dbData['role_id']}, statut: {$dbData['statut']}");
+                logSecurityEvent($_SESSION['user_id'], 'account_creation',
                     "[SUCCESS] Création compte pour {$dbData['email']} (ID: $newId, role: {$dbData['role_id']}) par admin ID: {$_SESSION['user_id']}");
-                $message = "L'utilisateur a ete cree avec succes";
+                $message = "L'utilisateur a été créé avec succès.";
+                 commitTransaction();
                  return ['success' => true, 'message' => $message, 'newId' => $newId];
             } else {
                  throw new Exception("L'insertion a échoué.");
@@ -322,13 +350,14 @@ function usersSave($data, $id = 0) {
         }
         
     } catch (Exception $e) {
-        $errorMessage = "Erreur de base de données : " . $e->getMessage();
-        $errors[] = $errorMessage;
-        logSystemActivity('error', "[ERROR] Erreur BDD dans usersSave: " . $e->getMessage());
+        rollbackTransaction();
+        $action = $isNewUser ? 'création' : 'mise à jour';
+        $errorMessage = "Erreur lors de la {$action} de l'utilisateur : " . $e->getMessage();
+        logSystemActivity('user_save_error', "[ERROR] Erreur BDD dans usersSave (Action: {$action}, ID: {$id}): " . $e->getMessage());
         
         return [
             'success' => false,
-            'errors' => $errors
+            'errors' => ['db_error' => $errorMessage]
         ];
     }
 }

@@ -10,7 +10,7 @@ require_once __DIR__ . '/../../init.php';
  * @param string $type Filtre par type
  * @return array Donnees de pagination et liste des services
  */
-function servicesGetList($page = 1, $perPage = 10, $search = '', $type = '') {
+function servicesGetList($page = 1, $perPage = DEFAULT_ITEMS_PER_PAGE, $search = '', $type = '') {
     $whereClauses = [];
     $params = [];
 
@@ -120,6 +120,14 @@ function servicesSave($data, $id = 0) {
         $errors[] = "Le type de service est obligatoire";
     }
     
+    if (!empty($data['type']) && !in_array($data['type'], PRESTATION_TYPES)) {
+        $errors[] = "Le type de service sélectionné n'est pas valide.";
+    }
+    
+    if (!empty($data['niveau_difficulte']) && !in_array($data['niveau_difficulte'], PRESTATION_DIFFICULTIES)) {
+        $errors[] = "Le niveau de difficulté sélectionné n'est pas valide.";
+    }
+    
     if (!empty($errors)) {
         return [
             'success' => false,
@@ -134,13 +142,15 @@ function servicesSave($data, $id = 0) {
         'duree' => $data['duree'] ? (int)$data['duree'] : null,
         'type' => $data['type'],
         'categorie' => $data['categorie'],
-        'niveau_difficulte' => $data['niveau_difficulte'],
+        'niveau_difficulte' => $data['niveau_difficulte'] ?: null,
         'capacite_max' => $data['capacite_max'] ? (int)$data['capacite_max'] : null,
         'materiel_necessaire' => $data['materiel_necessaire'],
         'prerequis' => $data['prerequis']
     ];
 
     try {
+        beginTransaction();
+
         if ($id > 0) {
             $affectedRows = updateRow(TABLE_PRESTATIONS, $dbData, "id = ?", [$id]);
             
@@ -148,6 +158,7 @@ function servicesSave($data, $id = 0) {
                  logBusinessOperation($_SESSION['user_id'], 'service_update', 
                     "Mise à jour service: {$dbData['nom']} (ID: $id), type: {$dbData['type']}, prix: {$dbData['prix']}€");
                 $message = "Le service a ete mis a jour avec succes";
+                 commitTransaction();
                  return ['success' => true, 'message' => $message];
             } else {
                 throw new Exception("La mise à jour a échoué ou aucune ligne n'a été modifiée.");
@@ -160,6 +171,7 @@ function servicesSave($data, $id = 0) {
                 logBusinessOperation($_SESSION['user_id'], 'service_create', 
                     "Création service: {$dbData['nom']} (ID: $newId), type: {$dbData['type']}, prix: {$dbData['prix']}€");
                 $message = "Le service a ete cree avec succes";
+                 commitTransaction();
                  return ['success' => true, 'message' => $message, 'newId' => $newId];
             } else {
                  throw new Exception("L'insertion a échoué.");
@@ -167,6 +179,7 @@ function servicesSave($data, $id = 0) {
         }
         
     } catch (Exception $e) {
+        rollbackTransaction();
         $errorMessage = "Erreur de base de données : " . $e->getMessage();
         $errors[] = $errorMessage;
         logSystemActivity('error', "Erreur BDD dans servicesSave: " . $e->getMessage());
@@ -203,7 +216,6 @@ function servicesHandlePostRequest($postData, $id) {
         'duree' => $postData['duree'] ?? null,
         'type' => $postData['type'] ?? '',
         'categorie' => $postData['categorie'] ?? null,
-        'statut' => 'actif',
         'niveau_difficulte' => $postData['niveau_difficulte'] ?? null,
         'capacite_max' => $postData['capacite_max'] ?? null,
         'materiel_necessaire' => $postData['materiel_necessaire'] ?? null,
@@ -222,32 +234,27 @@ function servicesHandlePostRequest($postData, $id) {
  * @return array Résultat ['success' => bool, 'message' => string]
  */
 function servicesDelete($id) {
-    $appointmentCount = executeQuery("SELECT COUNT(id) FROM " . TABLE_APPOINTMENTS . " WHERE prestation_id = ?", [$id])->fetchColumn();
-
-    if ($appointmentCount > 0) {
-        logBusinessOperation($_SESSION['user_id'], 'service_delete_attempt', 
-            "Tentative échouée de suppression service ID: $id - Rendez-vous associés existent");
-        return [
-            'success' => false,
-            'message' => "Impossible de supprimer ce service car il a des rendez-vous associes"
-        ];
-    } 
-    
-    $evaluationCount = executeQuery("SELECT COUNT(id) FROM " . TABLE_EVALUATIONS . " WHERE prestation_id = ?", [$id])->fetchColumn();
-
-    if ($evaluationCount > 0) { 
-        logBusinessOperation($_SESSION['user_id'], 'service_delete_attempt', 
-            "Tentative échouée de suppression service ID: $id - Évaluations associées existent");
-        return [
-            'success' => false,
-            'message' => "Impossible de supprimer ce service car il a des evaluations associees"
-        ];
-    }
-    
     try {
+        beginTransaction();
+
+        $appointmentCount = executeQuery("SELECT COUNT(id) FROM " . TABLE_APPOINTMENTS . " WHERE prestation_id = ?", [$id])->fetchColumn();
+        if ($appointmentCount > 0) {
+            rollbackTransaction();
+            logBusinessOperation($_SESSION['user_id'], 'service_delete_attempt', "[ERROR] ID: $id - Rendez-vous associés");
+            return ['success' => false, 'message' => "Impossible de supprimer car des rendez-vous sont associés"];
+        }
+
+        $evaluationCount = executeQuery("SELECT COUNT(id) FROM " . TABLE_EVALUATIONS . " WHERE prestation_id = ?", [$id])->fetchColumn();
+        if ($evaluationCount > 0) { 
+            rollbackTransaction();
+            logBusinessOperation($_SESSION['user_id'], 'service_delete_attempt', "[ERROR] ID: $id - Évaluations associées");
+            return ['success' => false, 'message' => "Impossible de supprimer car des évaluations sont associées"];
+        }
+
         $deletedRows = deleteRow(TABLE_PRESTATIONS, "id = ?", [$id]);
         
         if ($deletedRows > 0) {
+            commitTransaction();
             logBusinessOperation($_SESSION['user_id'], 'service_delete', 
                 "Suppression service ID: $id");
             return [
@@ -255,6 +262,7 @@ function servicesDelete($id) {
                 'message' => "Le service a ete supprime avec succes"
             ];
         } else {
+            rollbackTransaction();
              logBusinessOperation($_SESSION['user_id'], 'service_delete_attempt', 
                 "Tentative échouée de suppression service ID: $id - Service non trouvé ou déjà supprimé?");
             return [
@@ -263,6 +271,7 @@ function servicesDelete($id) {
             ];
         }
     } catch (Exception $e) {
+        rollbackTransaction();
          logSystemActivity('error', "Erreur BDD dans servicesDelete: " . $e->getMessage());
          return [
             'success' => false,

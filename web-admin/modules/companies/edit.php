@@ -3,57 +3,40 @@ require_once '../../includes/page_functions/modules/companies.php';
 
 requireRole(ROLE_ADMIN);
 
-$companyId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+$id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
-if ($companyId <= 0) {
+if ($id <= 0) {
     flashMessage('Identifiant entreprise invalide.', 'danger');
     redirectTo(WEBADMIN_URL . '/modules/companies/index.php');
 }
 
-$company = companiesGetDetails($companyId);
+$company = companiesGetDetails($id);
 if (!$company) {
     flashMessage("Entreprise non trouvée.", 'danger');
     redirectTo(WEBADMIN_URL . '/modules/companies/index.php');
 }
-
-$sizes = companiesGetSizes(); 
 
 $errors = [];
 $formData = $company;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!validateToken($_POST['csrf_token'] ?? '')) {
-        handleCsrfFailureRedirect($companyId, 'companies', 'modification entreprise');
+        handleCsrfFailureRedirect($id, 'companies', 'modification entreprise');
     } else {
-        $submittedData = [
-            'nom'               => trim($_POST['nom'] ?? ''),
-            'siret'             => trim($_POST['siret'] ?? ''),
-            'adresse'           => trim($_POST['adresse'] ?? ''),
-            'code_postal'       => trim($_POST['code_postal'] ?? ''),
-            'ville'             => trim($_POST['ville'] ?? ''),
-            'telephone'         => trim($_POST['telephone'] ?? ''),
-            'email'             => trim($_POST['email'] ?? ''),
-            'site_web'          => trim($_POST['site_web'] ?? ''),
-            'taille_entreprise' => $_POST['taille_entreprise'] ?? null,
-            'secteur_activite'  => trim($_POST['secteur_activite'] ?? ''),
-            'date_creation'     => $_POST['date_creation'] ?? null
-        ];
-        
-        $formData = array_merge($formData, $submittedData);
+        $formData = getFormData();
+        $data = $formData;
 
-        if (empty($errors)) {
-            $result = companiesSave($submittedData, $companyId);
+        $result = companiesSave($data, $id);
 
-            if ($result['success']) {
-                flashMessage($result['message'], 'success');
-                redirectTo(WEBADMIN_URL . "/modules/companies/view.php?id=" . $companyId);
-            } else {
-                $errors = array_merge($errors, $result['errors']);
+        if ($result['success']) {
+            flashMessage($result['message'], 'success');
+            redirectBasedOnReferer($id, 'companies');
+        } else {
+            foreach ($result['errors'] as $error) {
+                flashMessage($error, 'danger');
             }
+            $company = array_merge($company, $data);
         }
-    }
-    if (!empty($errors)) {
-        flashMessage($errors, 'danger');
     }
 }
 
@@ -71,7 +54,7 @@ include '../../templates/header.php';
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                 <h1 class="h2"><?php echo $pageTitle; ?></h1>
                 <div class="btn-toolbar mb-2 mb-md-0">
-                    <a href="view.php?id=<?php echo $companyId; ?>" class="btn btn-sm btn-outline-secondary me-2">
+                    <a href="view.php?id=<?php echo $id; ?>" class="btn btn-sm btn-outline-secondary me-2">
                         <i class="fas fa-eye"></i> Voir l'entreprise
                     </a>
                      <a href="index.php" class="btn btn-sm btn-outline-secondary">
@@ -83,7 +66,7 @@ include '../../templates/header.php';
             <div class="card">
                 <div class="card-header">Informations sur l'entreprise</div>
                 <div class="card-body">
-                    <form action="edit.php?id=<?php echo $companyId; ?>" method="POST">
+                    <form action="edit.php?id=<?php echo $id; ?>" method="POST">
                         <input type="hidden" name="csrf_token" value="<?php echo generateToken(); ?>">
 
                         <div class="row mb-3">
@@ -143,9 +126,9 @@ include '../../templates/header.php';
                                 <select class="form-select" id="taille_entreprise" name="taille_entreprise">
                                     <option value="">Selectionnez...</option>
                                     <?php
-                                    foreach ($sizes as $size) {
-                                        $selected = (isset($formData['taille_entreprise']) && $formData['taille_entreprise'] === $size) ? 'selected' : '';
-                                        echo "<option value=\"$size\" $selected>" . htmlspecialchars($size) . "</option>";
+                                    foreach (COMPANY_SIZES as $s) {
+                                        $selected = (isset($formData['taille_entreprise']) && $formData['taille_entreprise'] === $s) ? 'selected' : '';
+                                        echo "<option value=\"$s\" $selected>" . htmlspecialchars($s) . "</option>";
                                     }
                                     ?>
                                 </select>
@@ -157,7 +140,7 @@ include '../../templates/header.php';
                         </div>
 
                         <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
-                        <a href="view.php?id=<?php echo $companyId; ?>" class="btn btn-secondary">Annuler</a>
+                        <a href="view.php?id=<?php echo $id; ?>" class="btn btn-secondary">Annuler</a>
                     </form>
                 </div>
             </div>
