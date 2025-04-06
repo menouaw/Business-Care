@@ -17,7 +17,8 @@ define('INVOICE_PREFIX', 'F');
  * @param string $format Format de date souhaité (par défaut la valeur de DEFAULT_DATE_FORMAT).
  * @return string La date formatée ou une chaîne vide si l'entrée est invalide.
  */
-function formatDate($date, $format = DEFAULT_DATE_FORMAT) {
+function formatDate($date, $format = DEFAULT_DATE_FORMAT)
+{
     if (!$date) return '';
     $timestamp = strtotime($date);
     return date($format, $timestamp);
@@ -33,7 +34,8 @@ function formatDate($date, $format = DEFAULT_DATE_FORMAT) {
  * @param string $currency Symbole de la devise (par défaut DEFAULT_CURRENCY).
  * @return string Montant formaté avec la devise.
  */
-function formatMoney($amount, $currency = DEFAULT_CURRENCY) {
+function formatMoney($amount, $currency = DEFAULT_CURRENCY)
+{
     return number_format($amount, 2, ',', ' ') . ' ' . $currency;
 }
 
@@ -47,7 +49,8 @@ function formatMoney($amount, $currency = DEFAULT_CURRENCY) {
  * @param mixed $input Donnée ou tableau de données à nettoyer.
  * @return mixed Données nettoyées.
  */
-function sanitizeInput($input) {
+function sanitizeInput($input)
+{
     if (is_array($input)) {
         foreach ($input as $key => $value) {
             $input[$key] = sanitizeInput($value);
@@ -66,13 +69,14 @@ function sanitizeInput($input) {
  * @param int $limit Nombre maximum d'activités à récupérer
  * @return array Liste des activités récentes
  */
-function getRecentActivities($limit = 10) {
+function getRecentActivities($limit = 10)
+{
     $sql = "SELECT l.*, CONCAT(p.prenom, ' ', p.nom) as user_name
             FROM logs l
             LEFT JOIN personnes p ON l.personne_id = p.id
             ORDER BY l.created_at DESC
             LIMIT ?";
-    
+
     $stmt = executeQuery($sql, [$limit]);
     return $stmt->fetchAll();
 }
@@ -83,7 +87,8 @@ function getRecentActivities($limit = 10) {
  * @param string $title Titre spécifique de la page
  * @return string Titre complet formaté
  */
-function generatePageTitle($title = '') {
+function generatePageTitle($title = '')
+{
     if ($title) {
         return APP_NAME . ' - ' . $title;
     }
@@ -98,7 +103,8 @@ function generatePageTitle($title = '') {
  * @param string $url URL de destination.
  * @return void
  */
-function redirectTo($url) {
+function redirectTo($url)
+{
     header('Location: ' . $url);
     exit;
 }
@@ -108,7 +114,8 @@ function redirectTo($url) {
  * 
  * @return array Données du formulaire nettoyées
  */
-function getFormData() {
+function getFormData()
+{
     return sanitizeInput($_POST);
 }
 
@@ -120,7 +127,8 @@ function getFormData() {
  *
  * @return array Les paramètres GET nettoyés.
  */
-function getQueryData() {
+function getQueryData()
+{
     return sanitizeInput($_GET);
 }
 
@@ -131,25 +139,27 @@ function getQueryData() {
  * @param string $type Type de message (success, danger, warning, info)
  * @return void
  */
-function flashMessage($message, $type = 'success') {
-    $_SESSION['flash_message'] = [
-        'message' => $message,
-        'type' => $type
-    ];
+function flashMessage($message, $type = 'success')
+{
+    if (!isset($_SESSION['flash_messages'])) {
+        $_SESSION['flash_messages'] = [];
+    }
+    $_SESSION['flash_messages'][] = ['message' => $message, 'type' => $type];
 }
 
 /**
- * Récupère le message flash enregistré en session et le supprime
+ * Récupère tous les messages flash enregistrés en session et les supprime
  * 
- * @return array|null Message flash ou null si aucun message
+ * @return array Tableau de messages flash ou tableau vide si aucun message
  */
-function getFlashMessage() {
-    if (isset($_SESSION['flash_message'])) {
-        $message = $_SESSION['flash_message'];
-        unset($_SESSION['flash_message']);
-        return $message;
+function getFlashMessages()
+{
+    if (isset($_SESSION['flash_messages']) && is_array($_SESSION['flash_messages'])) {
+        $messages = $_SESSION['flash_messages'];
+        unset($_SESSION['flash_messages']); // Clear all messages after retrieval
+        return is_array($messages) ? $messages : [];
     }
-    return null;
+    return [];
 }
 
 /**
@@ -157,13 +167,13 @@ function getFlashMessage() {
  * 
  * @return string HTML des alertes ou chaîne vide si aucun message
  */
-function displayFlashMessages() {
-    $flashMessage = getFlashMessage();
-    if (!$flashMessage) return '';
-    
-    $type = $flashMessage['type'];
-    $message = $flashMessage['message'];
-    
+function displayFlashMessages()
+{
+    $flashMessages = getFlashMessages();
+    if (empty($flashMessages)) return '';
+
+    $htmlOutput = '';
+
     $alertTypes = [
         'success' => 'alert-success',
         'danger' => 'alert-danger',
@@ -171,13 +181,23 @@ function displayFlashMessages() {
         'warning' => 'alert-warning',
         'info' => 'alert-info'
     ];
-    
-    $alertClass = $alertTypes[$type] ?? 'alert-info';
-    
-    return '<div class="alert ' . $alertClass . ' alert-dismissible fade show" role="alert">'
-         . $message
-         . '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>'
-         . '</div>';
+
+    foreach ($flashMessages as $flashMessage) {
+        if (!isset($flashMessage['type']) || !isset($flashMessage['message'])) {
+            continue;
+        }
+        $type = $flashMessage['type'];
+        $message = $flashMessage['message'];
+
+        $alertClass = $alertTypes[$type] ?? 'alert-info';
+
+        $htmlOutput .= '<div class="alert ' . htmlspecialchars($alertClass, ENT_QUOTES, 'UTF-8') . ' alert-dismissible fade show" role="alert">'
+            . htmlspecialchars($message)
+            . '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>'
+            . '</div>';
+    }
+
+    return $htmlOutput;
 }
 
 /**
@@ -185,7 +205,8 @@ function displayFlashMessages() {
  * 
  * @return string Jeton CSRF
  */
-function generateToken() {
+function generateToken()
+{
     if (!isset($_SESSION['csrf_token'])) {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     }
@@ -198,7 +219,8 @@ function generateToken() {
  * @param string $token Jeton à valider
  * @return bool Indique si le jeton est valide
  */
-function validateToken($token) {
+function validateToken($token)
+{
     if (!isset($_SESSION['csrf_token']) || $_SESSION['csrf_token'] !== $token) {
         return false;
     }
@@ -214,7 +236,8 @@ function validateToken($token) {
  * @param string $status Statut à représenter.
  * @return string HTML du badge Bootstrap.
  */
-function getStatusBadge($status) {
+function getStatusBadge($status)
+{
     $badges = [
         'actif' => 'success',
         'inactif' => 'danger',
@@ -225,7 +248,7 @@ function getStatusBadge($status) {
         'accepte' => 'success',
         'refuse' => 'danger'
     ];
-    
+
     $class = isset($badges[$status]) ? $badges[$status] : 'primary';
     return '<span class="badge bg-' . $class . '">' . ucfirst($status) . '</span>';
 }
@@ -249,14 +272,28 @@ function getStatusBadge($status) {
  *         - 'totalItems' (int) : Le nombre total d'enregistrements répondant aux critères.
  *         - 'perPage' (int) : Le nombre d'éléments par page.
  */
-function paginateResults($table, $page, $perPage = DEFAULT_ITEMS_PER_PAGE, $where = '', $orderBy = '') {
+function paginateResults($table, $page, $perPage = DEFAULT_ITEMS_PER_PAGE, $where = '', $orderBy = '')
+{
     $totalItems = countTableRows($table, $where);
     $totalPages = ceil($totalItems / $perPage);
     $page = max(1, min($page, $totalPages));
     $offset = ($page - 1) * $perPage;
-    
+
+    if ($orderBy) {
+        if (is_string($orderBy) && !empty(trim($orderBy))) {
+            if (!preg_match('/^[a-zA-Z0-9_\.,\s\(\)]+(?:\s+(?:ASC|DESC)(?:\s+NULLS\s+(?:FIRST|LAST))?)?(?:,\s*[a-zA-Z0-9_\.,\s\(\)]+(?:\s+(?:ASC|DESC)(?:\s+NULLS\s+(?:FIRST|LAST))?)?)*$/', $orderBy)) {
+
+                error_log("[WARNING] Invalid characters detected in orderBy clause in paginateResults for table '$table': " . $orderBy);
+                $orderBy = ''; // Réinitialiser orderBy en cas de caractères non valides
+            }
+        } else {
+            error_log("[WARNING] Invalid type or empty orderBy parameter passed to paginateResults for table '$table'. Expected string, got: " . gettype($orderBy));
+            $orderBy = ''; // Réinitialiser orderBy si le type n'est pas une chaîne ou s'il est vide
+        }
+    }
+
     $items = fetchAll($table, $where, $orderBy, $perPage, $offset);
-    
+
     return [
         'items' => $items,
         'currentPage' => $page,
@@ -280,32 +317,33 @@ function paginateResults($table, $page, $perPage = DEFAULT_ITEMS_PER_PAGE, $wher
  * @return string Le code HTML de l'interface de pagination ou une chaîne vide si aucune pagination
  *                n'est nécessaire.
  */
-function renderPagination($pagination, $urlPattern) {
+function renderPagination($pagination, $urlPattern)
+{
     if ($pagination['totalPages'] <= 1) return '';
-    
+
     $html = '<nav aria-label="Page navigation"><ul class="pagination">';
-    
+
     // Previous button
     $prevDisabled = $pagination['currentPage'] <= 1 ? ' disabled' : '';
     $prevUrl = str_replace('{page}', $pagination['currentPage'] - 1, $urlPattern);
     $html .= '<li class="page-item' . $prevDisabled . '"><a class="page-link" href="' . $prevUrl . '">Précédent</a></li>';
-    
+
     // numeros de page
     $startPage = max(1, $pagination['currentPage'] - 2);
     $endPage = min($pagination['totalPages'], $pagination['currentPage'] + 2);
-    
+
     for ($i = $startPage; $i <= $endPage; $i++) {
         $active = $i == $pagination['currentPage'] ? ' active' : '';
         $url = str_replace('{page}', $i, $urlPattern);
         $html .= '<li class="page-item' . $active . '"><a class="page-link" href="' . $url . '">' . $i . '</a></li>';
     }
-    
+
     // bouton suivant
     $nextDisabled = $pagination['currentPage'] >= $pagination['totalPages'] ? ' disabled' : '';
     $nextUrl = str_replace('{page}', $pagination['currentPage'] + 1, $urlPattern);
     $html .= '<li class="page-item' . $nextDisabled . '"><a class="page-link" href="' . $nextUrl . '">Suivant</a></li>';
-    
+
     $html .= '</ul></nav>';
-    
+
     return $html;
-} 
+}

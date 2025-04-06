@@ -17,8 +17,9 @@ TRUNCATE TABLE preferences_utilisateurs;
 TRUNCATE TABLE remember_me_tokens;
 TRUNCATE TABLE personnes;
 TRUNCATE TABLE prestations;
-TRUNCATE TABLE entreprises;
+TRUNCATE TABLE entreprises; 
 TRUNCATE TABLE roles;
+TRUNCATE TABLE contrats_prestations;
 SET FOREIGN_KEY_CHECKS = 1;
 
 INSERT INTO roles (nom, description) VALUES
@@ -66,6 +67,7 @@ INSERT INTO prestations (nom, description, prix, duree, type, categorie, niveau_
 ('Conference Bien-etre au travail', 'Conference sur les bonnes pratiques de bien-etre', 200.00, 120, 'conference', 'Sensibilisation', 'intermediaire', 100, 'Aucun', 'Aucun'),
 ('Defi Sportif Mensuel', 'Programme d\'activites physiques sur un mois', 180.00, NULL, 'evenement', 'Sport', 'avance', 30, 'Tenue de sport', 'Niveau intermediaire'),
 ('Meditation en Groupe', 'Seance de meditation collective pour reduire le stress', 100.00, 60, 'atelier', 'Bien-etre mental', 'debutant', 15, 'Coussin de meditation', 'Aucun'),
+
 ('Coaching Nutritionnel', 'Consultation personnalisee sur l\'alimentation saine', 90.00, 45, 'consultation', 'Nutrition', NULL, 1, 'Aucun', 'Aucun'),
 ('Atelier Ergonomie', 'Formation sur l\'amenagement du poste de travail', 160.00, 90, 'atelier', 'Ergonomie', 'debutant', 25, 'Aucun', 'Aucun'),
 ('Webinar Sommeil Reparateur', 'Formation en ligne sur l\'amelioration du sommeil', 130.00, 60, 'webinar', 'Bien-etre', 'debutant', 40, 'Ordinateur, connexion internet', 'Aucun'),
@@ -92,6 +94,23 @@ INSERT INTO prestations (nom, description, prix, duree, type, categorie, niveau_
 ('Conference Neurosciences', 'Comprendre le fonctionnement du cerveau au travail', 230.00, 90, 'conference', 'Developpement personnel', 'avance', 60, 'Aucun', 'Aucun');
 
 INSERT INTO personnes (nom, prenom, email, mot_de_passe, telephone, date_naissance, genre, photo_url, role_id, entreprise_id, statut, derniere_connexion) VALUES
+('Admin', 'System', 'admin@businesscare.fr', '$2y$10$CGP1gfg0khtXjAZcJFC6iO3oYisjwlPfkm8tQ8Q/OxWpFdR7tOiqO', '00 00 00 00 00', '1990-01-01', 'Autre', '/photos/admin.jpg', 1, NULL, 'actif', '2024-03-17 18:30:00'),
+('Salarie', 'Test', 'salarie@businesscare.fr', '$2y$10$CGP1gfg0khtXjAZcJFC6iO3oYisjwlPfkm8tQ8Q/OxWpFdR7tOiqO', '00 00 00 00 00', '1990-01-01', 'Autre', '/photos/salarie.jpg', 2, NULL, 'actif', '2024-03-17 18:30:00'),
+('Prestataire', 'Test', 'prestataire@businesscare.fr', '$2y$10$CGP1gfg0khtXjAZcJFC6iO3oYisjwlPfkm8tQ8Q/OxWpFdR7tOiqO', '00 00 00 00 00', '1990-01-01', 'Autre', '/photos/prestataire.jpg', 3, NULL, 'actif', '2024-03-17 18:30:00'),
+('Entreprise', 'Test', 'entreprise@businesscare.fr', '$2y$10$CGP1gfg0khtXjAZcJFC6iO3oYisjwlPfkm8tQ8Q/OxWpFdR7tOiqO', '00 00 00 00 00', '1990-01-01', 'Autre', '/photos/entreprise.jpg', 4, NULL, 'actif', '2024-03-17 18:30:00'),
+('Dupont', 'Marie', 'marie.dupont@techsolutions.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 12 34 56 78', '1990-05-15', 'F', '/photos/marie.dupont.jpg', 2, 1, 'actif', '2024-03-17 14:30:00'),
+('Martin', 'Jean', 'jean.martin@santeplus.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 23 45 67 89', '1985-08-20', 'M', '/photos/jean.martin.jpg', 2, 2, 'actif', '2024-03-17 15:45:00'),
+('Petit', 'Sophie', 'sophie.petit@bienetrecorp.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 34 56 78 90', '1992-03-10', 'F', '/photos/sophie.petit.jpg', 2, 3, 'actif', '2024-03-17 16:20:00'),
+('Dubois', 'Pierre', 'pierre.dubois@ecohabitat.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 45 67 89 01', '1988-12-05', 'M', '/photos/pierre.dubois.jpg', 2, 4, 'actif', '2024-03-17 17:10:00'),
+('Bernard', 'Emma', 'emma.bernard@financeconseil.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 56 78 90 12', '1995-07-25', 'F', '/photos/emma.bernard.jpg', 2, 5, 'actif', '2024-03-17 18:00:00'),
+('Robert', 'Lucas', 'lucas.robert@innovationdigitale.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 67 89 01 23', '1991-04-15', 'M', '/photos/lucas.robert.jpg', 2, 6, 'actif', '2024-03-17 19:15:00'),
+('Richard', 'Julie', 'julie.richard@santepro.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 78 90 12 34', '1987-09-30', 'F', '/photos/julie.richard.jpg', 2, 7, 'actif', '2024-03-17 20:30:00'),
+('Petit', 'Thomas', 'thomas.petit@bienetreplus.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 89 01 23 45', '1993-02-20', 'M', '/photos/thomas.petit.jpg', 2, 8, 'actif', '2024-03-17 21:45:00'),
+('Durand', 'Lea', 'lea.durand@ecosolutions.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 90 12 34 56', '1994-11-10', 'F', '/photos/lea.durand.jpg', 2, 9, 'actif', '2024-03-17 22:15:00'),
+('Moreau', 'Hugo', 'hugo.moreau@financeplus.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '06 01 23 45 67', '1996-06-25', 'M', '/photos/hugo.moreau.jpg', 2, 10, 'actif', '2024-03-17 23:00:00'),
+('Duamel', 'Heloise', 'duamelle.heloise@businesscare.fr', '$2y$10$CGP1gfg0khtXjAZcJFC6iO3oYisjwlPfkm8tQ8Q/OxWpFdR7tOiqO', '06 12 34 56 78', '1995-03-15', 'F', '/photos/mdubois.jpg', 2, 10, 'actif', '2024-04-03 09:15:00');
+('Dupois', 'Jacques', 'jacques.dupois@businesscare.fr', '$2y$10$CGP1gfg0khtXjAZcJFC6iO3oYisjwlPfkm8tQ8Q/OxWpFdR7tOiqO', '06 12 34 56 78', '1995-03-15', 'M', '/photos/mdupois.jpg', 2, 10, 'inactif', '2024-04-03 09:15:00');
+
 ('Admin', 'System', 'admin@businesscare.fr', '$2y$10$CGP1gfg0khtXjAZcJFC6iO3oYisjwlPfkm8tQ8Q/OxWpFdR7tOiqO', '0100000001', '1990-01-01', 'Autre', '', 1, NULL, 'actif', NOW()),
 ('Leclerc', 'Bernard', 'bernard.leclerc@businesscare.fr', '$2y$10$CGP1gfg0khtXjAZcJFC6iO3oYisjwlPfkm8tQ8Q/OxWpFdR7tOiqO', '0100000002', '1985-05-10', 'M', '', 1, NULL, 'actif', NOW()),
 ('Durand', 'Sophie', 'sophie.durand@prestataire.com', '$2y$10$CGP1gfg0khtXjAZcJFC6iO3oYisjwlPfkm8tQ8Q/OxWpFdR7tOiqO', '0600000001', '1988-03-15', 'F', '', 3, NULL, 'actif', NOW()),
@@ -131,6 +150,12 @@ INSERT INTO contrats (entreprise_id, date_debut, date_fin, montant_mensuel, nomb
 (4, '2024-01-15', '2024-07-14', 3200.00, 80, 'standard', 'actif', 'Acces aux prestations de base et ateliers'),
 (5, '2024-02-10', '2025-02-09', 4500.00, 120, 'premium', 'actif', 'Acces a toutes les prestations avec tarifs preferentiels'),
 (6, '2024-01-20', '2024-12-31', 6000.00, 180, 'premium', 'actif', 'Acces a toutes les prestations premium avec support prioritaire'),
+(7, '2024-02-15', '2024-12-31', 8500.00, 350, 'entreprise', 'actif', 'Acces illimite aux prestations avec formation personnalisee'),
+(8, '2024-03-01', '2024-12-31', 2800.00, 45, 'standard', 'en_attente', 'Acces aux prestations de base et ateliers'),
+(9, '2024-01-25', '2024-12-31', 3800.00, 90, 'standard', 'actif', 'Acces aux prestations de base et ateliers'),
+(10, '2024-02-20', '2024-12-31', 4200.00, 100, 'premium', 'actif', 'Acces a toutes les prestations avec tarifs preferentiels'),
+(10, '2024-01-01', '2024-12-31', 5000.00, 150, 'premium', 'actif', 'Acces a toutes les prestations premium'),
+(10, '2023-01-01', '2023-12-31', 5000.00, 150, 'premium', 'expire', 'Acces a toutes les prestations premium');
 (7, '2024-02-15', '2025-02-14', 8500.00, 350, 'entreprise', 'actif', 'Acces illimite aux prestations avec formation personnalisee'),
 (8, '2024-03-01', NULL, 2800.00, 45, 'standard', 'actif', 'Acces aux prestations de base et ateliers - renouvellement tacite'),
 (9, '2024-01-25', '2024-06-30', 3800.00, 90, 'standard', 'resilie', 'Resiliation au 30/06/2024'),
@@ -335,32 +360,25 @@ INSERT INTO dons (personne_id, montant, type, description, date_don, statut) VAL
 (31, NULL, 'materiel', 'Don machine a cafe', '2024-04-28', 'en_attente');
 
 INSERT INTO notifications (personne_id, titre, message, type, lien, lu, date_lecture) VALUES
-(12, 'Nouveau Rendez-vous', 'Votre rendez-vous a ete confirme', 'success', '/rendez-vous/1', false, NULL),
-(13, 'Paiement Reçu', 'Votre paiement a ete reçu avec succes', 'success', '/factures/1', true, '2024-03-17 10:30:00'),
-(14, 'Nouvel evenement', 'Un nouvel evenement est disponible', 'info', '/evenements/2', false, NULL),
-(15, 'Rappel de rendez-vous', 'Votre rendez-vous est prevu demain', 'warning', '/rendez-vous/3', false, NULL),
-(16, 'Nouvelle evaluation', 'Vous avez reçu une nouvelle evaluation', 'info', '/evaluations/5', true, '2024-03-25 14:45:00'),
-(17, 'Nouveau Rendez-vous', 'Votre rendez-vous a ete confirme', 'success', '/rendez-vous/6', false, NULL),
-(18, 'Paiement Reçu', 'Votre paiement a ete reçu avec succes', 'success', '/factures/2', true, '2024-03-18 11:20:00'),
-(19, 'Nouvel evenement', 'Un nouvel evenement est disponible', 'info', '/evenements/3', false, NULL),
-(20, 'Rappel de rendez-vous', 'Votre rendez-vous est prevu demain', 'warning', '/rendez-vous/9', false, NULL),
-(21, 'Nouvelle evaluation', 'Vous avez reçu une nouvelle evaluation', 'info', '/evaluations/10', true, '2024-03-26 15:30:00'),
-(12, 'Mise a jour statut RDV', 'Votre RDV du 20/04/2024 est terminé', 'info', '/rendez-vous/1', false, NULL),
-(14, 'Mise a jour statut RDV', 'Votre RDV du 22/04/2024 est terminé', 'info', '/rendez-vous/7', false, NULL),
-(15, 'Mise a jour statut RDV', 'Votre RDV du 23/04/2024 est terminé', 'info', '/rendez-vous/10', false, NULL),
-(16, 'Mise a jour statut RDV', 'Votre RDV du 24/04/2024 a été annulé', 'warning', '/rendez-vous/13', false, NULL),
-(22, 'Nouvelle Facture', 'Une nouvelle facture est disponible', 'info', '/factures/14', false, NULL),
-(24, 'Don Materiel Reçu', 'Votre don (plante) a bien été réceptionné.', 'success', '/dons/12', false, NULL),
-(18, 'Don Materiel Refusé', 'Votre don (halteres) n\'a pas pu être accepté.', 'error', '/dons/7', false, NULL),
-(13, 'Bienvenue', 'Bienvenue sur la plateforme Business Care !', 'success', '/', true, NOW()),
-(25, 'Alerte Contrat', 'Votre contrat arrive à expiration bientôt', 'warning', '/contrats/8', false, NULL),
-(1, 'Nouvel utilisateur', 'Le compte pour M. Dupont a été créé', 'info', '/users/view.php?id=12', false, NULL),
-(1, 'Erreur systeme', 'Une erreur critique s\'est produite', 'error', '/admin/logs', false, NULL),
-(12, 'Prestation annulée', 'L\'atelier Yoga de demain est annulé.', 'warning', '/prestations/2', false, NULL),
-(19, 'Message Communauté', 'Nouveau message dans Running Club', 'info', '/communaute/2', false, NULL),
-(3, 'Evaluation reçue', 'Vous avez reçu une note de 5/5 pour Consultation Psychologique', 'success', '/evaluations/received', false, NULL),
-(4, 'Evaluation reçue', 'Vous avez reçu une note de 4/5 pour Meditation en Groupe', 'success', '/evaluations/received', false, NULL),
-(15, 'Mot de passe modifié', 'Votre mot de passe a été modifié avec succès', 'success', '/profil', true, NOW()),
-(20, 'Invitation Evenement', 'Vous êtes invité à la Conference Addictions', 'info', '/evenements/5', false, NULL),
-(26, 'Facture en Retard', 'La facture FACT-2024-006 est en retard', 'error', '/factures/6', false, NULL),
-(28, 'Rendez-vous confirmé', 'Votre RDV Sophrologie du 11/05/2024 est confirmé', 'success', '/rendez-vous/21', false, NULL);
+(5, 'Nouveau Rendez-vous', 'Votre rendez-vous a ete confirme', 'success', '/rendez-vous/1', false, NULL),
+(5, 'Paiement Reçu', 'Votre paiement a ete reçu avec succes', 'success', '/factures/1', true, '2024-03-17 10:30:00'),
+(5, 'Nouvel evenement', 'Un nouvel evenement est disponible', 'info', '/evenements/2', false, NULL),
+(5, 'Rappel de rendez-vous', 'Votre rendez-vous est prevu demain', 'warning', '/rendez-vous/3', false, NULL),
+(5, 'Nouvelle evaluation', 'Vous avez reçu une nouvelle evaluation', 'info', '/evaluations/5', true, '2024-03-25 14:45:00'),
+(6, 'Nouveau Rendez-vous', 'Votre rendez-vous a ete confirme', 'success', '/rendez-vous/6', false, NULL),
+(7, 'Paiement Reçu', 'Votre paiement a ete reçu avec succes', 'success', '/factures/2', true, '2024-03-18 11:20:00'),
+(8, 'Nouvel evenement', 'Un nouvel evenement est disponible', 'info', '/evenements/3', false, NULL),
+(9, 'Rappel de rendez-vous', 'Votre rendez-vous est prevu demain', 'warning', '/rendez-vous/9', false, NULL),
+(10, 'Nouvelle evaluation', 'Vous avez reçu une nouvelle evaluation', 'info', '/evaluations/10', true, '2024-03-26 15:30:00');
+
+INSERT INTO contrats_prestations (contrat_id, prestation_id) VALUES
+(10, 10),
+(11, 1),
+(12, 2);
+
+INSERT INTO services (nom, description, actif, ordre) VALUES
+('Starter Pack', 'Pour les petites équipes (jusqu\'à 30 salariés)', TRUE, 10),
+('Basic Pack', 'Solution équilibrée (jusqu\'à 250 salariés)', TRUE, 20),
+('Premium Pack', 'Offre complète pour grandes entreprises (251+ salariés)', TRUE, 30),
+('Consultation Ponctuelle', 'Besoin spécifique hors contrat', TRUE, 40),
+('Événement Sur Mesure', 'Organisation d\'un événement spécifique', TRUE, 50);

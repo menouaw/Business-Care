@@ -1,4 +1,5 @@
 <?php
+
 /**
  * en-tête commun du site
  * 
@@ -37,27 +38,29 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
 ?>
 <!DOCTYPE html>
 <html lang="<?= isset($_SESSION['user_language']) ? $_SESSION['user_language'] : 'fr' ?>">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title><?= htmlspecialchars($pageTitle) ?></title>
-    
+
     <!-- Favicon -->
     <link rel="icon" href="<?= ASSETS_URL ?>/images/logo/noBgBlack.png" type="image/png">
-    
+
     <!-- CSS Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    
+
     <!-- CSS personnalisé -->
     <link rel="stylesheet" href="<?= ASSETS_URL ?>/css/client.css">
 </head>
+
 <body>
     <!-- Bouton "Retour en haut" -->
     <a id="back-to-top" class="d-none d-lg-block">
@@ -68,14 +71,14 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
     <nav class="navbar navbar-expand-lg <?= isset($transparentNav) && $transparentNav ? 'navbar-dark' : 'navbar-light bg-white' ?> fixed-top">
         <div class="container">
             <a class="navbar-brand" href="<?= WEBCLIENT_URL ?>">
-                <img src="<?= ASSETS_URL ?>/images/logo/<?= isset($transparentNav) && $transparentNav ? 'noBgWhite' : 'noBgBlack' ?>.png" 
-                     alt="Business Care" height="40">
+                <img src="<?= ASSETS_URL ?>/images/logo/<?= isset($transparentNav) && $transparentNav ? 'noBgWhite' : 'noBgBlack' ?>.png"
+                    alt="Business Care" height="40">
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" 
-                    aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain"
+                aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            
+
             <div class="collapse navbar-collapse" id="navbarMain">
                 <!-- Navigation principale -->
                 <ul class="navbar-nav me-auto">
@@ -83,15 +86,15 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
                         <a class="nav-link" href="<?= WEBCLIENT_URL ?>">Accueil</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="<?= WEBCLIENT_URL ?>/services.php">Services</a>
+                        <a class="nav-link" href="<?= WEBCLIENT_URL ?>/index.php#services">Services</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="<?= WEBCLIENT_URL ?>/tarifs.php">Tarifs</a>
+                        <a class="nav-link" href="<?= WEBCLIENT_URL ?>/index.php#offres">Tarifs</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="<?= WEBCLIENT_URL ?>/contact.php">Contact</a>
+                        <a class="nav-link" href="<?= WEBCLIENT_URL ?>/modules/companies/contact.php">Contact</a>
                     </li>
-                    
+
                     <?php if ($isLoggedIn): ?>
                         <!-- Menu spécifique selon le rôle -->
                         <?php if ($userRole === 'entreprise'): ?>
@@ -101,11 +104,13 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
                                 </a>
                                 <ul class="dropdown-menu">
                                     <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/companies/index.php">Tableau de bord</a></li>
+                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/companies/invoices.php">Factures</a></li>
                                     <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/companies/contracts.php">Contrats</a></li>
                                     <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/companies/employees.php">Gestion des salariés</a></li>
-                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/companies/stats.php">Statistiques</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/companies/devis.php">Demander un devis</a></li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/companies/quotes.php">Demander un devis</a></li>
                                 </ul>
                             </li>
                         <?php elseif ($userRole === 'salarie'): ?>
@@ -118,7 +123,9 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
                                     <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/reservations.php">Réservations</a></li>
                                     <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/challenges.php">Défis sportifs</a></li>
                                     <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/communities.php">Communautés</a></li>
-                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
                                     <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/donations.php">Faire un don</a></li>
                                 </ul>
                             </li>
@@ -137,7 +144,7 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
                         <?php endif; ?>
                     <?php endif; ?>
                 </ul>
-                
+
                 <!-- Partie droite : connexion ou profil/déconnexion -->
                 <ul class="navbar-nav ms-auto">
                     <?php if ($isLoggedIn): ?>
@@ -183,7 +190,7 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
                                 </div>
                             </div>
                         </li>
-                        
+
                         <!-- Profil utilisateur -->
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -195,9 +202,27 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
                                 <span class="d-none d-lg-inline-block ms-1"><?= $_SESSION['user_name'] ?? 'Mon compte' ?></span>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/profile.php"><i class="fas fa-user me-2"></i>Mon profil</a></li>
-                                <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/settings.php"><i class="fas fa-cog me-2"></i>Paramètres</a></li>
-                                <li><hr class="dropdown-divider"></li>
+                                <?php
+                                // Déterminer le lien des paramètres en fonction du rôle
+                                $settings_link = WEBCLIENT_URL . '/profile.php'; // Lien par défaut si pas de settings spécifique au rôle
+                                if (isset($userRole)) {
+                                    switch ($userRole) {
+                                        case 'entreprise':
+                                            $settings_link = WEBCLIENT_URL . '/modules/companies/settings.php';
+                                            break;
+                                        case 'salarie':
+                                            $settings_link = WEBCLIENT_URL . '/modules/employees/settings.php'; // Supposant que ce fichier existe/existera
+                                            break;
+                                        case 'prestataire':
+                                            $settings_link = WEBCLIENT_URL . '/modules/providers/settings.php'; // Supposant que ce fichier existe/existera
+                                            break;
+                                    }
+                                }
+                                ?>
+                                <li><a class="dropdown-item" href="<?= $settings_link ?>"><i class="fas fa-cog me-2"></i>Paramètres</a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
                                 <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/logout.php"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
                             </ul>
                         </li>
@@ -217,21 +242,9 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
             </div>
         </div>
     </nav>
-    
+
     <!-- Espace pour la barre de navigation fixe -->
     <div style="padding-top: 76px;"></div>
-
-    <!-- Messages flash -->
-    <?php if (isset($_SESSION['flash_messages']) && !empty($_SESSION['flash_messages'])): ?>
-        <div class="container mt-3">
-            <?php foreach ($_SESSION['flash_messages'] as $message): ?>
-                <div class="alert alert-<?= $message['type'] ?> alert-dismissible fade show" role="alert">
-                    <?= $message['message'] ?>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            <?php endforeach; ?>
-            <?php unset($_SESSION['flash_messages']); ?>
-        </div>
-    <?php endif; ?>
 </body>
+
 </html>

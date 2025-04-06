@@ -28,7 +28,6 @@ switch ($method) {
         $user = $stmt->fetch();
         
         if ($user && password_verify($data['password'], $user['mot_de_passe'])) {
-            // TODO: generer un jeton
             $token = bin2hex(random_bytes(32));
             
             // mise a jour du temps de derniere connexion

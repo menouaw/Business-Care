@@ -10,7 +10,8 @@ require_once 'config.php';
  *
  * @return PDO Connexion PDO active.
  */
-function getDbConnection() {
+function getDbConnection()
+{
     static $pdo = null;
     if ($pdo === null) {
         $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
@@ -35,7 +36,8 @@ function getDbConnection() {
  * @return string Nom de table validé
  * @throws Exception Si le nom de table est invalide
  */
-function validateTableName($table) {
+function validateTableName($table)
+{
     if (!preg_match('/^[a-zA-Z0-9_]+$/', $table)) {
         throw new Exception("[FAILURE] Nom de table invalide");
     }
@@ -51,14 +53,27 @@ function validateTableName($table) {
  * @param array $params Les valeurs à lier aux paramètres de la requête.
  * @return PDOStatement Objet PDOStatement contenant le résultat de la requête.
  */
-function executeQuery($sql, $params = []) {
+function executeQuery($sql, $params = [])
+{
     try {
         $pdo = getDbConnection();
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
         return $stmt;
     } catch (PDOException $e) {
-        die("[FAILURE] Impossible d'executer la requete: " . $e->getMessage());
+        // Log détaillé de l'erreur
+        $errorInfo = isset($stmt) ? $stmt->errorInfo() : $pdo->errorInfo();
+        $logMessage = sprintf(
+            "[FAILURE] Impossible d'executer la requete.\nSQL: %s\nParams: %s\nError: %s\nPDO Error Info: %s",
+            $sql,
+            print_r($params, true), // Utiliser print_r pour afficher les tableaux correctement
+            $e->getMessage(),
+            print_r($errorInfo, true)
+        );
+        error_log($logMessage); // Envoyer au log d'erreurs PHP
+
+        // Message simplifié pour l'utilisateur final
+        die("[FAILURE] Impossible d'executer la requete. Veuillez consulter les logs du serveur pour plus de détails. Message: " . $e->getMessage());
     }
 }
 
@@ -69,15 +84,16 @@ function executeQuery($sql, $params = []) {
  * @param string $where Clause SQL optionnelle pour filtrer les enregistrements
  * @return int Nombre d'enregistrements répondant aux critères
  */
-function countTableRows($table, $where = '') {
+function countTableRows($table, $where = '')
+{
     $table = validateTableName($table);
-    
+
     $sql = "SELECT COUNT(*) FROM $table";
     $params = [];
     if ($where) {
         $sql .= " WHERE $where";
     }
-    
+
     $stmt = executeQuery($sql, $params);
     return $stmt->fetchColumn();
 }
@@ -86,21 +102,31 @@ function countTableRows($table, $where = '') {
  * Récupère l'ensemble des enregistrements d'une table en appliquant des filtres optionnels
  *
  * @param string $table Nom de la table cible
- * @param string $where (Optionnel) Clause WHERE pour filtrer les enregistrements
- * @param string $orderBy (Optionnel) Clause ORDER BY pour trier les résultats
- * @param int $limit (Optionnel) Nombre maximum de lignes à récupérer. Une valeur de 0 désactive la limite
- * @param int $offset (Optionnel) Position de départ pour la récupération des enregistrements
- * @return array Tableau contenant l'ensemble des enregistrements récupérés
+ * @param string $where 
+ * @param string $orderBy 
+ * @param int $limit 
+ * @param int $offset 
+ * @param array $params Paramètres pour la clause WHERE
+ * @return array 
  */
-function fetchAll($table, $where = '', $orderBy = '', $limit = 0, $offset = 0) {
+function fetchAll($table, $where = '', $orderBy = '', $limit = 0, $offset = 0, $params = [])
+{
     $table = validateTableName($table);
-    
+
     $sql = "SELECT * FROM $table";
     if ($where) {
         $sql .= " WHERE $where";
     }
     if ($orderBy) {
-        $sql .= " ORDER BY $orderBy";
+        if (is_string($orderBy) && !empty(trim($orderBy))) {
+            if (preg_match('/^[a-zA-Z0-9_,\s\.\(\)]+(?:\s+(?:ASC|DESC))?(?:,\s*[a-zA-Z0-9_,\s\.\(\)]+(?:\s+(?:ASC|DESC))?)*$/', $orderBy)) {
+                $sql .= " ORDER BY " . $orderBy;
+            } else {
+                error_log("[WARNING] Invalid characters detected in orderBy clause in fetchAll for table '$table': " . $orderBy);
+            }
+        } else {
+            error_log("[WARNING] Invalid type or empty orderBy parameter passed to fetchAll for table '$table'. Expected string, got: " . gettype($orderBy));
+        }
     }
     if ($limit) {
         $sql .= " LIMIT $limit";
@@ -108,8 +134,8 @@ function fetchAll($table, $where = '', $orderBy = '', $limit = 0, $offset = 0) {
             $sql .= " OFFSET $offset";
         }
     }
-    
-    $stmt = executeQuery($sql);
+
+    $stmt = executeQuery($sql, $params);
     return $stmt->fetchAll();
 }
 
@@ -118,19 +144,29 @@ function fetchAll($table, $where = '', $orderBy = '', $limit = 0, $offset = 0) {
  *
  * @param string $table Nom de la table concernée
  * @param string $where Condition SQL pour filtrer les enregistrements
- * @param string $orderBy Clause SQL pour ordonner les résultats (facultative)
- * @return array|false Tableau associatif représentant l'enregistrement trouvé ou false si aucun enregistrement ne correspond
+ * @param array $params (Optionnel) Tableau associatif des paramètres à lier à la clause WHERE.
+ * @param string $orderBy (Optionnel) Clause SQL pour ordonner les résultats.
+ * @return array|false Tableau associatif représentant l'enregistrement trouvé ou false si aucun enregistrement ne correspond.
  */
-function fetchOne($table, $where, $orderBy = '') {
+function fetchOne($table, $where, $params = [], $orderBy = '')
+{
     $table = validateTableName($table);
-    
+
     $sql = "SELECT * FROM $table WHERE $where";
     if ($orderBy) {
-        $sql .= " ORDER BY $orderBy";
+        if (is_string($orderBy) && !empty(trim($orderBy))) {
+            if (preg_match('/^[a-zA-Z0-9_,\s\.\(\)]+(?:\s+(?:ASC|DESC))?(?:,\s*[a-zA-Z0-9_,\s\.\(\)]+(?:\s+(?:ASC|DESC))?)*$/', $orderBy)) {
+                $sql .= " ORDER BY " . $orderBy;
+            } else {
+                error_log("[WARNING] Invalid characters detected in orderBy clause in fetchOne for table '$table': " . $orderBy);
+            }
+        } else {
+            error_log("[WARNING] Invalid type or empty orderBy parameter passed to fetchOne for table '$table'. Expected string, got: " . gettype($orderBy));
+        }
     }
     $sql .= " LIMIT 1";
-    
-    $stmt = executeQuery($sql);
+
+    $stmt = executeQuery($sql, $params);
     return $stmt->fetch();
 }
 
@@ -141,16 +177,17 @@ function fetchOne($table, $where, $orderBy = '') {
  * @param array $data Tableau associatif des colonnes et valeurs à insérer
  * @return int|false Identifiant de la ligne insérée ou false si l'insertion échoue
  */
-function insertRow($table, $data) {
+function insertRow($table, $data)
+{
     $table = validateTableName($table);
-    
+
     $fields = array_keys($data);
     $placeholders = array_map(function ($field) {
         return ":$field";
     }, $fields);
-    
+
     $sql = "INSERT INTO $table (" . implode(', ', $fields) . ") VALUES (" . implode(', ', $placeholders) . ")";
-    
+
     $stmt = executeQuery($sql, $data);
     return $stmt->rowCount() > 0 ? getDbConnection()->lastInsertId() : false;
 }
@@ -164,16 +201,17 @@ function insertRow($table, $data) {
  * @param array $whereParams Paramètres pour la clause WHERE
  * @return int Nombre de lignes affectées
  */
-function updateRow($table, $data, $where, $whereParams = []) {
+function updateRow($table, $data, $where, $whereParams = [])
+{
     $table = validateTableName($table);
-    
+
     $fields = array_keys($data);
     $setClause = array_map(function ($field) {
         return "$field = :$field";
     }, $fields);
-    
+
     $sql = "UPDATE $table SET " . implode(', ', $setClause) . " WHERE $where";
-    
+
     $params = array_merge($data, $whereParams);
     $stmt = executeQuery($sql, $params);
     return $stmt->rowCount();
@@ -187,11 +225,12 @@ function updateRow($table, $data, $where, $whereParams = []) {
  * @param array $params Valeurs associées à la clause WHERE
  * @return int Le nombre de lignes supprimées
  */
-function deleteRow($table, $where, $params = []) {
+function deleteRow($table, $where, $params = [])
+{
     $table = validateTableName($table);
-    
+
     $sql = "DELETE FROM $table WHERE $where";
-    
+
     $stmt = executeQuery($sql, $params);
     return $stmt->rowCount();
 }
@@ -201,7 +240,8 @@ function deleteRow($table, $where, $params = []) {
  * 
  * @return void
  */
-function beginTransaction() {
+function beginTransaction()
+{
     getDbConnection()->beginTransaction();
 }
 
@@ -210,7 +250,8 @@ function beginTransaction() {
  * 
  * @return void
  */
-function commitTransaction() {
+function commitTransaction()
+{
     getDbConnection()->commit();
 }
 
@@ -219,6 +260,7 @@ function commitTransaction() {
  * 
  * @return void
  */
-function rollbackTransaction() {
+function rollbackTransaction()
+{
     getDbConnection()->rollBack();
-} 
+}

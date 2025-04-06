@@ -72,6 +72,18 @@ CREATE TABLE prestations (
     INDEX idx_categorie (categorie)
 );
 
+CREATE TABLE services (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nom VARCHAR(100) NOT NULL UNIQUE, -- Ex: 'Starter Pack', 'Consultation Ponctuelle'
+    description TEXT,                 -- Ex: 'Pour les petites équipes (jusqu\'à 30 salariés)'
+    actif BOOLEAN DEFAULT TRUE,       -- Pour activer/désactiver l'offre dans la liste
+    ordre INT DEFAULT 0,              -- Pour définir l'ordre d'affichage
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_nom (nom),
+    INDEX idx_actif (actif)
+);
+
 CREATE TABLE contrats (
     id INT PRIMARY KEY AUTO_INCREMENT,
     entreprise_id INT NOT NULL,
@@ -256,3 +268,14 @@ CREATE TABLE preferences_utilisateurs (
     FOREIGN KEY (personne_id) REFERENCES personnes(id),
     UNIQUE KEY unique_personne_id (personne_id)
 );
+
+-- Table de jointure entre contrats et prestations
+CREATE TABLE contrats_prestations (
+    contrat_id INT NOT NULL,
+    prestation_id INT NOT NULL,
+    PRIMARY KEY (contrat_id, prestation_id),
+    FOREIGN KEY (contrat_id) REFERENCES contrats(id) ON DELETE CASCADE,
+    FOREIGN KEY (prestation_id) REFERENCES prestations(id) ON DELETE CASCADE
+);
+
+
