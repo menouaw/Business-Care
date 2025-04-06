@@ -1,66 +1,32 @@
 <?php
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
-/**
- * Espace Entreprise - Demande de Devis (Module Entreprise)
- *
- * Ce fichier gère le formulaire de demande de devis pour les entreprises clientes.
- * Il permet à une entreprise connectée de :
- * - Visualiser un formulaire pour spécifier ses besoins (type de service, nb salariés, description).
- * - Soumettre une demande de devis qui sera traitée par la fonction `requestCompanyQuote`.
- *
- * Processus :
- * 1. Vérifie l'authentification et le rôle ROLE_ENTREPRISE.
- * 2. Récupère l'ID de l'entreprise depuis la session.
- * 3. Définit les services disponibles pour la sélection (actuellement en dur).
- * 4. Traite la soumission du formulaire (POST) :
- *    - Valide les données.
- *    - Appelle `requestCompanyQuote` pour enregistrer la demande.
- *    - Affiche un message de succès ou d'erreur via flash messages.
- *    - Redirige en cas de succès.
- * 5. Affiche le formulaire de demande de devis (GET ou après échec POST).
- *
- * Accès restreint aux utilisateurs avec le rôle ROLE_ENTREPRISE.
- */
-
 // Inclure les fonctions nécessaires
 require_once __DIR__ . '/../../includes/init.php';
 require_once __DIR__ . '/../../includes/page_functions/modules/companies.php';
 
-// Vérifier que l'utilisateur est authentifié et a le rôle entreprise
 requireRole(ROLE_ENTREPRISE);
 
-// Récupérer l'ID de l'entreprise depuis la session
 $entrepriseId = $_SESSION['user_entreprise'];
 
-// Récupérer l'offre pré-sélectionnée depuis l'URL, si elle existe
 $preselectedOfferKey = isset($_GET['offer']) ? trim($_GET['offer']) : null;
 
-// Récupérer la liste des types de contrats ou services disponibles pour un devis depuis la DB
 $available_services = [];
 $query = "SELECT id, nom, description FROM services WHERE actif = 1 ORDER BY ordre";
 
-// Utiliser executeQuery pour exécuter la requête spécifique, puis fetchAll() sur le statement
 try {
     $stmt = executeQuery($query);
     $servicesResult = $stmt->fetchAll();
 } catch (Exception $e) {
-    // Gérer l'erreur (par exemple, loguer et afficher un message générique)
     error_log("Erreur lors de la récupération des services: " . $e->getMessage());
     flashMessage("Une erreur est survenue lors de la récupération des services disponibles. Veuillez réessayer plus tard.", "danger");
-    $servicesResult = []; // Assurer que $servicesResult est un tableau vide pour éviter des erreurs plus loin
+    $servicesResult = [];
 }
 
 if ($servicesResult) {
     foreach ($servicesResult as $service) {
-        // Utiliser l'ID comme clé et une combinaison nom/description comme valeur
         $available_services[$service['id']] = $service['nom'] . (isset($service['description']) && !empty($service['description']) ? ' - ' . $service['description'] : '');
     }
 }
-// S'il n'y a pas de services actifs, $available_services restera vide, ce qui est géré dans le foreach plus bas.
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $formData = getFormData();
@@ -70,7 +36,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $result = requestCompanyQuote($formData);
 
     if ($result['success']) {
-        // On passe le message via l'URL
         $successMessage = urlencode($result['message']);
         $redirectUrl = WEBCLIENT_URL . '/modules/companies/quotes.php?quote_success=' . $successMessage;
 
@@ -95,10 +60,7 @@ include_once __DIR__ . '/../../templates/header.php';
     </div>
 
     <?php
-    // On n'appelle plus displayFlashMessages ici pour ce message spécifique
-    // displayFlashMessages(); 
 
-    // Vérifier et afficher le message de succès depuis l'URL
     if (isset($_GET['quote_success'])) {
         $successMessageDecoded = urldecode($_GET['quote_success']);
         echo '<div class="alert alert-success alert-dismissible fade show" role="alert">'
@@ -106,8 +68,7 @@ include_once __DIR__ . '/../../templates/header.php';
             . '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>'
             . '</div>';
     }
-    // On peut laisser l'appel displayFlashMessages() si on veut afficher d'autres messages (erreurs, etc.)
-    // qui utiliseraient encore le système standard
+
     displayFlashMessages();
     ?>
 
@@ -162,7 +123,7 @@ include_once __DIR__ . '/../../templates/header.php';
 
                 <div class="mb-3">
                     <label for="contact_telephone" class="form-label">Téléphone de contact</label>
-                    <input type="tel" class="form-control" id="contact_telephone" name="contact_telephone" value="<?php echo htmlspecialchars($submittedData['contact_telephone'] ?? ''); ?>" placeholder="01 23 45 67 89">
+                    <input type="tel" class="form-control" id="contact_telephone" name="contact_telephone" pattern="^(0|\+33)[1-9]([-. ]?[0-9]{2}){4}$" value="<?php echo htmlspecialchars($submittedData['contact_telephone'] ?? ''); ?>" placeholder="01 23 45 67 89">
                 </div>
 
                 <div class="d-flex justify-content-end">

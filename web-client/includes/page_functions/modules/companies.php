@@ -1,19 +1,6 @@
 <?php
 
-/**
- * fonctions pour la gestion des entreprises
- *
- * ce fichier contient les fonctions necessaires pour gérer les entreprises clientes
- */
 
-/**
- * Récupère la liste des entreprises avec pagination et recherche
- * 
- * @param int $page numéro de page
- * @param int $limit nombre d'éléments par page
- * @param string $search terme de recherche
- * @return array liste des entreprises et infos de pagination
- */
 function getCompaniesList($page = 1, $limit = 20, $search = '')
 {
     // Sanitize inputs
@@ -22,50 +9,42 @@ function getCompaniesList($page = 1, $limit = 20, $search = '')
     $search = sanitizeInput($search);
 
     try {
-        $where = '1=1'; // Condition de base
+        $where = '1=1';
         $params = [];
 
-        // Ajout de la recherche si spécifiée
         if (!empty($search)) {
             $searchTerm = "%" . $search . "%";
-            // Appliquer la recherche sur les colonnes existantes
             $where .= " AND (e.nom LIKE :search OR e.email LIKE :search OR e.adresse LIKE :search OR e.ville LIKE :search)";
             $params['search'] = $searchTerm;
         }
 
         $offset = ($page - 1) * $limit;
 
-        // Sélection des colonnes existantes et comptages
         $query = "SELECT e.id, e.nom, e.siret, e.adresse, e.code_postal, e.ville, e.telephone, e.email, e.site_web, e.logo_url, e.taille_entreprise, e.secteur_activite, e.date_creation, e.created_at, e.updated_at,
                   COUNT(DISTINCT p.id) as nombre_employes,
                   COUNT(DISTINCT c.id) as nombre_contrats_actifs 
                   FROM entreprises e 
                   LEFT JOIN personnes p ON e.id = p.entreprise_id AND p.role_id = :role_id
                   LEFT JOIN contrats c ON e.id = c.entreprise_id AND (c.date_fin IS NULL OR c.date_fin >= CURDATE()) AND c.statut = 'actif'
-                  WHERE " . $where; // Appliquer la condition WHERE ici
+                  WHERE " . $where;
 
 
         $queryParams = ['role_id' => ROLE_SALARIE];
-        $queryParams = array_merge($queryParams, $params); // Fusionner les paramètres
+        $queryParams = array_merge($queryParams, $params);
 
-        // Groupement par toutes les colonnes non agrégées de la table entreprises
         $query .= " GROUP BY e.id, e.nom, e.siret, e.adresse, e.code_postal, e.ville, e.telephone, e.email, e.site_web, e.logo_url, e.taille_entreprise, e.secteur_activite, e.date_creation, e.created_at, e.updated_at
                     ORDER BY e.nom LIMIT :limit OFFSET :offset";
         $queryParams['limit'] = $limit;
         $queryParams['offset'] = $offset;
 
-        // Exécution de la requête principale
         $companies = executeQuery($query, $queryParams)->fetchAll();
 
-        // Exécution de la requête de comptage
         $countQuery = "SELECT COUNT(DISTINCT e.id) as total FROM entreprises e WHERE " . $where;
-        $countResult = executeQuery($countQuery, $params)->fetch(); // Utiliser $params pour le comptage
+        $countResult = executeQuery($countQuery, $params)->fetch();
         $total = $countResult['total'];
 
-        // Calcul des informations de pagination
         $totalPages = ceil($total / $limit);
 
-        // Préparer les données pour renderPagination
         $paginationData = [
             'currentPage' => $page,
             'totalPages' => $totalPages,
@@ -73,7 +52,6 @@ function getCompaniesList($page = 1, $limit = 20, $search = '')
             'perPage' => $limit
         ];
 
-        // Construction de l'URL pour la pagination
         $urlPattern = "?page={page}";
         if (!empty($search)) {
             $urlPattern .= "&search=" . urlencode($search);
@@ -113,7 +91,6 @@ function getCompaniesList($page = 1, $limit = 20, $search = '')
  */
 function getCompanyDetails($company_id)
 {
-    // Validation de l'ID
     $company_id = filter_var(sanitizeInput($company_id), FILTER_VALIDATE_INT);
     if (!$company_id) {
         flashMessage("Identifiant d'entreprise invalide", "danger");
@@ -121,8 +98,6 @@ function getCompanyDetails($company_id)
     }
 
     try {
-        // Récupération des informations de base de l'entreprise et comptages
-        // Sélectionne e.* et les comptes agrégés
         $query = "SELECT e.*, 
                   COUNT(DISTINCT p.id) as nombre_employes,
                   COUNT(DISTINCT c.id) as nombre_contrats_actifs -- Renommé pour clarté
@@ -130,7 +105,6 @@ function getCompanyDetails($company_id)
                   LEFT JOIN personnes p ON e.id = p.entreprise_id AND p.role_id = :role_id
                   LEFT JOIN contrats c ON e.id = c.entreprise_id AND (c.date_fin IS NULL OR c.date_fin >= CURDATE()) AND c.statut = 'active'
                   WHERE e.id = :company_id
-                  -- Group by toutes les colonnes de e.* pour être compatible SQL standard
                   GROUP BY e.id, e.nom, e.siret, e.adresse, e.code_postal, e.ville, e.telephone, e.email, e.site_web, e.logo_url, e.taille_entreprise, e.secteur_activite, e.date_creation, e.created_at, e.updated_at";
 
         $company = executeQuery($query, [
@@ -143,9 +117,7 @@ function getCompanyDetails($company_id)
             return false;
         }
 
-        // Formater les dates
         if (isset($company['date_creation'])) {
-            // Utiliser la bonne clé de colonne 'date_creation' si elle existe ou 'created_at' si c'est le standard
             $dateToFormat = $company['date_creation'] ?? $company['created_at'] ?? null;
             if ($dateToFormat) {
                 $company['date_creation_formatee'] = formatDate($dateToFormat, 'd/m/Y');
@@ -158,15 +130,12 @@ function getCompanyDetails($company_id)
             $company['updated_at_formatee'] = formatDate($company['updated_at']);
         }
 
-
-        // Récupération des contrats actifs (semble correct)
         $contractsQuery = "SELECT c.*
                          FROM contrats c
                          WHERE c.entreprise_id = :company_id AND (c.date_fin IS NULL OR c.date_fin >= CURDATE()) AND c.statut = 'actif'
                          ORDER BY c.date_debut DESC";
         $contracts = executeQuery($contractsQuery, ['company_id' => $company_id])->fetchAll();
 
-        // Formater les dates des contrats
         foreach ($contracts as &$contract) {
             if (isset($contract['date_debut'])) {
                 $contract['date_debut_formatee'] = formatDate($contract['date_debut'], 'd/m/Y');
@@ -177,12 +146,10 @@ function getCompanyDetails($company_id)
             if (isset($contract['statut'])) {
                 $contract['statut_badge'] = getStatusBadge($contract['statut']);
             }
-            // Générer référence contrat
             $contract['reference'] = 'CT-' . str_pad($contract['id'], 6, '0', STR_PAD_LEFT);
         }
         $company['contrats_actifs'] = $contracts;
 
-        // Récupération des prestations disponibles via les contrats actifs (semble correct)
         $servicesQuery = "SELECT DISTINCT p.*
                         FROM prestations p
                         JOIN contrats_prestations cp ON p.id = cp.prestation_id
@@ -191,14 +158,12 @@ function getCompanyDetails($company_id)
                         ORDER BY p.categorie, p.nom";
         $company['services_disponibles'] = executeQuery($servicesQuery, ['company_id' => $company_id])->fetchAll();
 
-        // Formater les prix des services si disponibles (semble correct)
         foreach ($company['services_disponibles'] as &$service) {
             if (isset($service['prix'])) {
                 $service['prix_formate'] = formatMoney($service['prix']);
             }
         }
 
-        // Récupération des statistiques d'utilisation 
         $statsQuery = "SELECT COUNT(r.id) as total_rdv,
                      SUM(CASE WHEN r.statut = 'termine' THEN 1 ELSE 0 END) as rdv_termines,
                      SUM(CASE WHEN r.date_rdv >= CURDATE() THEN 1 ELSE 0 END) as rdv_a_venir,
@@ -233,13 +198,11 @@ function getCompanyRecentActivity($company_id, $limit = 10)
     $limit = min(50, max(1, (int)$limit)); // Limiter entre 1 et 50 activités
 
     if (!$company_id) {
-        // Ne pas afficher de message flash ici, juste retourner un tableau vide
-        // flashMessage("ID d'entreprise invalide", "danger");
+
         return [];
     }
 
     try {
-        // Requête utilisant les colonnes existantes
         $query = "SELECT l.id, l.action, l.details, l.created_at, 
                 CONCAT(p.prenom, ' ', p.nom) as utilisateur
                 FROM logs l
@@ -253,11 +216,9 @@ function getCompanyRecentActivity($company_id, $limit = 10)
             ':limit' => $limit
         ])->fetchAll();
 
-        // Formatage des dates et ajout d'icônes pour les activités
         foreach ($activities as &$activity) {
             $activity['date_formatee'] = formatDate($activity['created_at']);
 
-            // Détermination de l'icône en fonction du type d'action
             $actionIcons = [
                 'login' => 'fas fa-sign-in-alt',
                 'logout' => 'fas fa-sign-out-alt',
@@ -285,17 +246,17 @@ function getCompanyRecentActivity($company_id, $limit = 10)
 /**
  * Récupère les factures d'une entreprise avec pagination et filtres de date.
  * 
- * @param int $company_id identifiant de l'entreprise
- * @param int $page Numéro de la page actuelle
- * @param int $limit Nombre d'éléments par page
- * @param string|null $start_date date de début (format Y-m-d)
- * @param string|null $end_date date de fin (format Y-m-d)
- * @param string|array|null $status Filtre par statut de facture (string ou array)
- * @return array liste des factures, informations de pagination et HTML de pagination
+ * @param int $company_id 
+ * @param int $page 
+ * @param int $limit 
+ * @param string|null $start_date 
+ * @param string|null $end_date 
+ * @param string|array|null $status 
+ * @return array 
  */
 function getCompanyInvoices($company_id, $page = 1, $limit = 20, $start_date = null, $end_date = null, $status = null)
 {
-    // Validation de l'ID et des paramètres de pagination/date/statut
+
     $company_id = filter_var(sanitizeInput($company_id), FILTER_VALIDATE_INT);
     $page = max(1, (int)sanitizeInput($page));
     $limit = max(1, (int)sanitizeInput($limit));
@@ -318,13 +279,11 @@ function getCompanyInvoices($company_id, $page = 1, $limit = 20, $start_date = n
     }
 
     try {
-        // Construction de la clause WHERE et des paramètres pour le comptage et la sélection
         $where = "f.entreprise_id = :company_id";
         $params = ['company_id' => $company_id];
         $countParams = ['company_id' => $company_id];
         $urlParams = []; // Pour l'URL de pagination
 
-        // Filtre par date de début
         if ($start_date) {
             $where .= " AND f.date_emission >= :start_date";
             $startDateSql = date('Y-m-d', strtotime($start_date));
@@ -333,7 +292,6 @@ function getCompanyInvoices($company_id, $page = 1, $limit = 20, $start_date = n
             $urlParams['start_date'] = $start_date;
         }
 
-        // Filtre par date de fin
         if ($end_date) {
             $where .= " AND f.date_emission <= :end_date";
             $endDateSql = date('Y-m-d', strtotime($end_date));
@@ -342,12 +300,10 @@ function getCompanyInvoices($company_id, $page = 1, $limit = 20, $start_date = n
             $urlParams['end_date'] = $end_date;
         }
 
-        // Filtre par statut(s)
         if ($status) {
             $allowed_statuses = ['en_attente', 'payee', 'annulee', 'retard', 'impayee'];
 
             if (is_array($status)) {
-                // Filtrer pour ne garder que les statuts autorisés
                 $valid_statuses = array_intersect($status, $allowed_statuses);
                 if (!empty($valid_statuses)) {
                     $placeholders = [];
@@ -360,11 +316,9 @@ function getCompanyInvoices($company_id, $page = 1, $limit = 20, $start_date = n
                     $where .= " AND f.statut IN (" . implode(', ', $placeholders) . ")";
                     $params = array_merge($params, $statusParams);
                     $countParams = array_merge($countParams, $statusParams);
-                    // Pour l'URL, on utilise la notation status[]=...
                     $urlParams['status'] = $valid_statuses;
                 }
             } elseif (is_string($status) && in_array($status, $allowed_statuses)) {
-                // Cas où un seul statut est passé en string
                 $where .= " AND f.statut = :status";
                 $params['status'] = $status;
                 $countParams['status'] = $status;
@@ -377,11 +331,11 @@ function getCompanyInvoices($company_id, $page = 1, $limit = 20, $start_date = n
         $totalResult = executeQuery($countQuery, $countParams)->fetch();
         $total = $totalResult['total'] ?? 0;
         $totalPages = ceil($total / $limit);
-        // Ajuster la page si elle dépasse
+
         $page = max(1, min($page, $totalPages > 0 ? $totalPages : 1));
         $offset = ($page - 1) * $limit;
 
-        // 2. Récupérer les factures pour la page actuelle
+
         $query = "SELECT f.id, f.numero_facture, f.date_emission, f.date_echeance,
                 f.montant_ht, f.montant_total, f.statut, f.devis_id
                 FROM factures f
@@ -394,7 +348,6 @@ function getCompanyInvoices($company_id, $page = 1, $limit = 20, $start_date = n
 
         $invoices = executeQuery($query, $params)->fetchAll();
 
-        // 3. Formater les données
         foreach ($invoices as &$invoice) {
             if ($invoice['devis_id']) {
                 $invoice['devis_reference'] = 'DV-' . str_pad($invoice['devis_id'], 6, '0', STR_PAD_LEFT);
@@ -467,7 +420,6 @@ function getCompanyInvoices($company_id, $page = 1, $limit = 20, $start_date = n
  */
 function addCompanyContract($company_id, $contract_data)
 {
-    // Validation de l'ID et des données
     $company_id = filter_var(sanitizeInput($company_id), FILTER_VALIDATE_INT);
     $contract_data = sanitizeInput($contract_data);
 
@@ -485,7 +437,6 @@ function addCompanyContract($company_id, $contract_data)
         }
     }
 
-    // Liste des champs autorisés pour la table 'contrats'
     $allowedFields = [
         'date_debut',
         'date_fin',
@@ -496,33 +447,25 @@ function addCompanyContract($company_id, $contract_data)
         'conditions_particulieres'
     ];
 
-    // Filtrage des données
     $filteredData = array_intersect_key($contract_data, array_flip($allowedFields));
-    // Ajout de l'ID de l'entreprise
     $filteredData['entreprise_id'] = $company_id;
-    // Statut par défaut si non fourni
     if (!isset($filteredData['statut'])) {
         $filteredData['statut'] = 'actif';
     }
-    // Vérifier que date_fin est NULL si vide
     if (isset($filteredData['date_fin']) && empty($filteredData['date_fin'])) {
         $filteredData['date_fin'] = null;
     }
-    // Vérifier que montant_mensuel est NULL si vide
     if (isset($filteredData['montant_mensuel']) && $filteredData['montant_mensuel'] === '') {
         $filteredData['montant_mensuel'] = null;
     }
-    // Vérifier que nombre_salaries est NULL si vide
     if (isset($filteredData['nombre_salaries']) && $filteredData['nombre_salaries'] === '') {
         $filteredData['nombre_salaries'] = null;
     }
 
 
     try {
-        // Début de transaction car l'opération touche plusieurs tables
         beginTransaction();
 
-        // Insertion du contrat principal
         $contractId = insertRow('contrats', $filteredData);
 
         if (!$contractId) {
@@ -532,12 +475,11 @@ function addCompanyContract($company_id, $contract_data)
             return false;
         }
 
-        // Si des services sont spécifiés, les associer au contrat dans 'contrats_prestations'
         if (!empty($contract_data['services']) && is_array($contract_data['services'])) {
             foreach ($contract_data['services'] as $prestationId) { // Utiliser prestationId comme nom de variable
                 $prestationId = filter_var($prestationId, FILTER_VALIDATE_INT);
                 if ($prestationId) {
-                    // Préparer les données pour la table de liaison (colonnes existent)
+
                     $linkData = [
                         'contrat_id' => $contractId,
                         'prestation_id' => $prestationId
@@ -555,12 +497,9 @@ function addCompanyContract($company_id, $contract_data)
             }
         }
 
-        // Valider la transaction si tout s'est bien passé
         commitTransaction();
 
-        // Journalisation et notification
         $contractReference = 'CT-' . str_pad($contractId, 6, '0', STR_PAD_LEFT);
-        // Vérification plus stricte de l'ID utilisateur pour le log
         $userIdForLog = (isset($_SESSION['user_id']) && filter_var($_SESSION['user_id'], FILTER_VALIDATE_INT) && $_SESSION['user_id'] > 0)
             ? $_SESSION['user_id']
             : null;
@@ -569,7 +508,6 @@ function addCompanyContract($company_id, $contract_data)
 
         return $contractId;
     } catch (Exception $e) {
-        // En cas d'erreur, annuler la transaction
         rollbackTransaction();
         logSystemActivity('error', "Erreur création contrat: " . $e->getMessage());
         flashMessage("Une erreur est survenue lors de la création du contrat", "danger");
@@ -859,6 +797,14 @@ function requestCompanyQuote($data)
 
     if (empty($data['service_souhaite'])) {
         $errors[] = "Veuillez indiquer le service ou type de contrat souhaité.";
+    }
+
+    // Validation optionnelle du téléphone
+    if (!empty($data['contact_telephone'])) {
+        $phonePattern = '/^(0|\+33)[1-9]([-. ]?[0-9]{2}){4}$/';
+        if (!preg_match($phonePattern, trim($data['contact_telephone']))) {
+            $errors[] = "Le format du numéro de téléphone est invalide (attendu : 0XXXXXXXXX ou +33XXXXXXXXX).";
+        }
     }
 
     // Si des erreurs sont trouvées, retourner un échec avec les messages
@@ -1499,7 +1445,6 @@ function changeUserPassword($userId, $currentPassword, $newPassword)
             return false;
         }
 
-        // Mettre à jour le mot de passe dans la base de données
         $updateData = ['mot_de_passe' => $newPasswordHash];
         $affectedRows = updateRow('personnes', $updateData, 'id = :id', [':id' => $userId]);
 
@@ -1517,17 +1462,12 @@ function changeUserPassword($userId, $currentPassword, $newPassword)
 }
 
 /**
- * Ajoute un employé à une entreprise.
- * Valide les données, vérifie l'unicité de l'email, génère un mot de passe temporaire,
- * insère l'employé dans la table 'personnes' et retourne son ID ou false.
- *
- * @param int $company_id Identifiant de l'entreprise.
- * @param array $employee_data Données de l'employé (doit contenir au moins nom, prenom, email).
- * @return int|false L'ID du nouvel employé ou false en cas d'erreur.
+ * @param int $company_id 
+ * @param array $employee_data 
+ * @return int|false 
  */
 function addCompanyEmployee($company_id, $employee_data)
 {
-    // 1. Validation de l'ID d'entreprise et des données requises
     $company_id = filter_var(sanitizeInput($company_id), FILTER_VALIDATE_INT);
     $employee_data = sanitizeInput($employee_data);
 
@@ -1545,7 +1485,6 @@ function addCompanyEmployee($company_id, $employee_data)
     }
 
     try {
-        // 2. Vérification que l'entreprise existe
         $company = fetchOne('entreprises', "id = :id", [':id' => $company_id]);
         if (!$company) {
             flashMessage("Entreprise non trouvée.", "danger");
@@ -1560,20 +1499,17 @@ function addCompanyEmployee($company_id, $employee_data)
             return false;
         }
 
-        // 4. Génération d'un mot de passe temporaire si non fourni
         $plainPassword = null;
         if (empty($employee_data['mot_de_passe'])) {
             $plainPassword = bin2hex(random_bytes(6)); // Génère un mot de passe de 12 caractères hex
             $passwordHash = password_hash($plainPassword, PASSWORD_DEFAULT);
         } else {
-            // Si un mot de passe est fourni (peu probable depuis l'interface entreprise), on le hashe
             $passwordHash = password_hash($employee_data['mot_de_passe'], PASSWORD_DEFAULT);
         }
         if (!$passwordHash) {
             throw new Exception("Erreur lors du hachage du mot de passe.");
         }
 
-        // 5. Préparation des données pour l'insertion
         $insertData = [
             'nom' => $employee_data['nom'],
             'prenom' => $employee_data['prenom'],
@@ -1586,7 +1522,7 @@ function addCompanyEmployee($company_id, $employee_data)
             'entreprise_id' => $company_id,
             'role_id' => ROLE_SALARIE, // Assigner le rôle Salarié
             'statut' => $employee_data['statut'] ?? 'actif' // Statut actif par défaut
-            // created_at et updated_at sont gérés par la BDD
+
         ];
 
         // 6. Insertion de l'employé via la fonction insertRow de db.php
