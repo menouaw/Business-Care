@@ -67,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
      if (!empty($errors)) {
-        flashMessage('Erreurs de validation:<br>' . implode('<br>', array_map('htmlspecialchars', $errors)), 'danger');
+        flashMessage('Erreurs de validation: ' . implode('<br>', array_map('htmlspecialchars', $errors)), 'danger');
      }
 }
 

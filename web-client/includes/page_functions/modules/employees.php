@@ -207,7 +207,7 @@ function updateEmployeeProfile($employee_id, $profile_data)
 
     if (!empty($validation_errors)) {
         error_log("Validation errors detected. Stopping update."); // Log avant arrêt
-        flashMessage("Erreurs de validation : " . implode(", ", $validation_errors), "danger");
+        flashMessage("Erreurs de validation: " . implode(", ", $validation_errors), "danger");
         return false;
     }
 

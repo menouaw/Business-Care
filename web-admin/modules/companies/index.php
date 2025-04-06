@@ -75,7 +75,7 @@ include_once '../../templates/header.php';
                 <h1 class="h2">Gestion des entreprises</h1>
                 <div class="btn-toolbar mb-2 mb-md-0">
                     <a href="add.php" class="btn btn-sm btn-primary">
-                        <i class="fas fa-plus"></i> Nouvelle entreprise
+                        <i class="fas fa-plus"></i> Ajouter une entreprise
                     </a>
                 </div>
             </div>
