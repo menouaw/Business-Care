@@ -1,22 +1,5 @@
 <?php
 
-/**
- * Tableau de Bord - Espace Entreprise (Module Entreprise)
- *
- * Page d'accueil de l'espace entreprise. Affiche un résumé des informations
- * clés et des actions rapides pour l'entreprise connectée.
- *
- * Contenu Affiché :
- * - Cartes récapitulatives (Salariés, Contrats Actifs, Prestations, Factures).
- * - Liste des contrats actifs récents.
- * - Liste des dernières factures.
- * - Boutons d'actions rapides (Demander devis, Ajouter salarié, Contacter support).
- *
- * Récupère les données via les fonctions du module `companies.php`.
- * Accès restreint aux utilisateurs avec le rôle ROLE_ENTREPRISE.
- */
-
-// Correction: Ajouter l'inclusion de init.php qui charge les fonctions de base et d'auth
 require_once __DIR__ . '/../../includes/init.php';
 require_once __DIR__ . '/../../includes/page_functions/modules/companies.php';
 
@@ -42,7 +25,6 @@ $activites = getCompanyRecentActivity($entrepriseId, 5);
 
 $pageTitle = "Tableau de bord - Espace Entreprise";
 
-// inclure l'en-tête
 include_once __DIR__ . '/../../templates/header.php';
 ?>
 
@@ -55,7 +37,6 @@ include_once __DIR__ . '/../../templates/header.php';
             </div>
         </div>
 
-        <!-- cartes d'information -->
         <div class="row g-4 mb-4">
             <div class="col-md-6 col-lg-3">
                 <div class="card border-0 shadow-sm h-100">
@@ -95,8 +76,6 @@ include_once __DIR__ . '/../../templates/header.php';
                 </div>
             </div>
 
-
-
             <div class="col-md-6 col-lg-3">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body">
@@ -118,7 +97,6 @@ include_once __DIR__ . '/../../templates/header.php';
         </div>
 
         <div class="row g-4">
-            <!-- contrats actifs -->
             <div class="col-lg-6">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
@@ -156,7 +134,6 @@ include_once __DIR__ . '/../../templates/header.php';
                 </div>
             </div>
 
-            <!-- dernières factures -->
             <div class="col-lg-6">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
@@ -195,7 +172,6 @@ include_once __DIR__ . '/../../templates/header.php';
             </div>
         </div>
 
-        <!-- actions rapides -->
         <div class="row mt-4">
             <div class="col-12">
                 <div class="card border-0 shadow-sm">
@@ -228,6 +204,6 @@ include_once __DIR__ . '/../../templates/header.php';
 </main>
 
 <?php
-// inclure le pied de page
+
 include_once __DIR__ . '/../../templates/footer.php';
 ?>

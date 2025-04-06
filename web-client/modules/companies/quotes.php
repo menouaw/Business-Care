@@ -70,12 +70,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $result = requestCompanyQuote($formData);
 
     if ($result['success']) {
-        // Au lieu de flashMessage, on passe le message via l'URL
-        $successMessage = urlencode($result['message']); // Encoder pour l'URL
-        // Construire l'URL de redirection avec le message
+        // On passe le message via l'URL
+        $successMessage = urlencode($result['message']);
         $redirectUrl = WEBCLIENT_URL . '/modules/companies/quotes.php?quote_success=' . $successMessage;
 
-        // Rediriger vers l'URL construite
         redirectTo($redirectUrl);
     } else {
         flashMessage($result['message'], 'danger');
@@ -129,9 +127,9 @@ include_once __DIR__ . '/../../templates/header.php';
                             <?php foreach ($available_services as $key => $description): ?>
                                 <?php
                                 $isSelected = false;
-                                if ($preselectedOfferKey == $key) { // Sélection via URL (comparaison lâche)
+                                if ($preselectedOfferKey == $key) {
                                     $isSelected = true;
-                                } elseif (isset($submittedData['service_souhaite']) && $submittedData['service_souhaite'] == $key) { // Sélection via soumission échouée
+                                } elseif (isset($submittedData['service_souhaite']) && $submittedData['service_souhaite'] == $key) {
                                     $isSelected = true;
                                 }
                                 ?>

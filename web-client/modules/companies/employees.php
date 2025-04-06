@@ -4,39 +4,18 @@ require_once __DIR__ . '/../../includes/init.php';
 
 require_once __DIR__ . '/../../includes/page_functions/modules/companies.php';
 
-// 3. Vérifier le rôle APRÈS inclusion des dépendances
 requireRole(ROLE_ENTREPRISE);
 
-// 4. Récupérer l'ID entreprise
 $entrepriseId = $_SESSION['user_entreprise'];
 
 
-/**
- * Espace Entreprise - Gestion des Salariés (Module Entreprise)
- *
- * Ce fichier gère les opérations CRUD (Création, Lecture, Mise à jour)
- * pour les salariés associés à une entreprise connectée.
- * Il permet aux entreprises de :
- * - Lister leurs salariés (avec filtres et pagination).
- * - Afficher les détails d'un salarié spécifique.
- * - Ajouter un nouveau salarié via un formulaire.
- * - Modifier les informations d'un salarié existant.
- *
- * Actions gérées via le paramètre GET 'action':
- * - 'list' (défaut): Affiche la liste paginée et filtrable des salariés.
- * - 'add': Affiche le formulaire d'ajout et traite la soumission.
- * - 'modify': Affiche le formulaire de modification pour un salarié (ID requis) et traite la soumission.
- * - 'view': Affiche les détails d'un salarié spécifique (ID requis).
- *
- * Accès restreint aux utilisateurs avec le rôle ROLE_ENTREPRISE.
- */
-
-$action = isset($_GET['action']) ? sanitizeInput($_GET['action']) : 'list'; // 'list' par défaut
+$action = isset($_GET['action']) ? sanitizeInput($_GET['action']) : 'list';
 $employeeId = null;
 if (($action === 'modify' || $action === 'view') && isset($_GET['id'])) {
     $employeeId = filter_var($_GET['id'], FILTER_VALIDATE_INT);
 }
 
+//pour les erreurs et les messages de succès
 $errors = [];
 $submittedData = [];
 $employeeToEdit = null;
@@ -45,7 +24,7 @@ $employeeToView = null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $submittedData = sanitizeInput($_POST);
 
-    // Traitement du formulaire d'AJOUT
+
     if ($action === 'add') {
         if (empty($submittedData['nom'])) $errors[] = "Le nom est obligatoire.";
         if (empty($submittedData['prenom'])) $errors[] = "Le prénom est obligatoire.";
@@ -64,15 +43,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $newEmployeeId = addCompanyEmployee($entrepriseId, $employeeData);
 
             if ($newEmployeeId) {
-                // Le message flash de succès est déjà défini dans addCompanyEmployee
-                // Il sera affiché sur la page de redirection (la liste)
+
+
                 redirectTo('employees.php');
             } else {
-                // ÉCHEC de addCompanyEmployee
-                // Récupérer le message d'erreur mis en flash par addCompanyEmployee
-                // et l'ajouter aux erreurs locales pour affichage fiable.
-                $flashMessages = getFlashMessages(); // Lire (et vider) les messages flash
-                $errorMessage = "Une erreur technique est survenue lors de l'ajout de l'employé."; // Message par défaut
+                $flashMessages = getFlashMessages();
+                $errorMessage = "Une erreur technique est survenue lors de l'ajout de l'employé.";
                 if (!empty($flashMessages)) {
                     $lastMessage = end($flashMessages);
                     if (isset($lastMessage['message']) && ($lastMessage['type'] === 'danger' || $lastMessage['type'] === 'error')) {
@@ -99,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ];
             $updateSuccess = updateCompanyEmployee($entrepriseId, $employeeId, $updateData);
             if ($updateSuccess) {
-                redirectTo('employees.php?action=view&id=' . $employeeId); // Rediriger vers la vue après succès
+                redirectTo('employees.php?action=view&id=' . $employeeId);
             }
         }
         $employeeToEdit = getCompanyEmployeeDetails($entrepriseId, $employeeId);
@@ -107,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             flashMessage("Employé à modifier non trouvé lors du POST.", "danger");
             redirectTo('employees.php');
         }
-        // Fusionner pour pré-remplir le formulaire avec les données soumises invalides
+
         $submittedData = array_merge($employeeToEdit, $submittedData);
     }
 }
@@ -117,7 +93,7 @@ $salaries = [];
 $paginationHtml = '';
 $statusFilter = isset($_GET['statut']) ? sanitizeInput($_GET['statut']) : 'actif';
 
-// Si action = modify, charger l'employé à éditer (si non déjà chargé)
+
 if ($action === 'modify' && $employeeId && !$employeeToEdit) {
     $employeeToEdit = getCompanyEmployeeDetails($entrepriseId, $employeeId);
     if (!$employeeToEdit) {
@@ -125,19 +101,13 @@ if ($action === 'modify' && $employeeId && !$employeeToEdit) {
         redirectTo('employees.php');
     }
     if (empty($submittedData)) $submittedData = $employeeToEdit;
-}
-// Si action = view, charger l'employé à visualiser
-elseif ($action === 'view' && $employeeId) {
+} elseif ($action === 'view' && $employeeId) {
     $employeeToView = getCompanyEmployeeDetails($entrepriseId, $employeeId);
     if (!$employeeToView) {
-        // Message flash déjà mis par getCompanyEmployeeDetails si non trouvé
+
         redirectTo('employees.php');
     }
-}
-// Si action = add (et pas POST échoué), $submittedData est vide (ok)
-
-// Si on est en mode liste (par défaut)
-elseif ($action === 'list') {
+} elseif ($action === 'list') {
     $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
     $statusFilter = isset($_GET['statut']) ? sanitizeInput($_GET['statut']) : 'actif';
     $limit = 15;
@@ -150,25 +120,25 @@ elseif ($action === 'list') {
     $paginationHtml = $employeesData['pagination_html'] ?? '';
 }
 
-// Définir le titre de la page
+
 if ($action === 'add') {
     $pageTitle = "Ajouter un Salarié";
 } elseif ($action === 'modify' && $employeeToEdit) {
     $pageTitle = "Modifier l'Employé : " . htmlspecialchars($employeeToEdit['prenom'] . ' ' . $employeeToEdit['nom']);
 } elseif ($action === 'view' && $employeeToView) {
     $pageTitle = "Détails de l'Employé : " . htmlspecialchars($employeeToView['prenom'] . ' ' . $employeeToView['nom']);
-} else { // list
+} else {
     $pageTitle = "Gestion des Salariés";
 }
 
-// Inclure l'en-tête
+
 include_once __DIR__ . '/../../templates/header.php';
 ?>
 
 <main class="container py-4">
 
     <?php
-    // Affichage conditionnel : Formulaire d'ajout
+
     if ($action === 'add'):
     ?>
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -190,7 +160,7 @@ include_once __DIR__ . '/../../templates/header.php';
         <div class="card border-0 shadow-sm">
             <div class="card-body">
                 <form action="employees.php?action=add" method="POST">
-                    <!-- Champs du formulaire d'ajout (identique à avant) -->
+
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="nom" class="form-label">Nom <span class="text-danger">*</span></label>
@@ -245,7 +215,7 @@ include_once __DIR__ . '/../../templates/header.php';
         </div>
 
     <?php
-    // Affichage conditionnel : Formulaire de modification
+
     elseif ($action === 'modify' && $employeeToEdit):
     ?>
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -267,7 +237,7 @@ include_once __DIR__ . '/../../templates/header.php';
         <div class="card border-0 shadow-sm">
             <div class="card-body">
                 <form action="employees.php?action=modify&id=<?= $employeeId ?>" method="POST">
-                    <!-- Champs du formulaire de modification (pré-remplis avec $submittedData) -->
+
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="nom" class="form-label">Nom <span class="text-danger">*</span></label>
@@ -321,7 +291,7 @@ include_once __DIR__ . '/../../templates/header.php';
         </div>
 
     <?php
-    // Affichage conditionnel : Vue détaillée
+
     elseif ($action === 'view' && $employeeToView):
     ?>
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -360,8 +330,8 @@ include_once __DIR__ . '/../../templates/header.php';
         <!-- TODO: Ajouter d'autres sections si nécessaire -->
 
     <?php
-    // Affichage conditionnel : Liste des employés (défaut)
-    else: // ($action === 'list')
+
+    else:
     ?>
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="mb-0">Gestion des Salariés</h1>
@@ -374,7 +344,7 @@ include_once __DIR__ . '/../../templates/header.php';
 
         <?php displayFlashMessages(); ?>
 
-        <!-- Formulaire de Filtre -->
+
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-body">
                 <form action="employees.php" method="GET" class="row g-3 align-items-center">
@@ -391,7 +361,7 @@ include_once __DIR__ . '/../../templates/header.php';
             </div>
         </div>
 
-        <!-- Tableau des Salariés -->
+
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-header bg-white d-flex justify-content-between align-items-center">
                 <?php
@@ -410,7 +380,7 @@ include_once __DIR__ . '/../../templates/header.php';
                 <?php if (empty($salaries)): ?>
                     <?php
                     $messageVide = "Aucun salarié correspondant au filtre trouvé.";
-                    // Adapter le message si besoin...
+
                     ?>
                     <p class="text-center text-muted my-5"><?= htmlspecialchars($messageVide) ?></p>
                 <?php else: ?>
@@ -458,7 +428,7 @@ include_once __DIR__ . '/../../templates/header.php';
                 <?php endif; ?>
             </div>
         </div>
-    <?php endif; // Fin de la condition action 
+    <?php endif;
     ?>
 </main>
 

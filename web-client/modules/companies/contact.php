@@ -8,12 +8,12 @@ $formMessage = '';
 $formMessageType = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // TODO: Implémenter la logique d'envoi de l'email ou d'enregistrement du message
-    // Exemple simple de message de succès (sans traitement réel pour l'instant)
     $formMessage = "Votre message a bien été envoyé. Nous vous répondrons bientôt.";
     $formMessageType = 'success';
 
-    // Pour un vrai traitement, vous collecteriez les données $_POST['name'], $_POST['email'], etc.
-    // les valideriez, et utiliseriez une fonction mail() ou une librairie comme PHPMailer.
+    // Pour un meilleur traitement, nous allons recuperer les 
+    //données $_POST['name'], $_POST['email'], etc.
+    // apres avoir validé et utilisé avce une fonction mail() ou une librairie comme PHPMailer.
 }
 
 // Inclure l'en-tête
