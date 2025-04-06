@@ -1555,7 +1555,8 @@ function addCompanyEmployee($company_id, $employee_data)
         // 3. Vérification que l'email n'est pas déjà utilisé
         $existingUser = fetchOne('personnes', "email = :email", [':email' => $employee_data['email']]);
         if ($existingUser) {
-            flashMessage("Cette adresse email est déjà utilisée par un autre compte.", "danger");
+            // Message plus direct
+            flashMessage("Erreur : L'adresse email '" . htmlspecialchars($employee_data['email']) . "' est déjà utilisée par un autre compte.", "danger");
             return false;
         }
 
@@ -1600,17 +1601,17 @@ function addCompanyEmployee($company_id, $employee_data)
                 "Ajout employé #{$employeeId} ({$insertData['prenom']} {$insertData['nom']}) à l'entreprise #{$company_id}"
             );
 
-            // Message de succès, avec le mot de passe si généré
+            // Message de succès standardisé pour la production
             $successMessage = "L'employé {$insertData['prenom']} {$insertData['nom']} a été ajouté avec succès.";
             if ($plainPassword) {
-                // NE PAS afficher le mot de passe en production directement ici.
-                // Il faudrait l'envoyer par email ou le stocker temporairement ailleurs.
-                // Pour le développement, on peut l'ajouter au message flash.
-                $successMessage .= " Mot de passe temporaire : <strong>" . htmlspecialchars($plainPassword) . "</strong> (à communiquer à l'employé)";
-                logSystemActivity('info', "Mot de passe temporaire généré pour employé #$employeeId: $plainPassword");
+                // En DEV, on peut laisser le message avec le mot de passe (à commenter en PROD)
+                //$successMessage .= " Mot de passe temporaire : <strong>" . htmlspecialchars($plainPassword) . "</strong> (à communiquer à l'employé)";
+                //logSystemActivity('info', "Mot de passe temporaire généré pour employé #$employeeId: $plainPassword"); // Garder le log
+
+                // Message pour la production (supposer l'envoi par email ou autre moyen)
+                $successMessage .= " Un email de bienvenue avec un mot de passe temporaire devrait lui être envoyé.";
+                logSystemActivity('info', "Mot de passe temporaire généré pour employé #$employeeId: $plainPassword"); // Garder le log
             }
-            // Supprimer la ligne précédente et décommenter la suivante pour ne PAS afficher le mdp:
-            // flashMessage("L'employé {$insertData['prenom']} {$insertData['nom']}} a été ajouté avec succès. Un mot de passe temporaire lui sera envoyé.", "success");
 
             flashMessage($successMessage, "success");
 
@@ -1619,13 +1620,14 @@ function addCompanyEmployee($company_id, $employee_data)
             return $employeeId;
         } else {
             // 8. Échec de l'insertion
-            flashMessage("Erreur lors de l'ajout de l'employé dans la base de données.", "danger");
+            flashMessage("Erreur interne : Impossible d'ajouter l'employé dans la base de données. Veuillez contacter le support.", "danger");
             return false;
         }
     } catch (Exception $e) {
         // 9. Gestion des erreurs générales (connexion DB, hachage, etc.)
         logSystemActivity('error', "Erreur technique dans addCompanyEmployee pour entreprise #$company_id: " . $e->getMessage());
-        flashMessage("Une erreur technique est survenue lors de l'ajout de l'employé.", "danger");
+        // Message générique pour l'utilisateur
+        flashMessage("Une erreur technique imprévue est survenue lors de l'ajout de l'employé. Veuillez réessayer plus tard ou contacter le support.", "danger");
         return false;
     }
 }

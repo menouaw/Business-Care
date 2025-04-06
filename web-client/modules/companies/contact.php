@@ -21,7 +21,14 @@ include_once __DIR__ . '/../../templates/header.php';
 ?>
 
 <main class="container py-5">
-    <h1 class="text-center mb-5">Contactez-nous</h1>
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <h1 class="mb-0">Contactez-nous</h1>
+        <div>
+            <a href="#" onclick="history.back(); return false;" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Retour
+            </a>
+        </div>
+    </div>
 
     <div class="row g-5">
         <!-- Colonne Informations de contact -->

@@ -62,9 +62,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'statut' => $submittedData['statut'] ?? 'actif'
             ];
             $newEmployeeId = addCompanyEmployee($entrepriseId, $employeeData);
+
             if ($newEmployeeId) {
-                flashMessage("L'employé a été ajouté avec succès.", "success"); // Message ajouté ici
+                // Le message flash de succès est déjà défini dans addCompanyEmployee
+                // Il sera affiché sur la page de redirection (la liste)
                 redirectTo('employees.php');
+            } else {
+                // ÉCHEC de addCompanyEmployee
+                // Récupérer le message d'erreur mis en flash par addCompanyEmployee
+                // et l'ajouter aux erreurs locales pour affichage fiable.
+                $flashMessages = getFlashMessages(); // Lire (et vider) les messages flash
+                $errorMessage = "Une erreur technique est survenue lors de l'ajout de l'employé."; // Message par défaut
+                if (!empty($flashMessages)) {
+                    $lastMessage = end($flashMessages);
+                    if (isset($lastMessage['message']) && ($lastMessage['type'] === 'danger' || $lastMessage['type'] === 'error')) {
+                        $errorMessage = $lastMessage['message'];
+                    }
+                }
+                $errors[] = $errorMessage;
             }
         }
     } elseif ($action === 'modify' && $employeeId) {

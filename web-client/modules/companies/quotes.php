@@ -70,8 +70,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $result = requestCompanyQuote($formData);
 
     if ($result['success']) {
-        flashMessage($result['message'], 'success');
-        redirectTo(WEBCLIENT_URL . '/modules/companies/quotes.php'); // Ou une page listant les devis
+        // Au lieu de flashMessage, on passe le message via l'URL
+        $successMessage = urlencode($result['message']); // Encoder pour l'URL
+        // Construire l'URL de redirection avec le message
+        $redirectUrl = WEBCLIENT_URL . '/modules/companies/quotes.php?quote_success=' . $successMessage;
+
+        // Rediriger vers l'URL construite
+        redirectTo($redirectUrl);
     } else {
         flashMessage($result['message'], 'danger');
         $submittedData = $formData;
@@ -86,12 +91,26 @@ include_once __DIR__ . '/../../templates/header.php';
 <main class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="mb-0">Demander un devis</h1>
-        <a href="../../index.php" class="btn btn-outline-secondary">
+        <a href="#" onclick="history.back(); return false;" class="btn btn-sm btn-outline-secondary">
             <i class="fas fa-arrow-left me-1"></i> Retour
         </a>
     </div>
 
     <?php
+    // On n'appelle plus displayFlashMessages ici pour ce message spécifique
+    // displayFlashMessages(); 
+
+    // Vérifier et afficher le message de succès depuis l'URL
+    if (isset($_GET['quote_success'])) {
+        $successMessageDecoded = urldecode($_GET['quote_success']);
+        echo '<div class="alert alert-success alert-dismissible fade show" role="alert">'
+            . htmlspecialchars($successMessageDecoded)
+            . '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>'
+            . '</div>';
+    }
+    // On peut laisser l'appel displayFlashMessages() si on veut afficher d'autres messages (erreurs, etc.)
+    // qui utiliseraient encore le système standard
+    displayFlashMessages();
     ?>
 
     <div class="card border-0 shadow-sm">

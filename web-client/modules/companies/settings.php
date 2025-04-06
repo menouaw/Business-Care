@@ -76,11 +76,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $updateSuccess = updateUserProfile($userId, $updateData);
 
             if ($updateSuccess) {
-                flashMessage('Profil mis à jour avec succès.', 'success');
-
+                // flashMessage('Profil mis à jour avec succès.', 'success'); // Remplacé par paramètre URL
                 $_SESSION['user_name'] = $profileSubmittedData['prenom'] . ' ' . $profileSubmittedData['nom'];
                 $_SESSION['user_email'] = $profileSubmittedData['email'];
-                redirectTo('settings.php');
+
+                // Construire URL avec message de succès
+                $successMessage = urlencode('Profil mis à jour avec succès.');
+                $redirectUrl = 'settings.php?profile_success=' . $successMessage;
+                redirectTo($redirectUrl);
             } else {
                 $profileErrors[] = "Erreur lors de la mise à jour du profil.";
             }
@@ -98,20 +101,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($passwordData['new_password'] !== $passwordData['confirm_password']) {
             $passwordErrors[] = "Les nouveaux mots de passe ne correspondent pas.";
         }
+        if ($passwordData['current_password'] === $passwordData['new_password']) {
+            $passwordErrors[] = "Le nouveau mot de passe doit être différent de l'ancien.";
+        }
         // TODO: Ajouter validation de complexité si nécessaire
 
         if (empty($passwordErrors)) {
             $changeSuccess = changeUserPassword($userId, $passwordData['current_password'], $passwordData['new_password']);
 
             if ($changeSuccess) {
-                flashMessage('Mot de passe modifié avec succès.', 'success');
-                redirectTo('settings.php');
+                // flashMessage('Mot de passe modifié avec succès.', 'success'); // Remplacé par paramètre URL
+                // Construire URL avec message de succès
+                $successMessage = urlencode('Mot de passe modifié avec succès.');
+                $redirectUrl = 'settings.php?password_success=' . $successMessage;
+                redirectTo($redirectUrl);
             } else {
-               
-                if (empty($passwordErrors)) {
-                    $passwordErrors[] = "Le mot de passe actuel fourni est incorrect.";
-                }
-                
+                // Si la fonction changeUserPassword échoue après validation,
+                // c'est très probablement que le mot de passe actuel était incorrect.
+                // Ajoutons cette erreur spécifique au tableau $passwordErrors.
+                $passwordErrors[] = "Le mot de passe actuel fourni est incorrect.";
             }
         }
     }
@@ -131,7 +139,24 @@ include_once __DIR__ . '/../../templates/header.php';
         </a>
     </div>
 
-    <?php 
+    <?php
+    // Afficher les messages flash (erreurs globales comme CSRF)
+    // displayFlashMessages(); // Commenté pour l'instant car semble ne pas fonctionner après redirection
+
+    // Vérifier et afficher les messages de succès depuis l'URL
+    if (isset($_GET['profile_success'])) {
+        $successMessageDecoded = urldecode($_GET['profile_success']);
+        echo '<div class="alert alert-success alert-dismissible fade show" role="alert">'
+            . htmlspecialchars($successMessageDecoded)
+            . '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>'
+            . '</div>';
+    } elseif (isset($_GET['password_success'])) {
+        $successMessageDecoded = urldecode($_GET['password_success']);
+        echo '<div class="alert alert-success alert-dismissible fade show" role="alert">'
+            . htmlspecialchars($successMessageDecoded)
+            . '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>'
+            . '</div>';
+    }
     ?>
 
     <style>

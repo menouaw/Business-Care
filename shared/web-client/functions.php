@@ -89,6 +89,9 @@ function generatePageTitle($title = '')
  */
 function redirectTo($url)
 {
+    // S'assurer que toutes les données de session sont écrites avant de rediriger
+    session_write_close();
+
     header('Location: ' . $url);
     exit;
 }
@@ -155,6 +158,7 @@ function getFlashMessages()
  */
 function displayFlashMessages()
 {
+    // Restaurer le code original pour afficher les messages
     $flashMessages = getFlashMessages(); // Utilise la nouvelle fonction
     if (empty($flashMessages)) return '';
 
