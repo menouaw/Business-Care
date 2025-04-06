@@ -67,10 +67,6 @@ INSERT INTO prestations (nom, description, prix, duree, type, categorie, niveau_
 ('Conference Bien-etre au travail', 'Conference sur les bonnes pratiques de bien-etre', 200.00, 120, 'conference', 'Sensibilisation', 'intermediaire', 100, 'Aucun', 'Aucun'),
 ('Defi Sportif Mensuel', 'Programme d\'activites physiques sur un mois', 180.00, NULL, 'evenement', 'Sport', 'avance', 30, 'Tenue de sport', 'Niveau intermediaire'),
 ('Meditation en Groupe', 'Seance de meditation collective pour reduire le stress', 100.00, 60, 'atelier', 'Bien-etre mental', 'debutant', 15, 'Coussin de meditation', 'Aucun'),
-('Coaching Nutritionnel', 'Consultation personnalisee sur l''alimentation saine', 90.00, 45, 'consultation', 'Nutrition', 'intermediaire', 1, 'Aucun', 'Aucun'),
-('Atelier Ergonomie', 'Formation sur l''amenagement du poste de travail', 160.00, 90, 'atelier', 'Ergonomie', 'debutant', 25, 'Aucun', 'Aucun'),
-('Webinar Sommeil', 'Formation en ligne sur l''amelioration du sommeil', 130.00, 60, 'webinar', 'Bien-etre', 'debutant', 40, 'Ordinateur, connexion internet', 'Aucun'),
-('Conference Leadership', 'Conference sur le leadership bienveillant', 250.00, 120, 'conference', 'Management', 'avance', 80, 'Aucun', 'Experience en management');
 
 ('Coaching Nutritionnel', 'Consultation personnalisee sur l\'alimentation saine', 90.00, 45, 'consultation', 'Nutrition', NULL, 1, 'Aucun', 'Aucun'),
 ('Atelier Ergonomie', 'Formation sur l\'amenagement du poste de travail', 160.00, 90, 'atelier', 'Ergonomie', 'debutant', 25, 'Aucun', 'Aucun'),
