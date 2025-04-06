@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$pageTitle = "Modifier l'entreprise : " . htmlspecialchars($company['nom']);
+$pageTitle = "Modifier l'entreprise";
 include '../../templates/header.php';
 ?>
 

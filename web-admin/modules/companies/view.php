@@ -44,10 +44,9 @@ include '../../templates/header.php';
                 </div>
             </div>
 
-            <!-- Company Details Card -->
             <div class="card mb-4">
                 <div class="card-header">
-                    <i class="fas fa-building me-1"></i> Informations générales
+                    <i class="fas fa-building me-1"></i> Entreprise
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -111,7 +110,6 @@ include '../../templates/header.php';
                 </div>
             </div>
 
-            <!-- Associated Contracts Card -->
             <div class="card mb-4">
                 <div class="card-header">
                     <i class="fas fa-file-contract me-1"></i> Contrats associes
@@ -161,7 +159,6 @@ include '../../templates/header.php';
                 </div>
             </div>
 
-            <!-- Associated Users Card -->
             <div class="card mb-4">
                 <div class="card-header">
                     <i class="fas fa-users me-1"></i> Utilisateurs associes

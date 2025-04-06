@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$pageTitle = "Modifier Utilisateur";
+$pageTitle = "Modifier l'utilisateur";
 include '../../templates/header.php';
 ?>
 
