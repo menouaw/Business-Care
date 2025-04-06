@@ -1,4 +1,5 @@
 <?php
+error_log("--- TEST LOG FROM employees.php ---"); // Added test log
 
 require_once __DIR__ . '/../../includes/init.php';
 
@@ -30,26 +31,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (empty($submittedData['prenom'])) $errors[] = "Le prénom est obligatoire.";
         if (empty($submittedData['email']) || !filter_var($submittedData['email'], FILTER_VALIDATE_EMAIL)) $errors[] = "Une adresse email valide est obligatoire.";
 
-        // Validation de la date de naissance
-        $dateNaissanceInput = $submittedData['date_naissance'] ?? null;
-        if (!empty($dateNaissanceInput)) {
-            $d = DateTime::createFromFormat('Y-m-d', $dateNaissanceInput);
-            if (!$d || $d->format('Y-m-d') !== $dateNaissanceInput) {
-                $errors[] = "La date de naissance fournie n'est pas valide.";
-            } else {
-                $today = new DateTime();
-                if ($d > $today) {
-                    $errors[] = "La date de naissance ne peut pas être dans le futur.";
-                } else {
-                    $age = $today->diff($d)->y;
-                    if ($age < 16) {
-                        $errors[] = "L'employé doit avoir au moins 16 ans.";
-                    } elseif ($age > 100) {
-                        $errors[] = "L'âge de l'employé semble irréaliste (plus de 100 ans).";
-                    }
-                }
-            }
-        }
+        // Appel de la fonction de validation centralisée
+        validateBirthDate($submittedData['date_naissance'] ?? null, $errors);
 
         if (empty($errors)) {
             $employeeData = [
@@ -57,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'prenom' => $submittedData['prenom'],
                 'email' => $submittedData['email'],
                 'telephone' => $submittedData['telephone'] ?? null,
-                'date_naissance' => !empty($dateNaissanceInput) ? $dateNaissanceInput : null,
+                'date_naissance' => !empty($submittedData['date_naissance']) ? $submittedData['date_naissance'] : null,
                 'genre' => $submittedData['genre'] ?? null,
                 'statut' => $submittedData['statut'] ?? 'actif'
             ];
@@ -84,26 +67,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (empty($submittedData['prenom'])) $errors[] = "Le prénom est obligatoire.";
         if (empty($submittedData['email']) || !filter_var($submittedData['email'], FILTER_VALIDATE_EMAIL)) $errors[] = "Une adresse email valide est obligatoire.";
 
-        // Validation de la date de naissance
-        $dateNaissanceInput = $submittedData['date_naissance'] ?? null;
-        if (!empty($dateNaissanceInput)) {
-            $d = DateTime::createFromFormat('Y-m-d', $dateNaissanceInput);
-            if (!$d || $d->format('Y-m-d') !== $dateNaissanceInput) {
-                $errors[] = "La date de naissance fournie n'est pas valide.";
-            } else {
-                $today = new DateTime();
-                if ($d > $today) {
-                    $errors[] = "La date de naissance ne peut pas être dans le futur.";
-                } else {
-                    $age = $today->diff($d)->y;
-                    if ($age < 16) {
-                        $errors[] = "L'employé doit avoir au moins 16 ans.";
-                    } elseif ($age > 100) {
-                        $errors[] = "L'âge de l'employé semble irréaliste (plus de 100 ans).";
-                    }
-                }
-            }
-        }
+        // Appel de la fonction de validation centralisée
+        validateBirthDate($submittedData['date_naissance'] ?? null, $errors);
 
         if (empty($errors)) {
             $updateData = [
@@ -111,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'prenom' => $submittedData['prenom'],
                 'email' => $submittedData['email'],
                 'telephone' => $submittedData['telephone'] ?? null,
-                'date_naissance' => !empty($dateNaissanceInput) ? $dateNaissanceInput : null,
+                'date_naissance' => !empty($submittedData['date_naissance']) ? $submittedData['date_naissance'] : null,
                 'genre' => $submittedData['genre'] ?? null,
                 'statut' => $submittedData['statut'] ?? 'actif'
             ];

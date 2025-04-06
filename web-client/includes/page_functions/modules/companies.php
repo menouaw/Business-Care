@@ -1,5 +1,30 @@
 <?php
 
+// --- Nouvelle fonction de validation ---
+function validateBirthDate($dateNaissanceInput, &$errors)
+{
+    if (!empty($dateNaissanceInput)) {
+        $d = DateTime::createFromFormat('Y-m-d', $dateNaissanceInput);
+        if (!$d || $d->format('Y-m-d') !== $dateNaissanceInput) {
+            $errors[] = "La date de naissance fournie n'est pas valide.";
+        } else {
+            $today = new DateTime();
+            if ($d > $today) {
+                $errors[] = "La date de naissance ne peut pas être dans le futur.";
+            } else {
+                $age = $today->diff($d)->y;
+                if ($age < 16) {
+                    $errors[] = "L'employé doit avoir au moins 16 ans.";
+                } elseif ($age > 100) {
+                    $errors[] = "L'âge de l'employé semble irréaliste (plus de 100 ans).";
+                }
+            }
+        }
+    }
+    // La fonction ne retourne rien ici, elle modifie $errors par référence
+}
+// --- Fin fonction de validation ---
+
 
 function getCompaniesList($page = 1, $limit = 20, $search = '')
 {
