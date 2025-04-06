@@ -21,12 +21,10 @@ function validateBirthDate($dateNaissanceInput, &$errors)
             }
         }
     }
-    // La fonction ne retourne rien ici, elle modifie $errors par référence
 }
-// --- Fin fonction de validation ---
 
 
-function getCompaniesList($page = 1, $limit = 20, $search = '')
+function getCompaniesList($page = 1, $limit = 5, $search = '')
 {
     // Sanitize inputs
     $page = (int)sanitizeInput($page);
@@ -111,8 +109,8 @@ function getCompaniesList($page = 1, $limit = 20, $search = '')
 /**
  * Récupère les détails d'une entreprise
  * 
- * @param int $company_id identifiant de l'entreprise
- * @return array|false détails de l'entreprise ou false si non trouvée
+ * @param int $company_id 
+ * @return array|false 
  */
 function getCompanyDetails($company_id)
 {
@@ -212,9 +210,9 @@ function getCompanyDetails($company_id)
 /**
  * Récupère les activités récentes d'une entreprise
  * 
- * @param int $company_id identifiant de l'entreprise
- * @param int $limit nombre maximum d'activités à récupérer
- * @return array liste des activités récentes
+ * @param int $company_id 
+ * @param int $limit 
+ * @return array 
  */
 function getCompanyRecentActivity($company_id, $limit = 10)
 {
@@ -279,7 +277,7 @@ function getCompanyRecentActivity($company_id, $limit = 10)
  * @param string|array|null $status 
  * @return array 
  */
-function getCompanyInvoices($company_id, $page = 1, $limit = 20, $start_date = null, $end_date = null, $status = null)
+function getCompanyInvoices($company_id, $page = 1, $limit = 5, $start_date = null, $end_date = null, $status = null)
 {
 
     $company_id = filter_var(sanitizeInput($company_id), FILTER_VALIDATE_INT);
@@ -1657,7 +1655,7 @@ function getCompanyUsageStatistics($company_id)
  * @param string $statusFilter Filtre par statut ('actif', 'inactif', 'suspendu', 'tous').
  * @return array Contenant ['employees', 'pagination', 'pagination_html']
  */
-function getCompanyEmployees($company_id, $page = 1, $limit = 20, $search = '', $statusFilter = 'actif')
+function getCompanyEmployees($company_id, $page = 1, $limit = 5, $search = '', $statusFilter = 'actif')
 {
     // 1. Validation et Nettoyage des paramètres
     $company_id = filter_var(sanitizeInput($company_id), FILTER_VALIDATE_INT);

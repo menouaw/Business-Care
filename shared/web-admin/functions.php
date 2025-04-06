@@ -157,7 +157,7 @@ function getFlashMessages()
     if (isset($_SESSION['flash_messages']) && is_array($_SESSION['flash_messages'])) {
         $messages = $_SESSION['flash_messages'];
         unset($_SESSION['flash_messages']); // Clear all messages after retrieval
-        return $messages;
+        return is_array($messages) ? $messages : [];
     }
     return [];
 }
@@ -191,7 +191,7 @@ function displayFlashMessages()
 
         $alertClass = $alertTypes[$type] ?? 'alert-info';
 
-        $htmlOutput .= '<div class="alert ' . htmlspecialchars($alertClass) . ' alert-dismissible fade show" role="alert">'
+        $htmlOutput .= '<div class="alert ' . htmlspecialchars($alertClass, ENT_QUOTES, 'UTF-8') . ' alert-dismissible fade show" role="alert">'
             . htmlspecialchars($message)
             . '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>'
             . '</div>';
@@ -281,7 +281,8 @@ function paginateResults($table, $page, $perPage = DEFAULT_ITEMS_PER_PAGE, $wher
 
     if ($orderBy) {
         if (is_string($orderBy) && !empty(trim($orderBy))) {
-            if (!preg_match('/^[a-zA-Z0-9_\.,\s\(\)]+(?:\s+(?:ASC|DESC))?(?:,\s*[a-zA-Z0-9_\.,\s\(\)]+(?:\s+(?:ASC|DESC))?)*$/', $orderBy)) {
+            if (!preg_match('/^[a-zA-Z0-9_\.,\s\(\)]+(?:\s+(?:ASC|DESC)(?:\s+NULLS\s+(?:FIRST|LAST))?)?(?:,\s*[a-zA-Z0-9_\.,\s\(\)]+(?:\s+(?:ASC|DESC)(?:\s+NULLS\s+(?:FIRST|LAST))?)?)*$/', $orderBy)) {
+
                 error_log("[WARNING] Invalid characters detected in orderBy clause in paginateResults for table '$table': " . $orderBy);
                 $orderBy = ''; // Réinitialiser orderBy en cas de caractères non valides
             }

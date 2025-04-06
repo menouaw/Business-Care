@@ -17,7 +17,7 @@ require_once __DIR__ . '/../../../includes/init.php';
  * @param string $search terme de recherche
  * @return array liste des salariés et informations de pagination
  */
-function getEmployeesList($company_id = null, $page = 1, $limit = 20, $search = '')
+function getEmployeesList($company_id = null, $page = 1, $limit = 5, $search = '')
 {
     // Sanitize input parameters
     $company_id = sanitizeInput($company_id);
@@ -192,7 +192,6 @@ function updateEmployeeProfile($employee_id, $profile_data)
         $phone_to_check = $profile_data['telephone'];
         $is_match = preg_match('/^(0|\+33)[1-9]([-. ]?[0-9]{2}){4}$/', $phone_to_check);
 
-        // Log temporaire pour déboguer
         error_log("Vérification Tel: '$phone_to_check' - Match: " . ($is_match ? 'Oui' : 'Non'));
 
         if (!$is_match) {
@@ -204,7 +203,6 @@ function updateEmployeeProfile($employee_id, $profile_data)
         $validation_errors[] = "La valeur pour le genre doit être 'F' ou 'M'";
     }
 
-    // Log pour voir les erreurs accumulées
     error_log("Validation errors after checks: " . print_r($validation_errors, true));
 
     if (!empty($validation_errors)) {
@@ -424,7 +422,7 @@ function getEmployeeAppointments($employee_id, $status = 'upcoming')
  * @param int $limit nombre d'éléments par page
  * @return array historique d'activités et informations de pagination
  */
-function getEmployeeActivityHistory($employee_id, $page = 1, $limit = 20)
+function getEmployeeActivityHistory($employee_id, $page = 1, $limit = 5)
 {
     // Validation de l'ID
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);

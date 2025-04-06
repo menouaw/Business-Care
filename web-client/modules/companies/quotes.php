@@ -98,7 +98,7 @@ include_once __DIR__ . '/../../templates/header.php';
         </div>
         <div class="card-body">
             <form method="post" action="quotes.php">
-                <input type="hidden" name="csrf_token" value="<?php echo generateToken(); ?>">
+                <input type="hidden" name="csrf_token" value="<?php echo generateCsrfToken(); ?>">
 
                 <div class="row mb-3">
                     <div class="col-md-6">
