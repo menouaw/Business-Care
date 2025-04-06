@@ -44,18 +44,9 @@ include '../../templates/header.php';
                          </button>
                     </form>
                     <?php if (isset($user['entreprise_id'])): ?>
-                        <a href="<?php echo WEBADMIN_URL; ?>/modules/companies/view.php?id=<?php echo $user['entreprise_id']; ?>" class="btn btn-sm btn-secondary ms-2" data-bs-toggle="tooltip" title="Voir le Profil de l'Entreprise Associée">
-                            <i class="fas fa-building"></i> Voir Entreprise
-                        </a>
                         
                         <?php if ($user['role_id'] == ROLE_ENTREPRISE): ?>
                         <div class="btn-group" role="group" aria-label="Company Quick Actions">
-                            <a href="<?php echo WEBADMIN_URL; ?>/modules/companies/edit.php?id=<?php echo $user['entreprise_id']; ?>" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" title="Modifier l'Entreprise Associée">
-                                <i class="fas fa-pencil-alt"></i>
-                            </a>
-                             <a href="<?php echo WEBADMIN_URL; ?>/modules/devis/add.php?entreprise_id=<?php echo $user['entreprise_id']; ?>" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" title="Créer un Devis pour cette Entreprise">
-                                <i class="fas fa-plus-circle"></i>
-                            </a>
                         </div>
                         <?php endif; ?>
                     <?php endif; ?>

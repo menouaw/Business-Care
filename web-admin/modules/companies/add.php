@@ -24,8 +24,7 @@ $companySizes = companiesGetSizes();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!validateToken($_POST['csrf_token'] ?? '')) {
-        $errors[] = 'Erreur de sécurité (jeton CSRF invalide).';
-        logSecurityEvent($_SESSION['user_id'] ?? null, 'csrf_failure', '[FAILURE] Tentative d\'ajout entreprise échouée - CSRF invalide', true);
+        handleCsrfFailureRedirect(0, 'companies', 'ajout entreprise'); 
     } else {
         $submittedData = getFormData(); 
         $formData = array_merge($formData, $submittedData); 
@@ -67,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
      if (!empty($errors)) {
-        flashMessage('Erreurs de validation: ' . implode('<br>', array_map('htmlspecialchars', $errors)), 'danger');
+        flashMessage($errors, 'danger');
      }
 }
 

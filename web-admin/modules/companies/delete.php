@@ -24,18 +24,7 @@ $companyId = (int)$params['id'];
 $token = $params['csrf_token'];
 
 if (!validateToken($token)) {
-    flashMessage('Jeton de sécurité invalide ou expiré. Veuillez réessayer.', 'danger');
-    logSecurityEvent($_SESSION['user_id'] ?? 0, 'csrf_failure', "[SECURITY FAILURE] Tentative de suppression entreprise ID: $companyId avec jeton invalide via $requestMethod");
-    if ($companyId > 0) {
-        $referer = $_SERVER['HTTP_REFERER'] ?? '';
-        if (strpos($referer, 'view.php?id=' . $companyId) !== false) {
-             redirectTo(WEBADMIN_URL . "/modules/companies/view.php?id={$companyId}");
-        } else {
-             redirectTo(WEBADMIN_URL . '/modules/companies/index.php');
-        }
-    } else {
-        redirectTo(WEBADMIN_URL . '/modules/companies/index.php');
-    }
+    handleCsrfFailureRedirect($companyId, 'companies', 'suppression entreprise');
 }
 
 if ($companyId <= 0) {
@@ -43,7 +32,6 @@ if ($companyId <= 0) {
     redirectTo(WEBADMIN_URL . '/modules/companies/index.php');
 }
 
-// Verifie si l'entreprise existe avant de tenter de supprimer
 $company = companiesGetDetails($companyId);
 if (!$company) {
     flashMessage('Entreprise non trouvée.', 'warning');
@@ -57,12 +45,5 @@ if ($result['success']) {
     redirectTo(WEBADMIN_URL . '/modules/companies/index.php');
 } else {
     flashMessage($result['message'], 'danger');
-    $referer = $_SERVER['HTTP_REFERER'] ?? '';
-    // Si l'erreur vient de la page view, redirige vers elle pour voir l'erreur
-    if (strpos($referer, 'view.php?id=' . $companyId) !== false) {
-         redirectTo(WEBADMIN_URL . "/modules/companies/view.php?id={$companyId}");
-    } else {
-         // Sinon, redirige vers la liste
-         redirectTo(WEBADMIN_URL . '/modules/companies/index.php'); 
-    }
+    redirectBasedOnReferer($companyId, 'companies'); 
 }
