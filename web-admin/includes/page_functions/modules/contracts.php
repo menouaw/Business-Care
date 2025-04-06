@@ -228,6 +228,28 @@ function contractsDelete($id) {
 }
 
 /**
+ * Compte le nombre d'utilisateurs actifs associés à une entreprise.
+ *
+ * @param int $entrepriseId L'ID de l'entreprise.
+ * @return int Le nombre d'utilisateurs actifs.
+ */
+function contractsGetActiveUserCountForCompany(int $entrepriseId): int {
+    if ($entrepriseId <= 0) {
+        return 0;
+    }
+    $userTable = defined('TABLE_USERS') ? TABLE_USERS : 'personnes';
+    $sql = "SELECT COUNT(id) FROM " . $userTable . " WHERE entreprise_id = ? AND statut = 'actif'";
+    
+    try {
+        $count = executeQuery($sql, [$entrepriseId])->fetchColumn();
+        return (int)$count;
+    } catch (Exception $e) {
+        logSystemActivity('error', '[ERROR] Erreur lors de la récupération du nombre d\'utilisateurs actifs pour l\'entreprise ID ' . $entrepriseId . ': ' . $e->getMessage());
+        return 0; 
+    }
+}
+
+/**
  * Met à jour le statut d'un contrat.
  *
  * Utilise updateRow de db.php.

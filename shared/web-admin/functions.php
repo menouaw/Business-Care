@@ -391,3 +391,64 @@ function handleCsrfFailureRedirect($entityId, $module, $actionDescription = 'act
     );
     redirectBasedOnReferer($entityId, $module);
 }
+
+/**
+ * Formate un nombre en devise (euros).
+ *
+ * @param float|null $amount Le montant.
+ * @param string $currencySymbol Le symbole de la devise.
+ * @return string Le montant formaté ou 'N/A' si null.
+ */
+function formatCurrency($amount, $currencySymbol = '€') {
+    if ($amount === null || !is_numeric($amount)) {
+        return 'N/A';
+    }
+    return number_format($amount, 2, ',', ' ') . ' ' . $currencySymbol;
+}
+
+/**
+ * Formate un objet DateInterval en une chaîne de caractères lisible.
+ *
+ * @param DateInterval|null $interval L'intervalle de temps.
+ * @return string La durée formatée (ex: "1 an 2 mois 3 jours") ou "-" si null/invalide.
+ */
+function formatDuration($interval) {
+    if (!$interval instanceof DateInterval) {
+        return '-';
+    }
+
+    $parts = [];
+    if ($interval->y > 0) {
+        $parts[] = $interval->y . ' an' . ($interval->y > 1 ? 's' : '');
+    }
+    if ($interval->m > 0) {
+        $parts[] = $interval->m . ' mois';
+    }
+    if ($interval->d > 0 && empty($parts)) { 
+        $parts[] = $interval->d . ' jour' . ($interval->d > 1 ? 's' : '');
+    }
+
+    if (empty($parts)) {
+        return '0 jours'; 
+    }
+
+    return implode(' ', $parts);
+}
+
+/**
+ * Genere une URL de referer securisee.
+ * 
+ * @param string|null $defaultUrl L'URL par defaut si le referer n'est pas valide ou absent.
+ * @param array $allowedHosts Hotes autorises pour le referer.
+ * @return string L'URL de redirection.
+ */
+function generateSecureReferer($defaultUrl = null, $allowedHosts = []) {
+    $referer = $_SERVER['HTTP_REFERER'] ?? null;
+    if ($referer) {
+        $parsedReferer = parse_url($referer);
+        if (in_array($parsedReferer['host'], $allowedHosts, true) || empty($allowedHosts)) {
+            return $referer;
+        }
+    }
+    return $defaultUrl;
+}
