@@ -108,7 +108,7 @@ function companiesSave($data, $id = 0) {
         'telephone' => $data['telephone'] ?? null, 
         'email' => $data['email'] ?? null, 
         'site_web' => $data['site_web'] ?? null,
-        'taille_entreprise' => $data['taille_entreprise'] ?? null, 
+        'taille_entreprise' => ($data['taille_entreprise'] ?? '') === '' ? null : $data['taille_entreprise'], 
         'secteur_activite' => $data['secteur_activite'] ?? null, 
         'date_creation' => !empty($data['date_creation']) ? $data['date_creation'] : null
     ];

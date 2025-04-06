@@ -22,7 +22,7 @@ CREATE TABLE entreprises (
     email VARCHAR(255),
     site_web VARCHAR(255),
     logo_url VARCHAR(255),
-    taille_entreprise ENUM('1-10', '11-50', '51-200', '201-500', '500+'),
+    taille_entreprise ENUM('1-10', '11-50', '51-200', '201-500', '500+') NULL DEFAULT NULL,
     secteur_activite VARCHAR(100),
     date_creation DATE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
