@@ -23,9 +23,8 @@ $errors = [];
 $formData = $user; 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!isset($_POST['csrf_token']) || !validateToken($_POST['csrf_token'])) {
-        $errors[] = 'Jeton de sécurité invalide ou expiré. Veuillez réessayer.';
-        logSecurityEvent($_SESSION['user_id'] ?? 0, 'csrf_failure', "[SECURITY FAILURE] Tentative de modification utilisateur ID: $userId avec jeton invalide");
+    if (!validateToken($_POST['csrf_token'] ?? '')) {
+        handleCsrfFailureRedirect($userId, 'users', 'modification utilisateur');
     } else {
         $submittedData = [
             'nom'           => trim($_POST['nom'] ?? ''),
@@ -55,9 +54,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
     }
+    if (!empty($errors)) {
+        flashMessage($errors, 'danger');
+    }
 }
 
-$pageTitle = "Modifier Utilisateur";
+$pageTitle = "Modifier l'utilisateur";
 include '../../templates/header.php';
 ?>
 
@@ -79,17 +81,6 @@ include '../../templates/header.php';
                     </a>
                 </div>
             </div>
-
-            <?php if (!empty($errors)): ?>
-            <div class="alert alert-danger" role="alert">
-                <h4 class="alert-heading">Erreurs de validation</h4>
-                <ul>
-                    <?php foreach ($errors as $error): ?>
-                        <li><?php echo htmlspecialchars($error); ?></li>
-                    <?php endforeach; ?>
-                </ul>
-            </div>
-            <?php endif; ?>
 
             <div class="card">
                 <div class="card-header">Informations</div>

@@ -7,33 +7,43 @@ require_once __DIR__ . '/../../init.php';
  * @param int $page Numero de la page
  * @param int $perPage Nombre d'elements par page
  * @param string $search Terme de recherche
+ * @param string $city Filtre par ville
+ * @param string $size Filtre par taille
  * @return array Donnees de pagination et liste des entreprises
  */
-function companiesGetList($page = 1, $perPage = 10, $search = '') {
+function companiesGetList($page = 1, $perPage = 10, $search = '', $city = '', $size = '') {
     $whereClauses = [];
     $params = [];
 
     if ($search) {
-        $whereClauses[] = "(nom LIKE ? OR siret LIKE ? OR ville LIKE ?)";
+        $whereClauses[] = "(nom LIKE ? OR siret LIKE ?)";
         $params[] = "%{$search}%";
         $params[] = "%{$search}%";
-        $params[] = "%{$search}%";
+    }
+
+    if ($city) {
+        $whereClauses[] = "ville = ?";
+        $params[] = $city;
+    }
+    
+    if ($size) {
+        $whereClauses[] = "taille_entreprise = ?";
+        $params[] = $size;
     }
     
     $whereSql = !empty($whereClauses) ? implode(' AND ', $whereClauses) : '1';
 
-
-    $countSql = "SELECT COUNT(id) FROM entreprises WHERE {$whereSql}";
+    $countSql = "SELECT COUNT(id) FROM " . TABLE_COMPANIES . " WHERE {$whereSql}";
     $totalCompanies = executeQuery($countSql, $params)->fetchColumn();
     
     $totalPages = ceil($totalCompanies / $perPage);
     $page = max(1, min($page, $totalPages)); 
     $offset = ($page - 1) * $perPage;
 
-    $sql = "SELECT * FROM entreprises WHERE {$whereSql} ORDER BY nom ASC LIMIT ?, ?";
-    $paramsWithPagination = array_merge($params, [$offset, $perPage]);
+    $sql = "SELECT * FROM " . TABLE_COMPANIES . " WHERE {$whereSql} ORDER BY nom ASC LIMIT ?, ?";
+    $paramsForLimit = array_merge($params, [(int)$offset, (int)$perPage]);
 
-    $companies = executeQuery($sql, $paramsWithPagination)->fetchAll();
+    $companies = executeQuery($sql, $paramsForLimit)->fetchAll();
 
     return [
         'companies' => $companies,
@@ -51,18 +61,16 @@ function companiesGetList($page = 1, $perPage = 10, $search = '') {
  * @return array|false Donnees de l'entreprise ou false si non trouvee
  */
 function companiesGetDetails($id) {
-    $company = executeQuery("SELECT * FROM entreprises WHERE id = ? LIMIT 1", [$id])->fetch();
+    $company = fetchOne(TABLE_COMPANIES, "id = ?", '', [$id]);
     
     if (!$company) {
         return false;
     }
     
-    // recupere les contrats associes
-    $sqlContracts = "SELECT c.* FROM contrats c WHERE c.entreprise_id = ? ORDER BY c.date_debut DESC";
+    $sqlContracts = "SELECT c.* FROM " . TABLE_CONTRACTS . " c WHERE c.entreprise_id = ? ORDER BY c.date_debut DESC";
     $company['contracts'] = executeQuery($sqlContracts, [$id])->fetchAll();
     
-    // recupere les utilisateurs associes
-    $sqlUsers = "SELECT p.*, r.nom as role_name FROM personnes p LEFT JOIN roles r ON p.role_id = r.id WHERE p.entreprise_id = ? ORDER BY p.nom, p.prenom";
+    $sqlUsers = "SELECT p.*, r.nom as role_name FROM " . TABLE_USERS . " p LEFT JOIN " . TABLE_ROLES . " r ON p.role_id = r.id WHERE p.entreprise_id = ? ORDER BY p.nom, p.prenom";
     $company['users'] = executeQuery($sqlUsers, [$id])->fetchAll();
     
     return $company;
@@ -91,7 +99,6 @@ function companiesSave($data, $id = 0) {
         ];
     }
 
-    // Prepare data for DB insertion/update
     $dbData = [
         'nom' => $data['nom'], 
         'siret' => $data['siret'] ?? null, 
@@ -101,15 +108,14 @@ function companiesSave($data, $id = 0) {
         'telephone' => $data['telephone'] ?? null, 
         'email' => $data['email'] ?? null, 
         'site_web' => $data['site_web'] ?? null,
-        'taille_entreprise' => $data['taille_entreprise'] ?? null, 
+        'taille_entreprise' => ($data['taille_entreprise'] ?? '') === '' ? null : $data['taille_entreprise'], 
         'secteur_activite' => $data['secteur_activite'] ?? null, 
-        'date_creation' => !empty($data['date_creation']) ? $data['date_creation'] : null // Ensure null if empty
+        'date_creation' => !empty($data['date_creation']) ? $data['date_creation'] : null
     ];
     
     try {
-        // Cas de mise a jour
         if ($id > 0) {
-            $affectedRows = updateRow('entreprises', $dbData, "id = ?", [$id]);
+            $affectedRows = updateRow(TABLE_COMPANIES, $dbData, "id = :where_id", ['where_id' => $id]);
             
             if ($affectedRows !== false) {
                 logBusinessOperation($_SESSION['user_id'], 'company_update', 
@@ -120,9 +126,8 @@ function companiesSave($data, $id = 0) {
                 throw new Exception("La mise à jour a échoué ou aucune ligne n'a été modifiée.");
             }
         } 
-        // Cas de creation
         else {
-            $newId = insertRow('entreprises', $dbData);
+            $newId = insertRow(TABLE_COMPANIES, $dbData);
             
             if ($newId) {
                 logBusinessOperation($_SESSION['user_id'], 'company_create', 
@@ -156,11 +161,9 @@ function companiesSave($data, $id = 0) {
  */
 function companiesDelete($id) {
     
-    // Verifie les personnes associees
-    $personCount = executeQuery("SELECT COUNT(id) FROM personnes WHERE entreprise_id = ?", [$id])->fetchColumn();
+    $personCount = executeQuery("SELECT COUNT(id) FROM " . TABLE_USERS . " WHERE entreprise_id = ?", [$id])->fetchColumn();
     
-    // Verifie les contrats associes
-    $contractCount = executeQuery("SELECT COUNT(id) FROM contrats WHERE entreprise_id = ?", [$id])->fetchColumn();
+    $contractCount = executeQuery("SELECT COUNT(id) FROM " . TABLE_CONTRACTS . " WHERE entreprise_id = ?", [$id])->fetchColumn();
     
     if ($personCount > 0) {
         logBusinessOperation($_SESSION['user_id'], 'company_delete_attempt', 
@@ -180,9 +183,8 @@ function companiesDelete($id) {
         ];
     }
     
-    // Suppression
     try {
-        $deletedRows = deleteRow('entreprises', "id = ?", [$id]);
+        $deletedRows = deleteRow(TABLE_COMPANIES, "id = ?", [$id]);
         
         if ($deletedRows > 0) {
             logBusinessOperation($_SESSION['user_id'], 'company_delete', 
@@ -206,4 +208,23 @@ function companiesDelete($id) {
             'message' => "Erreur de base de données lors de la suppression."
          ];
     }
+}
+
+/**
+ * Recupere la liste des villes distinctes des entreprises
+ *
+ * @return array Liste des villes
+ */
+function companiesGetCities() {
+    $sql = "SELECT DISTINCT ville FROM " . TABLE_COMPANIES . " WHERE ville IS NOT NULL AND ville != '' ORDER BY ville ASC";
+    return executeQuery($sql)->fetchAll(PDO::FETCH_COLUMN);
+}
+
+/**
+ * Recupere la liste des tailles d'entreprise possibles
+ *
+ * @return array Liste des tailles
+ */
+function companiesGetSizes() {
+    return COMPANY_SIZES;
 } 

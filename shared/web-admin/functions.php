@@ -347,3 +347,47 @@ function renderPagination($pagination, $urlPattern)
 
     return $html;
 }
+
+/**
+ * Redirige l'utilisateur en fonction de la page précédente (referer).
+ * Si la page précédente est la page de vue de l'entité spécifiée, redirige vers cette page,
+ * sinon, redirige vers la page d'index du module spécifié.
+ * 
+ * @param int $id Identifiant de l'entité.
+ * @param string $module Nom du module (ex: 'users', 'companies').
+ * @return void
+ */
+function redirectBasedOnReferer($id, $module)
+{
+    if ($id > 0) {
+        $referer = $_SERVER['HTTP_REFERER'] ?? '';
+        if (strpos($referer, "modules/{$module}/view.php?id=" . $id) !== false) {
+            redirectTo(WEBADMIN_URL . "/modules/{$module}/view.php?id={$id}");
+        } else {
+            redirectTo(WEBADMIN_URL . "/modules/{$module}/index.php");
+        }
+    } else {
+        redirectTo(WEBADMIN_URL . "/modules/{$module}/index.php");
+    }
+}
+
+/**
+ * Gère la redirection en cas d'échec de validation CSRF.
+ * Log l'échec, affiche un message flash et redirige en utilisant redirectBasedOnReferer.
+ * 
+ * @param int $entityId Identifiant de l'entité (0 si non applicable).
+ * @param string $module Nom du module (ex: 'users', 'companies').
+ * @param string $actionDescription Description de l'action tentée (ex: 'modification utilisateur').
+ * @return void
+ */
+function handleCsrfFailureRedirect($entityId, $module, $actionDescription = 'action')
+{
+    flashMessage('Jeton de sécurité invalide ou expiré. Veuillez réessayer.', 'danger');
+    $requestMethod = $_SERVER['REQUEST_METHOD'] ?? 'UNKNOWN';
+    logSecurityEvent(
+        $_SESSION['user_id'] ?? 0, 
+        'csrf_failure', 
+        "[SECURITY FAILURE] Tentative de {$actionDescription} ID: {$entityId} avec jeton invalide via {$requestMethod}"
+    );
+    redirectBasedOnReferer($entityId, $module);
+}

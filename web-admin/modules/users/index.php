@@ -38,7 +38,7 @@ include '../../templates/header.php';
             </div>
             
             <div class="card mb-4">
-                <div class="card-body">
+                <div class="card-header">
                     <form action="" method="get" class="row g-3 align-items-center">
                         <div class="col-md-3">
                             <input type="text" class="form-control form-control-sm" name="search" value="<?php echo htmlspecialchars($search); ?>" placeholder="Rechercher...">
@@ -60,15 +60,12 @@ include '../../templates/header.php';
                             </select>
                         </div>
                         <div class="col-md-3 d-flex">
-                            <button type="submit" class="btn btn-sm btn-primary w-100">
+                            <button type="submit" class="btn btn-sm btn-primary w-100 me-2">
                                 <i class="fas fa-search"></i> Rechercher
                             </button>
                         </div>
                     </form>
                 </div>
-            </div>
-            
-            <div class="card mb-4">
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-striped table-hover">

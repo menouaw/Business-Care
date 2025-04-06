@@ -24,18 +24,7 @@ $userId = (int)$params['id'];
 $token = $params['csrf_token'];
 
 if (!validateToken($token)) {
-    flashMessage('Jeton de sécurité invalide ou expiré. Veuillez réessayer.', 'danger');
-    logSecurityEvent($_SESSION['user_id'] ?? 0, 'csrf_failure', "[SECURITY FAILURE] Tentative de suppression utilisateur ID: $userId avec jeton invalide via $requestMethod");
-    if ($userId > 0) {
-        $referer = $_SERVER['HTTP_REFERER'] ?? '';
-        if (strpos($referer, 'view.php?id=' . $userId) !== false) {
-             redirectTo(WEBADMIN_URL . "/modules/users/view.php?id={$userId}");
-        } else {
-             redirectTo(WEBADMIN_URL . '/modules/users/index.php');
-        }
-    } else {
-        redirectTo(WEBADMIN_URL . '/modules/users/index.php');
-    }
+    handleCsrfFailureRedirect($userId, 'users', 'suppression utilisateur');
 }
 
 if ($userId <= 0) {
@@ -56,10 +45,5 @@ if ($result['success']) {
     redirectTo(WEBADMIN_URL . '/modules/users/index.php');
 } else {
     flashMessage($result['message'], 'danger');
-    $referer = $_SERVER['HTTP_REFERER'] ?? '';
-    if (strpos($referer, 'view.php?id=' . $userId) !== false) {
-         redirectTo(WEBADMIN_URL . "/modules/users/view.php?id={$userId}");
-    } else {
-         redirectTo(WEBADMIN_URL . '/modules/users/index.php'); 
-    }
+    redirectBasedOnReferer($userId, 'users'); 
 }
