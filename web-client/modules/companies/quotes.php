@@ -31,18 +31,38 @@ if ($servicesResult) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $formData = getFormData();
 
-    $formData['entreprise_id'] = $entrepriseId;
+    // Validation des données essentielles
+    $errors = [];
+    if (empty($formData['service_souhaite'])) {
+        $errors[] = "Vous devez sélectionner un service.";
+    }
+    if (empty($formData['description_besoin'])) {
+        $errors[] = "La description du besoin est obligatoire.";
+    }
+    if (!empty($formData['contact_email']) && !filter_var($formData['contact_email'], FILTER_VALIDATE_EMAIL)) {
+        $errors[] = "L'adresse email n'est pas valide.";
+    }
 
-    $result = requestCompanyQuote($formData);
-
-    if ($result['success']) {
-        $successMessage = urlencode($result['message']);
-        $redirectUrl = WEBCLIENT_URL . '/modules/companies/quotes.php?quote_success=' . $successMessage;
-
-        redirectTo($redirectUrl);
-    } else {
-        flashMessage($result['message'], 'danger');
+    // Afficher les erreurs s'il y en a et arrêter le processus
+    if (!empty($errors)) {
+        foreach ($errors as $error) {
+            flashMessage($error, 'danger');
+        }
         $submittedData = $formData;
+    } else {
+        // Si pas d'erreurs, continuer le traitement
+        $formData['entreprise_id'] = $entrepriseId;
+        $result = requestCompanyQuote($formData);
+
+        if ($result['success']) {
+            $successMessage = urlencode($result['message']);
+            $redirectUrl = WEBCLIENT_URL . '/modules/companies/quotes.php?quote_success=' . $successMessage;
+
+            redirectTo($redirectUrl);
+        } else {
+            flashMessage($result['message'], 'danger');
+            $submittedData = $formData; // Conserver les données soumises même en cas d'échec après validation
+        }
     }
 }
 
