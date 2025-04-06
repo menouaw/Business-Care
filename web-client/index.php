@@ -26,6 +26,40 @@ if ($isLoggedIn) {
     }
 }
 
+// Récupérer les services actifs pour la section offres
+$available_services_for_pricing = [];
+try {
+    $stmt = executeQuery("SELECT id, nom, description FROM services WHERE actif = 1 ORDER BY ordre");
+    $available_services_for_pricing = $stmt->fetchAll();
+} catch (Exception $e) {
+    error_log("Erreur lors de la récupération des services pour la page d'accueil: " . $e->getMessage());
+    // Gérer l'erreur discrètement ou afficher un message si nécessaire
+}
+
+$serviceCategories = [
+    [
+        'title' => 'Santé & Bien-être',
+        'description' => 'Séances individuelles, formations, webinars et ateliers pour le bien-être physique et psychologique de vos collaborateurs.',
+        'icon' => 'fa-heartbeat' // Changé pour une icône plus générale
+    ],
+    [
+        'title' => 'Cohésion & Activités d\'équipe',
+        'description' => 'Conseils hebdomadaires, défis sportifs, séances de yoga et événements de team building pour renforcer les liens.',
+        'icon' => 'fa-users'
+    ],
+    [
+        'title' => 'Formation & Développement',
+        'description' => 'Formations sur la gestion du stress, le leadership, la communication, l\'ergonomie et autres compétences clés.',
+        'icon' => 'fa-chalkboard-teacher'
+    ]
+    // Ajouter d'autres catégories ici si nécessaire
+    // [
+    //     'title' => 'Engagement Associatif',
+    //     'description' => 'Facilitez les dons financiers, matériels et le bénévolat de vos salariés auprès de nos associations partenaires.',
+    //     'icon' => 'fa-hand-holding-heart'
+    // ]
+];
+
 // inclure l'en-tête
 include_once __DIR__ . '/templates/header.php';
 ?>
@@ -61,41 +95,19 @@ include_once __DIR__ . '/templates/header.php';
             </div>
 
             <div class="row g-4">
-                <div class="col-md-4">
-                    <div class="card h-100 service-card">
-                        <div class="card-body text-center">
-                            <div class="icon-wrapper mb-3">
-                                <i class="fas fa-brain fa-3x text-primary"></i>
+                <?php foreach ($serviceCategories as $category): ?>
+                    <div class="col-md-4">
+                        <div class="card h-100 service-card">
+                            <div class="card-body text-center">
+                                <div class="icon-wrapper mb-3">
+                                    <i class="fas <?php echo htmlspecialchars($category['icon']); ?> fa-3x text-primary"></i>
+                                </div>
+                                <h3 class="card-title"><?php echo htmlspecialchars($category['title']); ?></h3>
+                                <p class="card-text"><?php echo htmlspecialchars($category['description']); ?></p>
                             </div>
-                            <h3 class="card-title">Prévention en santé mentale</h3>
-                            <p class="card-text">Séances individuelles, formations et webinars pour le bien-être psychologique de vos collaborateurs.</p>
                         </div>
                     </div>
-                </div>
-
-                <div class="col-md-4">
-                    <div class="card h-100 service-card">
-                        <div class="card-body text-center">
-                            <div class="icon-wrapper mb-3">
-                                <i class="fas fa-users fa-3x text-primary"></i>
-                            </div>
-                            <h3 class="card-title">Cohésion d'équipe</h3>
-                            <p class="card-text">Conseils hebdomadaires, défis sportifs, séances de yoga et activités de groupe pour renforcer les liens.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-4">
-                    <div class="card h-100 service-card">
-                        <div class="card-body text-center">
-                            <div class="icon-wrapper mb-3">
-                                <i class="fas fa-hand-holding-heart fa-3x text-primary"></i>
-                            </div>
-                            <h3 class="card-title">Engagement associatif</h3>
-                            <p class="card-text">Dons financiers, dons matériels et participation bénévole à des actions proposées par nos associations partenaires.</p>
-                        </div>
-                    </div>
-                </div>
+                <?php endforeach; ?>
             </div>
         </div>
     </section>
@@ -109,69 +121,80 @@ include_once __DIR__ . '/templates/header.php';
             </div>
 
             <div class="row g-4">
-                <div class="col-md-4">
-                    <div class="card h-100 pricing-card">
-                        <div class="card-header text-center bg-primary text-white">
-                            <h3 class="my-0">Starter</h3>
-                        </div>
-                        <div class="card-body">
-                            <h4 class="card-title pricing-card-title text-center">À partir de 20€ <small class="text-muted">/ salarié / an</small></h4>
-                            <ul class="list-unstyled mt-4 mb-4">
-                                <li><i class="fas fa-check text-success me-2"></i> Conseils hebdomadaires</li>
-                                <li><i class="fas fa-check text-success me-2"></i> 2 conférences par an</li>
-                                <li><i class="fas fa-check text-success me-2"></i> Accès aux webinars collectifs</li>
-                                <li><i class="fas fa-check text-success me-2"></i> 2 rendez-vous médicaux par salarié</li>
-                            </ul>
-                            <div class="text-center mt-auto">
-                                <a href="modules/companies/quotes.php?offer=starter" class="btn btn-outline-primary">Demander un devis</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="col-md-4">
-                    <div class="card h-100 pricing-card border-primary">
-                        <div class="card-header text-center bg-primary text-white">
-                            <h3 class="my-0">Basic</h3>
-                            <span class="badge bg-warning text-dark">Populaire</span>
-                        </div>
-                        <div class="card-body">
-                            <h4 class="card-title pricing-card-title text-center">À partir de 35€ <small class="text-muted">/ salarié / an</small></h4>
-                            <ul class="list-unstyled mt-4 mb-4">
-                                <li><i class="fas fa-check text-success me-2"></i> Tous les avantages Starter</li>
-                                <li><i class="fas fa-check text-success me-2"></i> 4 conférences par an</li>
-                                <li><i class="fas fa-check text-success me-2"></i> Accès aux défis sportifs</li>
-                                <li><i class="fas fa-check text-success me-2"></i> 4 rendez-vous médicaux par salarié</li>
-                                <li><i class="fas fa-check text-success me-2"></i> Programme personnalisé</li>
-                            </ul>
-                            <div class="text-center mt-auto">
-                                <a href="modules/companies/quotes.php?offer=basic" class="btn btn-primary">Demander un devis</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <?php if (!empty($available_services_for_pricing)): ?>
+                    <?php foreach ($available_services_for_pricing as $index => $service): ?>
+                        <?php
+                        // Logique simple pour déterminer la carte populaire ou d'autres styles
+                        $isPopular = ($index === 1); // Marquer le deuxième service comme populaire (exemple)
+                        $cardClass = $isPopular ? 'pricing-card border-primary' : 'pricing-card';
+                        $buttonClass = $isPopular ? 'btn btn-primary' : 'btn btn-outline-primary';
+                        $badge = $isPopular ? '<span class="badge bg-warning text-dark">Populaire</span>' : '';
 
-                <div class="col-md-4">
-                    <div class="card h-100 pricing-card">
-                        <div class="card-header text-center bg-primary text-white">
-                            <h3 class="my-0">Premium</h3>
-                        </div>
-                        <div class="card-body">
-                            <h4 class="card-title pricing-card-title text-center">À partir de 50€ <small class="text-muted">/ salarié / an</small></h4>
-                            <ul class="list-unstyled mt-4 mb-4">
-                                <li><i class="fas fa-check text-success me-2"></i> Tous les avantages Basic</li>
-                                <li><i class="fas fa-check text-success me-2"></i> 6 conférences par an</li>
-                                <li><i class="fas fa-check text-success me-2"></i> Accès aux communautés exclusives</li>
-                                <li><i class="fas fa-check text-success me-2"></i> Rendez-vous médicaux illimités</li>
-                                <li><i class="fas fa-check text-success me-2"></i> Chatbot de signalement anonyme</li>
-                                <li><i class="fas fa-check text-success me-2"></i> Service sur mesure</li>
-                            </ul>
-                            <div class="text-center mt-auto">
-                                <a href="modules/companies/quotes.php?offer=premium" class="btn btn-outline-primary">Demander un devis</a>
+                        // Placeholder pour le prix et les caractéristiques
+                        // TODO: Remplacer par une logique de récupération des prix/caractéristiques réels si nécessaire
+                        $pricingText = "Prix sur devis";
+                        $features = [
+                            'Accès aux services de base',
+                            'Support client',
+                            'Interface intuitive'
+                        ];
+                        if ($service['id'] == 1) { // Exemple de personnalisation pour Starter (ID 1)
+                            $pricingText = "À partir de 20€ <small class=\"text-muted\">/ salarié / an</small>";
+                            $features = [
+                                'Conseils hebdomadaires',
+                                '2 conférences par an',
+                                'Accès webinars collectifs',
+                                '2 RDV médicaux / salarié'
+                            ];
+                        } elseif ($service['id'] == 2) { // Exemple pour Basic (ID 2)
+                            $pricingText = "À partir de 35€ <small class=\"text-muted\">/ salarié / an</small>";
+                            $features = [
+                                'Avantages Starter',
+                                '4 conférences par an',
+                                'Accès défis sportifs',
+                                '4 RDV médicaux / salarié',
+                                'Programme personnalisé'
+                            ];
+                        } elseif ($service['id'] == 3) { // Exemple pour Premium (ID 3)
+                            $pricingText = "À partir de 50€ <small class=\"text-muted\">/ salarié / an</small>";
+                            $features = [
+                                'Avantages Basic',
+                                '6 conférences par an',
+                                'Communautés exclusives',
+                                'RDV médicaux illimités',
+                                'Chatbot signalement',
+                                'Service sur mesure'
+                            ];
+                        }
+
+                        ?>
+                        <div class="col-md-4">
+                            <div class="card h-100 <?php echo $cardClass; ?>">
+                                <div class="card-header text-center bg-primary text-white">
+                                    <h3 class="my-0"><?php echo htmlspecialchars($service['nom']); ?></h3>
+                                    <?php echo $badge; ?>
+                                </div>
+                                <div class="card-body d-flex flex-column">
+                                    <h4 class="card-title pricing-card-title text-center"><?php echo $pricingText; ?></h4>
+                                    <ul class="list-unstyled mt-4 mb-4">
+                                        <?php foreach ($features as $feature): ?>
+                                            <li><i class="fas fa-check text-success me-2"></i> <?php echo htmlspecialchars($feature); ?></li>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                    <div class="text-center mt-auto">
+                                        <a href="modules/companies/quotes.php?offer=<?php echo $service['id']; ?>" class="<?php echo $buttonClass; ?>">Demander un devis</a>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div class="col">
+                        <p class="text-center">Aucune offre disponible pour le moment.</p>
                     </div>
-                </div>
+                <?php endif; ?>
+
             </div>
         </div>
     </section>

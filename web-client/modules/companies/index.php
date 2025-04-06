@@ -16,6 +16,8 @@
  * Accès restreint aux utilisateurs avec le rôle ROLE_ENTREPRISE.
  */
 
+// Correction: Ajouter l'inclusion de init.php qui charge les fonctions de base et d'auth
+require_once __DIR__ . '/../../includes/init.php';
 require_once __DIR__ . '/../../includes/page_functions/modules/companies.php';
 
 requireRole(ROLE_ENTREPRISE);
@@ -93,7 +95,7 @@ include_once __DIR__ . '/../../templates/header.php';
                 </div>
             </div>
 
-          
+
 
             <div class="col-md-6 col-lg-3">
                 <div class="card border-0 shadow-sm h-100">

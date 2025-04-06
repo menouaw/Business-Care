@@ -121,7 +121,8 @@ L'informatisation de cette mission doit être réalisée de la manière suivante
 
 - Une  application  WEB  (couplage  Javascript  JavaScript/PHP/frameworks/API)  permettra  de gérer les clients-bailleurs, les voyageurs et les prestataires. Les paiements seront gérés par Stripe.  
 
-  Bien entendu, tous les tarifs peuvent évoluer. Les factures seront générées automatiquement au format PDF et un double sera conservé et accessible au travers de cette application web. De plus, des notifications push (par exemple à l’aide l’API OneSignal) aux salariés pour leurs différentes activités. 
+  Bien entendu, tous les tarifs peuvent évoluer. Les factures seront générées automatiquement au format PDF et un double sera conservé et accessible au travers de cette application 
+  web. De plus, des notifications push (par exemple à l’aide l’API OneSignal) aux salariés pour leurs différentes activités. 
 
   **BIEN LIRE LA PRESENTATION DU SUJET !** 
 

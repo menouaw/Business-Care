@@ -61,7 +61,19 @@ function executeQuery($sql, $params = [])
         $stmt->execute($params);
         return $stmt;
     } catch (PDOException $e) {
-        die("[FAILURE] Impossible d'executer la requete: " . $e->getMessage());
+        // Log détaillé de l'erreur
+        $errorInfo = isset($stmt) ? $stmt->errorInfo() : $pdo->errorInfo();
+        $logMessage = sprintf(
+            "[FAILURE] Impossible d'executer la requete.\nSQL: %s\nParams: %s\nError: %s\nPDO Error Info: %s",
+            $sql,
+            print_r($params, true), // Utiliser print_r pour afficher les tableaux correctement
+            $e->getMessage(),
+            print_r($errorInfo, true)
+        );
+        error_log($logMessage); // Envoyer au log d'erreurs PHP
+
+        // Message simplifié pour l'utilisateur final
+        die("[FAILURE] Impossible d'executer la requete. Veuillez consulter les logs du serveur pour plus de détails. Message: " . $e->getMessage());
     }
 }
 
@@ -94,9 +106,10 @@ function countTableRows($table, $where = '')
  * @param string $orderBy 
  * @param int $limit 
  * @param int $offset 
+ * @param array $params Paramètres pour la clause WHERE
  * @return array 
  */
-function fetchAll($table, $where = '', $orderBy = '', $limit = 0, $offset = 0)
+function fetchAll($table, $where = '', $orderBy = '', $limit = 0, $offset = 0, $params = [])
 {
     $table = validateTableName($table);
 
@@ -105,7 +118,15 @@ function fetchAll($table, $where = '', $orderBy = '', $limit = 0, $offset = 0)
         $sql .= " WHERE $where";
     }
     if ($orderBy) {
-        $sql .= " ORDER BY $orderBy";
+        if (is_string($orderBy) && !empty(trim($orderBy))) {
+            if (preg_match('/^[a-zA-Z0-9_,\s\.\(\)]+(?:\s+(?:ASC|DESC))?(?:,\s*[a-zA-Z0-9_,\s\.\(\)]+(?:\s+(?:ASC|DESC))?)*$/', $orderBy)) {
+                $sql .= " ORDER BY " . $orderBy;
+            } else {
+                error_log("[WARNING] Invalid characters detected in orderBy clause in fetchAll for table '$table': " . $orderBy);
+            }
+        } else {
+            error_log("[WARNING] Invalid type or empty orderBy parameter passed to fetchAll for table '$table'. Expected string, got: " . gettype($orderBy));
+        }
     }
     if ($limit) {
         $sql .= " LIMIT $limit";
@@ -114,7 +135,7 @@ function fetchAll($table, $where = '', $orderBy = '', $limit = 0, $offset = 0)
         }
     }
 
-    $stmt = executeQuery($sql);
+    $stmt = executeQuery($sql, $params);
     return $stmt->fetchAll();
 }
 
@@ -133,7 +154,15 @@ function fetchOne($table, $where, $params = [], $orderBy = '')
 
     $sql = "SELECT * FROM $table WHERE $where";
     if ($orderBy) {
-        $sql .= " ORDER BY $orderBy";
+        if (is_string($orderBy) && !empty(trim($orderBy))) {
+            if (preg_match('/^[a-zA-Z0-9_,\s\.\(\)]+(?:\s+(?:ASC|DESC))?(?:,\s*[a-zA-Z0-9_,\s\.\(\)]+(?:\s+(?:ASC|DESC))?)*$/', $orderBy)) {
+                $sql .= " ORDER BY " . $orderBy;
+            } else {
+                error_log("[WARNING] Invalid characters detected in orderBy clause in fetchOne for table '$table': " . $orderBy);
+            }
+        } else {
+            error_log("[WARNING] Invalid type or empty orderBy parameter passed to fetchOne for table '$table'. Expected string, got: " . gettype($orderBy));
+        }
     }
     $sql .= " LIMIT 1";
 

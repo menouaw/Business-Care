@@ -1,5 +1,16 @@
 <?php
 
+require_once __DIR__ . '/../../includes/init.php';
+
+require_once __DIR__ . '/../../includes/page_functions/modules/companies.php';
+
+// 3. Vérifier le rôle APRÈS inclusion des dépendances
+requireRole(ROLE_ENTREPRISE);
+
+// 4. Récupérer l'ID entreprise
+$entrepriseId = $_SESSION['user_entreprise'];
+
+
 /**
  * Espace Entreprise - Gestion des Salariés (Module Entreprise)
  *
@@ -19,13 +30,6 @@
  *
  * Accès restreint aux utilisateurs avec le rôle ROLE_ENTREPRISE.
  */
-
-require_once __DIR__ . '/../../includes/init.php'; // Pour les fonctions globales, config, etc.
-require_once __DIR__ . '/../../includes/page_functions/modules/companies.php';
-
-requireRole(ROLE_ENTREPRISE);
-
-$entrepriseId = $_SESSION['user_entreprise'];
 
 $action = isset($_GET['action']) ? sanitizeInput($_GET['action']) : 'list'; // 'list' par défaut
 $employeeId = null;

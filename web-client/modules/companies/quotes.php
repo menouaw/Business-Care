@@ -86,7 +86,7 @@ include_once __DIR__ . '/../../templates/header.php';
 <main class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="mb-0">Demander un devis</h1>
-        <a href="index.php" class="btn btn-outline-secondary">
+        <a href="../../index.php" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left me-1"></i> Retour
         </a>
     </div>
@@ -110,7 +110,7 @@ include_once __DIR__ . '/../../templates/header.php';
                             <?php foreach ($available_services as $key => $description): ?>
                                 <?php
                                 $isSelected = false;
-                                if ($preselectedOfferKey === $key) { // Sélection via URL
+                                if ($preselectedOfferKey == $key) { // Sélection via URL (comparaison lâche)
                                     $isSelected = true;
                                 } elseif (isset($submittedData['service_souhaite']) && $submittedData['service_souhaite'] == $key) { // Sélection via soumission échouée
                                     $isSelected = true;

@@ -1,7 +1,7 @@
 <?php
-// API pour l'authentification côté client
-require_once 'logging.php';
-require_once 'functions.php';
+
+require_once __DIR__ . '/logging.php';
+require_once __DIR__ . '/functions.php';
 
 /**
  * Authentifie un utilisateur via son adresse email et son mot de passe.
