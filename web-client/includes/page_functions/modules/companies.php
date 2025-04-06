@@ -1484,6 +1484,18 @@ function addCompanyEmployee($company_id, $employee_data)
         return false;
     }
 
+    // Validation du format téléphone
+    if (!empty($employee_data['telephone']) && !preg_match('/^(0|\+33)[1-9]([-. ]?[0-9]{2}){4}$/', $employee_data['telephone'])) {
+        flashMessage("Le format du numéro de téléphone est invalide.", "danger");
+        return false;
+    }
+
+    // Validation du genre (doit être F ou M si fourni)
+    if (isset($employee_data['genre']) && $employee_data['genre'] !== '' && !in_array($employee_data['genre'], ['F', 'M'])) {
+        flashMessage("La valeur pour le genre doit être 'F' ou 'M'.", "danger");
+        return false;
+    }
+
     try {
         $company = fetchOne('entreprises', "id = :id", [':id' => $company_id]);
         if (!$company) {

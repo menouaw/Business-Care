@@ -182,6 +182,37 @@ function updateEmployeeProfile($employee_id, $profile_data)
         return false;
     }
 
+    $validation_errors = [];
+
+    if (isset($profile_data['email']) && !filter_var($profile_data['email'], FILTER_VALIDATE_EMAIL)) {
+        $validation_errors[] = "Format d'email invalide";
+    }
+
+    if (isset($profile_data['telephone'])) {
+        $phone_to_check = $profile_data['telephone'];
+        $is_match = preg_match('/^(0|\+33)[1-9]([-. ]?[0-9]{2}){4}$/', $phone_to_check);
+
+        // Log temporaire pour déboguer
+        error_log("Vérification Tel: '$phone_to_check' - Match: " . ($is_match ? 'Oui' : 'Non'));
+
+        if (!$is_match) {
+            $validation_errors[] = "Format de téléphone invalide";
+        }
+    }
+
+    if (isset($profile_data['genre']) && !in_array($profile_data['genre'], ['F', 'M'])) {
+        $validation_errors[] = "La valeur pour le genre doit être 'F' ou 'M'";
+    }
+
+    // Log pour voir les erreurs accumulées
+    error_log("Validation errors after checks: " . print_r($validation_errors, true));
+
+    if (!empty($validation_errors)) {
+        error_log("Validation errors detected. Stopping update."); // Log avant arrêt
+        flashMessage("Erreurs de validation : " . implode(", ", $validation_errors), "danger");
+        return false;
+    }
+
     // Liste des champs autorisés
     $allowedFields = [
         'nom',
