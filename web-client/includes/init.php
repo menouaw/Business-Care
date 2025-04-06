@@ -28,7 +28,6 @@ function generateCsrfToken()
  */
 function verifyCsrfToken($submittedToken = null)
 {
-    // Récupérer le token soumis s'il n'est pas passé en argument
     if ($submittedToken === null && isset($_POST['csrf_token'])) {
         $submittedToken = $_POST['csrf_token'];
     }
@@ -37,11 +36,10 @@ function verifyCsrfToken($submittedToken = null)
         return false;
     }
 
-    // Comparaison sécurisée contre les attaques temporelles
     $result = hash_equals($_SESSION['csrf_token'], $submittedToken);
 
     // Optionnel: Invalider le token après usage pour une sécurité accrue (single-use tokens)
-    // unset($_SESSION['csrf_token']); 
+    unset($_SESSION['csrf_token']);
 
     return $result;
 }
