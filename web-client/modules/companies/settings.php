@@ -84,7 +84,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($passwordData['current_password'] === $passwordData['new_password']) {
             $passwordErrors[] = "Le nouveau mot de passe doit être différent de l'ancien.";
         }
-        // TODO: Ajouter validation de complexité si nécessaire
 
         if (empty($passwordErrors)) {
             $changeSuccess = changeUserPassword($userId, $passwordData['current_password'], $passwordData['new_password']);
@@ -95,7 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $redirectUrl = 'settings.php?password_success=' . $successMessage;
                 redirectTo($redirectUrl);
             } else {
-                
+
                 $passwordErrors[] = "Le mot de passe actuel fourni est incorrect.";
             }
         }
@@ -116,7 +115,7 @@ include_once __DIR__ . '/../../templates/header.php';
     </div>
 
     <?php
-    
+
     if (isset($_GET['profile_success'])) {
         $successMessageDecoded = urldecode($_GET['profile_success']);
         echo '<div class="alert alert-success alert-dismissible fade show" role="alert">'
@@ -218,6 +217,8 @@ include_once __DIR__ . '/../../templates/header.php';
                         <div class="mb-3">
                             <label for="new_password" class="form-label">Nouveau mot de passe</label>
                             <input type="password" class="form-control" id="new_password" name="new_password" required>
+                            <div class="form-text">Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule et un chiffre.</div>
+
                         </div>
                         <div class="mb-3">
                             <label for="confirm_password" class="form-label">Confirmer le nouveau mot de passe</label>
