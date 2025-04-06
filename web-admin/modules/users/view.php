@@ -17,7 +17,7 @@ if (!$user) {
     redirectTo('/web-admin/modules/users/index.php');
 }
 
-$pageTitle = "Infos Utilisateur";
+$pageTitle = "Informations de l'utilisateur";
 include '../../templates/header.php';
 ?>
 
@@ -44,13 +44,13 @@ include '../../templates/header.php';
                          </button>
                     </form>
                     <?php if (isset($user['entreprise_id'])): ?>
-                        <a href="<?php echo WEBADMIN_URL; ?>/modules/entreprises/view.php?id=<?php echo $user['entreprise_id']; ?>" class="btn btn-sm btn-secondary ms-2" data-bs-toggle="tooltip" title="Voir le Profil de l'Entreprise Associée">
+                        <a href="<?php echo WEBADMIN_URL; ?>/modules/companies/view.php?id=<?php echo $user['entreprise_id']; ?>" class="btn btn-sm btn-secondary ms-2" data-bs-toggle="tooltip" title="Voir le Profil de l'Entreprise Associée">
                             <i class="fas fa-building"></i> Voir Entreprise
                         </a>
                         
                         <?php if ($user['role_id'] == ROLE_ENTREPRISE): ?>
                         <div class="btn-group" role="group" aria-label="Company Quick Actions">
-                            <a href="<?php echo WEBADMIN_URL; ?>/modules/entreprises/edit.php?id=<?php echo $user['entreprise_id']; ?>" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" title="Modifier l'Entreprise Associée">
+                            <a href="<?php echo WEBADMIN_URL; ?>/modules/companies/edit.php?id=<?php echo $user['entreprise_id']; ?>" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" title="Modifier l'Entreprise Associée">
                                 <i class="fas fa-pencil-alt"></i>
                             </a>
                              <a href="<?php echo WEBADMIN_URL; ?>/modules/devis/add.php?entreprise_id=<?php echo $user['entreprise_id']; ?>" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" title="Créer un Devis pour cette Entreprise">
@@ -102,7 +102,7 @@ include '../../templates/header.php';
                             <div class="mb-3 p-2 bg-light border rounded">
                                 <small class="text-muted d-block"><i class="fas fa-building text-muted me-1"></i>Entreprise</small>
                                 <strong>
-                                    <a href="<?php echo WEBADMIN_URL; ?>/modules/entreprises/view.php?id=<?php echo $user['entreprise_id']; ?>" title="Voir le profil de l'entreprise <?php echo htmlspecialchars($user['entreprise_nom']); ?>">
+                                    <a href="<?php echo WEBADMIN_URL; ?>/modules/companies/view.php?id=<?php echo $user['entreprise_id']; ?>" title="Voir le profil de l'entreprise <?php echo htmlspecialchars($user['entreprise_nom']); ?>">
                                         <?php echo htmlspecialchars($user['entreprise_nom']); ?>
                                     </a>
                                 </strong> (ID: <?php echo $user['entreprise_id']; ?>)
@@ -201,7 +201,7 @@ include '../../templates/header.php';
                                 <tr class="<?php echo $isUpcoming ? 'table-info' : ''; ?>">
                                     <td><?php echo formatDate($resa['date_rdv']); ?> <?php echo $isUpcoming ? '<i class="fas fa-clock text-primary ms-1" title="À venir"></i>' : ''; ?></td>
                                     <td>
-                                        <a href="<?php echo WEBADMIN_URL; ?>/modules/prestations/view.php?id=<?php echo $resa['prestation_id']; ?>" data-bs-toggle="tooltip" title="Voir la prestation '<?php echo htmlspecialchars($resa['prestation_nom'] ?? ''); ?>'">
+                                        <a href="<?php echo WEBADMIN_URL; ?>/modules/services/view.php?id=<?php echo $resa['prestation_id']; ?>" data-bs-toggle="tooltip" title="Voir la prestation '<?php echo htmlspecialchars($resa['prestation_nom'] ?? ''); ?>'">
                                            <?php echo htmlspecialchars($resa['prestation_nom'] ?? 'N/A'); ?>
                                         </a>
                                     </td>

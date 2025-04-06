@@ -93,7 +93,6 @@ include_once '../../templates/header.php';
             <?php echo displayFlashMessages(); ?>
             
             <?php if ($action === 'add' || $action === 'edit'): ?>
-                <!-- formulaire d'ajout/edition -->
                 <div class="card">
                     <div class="card-header">
                         <?php echo $action === 'add' ? 'Ajouter une nouvelle entreprise' : 'Modifier l\'entreprise'; ?>
@@ -180,7 +179,6 @@ include_once '../../templates/header.php';
                     </div>
                 </div>
             <?php elseif ($action === 'view' && $company): ?>
-                <!-- affichage des details d'une entreprise -->
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <span>Details de l'entreprise</span>
@@ -214,7 +212,6 @@ include_once '../../templates/header.php';
                     </div>
                 </div>
                 
-                <!-- liste des contrats associes -->
                 <div class="mt-4">
                     <h3>Contrats associes</h3>
                     <?php $contracts = $company['contracts']; ?>
@@ -255,7 +252,6 @@ include_once '../../templates/header.php';
                     <?php endif; ?>
                 </div>
                 
-                <!-- liste des personnes associees -->
                 <div class="mt-4">
                     <h3>Utilisateurs associes</h3>
                     <?php $users = $company['users']; ?>
@@ -294,7 +290,6 @@ include_once '../../templates/header.php';
                     <?php endif; ?>
                 </div>
             <?php else: ?>
-                <!-- liste des entreprises -->
                 <div class="card mb-4">
                     <div class="card-header">
                         <form method="get" class="row g-3 align-items-center">
@@ -365,7 +360,6 @@ include_once '../../templates/header.php';
                                 </table>
                             </div>
                             
-                            <!-- pagination -->
                             <?php if ($totalPages > 1): ?>
                                 <nav aria-label="Page navigation">
                                     <ul class="pagination justify-content-center">
