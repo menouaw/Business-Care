@@ -29,9 +29,10 @@ if ($servicesResult) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verifyCsrfToken();
+
     $formData = getFormData();
 
-    // Validation des données essentielles
     $errors = [];
     if (empty($formData['service_souhaite'])) {
         $errors[] = "Vous devez sélectionner un service.";
@@ -43,7 +44,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = "L'adresse email n'est pas valide.";
     }
 
-    // Afficher les erreurs s'il y en a et arrêter le processus
     if (!empty($errors)) {
         foreach ($errors as $error) {
             flashMessage($error, 'danger');

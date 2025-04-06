@@ -159,7 +159,7 @@ function getFlashMessages()
         unset($_SESSION['flash_messages']); // Clear all messages after retrieval
         return $messages;
     }
-    return []; 
+    return [];
 }
 
 /**
@@ -174,7 +174,7 @@ function displayFlashMessages()
 
     $htmlOutput = '';
 
-    static $alertTypes = [
+    $alertTypes = [
         'success' => 'alert-success',
         'danger' => 'alert-danger',
         'error' => 'alert-danger',
@@ -278,6 +278,18 @@ function paginateResults($table, $page, $perPage = DEFAULT_ITEMS_PER_PAGE, $wher
     $totalPages = ceil($totalItems / $perPage);
     $page = max(1, min($page, $totalPages));
     $offset = ($page - 1) * $perPage;
+
+    if ($orderBy) {
+        if (is_string($orderBy) && !empty(trim($orderBy))) {
+            if (!preg_match('/^[a-zA-Z0-9_\.,\s\(\)]+(?:\s+(?:ASC|DESC))?(?:,\s*[a-zA-Z0-9_\.,\s\(\)]+(?:\s+(?:ASC|DESC))?)*$/', $orderBy)) {
+                error_log("[WARNING] Invalid characters detected in orderBy clause in paginateResults for table '$table': " . $orderBy);
+                $orderBy = ''; // Réinitialiser orderBy en cas de caractères non valides
+            }
+        } else {
+            error_log("[WARNING] Invalid type or empty orderBy parameter passed to paginateResults for table '$table'. Expected string, got: " . gettype($orderBy));
+            $orderBy = ''; // Réinitialiser orderBy si le type n'est pas une chaîne ou s'il est vide
+        }
+    }
 
     $items = fetchAll($table, $where, $orderBy, $perPage, $offset);
 

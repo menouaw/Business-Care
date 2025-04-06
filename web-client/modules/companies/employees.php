@@ -1,5 +1,4 @@
 <?php
-error_log("--- TEST LOG FROM employees.php ---"); // Added test log
 
 require_once __DIR__ . '/../../includes/init.php';
 
