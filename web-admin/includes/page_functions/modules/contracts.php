@@ -36,7 +36,7 @@ function contractsGetList($page = 1, $perPage = 10, $search = '', $statut = '', 
     $offset = ($page - 1) * $perPage;
 
     $pdo = getDbConnection();
-    $countSql = "SELECT COUNT(c.id) FROM contrats c LEFT JOIN entreprises e ON c.entreprise_id = e.id $whereSql";
+    $countSql = "SELECT COUNT(c.id) FROM " . TABLE_CONTRACTS . " c LEFT JOIN " . TABLE_COMPANIES . " e ON c.entreprise_id = e.id $whereSql";
 
     $countStmt = $pdo->prepare($countSql);
     $countStmt->execute($params);
@@ -46,8 +46,8 @@ function contractsGetList($page = 1, $perPage = 10, $search = '', $statut = '', 
     $offset = ($page - 1) * $perPage;
 
     $sql = "SELECT c.*, e.nom as nom_entreprise 
-            FROM contrats c 
-            LEFT JOIN entreprises e ON c.entreprise_id = e.id
+            FROM " . TABLE_CONTRACTS . " c 
+            LEFT JOIN " . TABLE_COMPANIES . " e ON c.entreprise_id = e.id
             {$whereSql}
             ORDER BY c.date_debut DESC LIMIT ?, ?";
     $paramsWithPagination = array_merge($params, [$offset, $perPage]);
@@ -71,8 +71,8 @@ function contractsGetList($page = 1, $perPage = 10, $search = '', $statut = '', 
  */
 function contractsGetDetails($id) {
     $sql = "SELECT c.*, e.nom as nom_entreprise 
-            FROM contrats c 
-            LEFT JOIN entreprises e ON c.entreprise_id = e.id 
+            FROM " . TABLE_CONTRACTS . " c 
+            LEFT JOIN " . TABLE_COMPANIES . " e ON c.entreprise_id = e.id 
             WHERE c.id = ? LIMIT 1";
     return executeQuery($sql, [$id])->fetch();
 }
@@ -83,7 +83,7 @@ function contractsGetDetails($id) {
  * @return array Liste des entreprises
  */
 function contractsGetEntreprises() {
-    return fetchAll('entreprises', '', 'nom ASC'); 
+    return fetchAll(TABLE_COMPANIES, '', 'nom ASC'); 
 }
 
 /**
@@ -101,7 +101,7 @@ function contractsSave($data, $id = 0) {
     if (empty($data['entreprise_id'])) {
         $errors[] = "L'entreprise est obligatoire";
     } else {
-        $companyExists = fetchOne('entreprises', 'id = ?', '', [(int)$data['entreprise_id']]);
+        $companyExists = fetchOne(TABLE_COMPANIES, 'id = ?', '', [(int)$data['entreprise_id']]);
         if (!$companyExists) {
             $errors[] = "L'entreprise sélectionnée n'existe pas";
         }
@@ -139,7 +139,7 @@ function contractsSave($data, $id = 0) {
 
     try {
         if ($id > 0) {
-            $affectedRows = updateRow('contrats', $dbData, "id = ?", [$id]);
+            $affectedRows = updateRow(TABLE_CONTRACTS, $dbData, "id = ?", [$id]);
             
             if ($affectedRows !== false) {
                 logBusinessOperation($_SESSION['user_id'], 'contract_update', 
@@ -151,7 +151,7 @@ function contractsSave($data, $id = 0) {
             }
         } 
         else {
-            $newId = insertRow('contrats', $dbData);
+            $newId = insertRow(TABLE_CONTRACTS, $dbData);
             
             if ($newId) {
                 logBusinessOperation($_SESSION['user_id'], 'contract_create', 
@@ -186,7 +186,7 @@ function contractsSave($data, $id = 0) {
 function contractsDelete($id) {
 
     try {
-        $deletedRows = deleteRow('contrats', "id = ?", [$id]);
+        $deletedRows = deleteRow(TABLE_CONTRACTS, "id = ?", [$id]);
         
         if ($deletedRows > 0) {
             logBusinessOperation($_SESSION['user_id'], 'contract_delete', 
@@ -230,7 +230,7 @@ function contractsUpdateStatus($id, $status) {
         return false;
     }
     
-    $affectedRows = updateRow('contrats', ['statut' => $status], "id = ?", [$id]);
+    $affectedRows = updateRow(TABLE_CONTRACTS, ['statut' => $status], "id = ?", [$id]);
     
     if ($affectedRows > 0) { 
         logBusinessOperation($_SESSION['user_id'], 'contract_status_update', 

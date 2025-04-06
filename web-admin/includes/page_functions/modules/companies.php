@@ -16,7 +16,7 @@ function companiesGetList($page = 1, $perPage = 10, $search = '', $city = '', $s
     $params = [];
 
     if ($search) {
-        $whereClauses[] = "(nom LIKE ? OR siret LIKE ?)"; // Removed city from general search
+        $whereClauses[] = "(nom LIKE ? OR siret LIKE ?)";
         $params[] = "%{$search}%";
         $params[] = "%{$search}%";
     }
@@ -33,17 +33,17 @@ function companiesGetList($page = 1, $perPage = 10, $search = '', $city = '', $s
     
     $whereSql = !empty($whereClauses) ? implode(' AND ', $whereClauses) : '1';
 
-    $countSql = "SELECT COUNT(id) FROM entreprises WHERE {$whereSql}";
+    $countSql = "SELECT COUNT(id) FROM " . TABLE_COMPANIES . " WHERE {$whereSql}";
     $totalCompanies = executeQuery($countSql, $params)->fetchColumn();
     
     $totalPages = ceil($totalCompanies / $perPage);
     $page = max(1, min($page, $totalPages)); 
     $offset = ($page - 1) * $perPage;
 
-    $sql = "SELECT * FROM entreprises WHERE {$whereSql} ORDER BY nom ASC LIMIT ?, ?";
-    $paramsWithPagination = array_merge($params, [$offset, $perPage]);
+    $sql = "SELECT * FROM " . TABLE_COMPANIES . " WHERE {$whereSql} ORDER BY nom ASC LIMIT ?, ?";
+    $paramsForLimit = array_merge($params, [(int)$offset, (int)$perPage]);
 
-    $companies = executeQuery($sql, $paramsWithPagination)->fetchAll();
+    $companies = executeQuery($sql, $paramsForLimit)->fetchAll();
 
     return [
         'companies' => $companies,
@@ -61,18 +61,16 @@ function companiesGetList($page = 1, $perPage = 10, $search = '', $city = '', $s
  * @return array|false Donnees de l'entreprise ou false si non trouvee
  */
 function companiesGetDetails($id) {
-    $company = executeQuery("SELECT * FROM entreprises WHERE id = ? LIMIT 1", [$id])->fetch();
+    $company = fetchOne(TABLE_COMPANIES, "id = ?", '', [$id]);
     
     if (!$company) {
         return false;
     }
     
-    // recupere les contrats associes
-    $sqlContracts = "SELECT c.* FROM contrats c WHERE c.entreprise_id = ? ORDER BY c.date_debut DESC";
+    $sqlContracts = "SELECT c.* FROM " . TABLE_CONTRACTS . " c WHERE c.entreprise_id = ? ORDER BY c.date_debut DESC";
     $company['contracts'] = executeQuery($sqlContracts, [$id])->fetchAll();
     
-    // recupere les utilisateurs associes
-    $sqlUsers = "SELECT p.*, r.nom as role_name FROM personnes p LEFT JOIN roles r ON p.role_id = r.id WHERE p.entreprise_id = ? ORDER BY p.nom, p.prenom";
+    $sqlUsers = "SELECT p.*, r.nom as role_name FROM " . TABLE_USERS . " p LEFT JOIN " . TABLE_ROLES . " r ON p.role_id = r.id WHERE p.entreprise_id = ? ORDER BY p.nom, p.prenom";
     $company['users'] = executeQuery($sqlUsers, [$id])->fetchAll();
     
     return $company;
@@ -101,7 +99,6 @@ function companiesSave($data, $id = 0) {
         ];
     }
 
-    // Prepare data for DB insertion/update
     $dbData = [
         'nom' => $data['nom'], 
         'siret' => $data['siret'] ?? null, 
@@ -113,13 +110,12 @@ function companiesSave($data, $id = 0) {
         'site_web' => $data['site_web'] ?? null,
         'taille_entreprise' => $data['taille_entreprise'] ?? null, 
         'secteur_activite' => $data['secteur_activite'] ?? null, 
-        'date_creation' => !empty($data['date_creation']) ? $data['date_creation'] : null // Ensure null if empty
+        'date_creation' => !empty($data['date_creation']) ? $data['date_creation'] : null
     ];
     
     try {
-        // Cas de mise a jour
         if ($id > 0) {
-            $affectedRows = updateRow('entreprises', $dbData, "id = ?", [$id]);
+            $affectedRows = updateRow(TABLE_COMPANIES, $dbData, "id = :where_id", ['where_id' => $id]);
             
             if ($affectedRows !== false) {
                 logBusinessOperation($_SESSION['user_id'], 'company_update', 
@@ -130,9 +126,8 @@ function companiesSave($data, $id = 0) {
                 throw new Exception("La mise à jour a échoué ou aucune ligne n'a été modifiée.");
             }
         } 
-        // Cas de creation
         else {
-            $newId = insertRow('entreprises', $dbData);
+            $newId = insertRow(TABLE_COMPANIES, $dbData);
             
             if ($newId) {
                 logBusinessOperation($_SESSION['user_id'], 'company_create', 
@@ -166,11 +161,9 @@ function companiesSave($data, $id = 0) {
  */
 function companiesDelete($id) {
     
-    // Verifie les personnes associees
-    $personCount = executeQuery("SELECT COUNT(id) FROM personnes WHERE entreprise_id = ?", [$id])->fetchColumn();
+    $personCount = executeQuery("SELECT COUNT(id) FROM " . TABLE_USERS . " WHERE entreprise_id = ?", [$id])->fetchColumn();
     
-    // Verifie les contrats associes
-    $contractCount = executeQuery("SELECT COUNT(id) FROM contrats WHERE entreprise_id = ?", [$id])->fetchColumn();
+    $contractCount = executeQuery("SELECT COUNT(id) FROM " . TABLE_CONTRACTS . " WHERE entreprise_id = ?", [$id])->fetchColumn();
     
     if ($personCount > 0) {
         logBusinessOperation($_SESSION['user_id'], 'company_delete_attempt', 
@@ -190,9 +183,8 @@ function companiesDelete($id) {
         ];
     }
     
-    // Suppression
     try {
-        $deletedRows = deleteRow('entreprises', "id = ?", [$id]);
+        $deletedRows = deleteRow(TABLE_COMPANIES, "id = ?", [$id]);
         
         if ($deletedRows > 0) {
             logBusinessOperation($_SESSION['user_id'], 'company_delete', 
@@ -224,7 +216,7 @@ function companiesDelete($id) {
  * @return array Liste des villes
  */
 function companiesGetCities() {
-    $sql = "SELECT DISTINCT ville FROM entreprises WHERE ville IS NOT NULL AND ville != '' ORDER BY ville ASC";
+    $sql = "SELECT DISTINCT ville FROM " . TABLE_COMPANIES . " WHERE ville IS NOT NULL AND ville != '' ORDER BY ville ASC";
     return executeQuery($sql)->fetchAll(PDO::FETCH_COLUMN);
 }
 
@@ -234,6 +226,5 @@ function companiesGetCities() {
  * @return array Liste des tailles
  */
 function companiesGetSizes() {
-    // These could be stored in a config file or database table in the future
-    return ['1-10', '11-50', '51-200', '201-500', '500+'];
+    return COMPANY_SIZES;
 } 

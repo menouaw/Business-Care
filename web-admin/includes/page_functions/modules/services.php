@@ -27,14 +27,14 @@ function servicesGetList($page = 1, $perPage = 10, $search = '', $type = '') {
     
     $whereSql = !empty($whereClauses) ? implode(' AND ', $whereClauses) : '1';
 
-    $countSql = "SELECT COUNT(id) FROM prestations WHERE {$whereSql}";
+    $countSql = "SELECT COUNT(id) FROM " . TABLE_PRESTATIONS . " WHERE {$whereSql}";
     $totalServices = executeQuery($countSql, $params)->fetchColumn();
     
     $totalPages = ceil($totalServices / $perPage);
     $page = max(1, min($page, $totalPages)); 
     $offset = ($page - 1) * $perPage;
 
-    $sql = "SELECT * FROM prestations WHERE {$whereSql} ORDER BY nom ASC LIMIT ?, ?";
+    $sql = "SELECT * FROM " . TABLE_PRESTATIONS . " WHERE {$whereSql} ORDER BY nom ASC LIMIT ?, ?";
     $params[] = $offset;
     $params[] = $perPage;
 
@@ -57,7 +57,7 @@ function servicesGetList($page = 1, $perPage = 10, $search = '', $type = '') {
  * @return array|false Donnees du service (et donnees associees si demande) ou false si non trouve
  */
 function servicesGetDetails($id, $fetchRelated = false) {
-    $service = executeQuery("SELECT * FROM prestations WHERE id = ? LIMIT 1", [$id])->fetch();
+    $service = executeQuery("SELECT * FROM " . TABLE_PRESTATIONS . " WHERE id = ? LIMIT 1", [$id])->fetch();
 
     if (!$service) {
         return false;
@@ -67,15 +67,15 @@ function servicesGetDetails($id, $fetchRelated = false) {
 
     if ($fetchRelated) {
         $sqlAppointments = "SELECT r.*, p.nom as nom_personne, p.prenom as prenom_personne 
-                            FROM rendez_vous r 
-                            LEFT JOIN personnes p ON r.personne_id = p.id 
+                            FROM " . TABLE_APPOINTMENTS . " r 
+                            LEFT JOIN " . TABLE_USERS . " p ON r.personne_id = p.id 
                             WHERE r.prestation_id = ? 
                             ORDER BY r.date_rdv DESC";
         $result['appointments'] = executeQuery($sqlAppointments, [$id])->fetchAll();
         
         $sqlEvaluations = "SELECT e.*, p.nom as nom_personne, p.prenom as prenom_personne 
-                           FROM evaluations e 
-                           LEFT JOIN personnes p ON e.personne_id = p.id 
+                           FROM " . TABLE_EVALUATIONS . " e 
+                           LEFT JOIN " . TABLE_USERS . " p ON e.personne_id = p.id 
                            WHERE e.prestation_id = ? 
                            ORDER BY e.date_evaluation DESC";
         $result['evaluations'] = executeQuery($sqlEvaluations, [$id])->fetchAll();
@@ -90,7 +90,7 @@ function servicesGetDetails($id, $fetchRelated = false) {
  * @return array Liste des types
  */
 function servicesGetTypes() {
-    $sql = "SELECT DISTINCT type FROM prestations ORDER BY type";
+    $sql = "SELECT DISTINCT type FROM " . TABLE_PRESTATIONS . " ORDER BY type";
     return executeQuery($sql)->fetchAll(PDO::FETCH_COLUMN);
 }
 
@@ -142,7 +142,7 @@ function servicesSave($data, $id = 0) {
 
     try {
         if ($id > 0) {
-            $affectedRows = updateRow('prestations', $dbData, "id = ?", [$id]);
+            $affectedRows = updateRow(TABLE_PRESTATIONS, $dbData, "id = ?", [$id]);
             
             if ($affectedRows !== false) {
                  logBusinessOperation($_SESSION['user_id'], 'service_update', 
@@ -154,7 +154,7 @@ function servicesSave($data, $id = 0) {
             }
         } 
         else {
-            $newId = insertRow('prestations', $dbData);
+            $newId = insertRow(TABLE_PRESTATIONS, $dbData);
             
             if ($newId) {
                 logBusinessOperation($_SESSION['user_id'], 'service_create', 
@@ -222,7 +222,7 @@ function servicesHandlePostRequest($postData, $id) {
  * @return array Résultat ['success' => bool, 'message' => string]
  */
 function servicesDelete($id) {
-    $appointmentCount = executeQuery("SELECT COUNT(id) FROM rendez_vous WHERE prestation_id = ?", [$id])->fetchColumn();
+    $appointmentCount = executeQuery("SELECT COUNT(id) FROM " . TABLE_APPOINTMENTS . " WHERE prestation_id = ?", [$id])->fetchColumn();
 
     if ($appointmentCount > 0) {
         logBusinessOperation($_SESSION['user_id'], 'service_delete_attempt', 
@@ -233,7 +233,7 @@ function servicesDelete($id) {
         ];
     } 
     
-    $evaluationCount = executeQuery("SELECT COUNT(id) FROM evaluations WHERE prestation_id = ?", [$id])->fetchColumn();
+    $evaluationCount = executeQuery("SELECT COUNT(id) FROM " . TABLE_EVALUATIONS . " WHERE prestation_id = ?", [$id])->fetchColumn();
 
     if ($evaluationCount > 0) { 
         logBusinessOperation($_SESSION['user_id'], 'service_delete_attempt', 
@@ -245,7 +245,7 @@ function servicesDelete($id) {
     }
     
     try {
-        $deletedRows = deleteRow('prestations', "id = ?", [$id]);
+        $deletedRows = deleteRow(TABLE_PRESTATIONS, "id = ?", [$id]);
         
         if ($deletedRows > 0) {
             logBusinessOperation($_SESSION['user_id'], 'service_delete', 
