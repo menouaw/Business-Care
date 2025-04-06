@@ -84,17 +84,10 @@ include_once __DIR__ . '/../../templates/header.php';
                     <div class="col-md-6">
                         <label for="service_souhaite" class="form-label">Type de service/contrat souhaité*</label>
                         <select class="form-select" id="service_souhaite" name="service_souhaite" required>
-                            <option value="" disabled <?php if (!$preselectedOfferKey && !isset($submittedData['service_souhaite'])) echo 'selected'; ?>>Sélectionnez une option...</option>
+                            <option value="" disabled <?php echo (!$preselectedOfferKey && !isset($submittedData['service_souhaite'])) ? 'selected' : ''; ?>>Sélectionnez une option...</option>
                             <?php foreach ($available_services as $key => $description): ?>
-                                <?php
-                                $isSelected = false;
-                                if ($preselectedOfferKey == $key) {
-                                    $isSelected = true;
-                                } elseif (isset($submittedData['service_souhaite']) && $submittedData['service_souhaite'] == $key) {
-                                    $isSelected = true;
-                                }
-                                ?>
-                                <option value="<?php echo htmlspecialchars($key); ?>" <?php if ($isSelected) echo 'selected'; ?>>
+                                <option value="<?php echo htmlspecialchars($key); ?>"
+                                    <?php echo ($preselectedOfferKey == $key || (isset($submittedData['service_souhaite']) && $submittedData['service_souhaite'] == $key)) ? 'selected' : ''; ?>>
                                     <?php echo htmlspecialchars($description); ?>
                                 </option>
                             <?php endforeach; ?>
