@@ -198,24 +198,29 @@ include_once __DIR__ . '/../../templates/header.php';
                     </div>
                     <div class="card-body">
                         <div class="row g-3">
-                            <div class="col-md-3">
-                                <a href="recherche-prestations.php" class="btn btn-primary d-block py-3">
-                                    <i class="fas fa-search me-2"></i>Rechercher prestations
+                            <div class="col-lg col-md-4 col-6">
+                                <a href="catalog.php" class="btn btn-primary d-block py-3 text-truncate">
+                                    <i class="fas fa-book-open me-2"></i>Catalogue Services
                                 </a>
                             </div>
-                            <div class="col-md-3">
-                                <a href="signaler-situation.php" class="btn btn-warning d-block py-3">
+                            <div class="col-lg col-md-4 col-6">
+                                <a href="signaler-situation.php" class="btn btn-warning d-block py-3 text-truncate">
                                     <i class="fas fa-exclamation-triangle me-2"></i>Signaler situation
                                 </a>
                             </div>
-                            <div class="col-md-3">
-                                <a href="advice.php" class="btn btn-success d-block py-3">
-                                    <i class="fas fa-heart me-2"></i>Conseils bien-être
+                            <div class="col-lg col-md-4 col-6">
+                                <a href="advice.php" class="btn btn-success d-block py-3 text-truncate">
+                                    <i class="fas fa-heart me-2"></i>Conseils Bien-être
                                 </a>
                             </div>
-                            <div class="col-md-3">
-                                <a href="defis-sportifs.php" class="btn btn-info d-block py-3">
-                                    <i class="fas fa-running me-2"></i>Défis sportifs
+                            <div class="col-lg col-md-4 col-6">
+                                <a href="communities.php" class="btn btn-info d-block py-3 text-truncate">
+                                    <i class="fas fa-users me-2"></i>Communautés
+                                </a>
+                            </div>
+                            <div class="col-lg col-md-4 col-6">
+                                <a href="donations.php" class="btn btn-secondary d-block py-3 text-truncate">
+                                    <i class="fas fa-hand-holding-heart me-2"></i>Faire un Don
                                 </a>
                             </div>
                         </div>

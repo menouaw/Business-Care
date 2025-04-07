@@ -1703,7 +1703,6 @@ function handlePostActions($employee_id)
         return;
     }
 
-    // Action rejoindre une communauté
     if (isset($_POST['join_community']) && !empty($_POST['community_id'])) {
         $join_community_id = filter_input(INPUT_POST, 'community_id', FILTER_VALIDATE_INT);
         if (joinCommunity($employee_id, $join_community_id)) {
@@ -1802,4 +1801,80 @@ function getConseilCategories(): array
 {
     $query = "SELECT DISTINCT categorie FROM conseils WHERE est_publie = TRUE AND categorie IS NOT NULL AND categorie != '' ORDER BY categorie ASC";
     return executeQuery($query)->fetchAll(PDO::FETCH_COLUMN);
+}
+
+/**
+ * Récupère les détails complets d'un conseil spécifique.
+ *
+ * @param int $conseil_id L'ID du conseil à récupérer.
+ * @return array|false Les détails du conseil ou false si non trouvé/publié.
+ */
+function getConseilDetails(int $conseil_id): array|false
+{
+    if ($conseil_id <= 0) {
+        return false;
+    }
+
+    $query = "SELECT c.*,
+                     DATE_FORMAT(c.date_publication, '%d/%m/%Y') as date_publication_formatee,
+                     p.nom as auteur_nom_personne, p.prenom as auteur_prenom_personne
+              FROM conseils c
+              LEFT JOIN personnes p ON c.auteur_personne_id = p.id
+              WHERE c.id = :conseil_id AND c.est_publie = TRUE";
+
+    $params = [':conseil_id' => $conseil_id];
+
+    $conseil = executeQuery($query, $params)->fetch(PDO::FETCH_ASSOC);
+
+    // Si l'auteur n'est pas une personne (table `personnes`), utiliser le champ `auteur_nom` de la table `conseils`
+    if ($conseil && empty($conseil['auteur_nom_personne']) && !empty($conseil['auteur_nom'])) {
+        $conseil['auteur_prenom_personne'] = null; // Pas de prénom si c'est juste un nom d'auteur
+        $conseil['auteur_nom_personne'] = $conseil['auteur_nom']; // Utiliser auteur_nom comme nom complet
+    }
+
+    return $conseil; // Retourne le tableau du conseil ou false si fetch() n'a rien trouvé
+}
+
+
+function getPrestationDetails(int $prestation_id): array|false
+{
+    if ($prestation_id <= 0) {
+        return false;
+    }
+
+    $query = "SELECT p.*, 
+                     pp.id as praticien_id, CONCAT(pp.prenom, ' ', pp.nom) as praticien_nom
+              FROM prestations p
+              LEFT JOIN personnes pp ON p.praticien_id = pp.id
+              WHERE p.id = :prestation_id";
+    // Peut-être ajouter une condition WHERE p.est_disponible = TRUE ?
+    // Dépend si on veut voir les détails d'une presta non active.
+
+    $params = [':prestation_id' => $prestation_id];
+
+    $prestation = executeQuery($query, $params)->fetch(PDO::FETCH_ASSOC);
+
+    if ($prestation) {
+        // Formater le prix
+        if (isset($prestation['prix'])) {
+            $prix = floatval($prestation['prix']);
+            $prestation['prix_formate'] = ($prix > 0) ? number_format($prix, 2, ',', ' ') . ' €' : 'Gratuit';
+        } else {
+            $prestation['prix_formate'] = 'Non spécifié';
+        }
+
+        // Formater la date de disponibilité si elle existe
+        if (!empty($prestation['date_heure_disponible'])) {
+            try {
+                $date = new DateTime($prestation['date_heure_disponible']);
+                $prestation['date_disponible_formatee'] = $date->format('d/m/Y à H:i');
+            } catch (Exception $e) {
+                $prestation['date_disponible_formatee'] = 'Date invalide';
+            }
+        } else {
+            $prestation['date_disponible_formatee'] = null; // Pas de date spécifique définie
+        }
+    }
+
+    return $prestation; // Retourne le tableau de la prestation ou false
 }

@@ -46,10 +46,7 @@ include_once __DIR__ . '/../../templates/header.php';
 
     <?php displayFlashMessages(); ?>
 
-    <?php
-    // DEBUG: Afficher les données de pagination
-    // var_dump($conseilsData['pagination']); 
-    ?>
+
 
     <div class="card shadow-sm mb-4">
         <div class="card-body">
@@ -110,18 +107,10 @@ include_once __DIR__ . '/../../templates/header.php';
                                 <?= htmlspecialchars(substr($conseil['resume'] ?? $conseil['contenu'], 0, 150)) ?>...
                             </p>
                             <div class="mt-auto">
-                                <!-- Bouton pour ouvrir la modale -->
-                                <button type="button" class="btn btn-outline-primary btn-sm"
-                                    data-bs-toggle="modal" data-bs-target="#adviceModal"
-                                    data-conseil-titre="<?= htmlspecialchars($conseil['titre']) ?>"
-                                    data-conseil-contenu="<?= htmlspecialchars($conseil['contenu']) // Attention: peut être long, préférer un appel AJAX si contenu très lourd 
-                                                            ?>"
-                                    data-conseil-image="<?= htmlspecialchars($conseil['image_url'] ?? '') ?>"
-                                    data-conseil-categorie="<?= htmlspecialchars($conseil['categorie'] ?? '') ?>"
-                                    data-conseil-date="<?= $conseil['date_publication_formatee'] ?>"
-                                    data-conseil-auteur="<?= !empty($conseil['auteur_nom_personne']) ? htmlspecialchars($conseil['auteur_prenom_personne'] . ' ' . $conseil['auteur_nom_personne']) : htmlspecialchars($conseil['auteur_nom'] ?? '') ?>">
+                                <!-- Modifier le bouton en lien vers la page de détails -->
+                                <a href="advice_detail.php?id=<?= $conseil['id'] ?>" class="btn btn-outline-primary btn-sm">
                                     Lire la suite <i class="fas fa-arrow-right ms-1"></i>
-                                </button>
+                                </a>
                             </div>
                         </div>
                         <div class="card-footer bg-white border-0 text-muted small">
@@ -147,33 +136,6 @@ include_once __DIR__ . '/../../templates/header.php';
     <?php endif; ?>
 
 </main>
-
-<!-- Modal pour afficher le conseil -->
-<div class="modal fade" id="adviceModal" tabindex="-1" aria-labelledby="adviceModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="adviceModalLabel">Détail du Conseil</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-            </div>
-            <div class="modal-body">
-                <img src="" id="adviceModalImage" class="img-fluid rounded mb-3" alt="Image du conseil" style="display: none; max-height: 300px; width: 100%; object-fit: cover;">
-                <h3 id="adviceModalTitle" class="mb-3"></h3>
-                <div class="mb-3">
-                    <span id="adviceModalCategory" class="badge bg-primary me-2"></span>
-                    <span class="text-muted small">Publié le <span id="adviceModalDate"></span> par <span id="adviceModalAuthor"></span></span>
-                </div>
-                <div id="adviceModalContent">
-                    <!-- Le contenu complet du conseil sera injecté ici -->
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 
 <?php
 include_once __DIR__ . '/../../templates/footer.php';
@@ -232,55 +194,3 @@ include_once __DIR__ . '/../../templates/footer.php';
         /* Ex: passer de 200px à 180px */
     }
 </style>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var adviceModal = document.getElementById('adviceModal');
-        adviceModal.addEventListener('show.bs.modal', function(event) {
-            // Bouton qui a déclenché la modale
-            var button = event.relatedTarget;
-
-            // Extraction des informations depuis les attributs data-*
-            var titre = button.getAttribute('data-conseil-titre');
-            var contenu = button.getAttribute('data-conseil-contenu'); // Récupère le contenu HTML-escapé
-            var image = button.getAttribute('data-conseil-image');
-            var categorie = button.getAttribute('data-conseil-categorie');
-            var date = button.getAttribute('data-conseil-date');
-            var auteur = button.getAttribute('data-conseil-auteur');
-
-            // Récupération des éléments de la modale
-            var modalTitle = adviceModal.querySelector('#adviceModalLabel'); // Titre en haut
-            var modalBodyTitle = adviceModal.querySelector('#adviceModalTitle'); // Titre dans le corps
-            var modalContent = adviceModal.querySelector('#adviceModalContent');
-            var modalImage = adviceModal.querySelector('#adviceModalImage');
-            var modalCategory = adviceModal.querySelector('#adviceModalCategory');
-            var modalDate = adviceModal.querySelector('#adviceModalDate');
-            var modalAuthor = adviceModal.querySelector('#adviceModalAuthor');
-
-            // Mise à jour du contenu de la modale
-            modalTitle.textContent = titre;
-            modalBodyTitle.textContent = titre;
-            modalContent.innerHTML = contenu.replace(/\n/g, '<br>'); // Remplace les sauts de ligne par <br> pour l'affichage HTML
-
-            // Gestion de l'image
-            if (image) {
-                modalImage.src = image;
-                modalImage.style.display = 'block';
-                modalImage.alt = titre; // Ajouter un alt descriptif
-            } else {
-                modalImage.style.display = 'none';
-            }
-
-            // Gestion de la catégorie
-            if (categorie) {
-                modalCategory.textContent = categorie.charAt(0).toUpperCase() + categorie.slice(1); // Met la première lettre en majuscule
-                modalCategory.style.display = 'inline-block';
-            } else {
-                modalCategory.style.display = 'none';
-            }
-
-            modalDate.textContent = date || 'N/A';
-            modalAuthor.textContent = auteur || 'Anonyme';
-        });
-    });
-</script>

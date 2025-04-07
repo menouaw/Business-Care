@@ -45,26 +45,21 @@ include_once __DIR__ . '/../../templates/header.php';
                     }
 
                     if ($community_id) {
-                        // Fetch community details
                         $community = getCommunityDetails($community_id, $employee_id);
 
                         if (!$community) {
-                            // Le message Flash est probablement défini dans getCommunityDetails
                             echo '<div class="alert alert-warning">Communauté non trouvée ou ID invalide.</div>';
                             echo '<a href="communities.php" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-left me-1"></i> Retour à la liste</a>';
                         } else {
-                            // Récupérer les messages avec pagination
                             $messages_page = filter_input(INPUT_GET, 'messages_page', FILTER_VALIDATE_INT) ?: 1;
                             $messages_limit = 5; // Nombre de messages par page
                             $messagesData = getCommunityMessages($community_id, $messages_page, $messages_limit);
                             $messages = $messagesData['messages'];
                             $messages_pagination_html = $messagesData['pagination_html'];
 
-                            // Récupérer quelques membres pour l'aperçu
                             $membersData = getCommunityMembers($community_id, 1, 6); // Aperçu des 6 premiers membres
                             $members = $membersData['members'];
 
-                            // URL du logo
                             $logo_url = !empty($community['logo_url'])
                                 ? ROOT_URL . $community['logo_url']
                                 : ROOT_URL . '/assets/images/default_community.png';
@@ -87,7 +82,6 @@ include_once __DIR__ . '/../../templates/header.php';
                                     </div>
                                     <p class="text-muted mb-3"><?= nl2br(htmlspecialchars($community['description'] ?? 'Aucune description.')) ?></p>
 
-                                    <!-- Join/Leave Button -->
                                     <form method="post" action="communities.php?id=<?= $community_id ?>" class="mb-4">
                                         <input type="hidden" name="community_id" value="<?= $community_id ?>">
                                         <?php if ($community['est_membre']) : ?>
@@ -97,7 +91,6 @@ include_once __DIR__ . '/../../templates/header.php';
                                         <?php endif; ?>
                                     </form>
 
-                                    <!-- Messages Section -->
                                     <hr>
                                     <h4 class="mb-3">Mur de la communauté</h4>
 
@@ -117,7 +110,6 @@ include_once __DIR__ . '/../../templates/header.php';
                                         </div>
                                     <?php endif; ?>
 
-                                    <!-- Messages List -->
                                     <h5>Messages récents</h5>
                                     <div class="list-group list-group-flush mb-3">
                                         <?php if (empty($messages)) : ?>
@@ -147,16 +139,13 @@ include_once __DIR__ . '/../../templates/header.php';
                                             <?php endforeach; ?>
                                         <?php endif; ?>
                                     </div>
-                                    <!-- Messages Pagination -->
                                     <div class="d-flex justify-content-center">
                                         <?= $messages_pagination_html ?>
                                     </div>
 
                                 </div>
 
-                                <!-- Colonne latérale (Membres, Événements) -->
                                 <div class="col-lg-4">
-                                    <!-- Events Section -->
                                     <div class="card shadow-sm mb-4">
                                         <div class="card-header bg-light py-2"><i class="fas fa-calendar-alt me-2 text-primary"></i>Événements à venir</div>
                                         <div class="list-group list-group-flush">
@@ -173,12 +162,10 @@ include_once __DIR__ . '/../../templates/header.php';
                                                         <small class="text-muted d-block"><i class="fas fa-map-marker-alt me-1"></i><?= htmlspecialchars($event['lieu'] ?? 'N/A') ?></small>
                                                     </a>
                                                 <?php endforeach; ?>
-                                                <!-- TODO: Add link to full events list page if needed -->
                                             <?php endif; ?>
                                         </div>
                                     </div>
 
-                                    <!-- Members Section -->
                                     <div class="card shadow-sm">
                                         <div class="card-header bg-light py-2"><i class="fas fa-users me-2 text-primary"></i>Membres (<?= $community['nombre_membres'] ?>)</div>
                                         <div class="card-body">
@@ -204,7 +191,6 @@ include_once __DIR__ . '/../../templates/header.php';
                                                         </div>
                                                     <?php endif; ?>
                                                 </div>
-                                                <!-- TODO: Add link to full members list page if needed -->
                                             <?php endif; ?>
                                         </div>
                                     </div>
@@ -213,16 +199,13 @@ include_once __DIR__ . '/../../templates/header.php';
                         <?php
                         }
                     } else {
-                        // Fetch community data
-                        $limit = 12; // Adjust limit as needed
+                        $limit = 12; 
                         $communitiesData = getCommunities($employee_id, $page, $limit, $search, $type_filter);
                         $communities = $communitiesData['communities'];
                         $pagination_html = $communitiesData['pagination_html'];
 
-                        // Community types for filter dropdown - consider making this dynamic later
                         $communityTypes = ['sport' => 'Sport', 'bien_etre' => 'Bien-être', 'sante' => 'Santé', 'autre' => 'Autre'];
                         ?>
-                        <!-- Search and Filter Form -->
                         <form method="get" action="" class="mb-4 p-3 bg-light border rounded">
                             <div class="row g-2 align-items-end">
                                 <div class="col-md-5">
