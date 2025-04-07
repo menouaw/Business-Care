@@ -21,15 +21,12 @@ function generateCsrfToken()
     return $_SESSION['csrf_token'];
 }
 
-/**
- * Vérifie le jeton CSRF pour les requêtes POST.
- * En cas d'échec, affiche un message flash et redirige.
- */
+
 function verifyCsrfToken()
 {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!isset($_POST['csrf_token']) || empty($_SESSION['csrf_token']) || !hash_equals(trim($_SESSION['csrf_token']), trim($_POST['csrf_token']))) {
-            error_log("CSRF token validation failed. SESSION: " . ($_SESSION['csrf_token'] ?? 'Not Set') . " POST: " . ($_POST['csrf_token'] ?? 'Not Set'));
+            error_log("Échec de validation du jeton CSRF. SESSION: " . ($_SESSION['csrf_token'] ?? 'Non Défini') . " POST: " . ($_POST['csrf_token'] ?? 'Non Défini'));
 
 
             flashMessage("Erreur de sécurité (jeton invalide). Veuillez réessayer.", "danger");
