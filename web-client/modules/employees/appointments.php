@@ -27,6 +27,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         $query = "SELECT date_heure_disponible, praticien_id, lieu FROM prestations WHERE id = :id";
         $prestation = executeQuery($query, [':id' => $prestationId])->fetch();
 
+        // Vérifier que l'utilisateur n'a pas déjà un rendez-vous au même moment
+        $checkOverlappingQuery = "SELECT COUNT(*) as count FROM rendez_vous 
+                                WHERE personne_id = :user_id 
+                                AND statut != 'annule'
+                                AND date_rdv <= :end_time 
+                                AND DATE_ADD(date_rdv, INTERVAL duree MINUTE) >= :start_time";
+
+        $dateObj = new DateTime($dateRdv);
+        $endTime = (clone $dateObj)->modify("+{$duree} minutes")->format('Y-m-d H:i:s');
+
+        $overlapping = executeQuery($checkOverlappingQuery, [
+            ':user_id' => $userId,
+            ':start_time' => $dateRdv,
+            ':end_time' => $endTime
+        ])->fetch();
+
+        if ($overlapping && $overlapping['count'] > 0) {
+            flashMessage("Vous avez déjà un rendez-vous qui chevauche cette période ! Consultez votre agenda, espèce de tête en l'air !", "warning");
+            header("Location: " . $_SERVER['PHP_SELF'] . "?upcoming_page=" . $upcomingPage . "&past_page=" . $pastPage . "&canceled_page=" . $canceledPage);
+            exit;
+        }
 
         if (!$prestation || empty($prestation['date_heure_disponible'])) {
             flashMessage("Cette prestation n'est pas disponible ou n'a pas d'horaire défini", "warning");
@@ -63,6 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 }
             }
         }
+    }
 
         header("Location: " . $_SERVER['PHP_SELF'] . "?upcoming_page=" . $upcomingPage . "&past_page=" . $pastPage . "&canceled_page=" . $canceledPage);
         exit;
