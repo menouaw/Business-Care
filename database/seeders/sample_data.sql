@@ -20,6 +20,7 @@ TRUNCATE TABLE prestations;
 TRUNCATE TABLE entreprises; 
 TRUNCATE TABLE roles;
 TRUNCATE TABLE contrats_prestations;
+TRUNCATE TABLE associations; -- Ajout du TRUNCATE pour associations
 SET FOREIGN_KEY_CHECKS = 1;
 
 INSERT INTO roles (nom, description) VALUES
@@ -60,38 +61,37 @@ INSERT INTO entreprises (nom, siret, adresse, code_postal, ville, telephone, ema
 ('Pet Paradise', '00001111222233', '40 Rue des Animaux', '33000', 'Bordeaux', '05 00 00 11 11', 'contact@petparadise.fr', 'www.petparadise.fr', '/logos/petparadise.png', '1-10', 'Animalerie', '2021-05-05'),
 ('Global Trading Co', '11112222333344', '1 World Trade Center', '92042', 'La Defense', '01 11 11 22 22', 'trading@globalco.com', 'www.globalco.com', '/logos/globalco.png', '500+', 'Commerce International', '2014-01-01');
 
-INSERT INTO prestations (nom, description, prix, duree, type, categorie, niveau_difficulte, capacite_max, materiel_necessaire, prerequis) VALUES
-('Consultation Psychologique', 'Seance individuelle de 45 minutes avec un psychologue qualifie', 80.00, 45, 'consultation', 'Sante mentale', NULL, 1, 'Aucun', 'Aucun'),
-('Yoga en Entreprise', 'Seance de yoga adaptee au milieu professionnel', 120.00, 60, 'atelier', 'Bien-etre physique', 'debutant', 20, 'Tapis de yoga', 'Aucun'),
-('Webinar Gestion du Stress', 'Formation en ligne sur la gestion du stress', 150.00, 90, 'webinar', 'Formation', 'debutant', 50, 'Ordinateur, connexion internet', 'Aucun'),
-('Conference Bien-etre au travail', 'Conference sur les bonnes pratiques de bien-etre', 200.00, 120, 'conference', 'Sensibilisation', 'intermediaire', 100, 'Aucun', 'Aucun'),
-('Defi Sportif Mensuel', 'Programme d\'activites physiques sur un mois', 180.00, NULL, 'evenement', 'Sport', 'avance', 30, 'Tenue de sport', 'Niveau intermediaire'),
-('Meditation en Groupe', 'Seance de meditation collective pour reduire le stress', 100.00, 60, 'atelier', 'Bien-etre mental', 'debutant', 15, 'Coussin de meditation', 'Aucun'),
-
-('Coaching Nutritionnel', 'Consultation personnalisee sur l\'alimentation saine', 90.00, 45, 'consultation', 'Nutrition', NULL, 1, 'Aucun', 'Aucun'),
-('Atelier Ergonomie', 'Formation sur l\'amenagement du poste de travail', 160.00, 90, 'atelier', 'Ergonomie', 'debutant', 25, 'Aucun', 'Aucun'),
-('Webinar Sommeil Reparateur', 'Formation en ligne sur l\'amelioration du sommeil', 130.00, 60, 'webinar', 'Bien-etre', 'debutant', 40, 'Ordinateur, connexion internet', 'Aucun'),
-('Conference Leadership Bienveillant', 'Conference sur le leadership bienveillant', 250.00, 120, 'conference', 'Management', 'avance', 80, 'Aucun', 'Experience en management'),
-('Sophrologie Individuelle', 'Accompagnement personnalisé par la sophrologie', 75.00, 60, 'consultation', 'Bien-etre mental', NULL, 1, 'Aucun', 'Aucun'),
-('Pilates au Sol', 'Cours collectif de Pilates pour renforcer les muscles profonds', 110.00, 60, 'atelier', 'Bien-etre physique', 'intermediaire', 15, 'Tapis de sol', 'Aucun'),
-('Formation Secourisme au Travail (SST)', 'Formation initiale ou recyclage SST', 300.00, 120, 'atelier', 'Securite', 'intermediaire', 10, 'Mannequin de formation', 'Aucun'),
-('Webinar Communication Non Violente (CNV)', 'Introduction aux principes de la CNV', 140.00, 75, 'webinar', 'Communication', 'debutant', 50, 'Ordinateur, connexion internet', 'Aucun'),
-('Evenement Team Building Créatif', 'Atelier artistique pour renforcer la cohésion', 400.00, 180, 'evenement', 'Cohésion d\'équipe', 'debutant', 20, 'Materiel artistique fourni', 'Aucun'),
-('Consultation Osteopathie', 'Traitement manuel des troubles fonctionnels', 85.00, 45, 'consultation', 'Sante physique', NULL, 1, 'Aucun', 'Aucun'),
-('Atelier Gestion du Temps', 'Optimiser son organisation et sa productivité', 170.00, 90, 'atelier', 'Formation', 'intermediaire', 20, 'Support de cours', 'Aucun'),
-('Conference Cybersecurite', 'Sensibilisation aux risques et bonnes pratiques', 220.00, 90, 'conference', 'Securite', 'debutant', 100, 'Aucun', 'Aucun'),
-('Consultation Dietetique Sportive', 'Conseils nutritionnels pour sportifs', 95.00, 60, 'consultation', 'Nutrition', NULL, 1, 'Aucun', 'Pratique sportive régulière'),
-('Atelier Prise de Parole en Public', 'Améliorer son aisance et son impact à l\'oral', 190.00, 120, 'atelier', 'Communication', 'intermediaire', 12, 'Aucun', 'Aucun'),
-('Massage Assis (Amma)', 'Massage court sur chaise ergonomique', 50.00, 20, 'consultation', 'Bien-etre physique', 'debutant', 1, 'Chaise de massage', 'Aucun'),
-('Webinar Initiation à l\'Investissement', 'Comprendre les bases de l\'investissement financier', 120.00, 60, 'webinar', 'Finance personnelle', 'debutant', 40, 'Ordinateur, connexion internet', 'Aucun'),
-('Course d\'Orientation Urbaine', 'Jeu de piste en équipe dans la ville', 350.00, 150, 'evenement', 'Cohésion d\'équipe', 'intermediaire', 25, 'Smartphone', 'Aucun'),
-('Atelier Cuisine Saine', 'Apprendre des recettes saines et rapides', 150.00, 90, 'atelier', 'Nutrition', 'debutant', 15, 'Ingredients et ustensiles fournis', 'Aucun'),
-('Conference Addictions', 'Information et prévention sur les addictions', 180.00, 90, 'conference', 'Sante mentale', 'intermediaire', 50, 'Aucun', 'Aucun'),
-('Consultation Coaching de Vie', 'Accompagnement pour atteindre ses objectifs personnels', 100.00, 60, 'consultation', 'Developpement personnel', NULL, 1, 'Aucun', 'Aucun'),
-('Webinar Fresque du Climat', 'Atelier ludique sur le changement climatique', 160.00, 180, 'webinar', 'Sensibilisation RSE', 'debutant', 30, 'Ordinateur, connexion internet', 'Aucun'),
-('Atelier Reflexologie Plantaire', 'Découverte et pratique de la réflexologie', 130.00, 75, 'atelier', 'Bien-etre physique', 'intermediaire', 10, 'Aucun', 'Aucun'),
-('Olympiades Inter-Entreprises', 'Compétition sportive amicale', 500.00, 240, 'evenement', 'Sport', 'intermediaire', 100, 'Tenue de sport', 'Aucun'),
-('Conference Neurosciences', 'Comprendre le fonctionnement du cerveau au travail', 230.00, 90, 'conference', 'Developpement personnel', 'avance', 60, 'Aucun', 'Aucun');
+INSERT INTO prestations (nom, description, prix, duree, type, categorie, niveau_difficulte, capacite_max, materiel_necessaire, prerequis, date_heure_disponible) VALUES
+('Consultation Psychologique', 'Seance individuelle de 45 minutes avec un psychologue qualifie', 80.00, 45, 'consultation', 'Sante mentale', NULL, 1, 'Aucun', 'Aucun', NULL),
+('Yoga en Entreprise', 'Seance de yoga adaptee au milieu professionnel', 120.00, 60, 'atelier', 'Bien-etre physique', 'debutant', 20, 'Tapis de yoga', 'Aucun', '2024-05-10 12:30:00'),
+('Webinar Gestion du Stress', 'Formation en ligne sur la gestion du stress', 150.00, 90, 'webinar', 'Formation', 'debutant', 50, 'Ordinateur, connexion internet', 'Aucun', '2024-05-15 14:00:00'),
+('Conference Bien-etre au travail', 'Conference sur les bonnes pratiques de bien-etre', 200.00, 120, 'conference', 'Sensibilisation', 'intermediaire', 100, 'Aucun', 'Aucun', '2024-06-05 09:30:00'),
+('Defi Sportif Mensuel', 'Programme d\'activites physiques sur un mois', 180.00, NULL, 'evenement', 'Sport', 'avance', 30, 'Tenue de sport', 'Niveau intermediaire', '2024-05-01 00:00:00'), -- Début du mois
+('Meditation en Groupe', 'Seance de meditation collective pour reduire le stress', 100.00, 60, 'atelier', 'Bien-etre mental', 'debutant', 15, 'Coussin de meditation', 'Aucun', '2024-05-20 18:00:00'),
+('Coaching Nutritionnel', 'Consultation personnalisee sur l\'alimentation saine', 90.00, 45, 'consultation', 'Nutrition', NULL, 1, 'Aucun', 'Aucun', NULL),
+('Atelier Ergonomie', 'Formation sur l\'amenagement du poste de travail', 160.00, 90, 'atelier', 'Ergonomie', 'debutant', 25, 'Aucun', 'Aucun', '2024-05-22 10:00:00'),
+('Webinar Sommeil Reparateur', 'Formation en ligne sur l\'amelioration du sommeil', 130.00, 60, 'webinar', 'Bien-etre', 'debutant', 40, 'Ordinateur, connexion internet', 'Aucun', '2024-05-28 19:00:00'),
+('Conference Leadership Bienveillant', 'Conference sur le leadership bienveillant', 250.00, 120, 'conference', 'Management', 'avance', 80, 'Aucun', 'Experience en management', '2024-06-12 14:00:00'),
+('Sophrologie Individuelle', 'Accompagnement personnalisé par la sophrologie', 75.00, 60, 'consultation', 'Bien-etre mental', NULL, 1, 'Aucun', 'Aucun', NULL),
+('Pilates au Sol', 'Cours collectif de Pilates pour renforcer les muscles profonds', 110.00, 60, 'atelier', 'Bien-etre physique', 'intermediaire', 15, 'Tapis de sol', 'Aucun', '2024-05-08 18:30:00'),
+('Formation Secourisme au Travail (SST)', 'Formation initiale ou recyclage SST', 300.00, 480, 'atelier', 'Securite', 'intermediaire', 10, 'Mannequin de formation', 'Aucun', '2024-06-10 09:00:00'), -- Durée indicative en minutes
+('Webinar Communication Non Violente (CNV)', 'Introduction aux principes de la CNV', 140.00, 75, 'webinar', 'Communication', 'debutant', 50, 'Ordinateur, connexion internet', 'Aucun', '2024-06-18 11:00:00'),
+('Evenement Team Building Créatif', 'Atelier artistique pour renforcer la cohésion', 400.00, 180, 'evenement', 'Cohésion d\'équipe', 'debutant', 20, 'Materiel artistique fourni', 'Aucun', '2024-07-01 14:00:00'),
+('Consultation Osteopathie', 'Traitement manuel des troubles fonctionnels', 85.00, 45, 'consultation', 'Sante physique', NULL, 1, 'Aucun', 'Aucun', NULL),
+('Atelier Gestion du Temps', 'Optimiser son organisation et sa productivité', 170.00, 90, 'atelier', 'Formation', 'intermediaire', 20, 'Support de cours', 'Aucun', '2024-06-03 10:30:00'),
+('Conference Cybersecurite', 'Sensibilisation aux risques et bonnes pratiques', 220.00, 90, 'conference', 'Securite', 'debutant', 100, 'Aucun', 'Aucun', '2024-06-20 09:00:00'),
+('Consultation Dietetique Sportive', 'Conseils nutritionnels pour sportifs', 95.00, 60, 'consultation', 'Nutrition', NULL, 1, 'Aucun', 'Pratique sportive régulière', NULL),
+('Atelier Prise de Parole en Public', 'Améliorer son aisance et son impact à l\'oral', 190.00, 120, 'atelier', 'Communication', 'intermediaire', 12, 'Aucun', 'Aucun', '2024-06-25 14:30:00'),
+('Massage Assis (Amma)', 'Massage court sur chaise ergonomique', 50.00, 20, 'consultation', 'Bien-etre physique', 'debutant', 1, 'Chaise de massage', 'Aucun', NULL), -- Généralement sur RDV via entreprise
+('Webinar Initiation à l\'Investissement', 'Comprendre les bases de l\'investissement financier', 120.00, 60, 'webinar', 'Finance personnelle', 'debutant', 40, 'Ordinateur, connexion internet', 'Aucun', '2024-05-29 18:00:00'),
+('Course d\'Orientation Urbaine', 'Jeu de piste en équipe dans la ville', 350.00, 150, 'evenement', 'Cohésion d\'équipe', 'intermediaire', 25, 'Smartphone', 'Aucun', '2024-06-22 10:00:00'),
+('Atelier Cuisine Saine', 'Apprendre des recettes saines et rapides', 150.00, 90, 'atelier', 'Nutrition', 'debutant', 15, 'Ingredients et ustensiles fournis', 'Aucun', '2024-06-14 12:00:00'),
+('Conference Addictions', 'Information et prévention sur les addictions', 180.00, 90, 'conference', 'Sante mentale', 'intermediaire', 50, 'Aucun', 'Aucun', '2024-07-05 11:00:00'),
+('Consultation Coaching de Vie', 'Accompagnement pour atteindre ses objectifs personnels', 100.00, 60, 'consultation', 'Developpement personnel', NULL, 1, 'Aucun', 'Aucun', NULL),
+('Webinar Fresque du Climat', 'Atelier ludique sur le changement climatique', 160.00, 180, 'webinar', 'Sensibilisation RSE', 'debutant', 30, 'Ordinateur, connexion internet', 'Aucun', '2024-05-16 09:30:00'),
+('Atelier Reflexologie Plantaire', 'Découverte et pratique de la réflexologie', 130.00, 75, 'atelier', 'Bien-etre physique', 'intermediaire', 10, 'Aucun', 'Aucun', '2024-06-28 17:00:00'),
+('Olympiades Inter-Entreprises', 'Compétition sportive amicale', 500.00, 240, 'evenement', 'Sport', 'intermediaire', 100, 'Tenue de sport', 'Aucun', '2024-07-12 09:00:00'),
+('Conference Neurosciences', 'Comprendre le fonctionnement du cerveau au travail', 230.00, 90, 'conference', 'Developpement personnel', 'avance', 60, 'Aucun', 'Aucun', '2024-07-19 10:00:00');
 
 INSERT INTO personnes (nom, prenom, email, mot_de_passe, telephone, date_naissance, genre, photo_url, role_id, entreprise_id, statut, derniere_connexion) VALUES
 ('Admin', 'System', 'admin@businesscare.fr', '$2y$10$CGP1gfg0khtXjAZcJFC6iO3oYisjwlPfkm8tQ8Q/OxWpFdR7tOiqO', '00 00 00 00 00', '1990-01-01', 'Autre', '/photos/admin.jpg', 1, NULL, 'actif', '2024-03-17 18:30:00'),
@@ -142,6 +142,7 @@ INSERT INTO personnes (nom, prenom, email, mot_de_passe, telephone, date_naissan
 ('Rousseau', 'Kevin', 'kevin.rousseau@bienetreplus.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '0688990011', '1994-04-03', 'M', '', 2, 8, 'actif', NOW()),
 ('Vincent', 'Sarah', 'sarah.vincent@ecosolutions.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '0699001122', '1996-01-19', 'F', '', 2, 9, 'actif', NOW()),
 ('Poirier', 'Mathieu', 'mathieu.poirier@financeplus.fr', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '0600112233', '1992-08-24', 'M', '', 2, 10, 'actif', NOW());
+
 
 INSERT INTO contrats (entreprise_id, date_debut, date_fin, montant_mensuel, nombre_salaries, type_contrat, statut, conditions_particulieres) VALUES
 (1, '2024-01-01', '2024-12-31', 5000.00, 150, 'premium', 'actif', 'Acces a toutes les prestations premium'),
@@ -245,35 +246,35 @@ INSERT INTO factures (entreprise_id, devis_id, numero_facture, date_emission, da
 (17, NULL, 'FACT-2024-029', '2024-06-25', '2024-07-25', 1850.00, 1541.67, 20.00, 'en_attente', 'carte'),
 (18, NULL, 'FACT-2024-030', '2024-06-30', '2024-07-30', 300.00, 250.00, 20.00, 'payee', 'virement');
 
-INSERT INTO rendez_vous (personne_id, prestation_id, praticien_id, date_rdv, duree, lieu, type_rdv, statut, notes) VALUES
-(5, 1, 3, '2024-03-20 10:00:00', 45, 'Cabinet 101', 'presentiel', 'planifie', 'Premiere consultation'),
-(5, 2, 3, '2024-03-21 14:00:00', 60, 'Salle de yoga', 'presentiel', 'confirme', 'Seance de groupe'),
-(5, 3, 3, '2024-03-22 15:00:00', 90, 'En ligne', 'visio', 'planifie', 'Webinar en groupe'),
-(5, 4, 3, '2024-03-23 09:30:00', 60, 'Bureau 202', 'presentiel', 'confirme', 'Suivi mensuel'),
-(5, 5, 3, '2024-03-24 11:00:00', 45, 'Salle de reunion', 'presentiel', 'planifie', 'Bilan trimestriel'),
-(6, 6, 3, '2024-03-25 10:30:00', 60, 'Salle de meditation', 'presentiel', 'confirme', 'Seance de groupe'),
-(7, 7, 3, '2024-03-26 14:00:00', 45, 'Cabinet 303', 'presentiel', 'planifie', 'Premiere consultation'),
-(8, 8, 3, '2024-03-27 09:00:00', 90, 'Salle de formation', 'presentiel', 'confirme', 'Formation groupe'),
-(9, 9, 3, '2024-03-28 15:00:00', 60, 'En ligne', 'visio', 'planifie', 'Webinar individuel'),
-(10, 10, 3, '2024-03-29 11:30:00', 120, 'Salle de conference', 'presentiel', 'confirme', 'Conference annuelle'),
-(12, 1, 3, '2024-04-20 10:00:00', 45, 'Cabinet 101', 'presentiel', 'termine', 'Premiere consultation effectuée'),
-(13, 7, 3, '2024-04-21 11:00:00', 45, 'Cabinet 102', 'visio', 'confirme', 'Coaching nutritionnel'),
-(14, 2, 6, '2024-04-28 09:00:00', 60, 'Salle de yoga Entreprise', 'presentiel', 'planifie', 'Yoga sur site'),
-(15, 1, 5, '2024-04-22 14:30:00', 45, 'En ligne', 'visio', 'termine', 'Consultation psy'),
-(16, 12, 6, '2024-04-29 18:00:00', 60, 'Salle de sport Entreprise', 'presentiel', 'confirme', 'Pilates'),
-(17, 17, 3, '2024-05-06 09:30:00', 90, 'Salle Coquelicot', 'presentiel', 'planifie', 'Atelier gestion du temps'),
-(18, 18, 4, '2024-05-10 14:00:00', 45, 'Visio', 'visio', 'planifie', 'Consultation dietetique sportive'),
-(19, 19, 5, '2024-05-15 12:30:00', 60, 'Salle Lotus', 'presentiel', 'confirme', 'Yoga dynamique'),
-(20, 20, 6, '2024-05-16 17:00:00', 60, 'Cabinet 202', 'presentiel', 'planifie', 'Atelier cuisine saine'),
-(21, 21, 3, '2024-05-17 19:00:00', 45, 'Visio', 'visio', 'termine', 'Consultation coaching de vie'),
-(22, 22, 4, '2024-05-18 10:00:00', 60, 'Visio', 'visio', 'termine', 'Consultation nutrition'),
-(23, 23, 5, '2024-05-19 11:30:00', 45, 'Visio', 'visio', 'confirme', 'Webinar fresque du climat'),
-(24, 24, 6, '2024-05-20 14:00:00', 60, 'Visio', 'visio', 'termine', 'Conference addictions'),
-(25, 25, 3, '2024-05-21 16:00:00', 60, 'Visio', 'visio', 'termine', 'Consultation coaching de vie'),
-(26, 26, 4, '2024-05-22 10:00:00', 45, 'Visio', 'visio', 'termine', 'Consultation nutrition'),
-(27, 27, 5, '2024-05-23 11:30:00', 60, 'Visio', 'visio', 'termine', 'Webinar fresque du climat'),
-(28, 28, 6, '2024-05-24 14:00:00', 60, 'Visio', 'visio', 'termine', 'Conference addictions'),
-(29, 29, 3, '2024-05-25 16:00:00', 45, 'Visio', 'visio', 'termine', 'Consultation coaching de vie');
+INSERT INTO rendez_vous (personne_id, prestation_id, praticien_id, date_rdv, duree, lieu, type_rdv, statut, notes, evenement_id) VALUES
+(5, 1, 3, '2024-03-20 10:00:00', 45, 'Cabinet 101', 'presentiel', 'planifie', 'Premiere consultation', NULL),
+(5, 2, 3, '2024-03-21 14:00:00', 60, 'Salle de yoga', 'presentiel', 'confirme', 'Seance de groupe', NULL),
+(5, 3, 3, '2024-03-22 15:00:00', 90, 'En ligne', 'visio', 'planifie', 'Webinar en groupe', NULL),
+(5, 4, 3, '2024-03-23 09:30:00', 60, 'Bureau 202', 'presentiel', 'confirme', 'Suivi mensuel', NULL),
+(5, 5, 3, '2024-03-24 11:00:00', 45, 'Salle de reunion', 'presentiel', 'planifie', 'Bilan trimestriel', NULL),
+(6, 6, 3, '2024-03-25 10:30:00', 60, 'Salle de meditation', 'presentiel', 'confirme', 'Seance de groupe', NULL),
+(7, 7, 3, '2024-03-26 14:00:00', 45, 'Cabinet 303', 'presentiel', 'planifie', 'Premiere consultation', NULL),
+(8, 8, 3, '2024-03-27 09:00:00', 90, 'Salle de formation', 'presentiel', 'confirme', 'Formation groupe', NULL),
+(9, 9, 3, '2024-03-28 15:00:00', 60, 'En ligne', 'visio', 'planifie', 'Webinar individuel', NULL),
+(10, 10, 3, '2024-03-29 11:30:00', 120, 'Salle de conference', 'presentiel', 'confirme', 'Conference annuelle', NULL),
+(12, 1, 3, '2024-04-20 10:00:00', 45, 'Cabinet 101', 'presentiel', 'termine', 'Premiere consultation effectuée', NULL),
+(13, 7, 3, '2024-04-21 11:00:00', 45, 'Cabinet 102', 'visio', 'confirme', 'Coaching nutritionnel', NULL),
+(14, 2, 6, '2024-04-28 09:00:00', 60, 'Salle de yoga Entreprise', 'presentiel', 'planifie', 'Yoga sur site', NULL),
+(15, 1, 5, '2024-04-22 14:30:00', 45, 'En ligne', 'visio', 'termine', 'Consultation psy', NULL),
+(16, 12, 6, '2024-04-29 18:00:00', 60, 'Salle de sport Entreprise', 'presentiel', 'confirme', 'Pilates', NULL),
+(17, 17, 3, '2024-05-06 09:30:00', 90, 'Salle Coquelicot', 'presentiel', 'planifie', 'Atelier gestion du temps', NULL),
+(18, 18, 4, '2024-05-10 14:00:00', 45, 'Visio', 'visio', 'planifie', 'Consultation dietetique sportive', NULL),
+(19, 19, 5, '2024-05-15 12:30:00', 60, 'Salle Lotus', 'presentiel', 'confirme', 'Yoga dynamique', NULL),
+(20, 20, 6, '2024-05-16 17:00:00', 60, 'Cabinet 202', 'presentiel', 'planifie', 'Atelier cuisine saine', NULL),
+(21, 21, 3, '2024-05-17 19:00:00', 45, 'Visio', 'visio', 'termine', 'Consultation coaching de vie', NULL),
+(22, 22, 4, '2024-05-18 10:00:00', 60, 'Visio', 'visio', 'termine', 'Consultation nutrition', NULL),
+(23, 23, 5, '2024-05-19 11:30:00', 45, 'Visio', 'visio', 'confirme', 'Webinar fresque du climat', NULL),
+(24, 24, 6, '2024-05-20 14:00:00', 60, 'Visio', 'visio', 'termine', 'Conference addictions', NULL),
+(25, 25, 3, '2024-05-21 16:00:00', 60, 'Visio', 'visio', 'termine', 'Consultation coaching de vie', NULL),
+(26, 26, 4, '2024-05-22 10:00:00', 45, 'Visio', 'visio', 'termine', 'Consultation nutrition', NULL),
+(27, 27, 5, '2024-05-23 11:30:00', 60, 'Visio', 'visio', 'termine', 'Webinar fresque du climat', NULL),
+(28, 28, 6, '2024-05-24 14:00:00', 60, 'Visio', 'visio', 'termine', 'Conference addictions', NULL),
+(29, 29, 3, '2024-05-25 16:00:00', 45, 'Visio', 'visio', 'termine', 'Consultation coaching de vie', NULL);
 
 INSERT INTO evaluations (personne_id, prestation_id, note, commentaire, date_evaluation) VALUES
 (12, 1, 5, 'Excellent service, tres professionnel', '2024-04-21'),
@@ -382,3 +383,16 @@ INSERT INTO services (nom, description, actif, ordre) VALUES
 ('Premium Pack', 'Offre complète pour grandes entreprises (251+ salariés)', TRUE, 30),
 ('Consultation Ponctuelle', 'Besoin spécifique hors contrat', TRUE, 40),
 ('Événement Sur Mesure', 'Organisation d\'un événement spécifique', TRUE, 50);
+
+INSERT INTO associations (nom, domaine, description, logo_url, site_web, actif) VALUES
+('Restos du Coeur', 'Social', 'Aide alimentaire et accompagnement des personnes démunies.', '/logos/restos_coeur.png', 'https://www.restosducoeur.org/', TRUE),
+('Fondation Abbé Pierre', 'Social', 'Lutte contre le mal-logement et l\'exclusion.', '/logos/abbe_pierre.png', 'https://www.fondation-abbe-pierre.fr/', TRUE),
+('WWF France', 'Environnement', 'Protection de l\'environnement et développement durable.', '/logos/wwf.png', 'https://www.wwf.fr/', TRUE),
+('Surfrider Foundation Europe', 'Environnement', 'Protection des océans, des vagues et du littoral.', '/logos/surfrider.png', 'https://surfrider.eu/', TRUE),
+('Médecins Sans Frontières', 'Sante', 'Assistance médicale humanitaire internationale.', '/logos/msf.png', 'https://www.msf.fr/', TRUE),
+('La Ligue contre le cancer', 'Sante', 'Lutte contre le cancer (prévention, recherche, aide aux malades).', '/logos/ligue_cancer.png', 'https://www.ligue-cancer.net/', TRUE),
+('Secours Populaire Français', 'Social', 'Solidarité en France et à l\'international.', '/logos/secours_populaire.png', 'https://www.secourspopulaire.fr/', TRUE),
+('Greenpeace France', 'Environnement', 'Action pour la protection de l\'environnement et la promotion de la paix.', '/logos/greenpeace.png', 'https://www.greenpeace.fr/', TRUE),
+('Institut Pasteur', 'Sante', 'Recherche biomédicale, santé publique et enseignement.', '/logos/pasteur.png', 'https://www.pasteur.fr/', TRUE),
+('Bibliothèques Sans Frontières', 'Culture', 'Accès à l\'information et à l\'éducation pour les populations vulnérables.', '/logos/bsf.png', 'https://www.bibliosansfrontieres.org/', TRUE);
+('Defi Sportif Mensuel', 'Programme d\'activites physiques sur un mois', 180.00, NULL, 'evenement', 'Sport', 'avance', 30, 'Tenue de sport', 'Niveau intermediaire', '2024-05-01 00:00:00'), -- Début du mois

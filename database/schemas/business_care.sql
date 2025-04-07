@@ -66,6 +66,7 @@ CREATE TABLE prestations (
     capacite_max INT,
     materiel_necessaire TEXT,
     prerequis TEXT,
+    date_heure_disponible DATETIME NULL DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_type (type),
@@ -277,4 +278,75 @@ CREATE TABLE contrats_prestations (
     FOREIGN KEY (prestation_id) REFERENCES prestations(id) ON DELETE CASCADE
 );
 
+/*
+CREATE TABLE associations (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nom VARCHAR(255) NOT NULL,
+    domaine VARCHAR(100) NOT NULL,
+    description TEXT,
+    logo_url VARCHAR(255),
+    site_web VARCHAR(255),
+    actif BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_nom (nom),
+    INDEX idx_domaine (domaine),
+    INDEX idx_actif (actif)
+);
 
+CREATE TABLE transactions (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    personne_id INT NOT NULL,
+    montant DECIMAL(10,2) NOT NULL,
+    type ENUM('don', 'paiement', 'remboursement', 'autre') NOT NULL,
+    reference VARCHAR(100),
+    date_transaction DATETIME NOT NULL,
+    statut ENUM('en_attente', 'valide', 'refuse', 'annule') DEFAULT 'en_attente',
+    details TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (personne_id) REFERENCES personnes(id),
+    INDEX idx_personne (personne_id),
+    INDEX idx_type (type),
+    INDEX idx_statut (statut),
+    INDEX idx_date (date_transaction),
+    INDEX idx_reference (reference)
+);
+
+-- Table pour les membres des communautés
+CREATE TABLE communautes_membres (
+    communaute_id INT NOT NULL,
+    personne_id INT NOT NULL,
+    date_inscription DATETIME NOT NULL,
+    role_communaute ENUM('membre', 'animateur', 'admin') DEFAULT 'membre',
+    PRIMARY KEY (communaute_id, personne_id),
+    FOREIGN KEY (communaute_id) REFERENCES communautes(id) ON DELETE CASCADE,
+    FOREIGN KEY (personne_id) REFERENCES personnes(id) ON DELETE CASCADE,
+    INDEX idx_date_inscription (date_inscription)
+);
+
+CREATE TABLE communautes_messages (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    communaute_id INT NOT NULL,
+    personne_id INT NOT NULL,
+    contenu TEXT NOT NULL,
+    date_creation DATETIME NOT NULL,
+    est_modere BOOLEAN DEFAULT FALSE,
+    raison_moderation TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (communaute_id) REFERENCES communautes(id) ON DELETE CASCADE,
+    FOREIGN KEY (personne_id) REFERENCES personnes(id) ON DELETE CASCADE,
+    INDEX idx_communaute (communaute_id),
+    INDEX idx_date (date_creation)
+);
+
+CREATE TABLE communautes_evenements (
+    communaute_id INT NOT NULL,
+    evenement_id INT NOT NULL,
+    PRIMARY KEY (communaute_id, evenement_id),
+    FOREIGN KEY (communaute_id) REFERENCES communautes(id) ON DELETE CASCADE,
+    FOREIGN KEY (evenement_id) REFERENCES evenements(id) ON DELETE CASCADE
+);
+
+
+*/

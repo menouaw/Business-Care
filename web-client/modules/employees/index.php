@@ -102,7 +102,7 @@ include_once __DIR__ . '/../../templates/header.php';
                             </div>
                         </div>
                         <div class="mt-3">
-                            <a href="dons.php" class="btn btn-sm btn-outline-info">Faire un don</a>
+                            <a href="donations.php" class="btn btn-sm btn-outline-info">Faire un don</a>
                         </div>
                     </div>
                 </div>

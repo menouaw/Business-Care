@@ -40,7 +40,6 @@ include_once __DIR__ . '/../../templates/header.php';
                 </div>
                 <div class="card-body">
                     <?php
-                    // Afficher les messages flash
                     if (function_exists('displayFlashMessages')) {
                         displayFlashMessages();
                     }
@@ -58,6 +57,5 @@ include_once __DIR__ . '/../../templates/header.php';
 </div>
 
 <?php
-// Inclusion du footer
 include_once __DIR__ . '/../../templates/footer.php';
 ?>

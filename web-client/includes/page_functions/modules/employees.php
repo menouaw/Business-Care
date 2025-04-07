@@ -1,6 +1,4 @@
 <?php
-
-
 require_once __DIR__ . '/../../../includes/init.php';
 
 function getEmployeesList($company_id = null, $page = 1, $limit = 5, $search = '')
@@ -209,21 +207,13 @@ function updateEmployeeProfile($employee_id, $profile_data)
     }
 }
 
-/**
- * récupère les services disponibles pour un salarié
- * 
- * @param int $employee_id identifiant du salarié
- * @return array liste des services disponibles
- */
 function getEmployeeAvailableServices($employee_id)
 {
-    // Validation de l'ID
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
     if (!$employee_id) {
         return [];
     }
 
-    // Récupération de l'entreprise du salarié
     $employee = fetchOne('personnes', "id = $employee_id AND role_id = " . ROLE_SALARIE);
 
     if (!$employee || empty($employee['entreprise_id'])) {
@@ -232,7 +222,6 @@ function getEmployeeAvailableServices($employee_id)
 
     $company_id = $employee['entreprise_id'];
 
-    // Vérification des contrats actifs de l'entreprise
     $contractsCount = executeQuery(
         "SELECT COUNT(*) as count FROM contrats 
          WHERE entreprise_id = ? AND statut = 'actif'
@@ -244,7 +233,6 @@ function getEmployeeAvailableServices($employee_id)
         return [];
     }
 
-    // Récupération des services disponibles
     $query = "SELECT id, nom, description, type, categorie, 
               niveau_difficulte, duree, capacite_max 
               FROM prestations 
@@ -260,7 +248,6 @@ function getEmployeeAvailableServices($employee_id)
 
     $services = executeQuery($query, [$company_id, ROLE_SALARIE])->fetchAll();
 
-    // Formater les prix des services si présents
     foreach ($services as &$service) {
         if (isset($service['prix'])) {
             $service['prix_formate'] = formatMoney($service['prix']);
@@ -270,13 +257,6 @@ function getEmployeeAvailableServices($employee_id)
     return $services;
 }
 
-/**
- * récupère les réservations d'un salarié
- * 
- * @param int $employee_id identifiant du salarié
- * @param string $status filtre par statut (all, planifie, confirme, annule, termine)
- * @return array liste des réservations
- */
 function getEmployeeReservations($employee_id, $status = 'all')
 {
     // Validation de l'ID
@@ -294,7 +274,6 @@ function getEmployeeReservations($employee_id, $status = 'all')
               WHERE r.personne_id = ?";
     $params = [$employee_id];
 
-    // Filtre par statut si différent de 'all'
     if ($status !== 'all') {
         $query .= " AND r.statut = ?";
         $params[] = $status;
@@ -304,7 +283,6 @@ function getEmployeeReservations($employee_id, $status = 'all')
 
     $reservations = executeQuery($query, $params)->fetchAll();
 
-    // Formater les dates et ajouter les badges de statut
     foreach ($reservations as &$reservation) {
         if (isset($reservation['date_rdv'])) {
             $reservation['date_rdv_formatee'] = formatDate($reservation['date_rdv'], 'd/m/Y H:i');
@@ -317,15 +295,6 @@ function getEmployeeReservations($employee_id, $status = 'all')
     return $reservations;
 }
 
-/**
- * récupère les rendez-vous d'un salarié avec pagination
- * 
- * @param int $employee_id identifiant du salarié
- * @param string $status statut des rendez-vous à récupérer (upcoming, past, canceled)
- * @param int $page numéro de page
- * @param int $limit nombre d'éléments par page
- * @return array rendez-vous et informations de pagination
- */
 function getEmployeeAppointments($employee_id, $status = 'upcoming', $page = 1, $limit = 5)
 {
     // Validation et sanitization
@@ -344,10 +313,10 @@ function getEmployeeAppointments($employee_id, $status = 'upcoming', $page = 1, 
         ];
     }
 
-    // Calcul de l'offset pour la pagination
+
     $offset = ($page - 1) * $limit;
 
-    // Construction de la requête de base
+
     $query = "SELECT rv.id as rdv_id, rv.date_rdv, rv.duree, rv.type_rdv, rv.statut, rv.lieu, rv.notes,
               p.id as prestation_id, p.nom as prestation_nom, p.description as prestation_description, 
               pp.id as praticien_id, CONCAT(pp.prenom, ' ', pp.nom) as praticien_nom,
@@ -358,7 +327,6 @@ function getEmployeeAppointments($employee_id, $status = 'upcoming', $page = 1, 
               LEFT JOIN evenements e ON rv.evenement_id = e.id
               WHERE rv.personne_id = ?";
 
-    // Conditions selon le statut demandé
     $params = [$employee_id];
 
     $now = date('Y-m-d H:i:s');
@@ -410,33 +378,26 @@ function getEmployeeAppointments($employee_id, $status = 'upcoming', $page = 1, 
             break;
     }
 
-    // Exécution de la requête principale
     $stmt = executeQuery($query, $params);
     $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Pour chaque rendez-vous, formater les données
     foreach ($appointments as &$appointment) {
-        // Formatage de la date
         if (isset($appointment['date_rdv'])) {
             $date = new DateTime($appointment['date_rdv']);
             $appointment['date_rdv_formatee'] = $date->format('d/m/Y H:i');
         }
 
-        // Formatage du statut avec un badge
         if (isset($appointment['statut'])) {
             $appointment['statut_badge'] = getStatusBadge($appointment['statut']);
         }
     }
 
-    // Comptage du nombre total pour la pagination
     $countStmt = executeQuery($countQuery, $countParams);
     $countResult = $countStmt->fetch(PDO::FETCH_ASSOC);
     $total = $countResult['total'];
 
-    // Calcul des informations de pagination
     $totalPages = ceil($total / $limit);
 
-    // Préparer les données pour la pagination
     $paginationData = [
         'currentPage' => $page,
         'totalPages' => $totalPages,
@@ -444,7 +405,6 @@ function getEmployeeAppointments($employee_id, $status = 'upcoming', $page = 1, 
         'perPage' => $limit
     ];
 
-    // Construction de l'URL pour la pagination
     $urlPattern = "?";
 
     switch ($status) {
@@ -473,14 +433,6 @@ function getEmployeeAppointments($employee_id, $status = 'upcoming', $page = 1, 
     ];
 }
 
-/**
- * Génère le HTML de pagination
- * 
- * @param array $paginationData Données de pagination (currentPage, totalPages, totalItems, perPage)
- * @param string $urlPattern Modèle d'URL pour les liens de pagination
- * @param string $ariaLabel Texte pour l'attribut aria-label
- * @return string HTML de pagination
- */
 function generatePaginationHtml($paginationData, $urlPattern, $ariaLabel = 'Pagination')
 {
     if ($paginationData['totalPages'] <= 1) {
@@ -490,7 +442,6 @@ function generatePaginationHtml($paginationData, $urlPattern, $ariaLabel = 'Pagi
     $html = '<nav aria-label="' . htmlspecialchars($ariaLabel) . '">';
     $html .= '<ul class="pagination">';
 
-    // Premier et Précédent
     if ($paginationData['currentPage'] > 1) {
         $firstUrl = str_replace('{page}', '1', $urlPattern);
         $prevUrl = str_replace('{page}', $paginationData['currentPage'] - 1, $urlPattern);
@@ -506,7 +457,6 @@ function generatePaginationHtml($paginationData, $urlPattern, $ariaLabel = 'Pagi
         $html .= '</a></li>';
     }
 
-    // Pages
     for ($i = max(1, $paginationData['currentPage'] - 2); $i <= min($paginationData['totalPages'], $paginationData['currentPage'] + 2); $i++) {
         $pageUrl = str_replace('{page}', $i, $urlPattern);
         $activeClass = ($i == $paginationData['currentPage']) ? ' active' : '';
@@ -516,7 +466,6 @@ function generatePaginationHtml($paginationData, $urlPattern, $ariaLabel = 'Pagi
         $html .= '</li>';
     }
 
-    // Suivant et Dernier
     if ($paginationData['currentPage'] < $paginationData['totalPages']) {
         $nextUrl = str_replace('{page}', $paginationData['currentPage'] + 1, $urlPattern);
         $lastUrl = str_replace('{page}', $paginationData['totalPages'], $urlPattern);
@@ -536,17 +485,9 @@ function generatePaginationHtml($paginationData, $urlPattern, $ariaLabel = 'Pagi
     return $html;
 }
 
-/**
- * récupère l'historique d'activités d'un salarié
- * 
- * @param int $employee_id identifiant du salarié
- * @param int $page numéro de page
- * @param int $limit nombre d'éléments par page
- * @return array historique d'activités et informations de pagination
- */
+
 function getEmployeeActivityHistory($employee_id, $page = 1, $limit = 5)
 {
-    // Validation de l'ID
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
     $page = (int)sanitizeInput($page);
     $limit = (int)sanitizeInput($limit);
@@ -565,22 +506,16 @@ function getEmployeeActivityHistory($employee_id, $page = 1, $limit = 5)
     }
 
     try {
-        // Utilisation de la structure de pagination commune
         $where = "personne_id = " . $employee_id;
         $orderBy = "created_at DESC";
 
-        // Exécution de la requête principale avec pagination
         $pagination = paginateResults('logs', $page, $limit, $where, $orderBy);
 
-        // Formatage spécifique pour l'historique d'activités
         foreach ($pagination['items'] as &$activity) {
-            // Formatage de la date
             $activity['created_at_formatted'] = formatDate($activity['created_at']);
-            // Ajout d'une icône en fonction de l'action
             $activity['icon'] = getActivityIcon($activity['action']);
         }
 
-        // Préparer les données pour renderPagination
         $paginationData = [
             'currentPage' => $pagination['currentPage'],
             'totalPages' => $pagination['totalPages'],
@@ -616,12 +551,6 @@ function getEmployeeActivityHistory($employee_id, $page = 1, $limit = 5)
     }
 }
 
-/**
- * Obtient une icône correspondant à un type d'activité
- * 
- * @param string $action type d'action
- * @return string classe CSS de l'icône
- */
 function getActivityIcon($action)
 {
     $iconMap = [
@@ -638,36 +567,20 @@ function getActivityIcon($action)
     return $iconMap[$action] ?? 'fas fa-history';
 }
 
-/**
- * récupère les communautés accessibles à un salarié
- * 
- * @param int $employee_id identifiant du salarié
- * @return array liste des communautés
- */
 function getEmployeeCommunities($employee_id)
 {
-    // Validation de l'ID
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
     if (!$employee_id) {
         return [];
     }
 
-    // Récupération des communautés - utiliser fetchAll au lieu de PDO directement
     $communities = fetchAll('communautes', '1=1', 'type, nom');
 
     return $communities;
 }
 
-/**
- * gère les dons d'un salarié
- * 
- * @param int $employee_id identifiant du salarié
- * @param array $donation_data données du don
- * @return int|false ID du don créé ou false en cas d'erreur
- */
 function manageEmployeeDonations($employee_id, $donation_data)
 {
-    // Validation des paramètres
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
     $donation_data = sanitizeInput($donation_data);
 
@@ -676,7 +589,6 @@ function manageEmployeeDonations($employee_id, $donation_data)
         return false;
     }
 
-    // Vérification des données requises
     if (
         empty($donation_data['type']) ||
         ($donation_data['type'] == 'financier' && empty($donation_data['montant'])) ||
@@ -686,13 +598,11 @@ function manageEmployeeDonations($employee_id, $donation_data)
         return false;
     }
 
-    // Vérifier que le type est bien une valeur acceptée par l'enum de la base de données
     if (!in_array($donation_data['type'], ['financier', 'materiel'])) {
         flashMessage("Type de don invalide", "danger");
         return false;
     }
 
-    // Validation supplémentaire pour les montants financiers
     if ($donation_data['type'] == 'financier') {
         $montant = filter_var($donation_data['montant'], FILTER_VALIDATE_FLOAT);
         if ($montant === false || $montant <= 0) {
@@ -703,14 +613,12 @@ function manageEmployeeDonations($employee_id, $donation_data)
     }
 
     try {
-        // Vérifier que le salarié existe et est actif
         $employee = fetchOne('personnes', "id = $employee_id AND role_id = " . ROLE_SALARIE . " AND statut = 'actif'");
         if (!$employee) {
             flashMessage("Le salarié n'existe pas ou n'est pas actif", "danger");
             return false;
         }
 
-        // Début de transaction
         beginTransaction();
 
         // Préparation des données pour insertion
@@ -723,11 +631,9 @@ function manageEmployeeDonations($employee_id, $donation_data)
             'statut' => 'en_attente'
         ];
 
-        // Ajouter l'association_id si spécifié
         if (!empty($donation_data['association_id'])) {
             $association_id = filter_var($donation_data['association_id'], FILTER_VALIDATE_INT);
             if ($association_id) {
-                // Vérifier que l'association existe
                 $association = fetchOne('associations', "id = $association_id AND actif = 1");
                 if ($association) {
                     $donData['association_id'] = $association_id;
@@ -735,7 +641,6 @@ function manageEmployeeDonations($employee_id, $donation_data)
             }
         }
 
-        // Insertion du don
         $donationId = insertRow('dons', $donData);
 
         if (!$donationId) {
@@ -744,7 +649,6 @@ function manageEmployeeDonations($employee_id, $donation_data)
             return false;
         }
 
-        // Si c'est un don financier et qu'il y a un montant, créer une entrée dans les transactions
         if ($donation_data['type'] == 'financier' && !empty($donation_data['montant'])) {
             $transactionData = [
                 'personne_id' => $employee_id,
@@ -763,13 +667,10 @@ function manageEmployeeDonations($employee_id, $donation_data)
             }
         }
 
-        // Validation de la transaction
         commitTransaction();
 
-        // Journalisation
         logBusinessOperation($employee_id, 'don_creation', "Don #{$donationId} créé, type: {$donation_data['type']}");
 
-        // Notification utilisateur
         if ($donation_data['type'] == 'financier') {
             $montantFormatted = formatMoney($donation_data['montant']);
             flashMessage("Votre don financier de {$montantFormatted} a été enregistré et est en attente de traitement", "success");
@@ -779,7 +680,6 @@ function manageEmployeeDonations($employee_id, $donation_data)
 
         return $donationId;
     } catch (Exception $e) {
-        // S'assurer que la transaction est annulée en cas d'erreur
         if (isset($transactionStarted) && $transactionStarted) {
             rollbackTransaction();
         }
@@ -789,29 +689,19 @@ function manageEmployeeDonations($employee_id, $donation_data)
     }
 }
 
-/**
- * récupère les événements et défis disponibles pour un salarié
- * 
- * @param int $employee_id identifiant du salarié
- * @param string $event_type filtre par type d'événement (all, conference, webinar, atelier, defi_sportif)
- * @return array liste des événements
- */
 function getEmployeeEvents($employee_id, $event_type = 'all')
 {
-    // Validation de l'ID
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
     if (!$employee_id) {
         return [];
     }
 
-    // Construction de la requête
     $query = "SELECT id, titre, description, date_debut, date_fin, lieu, type, 
               capacite_max, niveau_difficulte 
               FROM evenements 
               WHERE date_debut >= CURDATE()";
     $params = [];
 
-    // Filtre par type si différent de 'all'
     if ($event_type !== 'all') {
         $query .= " AND type = ?";
         $params[] = $event_type;
@@ -821,7 +711,6 @@ function getEmployeeEvents($employee_id, $event_type = 'all')
 
     $events = executeQuery($query, $params)->fetchAll();
 
-    // Formater les dates
     foreach ($events as &$event) {
         if (isset($event['date_debut'])) {
             $event['date_debut_formatted'] = formatDate($event['date_debut'], 'd/m/Y');
@@ -834,13 +723,6 @@ function getEmployeeEvents($employee_id, $event_type = 'all')
     return $events;
 }
 
-/**
- * met à jour les préférences d'un salarié
- * 
- * @param int $employee_id identifiant du salarié
- * @param array $settings paramètres à mettre à jour
- * @return bool résultat de la mise à jour
- */
 function updateEmployeeSettings($employee_id, $settings)
 {
     // Validation de l'ID
@@ -852,10 +734,8 @@ function updateEmployeeSettings($employee_id, $settings)
         return false;
     }
 
-    // Liste des champs autorisés
     $allowedFields = ['langue', 'notif_email', 'theme'];
 
-    // Filtrage des paramètres
     $filteredSettings = array_intersect_key($settings, array_flip($allowedFields));
 
     if (empty($filteredSettings)) {
@@ -864,13 +744,11 @@ function updateEmployeeSettings($employee_id, $settings)
     }
 
     try {
-        // Vérification de l'existence des préférences
         $exists = fetchOne('preferences_utilisateurs', "personne_id = $employee_id");
 
         $result = false;
 
         if ($exists) {
-            // Mise à jour
             $result = updateRow(
                 'preferences_utilisateurs',
                 $filteredSettings,
@@ -878,7 +756,6 @@ function updateEmployeeSettings($employee_id, $settings)
                 ['personne_id' => $employee_id]
             );
         } else {
-            // Insertion
             $filteredSettings['personne_id'] = $employee_id;
             $result = insertRow('preferences_utilisateurs', $filteredSettings) ? true : false;
         }
@@ -887,7 +764,6 @@ function updateEmployeeSettings($employee_id, $settings)
             logBusinessOperation($employee_id, 'update_preferences', "Mise à jour des préférences utilisateur");
             flashMessage("Vos préférences ont été mises à jour", "success");
 
-            // Mise à jour de la session si c'est l'utilisateur courant
             if (isset($_SESSION['user_id']) && $_SESSION['user_id'] == $employee_id && isset($filteredSettings['langue'])) {
                 $_SESSION['user_language'] = $filteredSettings['langue'];
             }
@@ -901,29 +777,13 @@ function updateEmployeeSettings($employee_id, $settings)
     }
 }
 
-/**
- * Vérifie si une prestation est disponible à une date donnée
- * Cette fonction retourne toujours true pour permettre de s'inscrire 
- * plusieurs fois à la même prestation
- * 
- * @param int $prestation_id ID de la prestation
- * @param string $date_rdv Date du rendez-vous au format 'Y-m-d H:i:s'
- * @return bool True si disponible, false sinon
- */
 function isPrestationAvailable($prestation_id, $date_rdv)
 {
     // On retourne toujours true pour permettre les inscriptions multiples
     return true;
 }
 
-/**
- * récupère les prestations disponibles pour un salarié avec pagination
- * 
- * @param int $employee_id identifiant du salarié
- * @param int $page numéro de page
- * @param int $limit nombre d'éléments par page
- * @return array prestations et informations de pagination
- */
+
 function getAvailablePrestationsForEmployee($employee_id, $page = 1, $limit = 20)
 {
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
@@ -1006,14 +866,6 @@ function getAvailablePrestationsForEmployee($employee_id, $page = 1, $limit = 20
         'pagination_html' => renderPagination($paginationData, $urlPattern)
     ];
 }
-
-/**
- * annule un rendez-vous
- * 
- * @param int $employee_id identifiant du salarié
- * @param int $rdv_id identifiant du rendez-vous
- * @return bool résultat de l'annulation
- */
 function cancelEmployeeAppointment($employee_id, $rdv_id)
 {
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
@@ -1041,13 +893,6 @@ function cancelEmployeeAppointment($employee_id, $rdv_id)
     return $success;
 }
 
-/**
- * réserve un rendez-vous pour un salarié
- * 
- * @param int $employee_id identifiant du salarié
- * @param array $appointment_data données du rendez-vous
- * @return bool|int résultat de la réservation (id du rendez-vous ou false)
- */
 function bookEmployeeAppointment($employee_id, $appointment_data)
 {
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
@@ -1069,7 +914,6 @@ function bookEmployeeAppointment($employee_id, $appointment_data)
     }
 
     try {
-        // Vérification de l'existence du praticien
         $praticienExists = false;
         if ($praticien_id) {
             $checkPraticien = "SELECT id FROM personnes WHERE id = ? AND role_id = " . ROLE_PRESTATAIRE;
@@ -1080,7 +924,6 @@ function bookEmployeeAppointment($employee_id, $appointment_data)
                 $praticien_id = null;
             }
         } else {
-            // Si praticien_id est 0, on le met à NULL
             $praticien_id = null;
         }
 
@@ -1095,11 +938,9 @@ function bookEmployeeAppointment($employee_id, $appointment_data)
             $date_rdv = date('Y-m-d H:i:s', strtotime('+1 day 9:00:00'));
         }
 
-        // Vérifions s'il existe au moins un événement dans la base de données
         $eventQuery = "SELECT id FROM evenements ORDER BY id LIMIT 1";
         $eventResult = executeQuery($eventQuery)->fetch();
 
-        // Si un événement existe, utilisons son ID, sinon nous devrons omettre ce champ
         if ($eventResult && isset($eventResult['id'])) {
             $insertQuery = "INSERT INTO rendez_vous (personne_id, prestation_id, praticien_id, date_rdv, duree, 
                             type_rdv, lieu, notes, statut, created_at, evenement_id) 
@@ -1107,7 +948,6 @@ function bookEmployeeAppointment($employee_id, $appointment_data)
 
             $insertParams = [$employee_id, $prestation_id, $praticien_id, $date_rdv, $duree, $type_rdv, $lieu, $notes, $eventResult['id']];
         } else {
-            // Omettre evenement_id de la requête si aucun événement n'existe
             $insertQuery = "INSERT INTO rendez_vous (personne_id, prestation_id, praticien_id, date_rdv, duree, 
                             type_rdv, lieu, notes, statut, created_at) 
                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'confirme', NOW())";
@@ -1132,12 +972,6 @@ function bookEmployeeAppointment($employee_id, $appointment_data)
     }
 }
 
-/**
- * Récupère les horaires disponibles pour une prestation
- * 
- * @param int $prestation_id ID de la prestation
- * @return array Liste des horaires disponibles (date, heure, lieu)
- */
 function getAvailableSchedulesForPrestation($prestation_id)
 {
     $prestation_id = filter_var($prestation_id, FILTER_VALIDATE_INT);
@@ -1183,12 +1017,6 @@ function getAvailableSchedulesForPrestation($prestation_id)
     return $schedules;
 }
 
-/**
- * récupère les communautés dont un salarié est membre
- * 
- * @param int $employee_id identifiant du salarié
- * @return array liste des communautés
- */
 function getEmployeeMemberships($employee_id)
 {
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
@@ -1219,13 +1047,6 @@ function getEmployeeMemberships($employee_id)
     return $memberships;
 }
 
-/**
- * récupère les détails d'une communauté
- * 
- * @param int $community_id identifiant de la communauté
- * @param int $employee_id identifiant du salarié
- * @return array|false détails de la communauté ou false si non trouvée
- */
 function getCommunityDetails($community_id, $employee_id = null)
 {
     $community_id = filter_var(sanitizeInput($community_id), FILTER_VALIDATE_INT);
@@ -1274,14 +1095,6 @@ function getCommunityDetails($community_id, $employee_id = null)
     return $community;
 }
 
-/**
- * récupère les membres d'une communauté
- * 
- * @param int $community_id identifiant de la communauté
- * @param int $page numéro de page
- * @param int $limit nombre d'éléments par page
- * @return array liste des membres et informations de pagination
- */
 function getCommunityMembers($community_id, $page = 1, $limit = 20)
 {
     $community_id = filter_var(sanitizeInput($community_id), FILTER_VALIDATE_INT);
@@ -1349,14 +1162,6 @@ function getCommunityMembers($community_id, $page = 1, $limit = 20)
     ];
 }
 
-/**
- * récupère les messages d'une communauté avec pagination
- * 
- * @param int $community_id identifiant de la communauté
- * @param int $page numéro de page
- * @param int $limit nombre d'éléments par page
- * @return array messages et informations de pagination
- */
 function getCommunityMessages($community_id, $page = 1, $limit = 10)
 {
     $community_id = filter_var(sanitizeInput($community_id), FILTER_VALIDATE_INT);
@@ -1424,13 +1229,7 @@ function getCommunityMessages($community_id, $page = 1, $limit = 10)
     ];
 }
 
-/**
- * récupère les derniers messages d'une communauté
- * 
- * @param int $community_id identifiant de la communauté
- * @param int $limit nombre de messages à récupérer
- * @return array liste des derniers messages
- */
+
 function getCommunityLastMessages($community_id, $limit = 5)
 {
     $community_id = filter_var(sanitizeInput($community_id), FILTER_VALIDATE_INT);
@@ -1459,13 +1258,7 @@ function getCommunityLastMessages($community_id, $limit = 5)
     return $messages;
 }
 
-/**
- * récupère les événements d'une communauté
- * 
- * @param int $community_id identifiant de la communauté
- * @param int $limit nombre d'événements à récupérer
- * @return array liste des événements
- */
+
 function getCommunityEvents($community_id, $limit = 5)
 {
     $community_id = filter_var(sanitizeInput($community_id), FILTER_VALIDATE_INT);
@@ -1496,14 +1289,6 @@ function getCommunityEvents($community_id, $limit = 5)
 
     return $events;
 }
-
-/**
- * ajoute un salarié à une communauté
- * 
- * @param int $employee_id identifiant du salarié
- * @param int $community_id identifiant de la communauté
- * @return bool résultat de l'ajout
- */
 function joinCommunity($employee_id, $community_id)
 {
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
@@ -1617,14 +1402,6 @@ function leaveCommunity($employee_id, $community_id)
     return false;
 }
 
-/**
- * ajoute un message dans une communauté avec modération automatique
- * 
- * @param int $employee_id identifiant du salarié
- * @param int $community_id identifiant de la communauté
- * @param string $message contenu du message
- * @return int|false identifiant du message créé ou false en cas d'erreur
- */
 function addCommunityMessage($employee_id, $community_id, $message)
 {
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
@@ -1676,12 +1453,6 @@ function addCommunityMessage($employee_id, $community_id, $message)
     return false;
 }
 
-/**
- * modère automatiquement un contenu
- * 
- * @param string $content contenu à modérer
- * @return array résultat de la modération [moderated, reason]
- */
 function automaticContentModeration($content)
 {
     $forbidden_words = [
@@ -1745,12 +1516,6 @@ function automaticContentModeration($content)
     ];
 }
 
-/**
- * retourne la classe CSS pour un type de communauté
- * 
- * @param string $type type de communauté
- * @return string classe CSS
- */
 function getCommunityTypeClass($type)
 {
     $classMap = [
@@ -1763,12 +1528,6 @@ function getCommunityTypeClass($type)
     return $classMap[$type] ?? 'bg-secondary';
 }
 
-/**
- * retourne un badge pour un rôle dans la communauté
- * 
- * @param string $role rôle dans la communauté
- * @return string HTML du badge
- */
 function getCommunityRoleBadge($role)
 {
     switch ($role) {
@@ -1782,16 +1541,6 @@ function getCommunityRoleBadge($role)
     }
 }
 
-/**
- * récupère la liste des communautés avec pagination et recherche
- * 
- * @param int $employee_id identifiant du salarié
- * @param int $page numéro de page
- * @param int $limit nombre d'éléments par page
- * @param string $search terme de recherche
- * @param string $type_filter filtre par type de communauté
- * @return array liste des communautés et informations de pagination
- */
 function getCommunities($employee_id = null, $page = 1, $limit = 10, $search = '', $type_filter = '')
 {
     $basic_communities = getEmployeeCommunities($employee_id);
@@ -1884,12 +1633,6 @@ function getCommunities($employee_id = null, $page = 1, $limit = 10, $search = '
     ];
 }
 
-/**
- * récupère l'historique des dons d'un salarié
- * 
- * @param int $employee_id identifiant du salarié
- * @return array liste des dons
- */
 function getDonationHistory($employee_id)
 {
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
@@ -1923,12 +1666,7 @@ function getDonationHistory($employee_id)
     return $dons;
 }
 
-/**
- * compte le nombre de dons d'un salarié
- * 
- * @param int $employee_id identifiant du salarié
- * @return int nombre de dons
- */
+
 function getEmployeeDonationsCount($employee_id)
 {
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
@@ -1959,13 +1697,6 @@ function getAssociations()
     }
 }
 
-/**
- * Gère les actions POST (rejoindre/quitter une communauté, ajouter un message)
- * Appelé depuis communities.php
- * 
- * @param int $employee_id ID du salarié
- * @return void
- */
 function handlePostActions($employee_id)
 {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -2002,14 +1733,6 @@ function handlePostActions($employee_id)
     }
 }
 
-/**
- * Affiche un bouton pour rejoindre ou quitter une communauté
- * 
- * @param int $community_id ID de la communauté
- * @param bool $is_member Si l'utilisateur est déjà membre
- * @param bool $is_detail Si on est dans la vue détaillée d'une communauté
- * @return void
- */
 function displayJoinLeaveButton($community_id, $is_member, $is_detail = false)
 {
     if ($is_member) {
@@ -2031,13 +1754,6 @@ function displayJoinLeaveButton($community_id, $is_member, $is_detail = false)
 <?php
 }
 
-/**
- * Affiche l'avatar d'un utilisateur
- * 
- * @param string|null $photo_url URL de la photo de profil
- * @param int $size Taille de l'avatar
- * @return void
- */
 function displayAvatar($photo_url, $size = 30)
 {
     $avatar_url = !empty($photo_url)
@@ -2048,18 +1764,8 @@ function displayAvatar($photo_url, $size = 30)
 <?php
 }
 
-
-/**
- * Affiche les détails d'une communauté
- * Appelé depuis communities.php
- * 
- * @param int $community_id ID de la communauté
- * @param int $employee_id ID du salarié
- * @return void
- */
 function displayCommunityDetail($community_id, $employee_id)
 {
-    // Récupérer les détails de la communauté
     $community = getCommunityDetails($community_id, $employee_id);
 
     if (!$community) {
@@ -2108,18 +1814,8 @@ function displayCommunityDetail($community_id, $employee_id)
     </div>
     <?php
 }
-
-/**
- * Affiche les messages d'une communauté avec pagination
- * Appelé depuis displayCommunityDetail
- * 
- * @param int $community_id ID de la communauté
- * @param bool $is_member Si l'utilisateur est membre
- * @return void
- */
 function displayCommunityMessages($community_id, $is_member)
 {
-    // Récupérer les messages avec pagination
     $messages_page = filter_input(INPUT_GET, 'messages_page', FILTER_VALIDATE_INT) ?: 1;
     $messages_result = getCommunityMessages($community_id, $messages_page);
 
@@ -2150,11 +1846,9 @@ function displayCommunityMessages($community_id, $is_member)
         <?php
         }
 
-        // Afficher la pagination pour les messages
         echo $messages_result['pagination_html'];
     }
 
-    // Formulaire pour ajouter un message (seulement pour les membres)
     if ($is_member) {
         ?>
         <div class="card mt-4">
@@ -2222,14 +1916,6 @@ function displayCommunityEvents($community)
     </div>
 <?php
 }
-
-/**
- * Affiche les membres d'une communauté avec pagination
- * Appelé depuis displayCommunityDetail
- * 
- * @param int $community_id ID de la communauté
- * @return void
- */
 function displayCommunityMembers($community_id)
 {
 ?>
@@ -2239,7 +1925,6 @@ function displayCommunityMembers($community_id)
         </div>
         <div class="card-body">
             <?php
-            // Récupérer les membres avec pagination
             $members_page = filter_input(INPUT_GET, 'members_page', FILTER_VALIDATE_INT) ?: 1;
             $members_result = getCommunityMembers($community_id, $members_page, 5);
 
@@ -2265,7 +1950,6 @@ function displayCommunityMembers($community_id)
                 }
                 echo '</ul>';
 
-                // Afficher la pagination pour les membres
                 echo $members_result['pagination_html'];
             }
             ?>
@@ -2274,16 +1958,6 @@ function displayCommunityMembers($community_id)
 <?php
 }
 
-/**
- * Affiche la liste des communautés avec filtres et pagination
- * Appelé depuis communities.php
- * 
- * @param int $employee_id
- * @param int $page
- * @param string $search
- * @param string $type_filter
- * @return void
- */
 function displayCommunitiesList($employee_id, $page, $search, $type_filter)
 {
 ?>
@@ -2314,7 +1988,6 @@ function displayCommunitiesList($employee_id, $page, $search, $type_filter)
     </div>
 
     <?php
-    // Récupérer la liste des communautés avec pagination et filtres
     $communities_result = getCommunities($employee_id, $page, 10, $search, $type_filter);
 
     if (empty($communities_result['communities'])) {
@@ -2336,13 +2009,6 @@ function displayCommunitiesList($employee_id, $page, $search, $type_filter)
     echo '</div>';
 }
 
-/**
- * Affiche une carte pour une communauté
- * Appelé depuis displayCommunitiesList
- * 
- * @param array $community Détails de la communauté
- * @return void
- */
 function displayCommunityCard($community)
 {
     ?>
@@ -2379,4 +2045,3 @@ function displayCommunityCard($community)
 <?php
 }
 
-// Note: Le include_once pour le footer reste dans communities.php

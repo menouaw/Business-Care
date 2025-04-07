@@ -10,19 +10,15 @@ if (!isAuthenticated() || !isSalarieUser()) {
 
 $userId = $_SESSION['user_id'];
 
-// Récupération des paramètres de pagination
 $upcomingPage = isset($_GET['upcoming_page']) ? (int)$_GET['upcoming_page'] : 1;
 $pastPage = isset($_GET['past_page']) ? (int)$_GET['past_page'] : 1;
 $canceledPage = isset($_GET['canceled_page']) ? (int)$_GET['canceled_page'] : 1;
-$limit = 5; // Nombre d'éléments par page
+$limit = 5; 
 
-// Récupération des paramètres de pagination pour les prestations
 $prestationPage = isset($_GET['prestation_page']) ? (int)$_GET['prestation_page'] : 1;
-$prestationLimit = 5; // Nombre de prestations par page
+$prestationLimit = 5; 
 
-// Traitement du formulaire de réservation si soumis
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'reserver') {
-    // Récupérer et nettoyer les données du formulaire
     $prestationId = filter_var($_POST['prestation_id'] ?? 0, FILTER_VALIDATE_INT);
     $dateRdv = sanitizeInput($_POST['date_rdv'] ?? '');
     $duree = filter_var($_POST['duree'] ?? 0, FILTER_VALIDATE_INT);
@@ -30,16 +26,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $notes = sanitizeInput($_POST['notes'] ?? '');
     $horaireId = sanitizeInput($_POST['horaire_id'] ?? '');
 
-    // Validation minimale
     if ($prestationId && $dateRdv && $duree) {
-        // Récupérer les informations sur la prestation
         $query = "SELECT date_heure_disponible, praticien_id, lieu FROM prestations WHERE id = ?";
         $prestation = executeQuery($query, [$prestationId])->fetch();
 
         if (!$prestation || empty($prestation['date_heure_disponible'])) {
             flashMessage("Cette prestation n'est pas disponible", "warning");
         } else {
-            // Créer les données de rendez-vous
             $appointmentData = [
                 'prestation_id' => $prestationId,
                 'praticien_id' => $prestation['praticien_id'],
@@ -50,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 'notes' => $notes
             ];
 
-            // Réserver le créneau
+            // pour réserver un rendez-vous
             $result = bookEmployeeAppointment($userId, $appointmentData);
 
             if ($result) {
@@ -64,7 +57,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             }
         }
 
-        // Rediriger pour éviter la soumission multiple du formulaire
         header("Location: " . $_SERVER['PHP_SELF']);
         exit;
     } else {
@@ -72,7 +64,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
-// Traitement de l'annulation de rendez-vous
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && ($_POST['action'] === 'annuler' || $_POST['action'] === 'annule')) {
     $rdvId = filter_var($_POST['rdv_id'] ?? 0, FILTER_VALIDATE_INT);
 
@@ -86,7 +77,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && ($_POST[
             flashMessage("Une erreur est survenue lors de l'annulation", "danger");
         }
 
-        // Conserver les paramètres de pagination dans la redirection
         $upcomingPage = isset($_GET['upcoming_page']) ? (int)$_GET['upcoming_page'] : 1;
         $pastPage = isset($_GET['past_page']) ? (int)$_GET['past_page'] : 1;
         $canceledPage = isset($_GET['canceled_page']) ? (int)$_GET['canceled_page'] : 1;
@@ -95,12 +85,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && ($_POST[
     }
 }
 
-// Récupérer les rendez-vous avec pagination
 $upcomingAppointmentsData = getEmployeeAppointments($userId, 'upcoming', $upcomingPage, $limit);
 $pastAppointmentsData = getEmployeeAppointments($userId, 'past', $pastPage, $limit);
 $canceledAppointmentsData = getEmployeeAppointments($userId, 'canceled', $canceledPage, $limit);
 
-// Extraire les listes de rendez-vous et les informations de pagination
 $upcomingAppointments = $upcomingAppointmentsData['appointments'];
 $upcomingPagination = $upcomingAppointmentsData['pagination'];
 $upcomingPaginationHtml = $upcomingAppointmentsData['pagination_html'];
