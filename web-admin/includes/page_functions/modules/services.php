@@ -91,13 +91,12 @@ function servicesGetDetails($id, $fetchRelated = false) {
 }
 
 /**
- * Recupere la liste des types de services
+ * Recupere la liste des types de services distincts
  * 
  * @return array Liste des types
  */
 function servicesGetTypes() {
-    $sql = "SELECT DISTINCT type FROM " . TABLE_PRESTATIONS . " WHERE type IS NOT NULL AND type != '' ORDER BY type";
-    return executeQuery($sql)->fetchAll(PDO::FETCH_COLUMN);
+    return servicesGetDistinctValues('type');
 }
 
 /**
@@ -106,7 +105,23 @@ function servicesGetTypes() {
  * @return array Liste des categories
  */
 function servicesGetCategories() {
-    $sql = "SELECT DISTINCT categorie FROM " . TABLE_PRESTATIONS . " WHERE categorie IS NOT NULL AND categorie != '' ORDER BY categorie";
+    return servicesGetDistinctValues('categorie');
+}
+
+/**
+ * Récupère la liste des valeurs distinctes pour un champ donné
+ * 
+ * @param string $field Nom du champ à récupérer (doit être un nom de colonne valide et sûr)
+ * @return array Liste des valeurs distinctes
+ */
+function servicesGetDistinctValues($field) {
+    $allowedFields = ['type', 'categorie', 'niveau_difficulte']; 
+    if (!in_array($field, $allowedFields)) {
+        logSystemActivity('error', "[ERROR] Tentative d'utilisation non autorisée de servicesGetDistinctValues avec le champ : " . $field);
+        return []; 
+    }
+
+    $sql = "SELECT DISTINCT " . $field . " FROM " . TABLE_PRESTATIONS . " WHERE " . $field . " IS NOT NULL AND " . $field . " != '' ORDER BY " . $field;
     return executeQuery($sql)->fetchAll(PDO::FETCH_COLUMN);
 }
 
