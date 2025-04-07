@@ -28,29 +28,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         $prestation = executeQuery($query, [$prestationId])->fetch();
 
         if (!$prestation || empty($prestation['date_heure_disponible'])) {
-            flashMessage("Cette prestation n'est pas disponible", "warning");
+            flashMessage("Cette prestation n'est pas disponible ou n'a pas d'horaire défini", "warning");
         } else {
-            $appointmentData = [
-                'prestation_id' => $prestationId,
-                'praticien_id' => $prestation['praticien_id'],
-                'date_rdv' => $prestation['date_heure_disponible'], // Utiliser l'heure stockée
-                'duree' => $duree,
-                'type_rdv' => $typeRdv,
-                'lieu' => $prestation['lieu'],
-                'notes' => $notes
-            ];
+            $datePrestation = new DateTime($prestation['date_heure_disponible']);
+            $now = new DateTime();
 
-            // pour réserver un rendez-vous
-            $result = bookEmployeeAppointment($userId, $appointmentData);
-
-            if ($result) {
-                // Marquer la prestation comme non disponible après réservation
-                $updateQuery = "UPDATE prestations SET est_disponible = FALSE WHERE id = ?";
-                executeQuery($updateQuery, [$prestationId]);
-
-                flashMessage("Votre rendez-vous a été réservé avec succès", "success");
+            if ($datePrestation < $now) {
+                flashMessage("Impossible de réserver une prestation dont l'horaire est déjà passé.", "warning");
             } else {
-                flashMessage("Une erreur est survenue lors de la réservation", "danger");
+                $appointmentData = [
+                    'prestation_id' => $prestationId,
+                    'praticien_id' => $prestation['praticien_id'],
+                    'date_rdv' => $prestation['date_heure_disponible'], // Utiliser l'heure stockée
+                    'duree' => $duree,
+                    'type_rdv' => $typeRdv,
+                    'lieu' => $prestation['lieu'],
+                    'notes' => $notes
+                ];
+
+                $result = bookEmployeeAppointment($userId, $appointmentData);
+
+                if ($result) {
+                    $checkCapacityQuery = "SELECT capacite_max FROM prestations WHERE id = ?";
+                    $capacityResult = executeQuery($checkCapacityQuery, [$prestationId])->fetch();
+                    if (!$capacityResult || empty($capacityResult['capacite_max']) || $capacityResult['capacite_max'] <= 1) {
+                        $updateQuery = "UPDATE prestations SET est_disponible = FALSE WHERE id = ?";
+                        executeQuery($updateQuery, [$prestationId]);
+                    }
+
+                    flashMessage("Votre rendez-vous a été réservé avec succès", "success");
+                } else {
+                    // Le message flash d'erreur est déjà géré dans bookEmployeeAppointment
+                    // flashMessage("Une erreur est survenue lors de la réservation", "danger");
+                }
             }
         }
 

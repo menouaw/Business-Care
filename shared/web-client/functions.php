@@ -276,6 +276,14 @@ function generateInvoiceNumber()
 }
 
 
+/**
+ * Récupère les informations d'un utilisateur par son ID.
+ * Assainit et valide l'ID avant de chercher dans la base de données.
+ * Gère les exceptions PDO et autres erreurs potentielles.
+ *
+ * @param int|string $userId L'identifiant de l'utilisateur à rechercher.
+ * @return array|false Tableau contenant les données de l'utilisateur si trouvé, sinon false.
+ */
 function getUserById($userId)
 {
     $userId = filter_var(sanitizeInput($userId), FILTER_VALIDATE_INT);
@@ -367,6 +375,7 @@ function changeUserPassword($userId, $currentPassword, $newPassword)
     if (!$userId || empty($currentPassword) || empty($newPassword)) {
         return false;
     }
+    // Vérifier si le mot de passe actuel est correct
 
     try {
         $user = getUserById($userId); // Utilise la fonction getUserById définie ci-dessus
@@ -377,31 +386,34 @@ function changeUserPassword($userId, $currentPassword, $newPassword)
             flashMessage("Le mot de passe actuel fourni est incorrect.", "danger");
             return false;
         }
-
-        /*Vérifier la complexité du nouveau mot de passe si nécessaire
+        // Vérifier la longueur du nouveau mot de passe
         if (strlen($newPassword) < 8) {
             flashMessage("Le mot de passe doit contenir au moins 8 caractères.", "danger");
             return false;
         }
-            */
+        // Vérifier si le nouveau mot de passe est différent du mot de passe actuel
+        if ($currentPassword === $newPassword) {
+            flashMessage("Le nouveau mot de passe ne peut pas être identique au mot de passe actuel.", "danger");
+            return false;
+        }
 
-
+        // Hacher le nouveau mot de passe
         $newPasswordHash = password_hash($newPassword, PASSWORD_DEFAULT);
         if (!$newPasswordHash) {
             logSystemActivity('error', "Erreur hachage nouveau mot de passe pour utilisateur #$userId");
             flashMessage("Erreur technique lors de la préparation du nouveau mot de passe.", "danger"); // Ajout message flash
             return false;
         }
-
+        // Mettre à jour le mot de passe dans la base de données
         $updateData = ['mot_de_passe' => $newPasswordHash];
         $affectedRows = updateRow('personnes', $updateData, 'id = :id', [':id' => $userId]);
-
+        // Vérifier si la mise à jour a été effectuée avec succès
         if ($affectedRows > 0) {
             logBusinessOperation($userId, 'change_password', "Changement mot de passe utilisateur #$userId");
             flashMessage("Mot de passe modifié avec succès.", "success");
             return true;
         } else {
-            logSystemActivity('warning', "changeUserPassword: updateRow a retournÃ© '" . $affectedRows . "' (<= 0) pour user #$userId.");
+            logSystemActivity('warning', "changeUserPassword: updateRow a retourné '" . $affectedRows . "' (<= 0) pour user #$userId.");
             flashMessage("Le mot de passe n'a pas pu être mis à jour (aucune modification détectée ?).", "warning");
             return false;
         }

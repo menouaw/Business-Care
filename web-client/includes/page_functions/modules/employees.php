@@ -882,6 +882,7 @@ function isPrestationAvailable($prestation_id, $date_rdv)
 
 function getAvailablePrestationsForEmployee($employee_id, $page = 1, $limit = 20)
 {
+    // Assainit et valide l'ID de l'employé et les paramètres de pagination.
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
     $page = max(1, (int)sanitizeInput($page));
     $limit = max(1, (int)sanitizeInput($limit));
@@ -891,27 +892,39 @@ function getAvailablePrestationsForEmployee($employee_id, $page = 1, $limit = 20
         error_log("Tentative d'accès aux prestations avec ID employé invalide: $employee_id");
         // On pourrait retourner une erreur, mais pour l'instant on retourne la liste générale.
         // Si la logique future DOIT dépendre de l'employé, retourner une erreur ici.
+        // Retourne une structure vide si l'ID employé est invalide.
+        return [
+            'prestations' => [],
+            'pagination' => ['current' => 1, 'limit' => $limit, 'total' => 0, 'totalPages' => 0],
+            'pagination_html' => ''
+        ];
     }
 
-    // Utiliser paginateResults pour simplifier la récupération et la pagination
+    // Utilise la fonction paginateResults pour récupérer et paginer les résultats.
+    // Définit les champs à sélectionner.
     $selectFields = "p.id, p.nom, p.description, p.prix, p.duree, p.type, p.date_heure_disponible, 
                      p.capacite_max, p.niveau_difficulte, p.lieu, p.est_disponible, p.categorie, 
                      pp.id as praticien_id, CONCAT(pp.prenom, ' ', pp.nom) as praticien_nom";
+    // Définit la clause FROM avec une jointure pour obtenir le nom du praticien.
     $fromClause = "prestations p LEFT JOIN personnes pp ON p.praticien_id = pp.id";
+    // Définit la clause WHERE pour ne prendre que les prestations disponibles.
     $whereClause = "p.est_disponible = TRUE";
+    // Définit la clause ORDER BY pour trier par nom.
     $orderByClause = "p.nom ASC";
 
-    // Corriger l'appel : utiliser paginateResults
+    // Appelle paginateResults pour exécuter la requête et récupérer les données paginées.
+    // Note : Le dernier argument spécifie les champs SELECT (redondant avec $selectFields mais nécessaire pour la compatibilité de paginateResults telle qu'elle est utilisée ici)
+    // Le 6ème argument spécifie les jointures.
     $paginationResult = paginateResults(
-        'prestations p',
-        $page,
-        $limit,
-        $whereClause,
-        $orderByClause,
+        'prestations p', // Table principale (avec alias)
+        $page,            // Page actuelle
+        $limit,           // Limite par page
+        $whereClause,     // Clause WHERE
+        $orderByClause,   // Clause ORDER BY
         "p.id, p.nom, p.description, p.prix, p.duree, p.type, p.date_heure_disponible, 
                                      p.capacite_max, p.niveau_difficulte, p.lieu, p.est_disponible, p.categorie, 
-                                     pp.id as praticien_id, CONCAT(pp.prenom, ' ', pp.nom) as praticien_nom",
-        "LEFT JOIN personnes pp ON p.praticien_id = pp.id"
+                                     pp.id as praticien_id, CONCAT(pp.prenom, ' ', pp.nom) as praticien_nom", // Champs à sélectionner
+        "LEFT JOIN personnes pp ON p.praticien_id = pp.id" // Jointures
     );
 
     /*
@@ -920,9 +933,9 @@ function getAvailablePrestationsForEmployee($employee_id, $page = 1, $limit = 20
      * T'es sûr de vouloir imposer 9:00 à tout le monde ?
      * (Commentaire original de Coderabbitai - Note: l'assignation 9:00 a été retirée)
      */
-    // Formater les résultats récupérés
+    // Boucle sur les prestations récupérées pour les formater.
     foreach ($paginationResult['items'] as &$prestation) {
-        // Formatage du prix
+        // Formatage du prix : affiche "Gratuit" si 0 ou non défini, sinon formate le nombre.
         if (isset($prestation['prix'])) {
             $prix = floatval($prestation['prix']);
             $prestation['prix_formate'] = ($prix > 0) ? number_format($prix, 2, ',', ' ') . ' €' : 'Gratuit';
@@ -931,35 +944,37 @@ function getAvailablePrestationsForEmployee($employee_id, $page = 1, $limit = 20
             $prestation['prix_formate'] = 'Prix non spécifié'; // Ou 'Gratuit' selon la règle métier
         }
 
-        // Formatage de la date de disponibilité
+        // Formatage de la date de disponibilité : tente de la parser et la formater.
         if (!empty($prestation['date_heure_disponible'])) {
             try {
                 $date = new DateTime($prestation['date_heure_disponible']);
                 $prestation['date_disponible_formatee'] = $date->format('d/m/Y à H:i');
             } catch (Exception $e) {
+                // En cas d'erreur de formatage, affiche un message et log l'erreur.
                 $prestation['date_disponible_formatee'] = 'Date invalide';
                 error_log("Erreur formatage date_heure_disponible pour prestation #{$prestation['id']}: " . $e->getMessage());
             }
         } else {
+            // Si aucune date n'est spécifiée.
             $prestation['date_disponible_formatee'] = 'Non précisée';
         }
-        // La colonne est_disponible n'a plus besoin d'être vérifiée/modifiée ici
+        // La colonne est_disponible n'a plus besoin d'être vérifiée/modifiée ici car filtrée par la requête SQL.
     }
 
-    // Construire l'URL de pagination
+    // Construit le modèle d'URL pour les liens de pagination.
     $urlPattern = "?prestation_page={page}";
     // Ajouter d'autres paramètres si nécessaire (ex: filtres)
 
-    // Retourner la structure attendue
+    // Retourne la structure de données finale avec les prestations formatées et les informations de pagination.
     return [
-        'prestations' => $paginationResult['items'],
-        'pagination' => [
+        'prestations' => $paginationResult['items'], // Les prestations formatées
+        'pagination' => [                            // Les détails de la pagination
             'current' => $paginationResult['currentPage'],
             'limit' => $paginationResult['perPage'],
             'total' => $paginationResult['totalItems'],
             'totalPages' => $paginationResult['totalPages']
         ],
-        'pagination_html' => renderPagination($paginationResult, $urlPattern) // renderPagination attend le résultat de paginateResults
+        'pagination_html' => renderPagination($paginationResult, $urlPattern) // Le HTML de la pagination
     ];
 }
 
@@ -1607,7 +1622,7 @@ function automaticContentModeration($content)
     $content_lower = mb_strtolower($content);
 
     foreach ($forbidden_words as $word) {
-        if (strpos($content_lower, $word) !== false) {
+        if (preg_match('/\b' . preg_quote($word, '/') . '\b/u', $content_lower)) {
             return [
                 'moderated' => true,
                 'reason' => "Contenu contenant des termes inappropriés"
