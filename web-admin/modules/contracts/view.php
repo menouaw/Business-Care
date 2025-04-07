@@ -108,7 +108,7 @@ include_once '../../templates/header.php';
                                     }
 
                                     $montantTotalEstime = $totalMonths * (float)$contract['montant_mensuel'];
-                                    $montantTotalEstimeFormatted = formatMoney($montantTotalEstime);
+                                    $montantTotalEstimeFormatted = formatCurrency($montantTotalEstime);
                                 }
                             } else {
                                 if (!$isValidStartDate) logSystemActivity('warning', 'Date de début invalide pour contrat ID: ' . ($contract['id'] ?? 'N/A'));

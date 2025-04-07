@@ -11,8 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!validateToken($_POST['csrf_token'] ?? '')) {
         handleCsrfFailureRedirect(0, 'companies', 'création entreprise');
     } else {
-        $formData = getFormData();
-        $data = $formData;
+        $data = getFormData();
 
         if (empty($data['nom'])) {
             $errors[] = "Le nom de l'entreprise est obligatoire.";
