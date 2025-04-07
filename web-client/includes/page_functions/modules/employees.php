@@ -129,7 +129,7 @@ function getEmployeeDetails($employee_id)
     if (isset($employee['statut'])) {
         $employee['statut_badge'] = getStatusBadge($employee['statut']);
     }
-    
+
     $employee['date_naissance_formatee'] = isset($employee['date_naissance']) ? formatDate($employee['date_naissance'], 'd/m/Y') : 'N/A';
     $employee['derniere_connexion_formatee'] = isset($employee['derniere_connexion']) ? formatDate($employee['derniere_connexion']) : 'Jamais';
 
@@ -177,7 +177,7 @@ function updateEmployeeProfile($employee_id, $profile_data)
 
     if (empty($filteredData)) {
         error_log("updateEmployeeProfile: Aucune donnée valide fournie pour la mise à jour.");
-        return 0; 
+        return 0;
     }
 
     if (isset($filteredData['email'])) {
@@ -202,8 +202,7 @@ function updateEmployeeProfile($employee_id, $profile_data)
             ['id' => $employee_id, 'role_id' => ROLE_SALARIE]
         );
 
-        return $result;     
-
+        return $result;
     } catch (Exception $e) {
         logSystemActivity('error', "Erreur mise à jour profil salarié #$employee_id: " . $e->getMessage());
         flashMessage("Une erreur technique est survenue lors de la mise à jour du profil.", "danger");
@@ -393,7 +392,6 @@ function getEmployeeActivityHistory($employee_id, $page = 1, $limit = 10)
             $actionParts = explode(':', $activity['action'], 2);
             $mainAction = count($actionParts) > 1 ? trim($actionParts[1]) : trim($actionParts[0]);
             $activity['icon'] = getActivityIcon($mainAction);
-            
         }
 
         $paginationData = [
@@ -890,6 +888,31 @@ function displayEmployeeDashboard()
     // Ajouter d'autres données nécessaires (ex: stats rapides, conseils récents...)
 
     return $data; // Ces données seraient utilisées par le fichier PHP qui affiche la page
+}
+
+/**
+ * Affiche la page des rendez-vous de l'employé.
+ * Prépare les données nécessaires pour la vue de la page des rendez-vous.
+ *
+ * @return array Données pour la vue (ex: appointments, current filter)
+ */
+function displayEmployeeAppointmentsPage()
+{
+    requireRole(ROLE_SALARIE);
+    $employee_id = $_SESSION['user_id'];
+
+    $data = [];
+    $filter = $_GET['filter'] ?? 'upcoming'; // Default filter
+    $validFilters = ['upcoming', 'past', 'all'];
+    if (!in_array($filter, $validFilters)) {
+        $filter = 'upcoming'; // Reset to default if invalid
+    }
+
+    $data['appointments'] = getEmployeeAppointments($employee_id, $filter);
+    $data['currentFilter'] = $filter;
+    $data['csrf_token'] = $_SESSION['csrf_token']; // For cancellation links/forms
+
+    return $data;
 }
 
 /**

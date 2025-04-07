@@ -45,7 +45,7 @@ include_once __DIR__ . '/../../templates/header.php';
                             </div>
                         </div>
                         <div class="mt-3">
-                            <a href="<?= WEBCLIENT_URL ?>/mon-planning.php" class="btn btn-sm btn-outline-primary">Voir mon planning</a>
+                            <a href="<?= WEBCLIENT_URL ?>/modules/employees/appointments.php" class="btn btn-sm btn-outline-primary">Voir mon planning</a>
                         </div>
                     </div>
                 </div>
@@ -119,7 +119,7 @@ include_once __DIR__ . '/../../templates/header.php';
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0">Prochains rendez-vous</h5>
-                        <a href="<?= WEBCLIENT_URL ?>/mon-planning.php" class="btn btn-sm btn-outline-primary">Voir mon planning</a>
+                        <a href="<?= WEBCLIENT_URL ?>/modules/employees/appointments.php" class="btn btn-sm btn-outline-primary">Voir mon planning</a>
                     </div>
                     <div class="card-body">
                         <?php if (empty($dashboardData['upcoming_appointments'])) : ?>
@@ -193,7 +193,7 @@ include_once __DIR__ . '/../../templates/header.php';
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0">Activité Récente</h5>
-                        <a href="<?= WEBCLIENT_URL ?>/mon-historique.php" class="btn btn-sm btn-outline-secondary">Voir tout</a>
+                        <a href="<?= WEBCLIENT_URL ?>/modules/employees/history.php" class="btn btn-sm btn-outline-secondary">Voir tout</a>
                     </div>
                     <div class="card-body">
                         <?php
@@ -249,6 +249,11 @@ include_once __DIR__ . '/../../templates/header.php';
                             <div class="col-sm-6 col-md-3 mb-2 mb-md-0">
                                 <a href="<?= WEBCLIENT_URL ?>/communautes.php" class="btn btn-info d-block py-3">
                                     <i class="fas fa-comments me-2"></i>Communautés
+                                </a>
+                            </div>
+                            <div class="col-sm-6 col-md-3 mb-2 mb-md-0">
+                                <a href="<?= WEBCLIENT_URL ?>/modules/employees/settings.php" class="btn btn-secondary d-block py-3">
+                                    <i class="fas fa-cog me-2"></i>Mes Paramètres
                                 </a>
                             </div>
                         </div>

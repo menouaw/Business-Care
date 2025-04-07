@@ -1,0 +1,143 @@
+<?php
+
+/**
+ * Page Mes Rendez-vous - Espace Salarié
+ *
+ * Affiche la liste des rendez-vous médicaux (consultations) du salarié connecté.
+ */
+
+// Inclure les fonctions spécifiques au module salariés
+require_once __DIR__ . '/../../includes/page_functions/modules/employees.php';
+
+// Appeler la fonction pour récupérer les données de la page des rendez-vous
+// requireRole() est déjà appelé à l'intérieur de displayEmployeeAppointmentsPage()
+$pageData = displayEmployeeAppointmentsPage();
+$appointments = $pageData['appointments'] ?? [];
+$currentFilter = $pageData['currentFilter'] ?? 'upcoming';
+$csrfToken = $pageData['csrf_token'] ?? ''; // CSRF Token for cancellation forms
+
+// Définir le titre de la page
+$pageTitle = "Mes Rendez-vous - Espace Salarié";
+
+// Inclure l'en-tête
+include_once __DIR__ . '/../../templates/header.php';
+?>
+
+<main class="employee-appointments-page py-4">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col">
+                <h1 class="h2">Mes Rendez-vous</h1>
+                <p class="text-muted">Consultez l'historique et les détails de vos consultations.</p>
+            </div>
+        </div>
+
+        <!-- Filtres -->
+        <div class="row mb-4">
+            <div class="col">
+                <div class="btn-group" role="group" aria-label="Filtrer les rendez-vous">
+                    <a href="?filter=upcoming" class="btn <?= $currentFilter === 'upcoming' ? 'btn-primary' : 'btn-outline-primary' ?>">À venir</a>
+                    <a href="?filter=past" class="btn <?= $currentFilter === 'past' ? 'btn-secondary' : 'btn-outline-secondary' ?>">Passés</a>
+                    <a href="?filter=all" class="btn <?= $currentFilter === 'all' ? 'btn-info' : 'btn-outline-info' ?>">Tous</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Liste des rendez-vous -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">
+                    <?php
+                    switch ($currentFilter) {
+                        case 'past':
+                            echo 'Rendez-vous Passés';
+                            break;
+                        case 'all':
+                            echo 'Tous les Rendez-vous';
+                            break;
+                        case 'upcoming':
+                        default:
+                            echo 'Rendez-vous À Venir';
+                            break;
+                    }
+                    ?>
+                </h5>
+            </div>
+            <div class="card-body">
+                <?php if (empty($appointments)) : ?>
+                    <p class="text-center text-muted my-5">
+                        <?php
+                        switch ($currentFilter) {
+                            case 'past':
+                                echo 'Aucun rendez-vous passé trouvé.';
+                                break;
+                            case 'all':
+                                echo 'Aucun rendez-vous trouvé.';
+                                break;
+                            case 'upcoming':
+                            default:
+                                echo 'Aucun rendez-vous à venir planifié.';
+                                break;
+                        }
+                        ?>
+                        <br>
+                        <a href="<?= WEBCLIENT_URL ?>/catalogue.php" class="btn btn-sm btn-primary mt-3">Voir le catalogue des prestations</a>
+                    </p>
+                <?php else : ?>
+                    <div class="list-group list-group-flush">
+                        <?php foreach ($appointments as $rdv) : ?>
+                            <div class="list-group-item border-0 px-0 py-3">
+                                <div class="row align-items-center">
+                                    <div class="col-md-6 col-lg-7 mb-2 mb-md-0">
+                                        <h6 class="mb-1"><?= htmlspecialchars($rdv['prestation_nom'] ?? 'Prestation inconnue') ?></h6>
+                                        <p class="text-muted mb-1 small">
+                                            <i class="far fa-calendar-alt me-1"></i> <?= htmlspecialchars($rdv['date_rdv_formatee'] ?? 'Date inconnue') ?>
+                                            <i class="far fa-clock ms-2 me-1"></i> <?= htmlspecialchars($rdv['duree'] ?? '?') ?> min
+                                        </p>
+                                        <p class="text-muted mb-1 small">
+                                            <i class="fas fa-map-marker-alt me-1"></i> <?= htmlspecialchars($rdv['lieu'] ?: ($rdv['type_rdv'] === 'visio' ? 'Visioconférence' : 'Téléphone')) ?>
+                                        </p>
+                                        <?php if (!empty($rdv['praticien_complet']) && $rdv['praticien_complet'] !== 'Non assigné') : ?>
+                                            <p class="text-muted mb-0 small">
+                                                <i class="fas fa-user-md me-1"></i> Avec: <?= htmlspecialchars($rdv['praticien_complet']) ?>
+                                            </p>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="col-md-3 col-lg-2 mb-2 mb-md-0 text-md-center">
+                                        <?= $rdv['statut_badge'] ?? '' ?>
+                                    </div>
+                                    <div class="col-md-3 col-lg-3 text-md-end">
+                                        <?php if (in_array($rdv['statut'], ['planifie', 'confirme'])) : ?>
+                                            <!-- Formulaire pour l'annulation -->
+                                            <form action="<?= WEBCLIENT_URL ?>/actions/cancel_appointment.php" method="POST" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir annuler ce rendez-vous ?');">
+                                                <input type="hidden" name="reservation_id" value="<?= $rdv['id'] ?>">
+                                                <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                    <i class="fas fa-times me-1"></i> Annuler
+                                                </button>
+                                            </form>
+                                        <?php elseif ($rdv['statut'] === 'termine') : ?>
+                                            <!-- Optionnel: Lien pour évaluer la prestation -->
+                                            <a href="<?= WEBCLIENT_URL ?>/evaluer-prestation.php?prestation_id=<?= $rdv['prestation_id'] ?>&rdv_id=<?= $rdv['id'] ?>" class="btn btn-sm btn-outline-warning">
+                                                <i class="fas fa-star me-1"></i> Évaluer
+                                            </a>
+                                        <?php endif; ?>
+                                        <!-- Vous pouvez ajouter un bouton "Détails" si nécessaire -->
+                                        <!-- <a href="#" class="btn btn-sm btn-outline-info ms-1"><i class="fas fa-info-circle"></i></a> -->
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+            <!-- Ajouter la pagination si nécessaire -->
+            <!-- <div class="card-footer bg-white"> ... Pagination ... </div> -->
+        </div>
+    </div>
+</main>
+
+<?php
+// Inclure le pied de page
+include_once __DIR__ . '/../../templates/footer.php';
+?>
