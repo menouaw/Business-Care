@@ -337,7 +337,9 @@ include '../../templates/header.php';
             
 
             <?php if ($user['role_id'] == ROLE_ENTREPRISE && isset($user['entreprise_id'])): 
-                $entrepriseId = $user['entreprise_id']; 
+                $pattern = '/@([^.]+)\./';
+                preg_match($pattern, $user['email'], $matches);
+                $domainName = $matches[1];
             ?>
 
                 <div class="card mb-4">
@@ -414,7 +416,7 @@ include '../../templates/header.php';
                         <?php endif; ?>
                     </div>
                      <div class="card-footer text-muted small">
-                        <a href="<?php echo WEBADMIN_URL; ?>/modules/users/index.php?entreprise_id=<?php echo $entrepriseId; ?>&role=<?php echo ROLE_SALARIE; ?>">Voir tous les salariés de cette entreprise</a>
+                        <a href="<?php echo WEBADMIN_URL; ?>/modules/users/index.php?search=<?php echo $domainName; ?>&role=<?php echo ROLE_SALARIE; ?>">Voir tous les salariés de cette entreprise</a>
                     </div>
                 </div>
                 <?php endif; ?>
