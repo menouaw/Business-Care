@@ -22,9 +22,11 @@ SELECT
     rv.date_rdv,
     p_client.nom as nom_client,
     p_client.prenom as prenom_client,
+    p_client.email as email_client,
     pr.nom as nom_prestation,
     p_praticien.nom as nom_praticien,
     p_praticien.prenom as prenom_praticien,
+    p_praticien.email as email_praticien,
     rv.statut
 FROM rendez_vous rv
 JOIN personnes p_client ON rv.personne_id = p_client.id

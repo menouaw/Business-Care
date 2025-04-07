@@ -319,7 +319,7 @@ CREATE TABLE signalements (
     INDEX idx_assigne (assigne_a)
 );
 
-/*
+
 CREATE TABLE participations_benevoles (
     id INT PRIMARY KEY AUTO_INCREMENT,
     personne_id INT NOT NULL,
@@ -386,4 +386,3 @@ CREATE TABLE chatbot_interactions (
     INDEX idx_type (type_interaction)
 );
 
-*/

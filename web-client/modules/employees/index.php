@@ -68,7 +68,7 @@ include_once __DIR__ . '/../../templates/header.php';
                             </div>
                         </div>
                         <div class="mt-3">
-                            <a href="communautes.php" class="btn btn-sm btn-outline-success">Explorer</a>
+                            <a href="communities.php" class="btn btn-sm btn-outline-success">Explorer</a>
                         </div>
                     </div>
                 </div>

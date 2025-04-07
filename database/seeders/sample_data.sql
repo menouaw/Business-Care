@@ -22,6 +22,9 @@ TRUNCATE TABLE roles;
 TRUNCATE TABLE contrats_prestations;
 TRUNCATE TABLE associations; -- Ajout du TRUNCATE pour associations
 TRUNCATE TABLE conseils; -- Ajout du TRUNCATE pour conseils
+TRUNCATE TABLE participations_benevoles; -- Ajout TRUNCATE
+TRUNCATE TABLE chatbot_knowledge; -- Ajout TRUNCATE
+TRUNCATE TABLE chatbot_interactions; -- Ajout TRUNCATE
 SET FOREIGN_KEY_CHECKS = 1;
 
 INSERT INTO roles (nom, description) VALUES
@@ -424,3 +427,31 @@ INSERT INTO evenements (titre, description, date_debut, date_fin, lieu, type, ca
 ('Afterwork Zen : Sophrologie & Relaxation', 'Terminez votre journée par une séance de sophrologie pour vous détendre.', '2025-06-21 18:00:00', '2025-06-21 19:00:00', 'BC - Salle Calme, 4ème Arr.', 'atelier', 18, 'debutant', 'Aucun', 'Aucun'),
 ('Course Solidaire Inter-Entreprises', 'Courez ou marchez pour la bonne cause lors de cet événement convivial.', '2025-07-06 10:00:00', '2025-07-06 13:00:00', 'Parc Monceau, Paris', 'defi_sportif', 150, NULL, 'Tenue de sport', 'Aucun'),
 ('Conférence 2026 sur le Futur du Travail', 'Anticiper les évolutions du monde professionnel.', '2026-01-15 09:30:00', '2026-01-15 11:00:00', 'Grand Auditorium BC', 'conference', 200, 'avance', 'Aucun', 'Aucun');
+
+INSERT INTO participations_benevoles (personne_id, association_id, action_details, date_action, duree_realisee_heures, statut) VALUES
+(5, 1, 'Distribution de repas', '2024-05-10', 3.0, 'realise'),
+(6, 3, 'Nettoyage de plage', '2024-06-15', 4.0, 'prevu'),
+(7, 5, 'Aide logistique mission Sante', '2024-05-20', NULL, 'annule_par_salarie'),
+(8, 2, 'Collecte de vêtements', '2024-06-22', 5.0, 'prevu'),
+(12, 7, 'Maraude sociale', '2024-05-18', 3.5, 'realise'),
+(14, 9, 'Soutien administratif recherche', '2024-07-01', NULL, 'prevu'),
+(15, 4, 'Sensibilisation environnementale', '2024-06-08', 2.0, 'realise'),
+(18, 1, 'Aide en cuisine Restos du Coeur', '2024-07-10', NULL, 'prevu'),
+(20, 10, 'Tri de livres pour BSF', '2024-06-29', 4.0, 'prevu'),
+(22, 6, 'Tenue stand info Ligue Cancer', '2024-05-25', 6.0, 'realise');
+
+INSERT INTO chatbot_knowledge (categorie, question_pattern, reponse, mots_cles, lien_utile, actif) VALUES
+('Compte', 'modifier mot de passe', 'Pour modifier votre mot de passe, allez dans "Mon Profil", section "Sécurité", puis cliquez sur "Modifier le mot de passe".', 'changer, mdp, sécurité, profil', '/profil', TRUE),
+('Prestations', 'prendre rendez-vous psychologue', 'Vous pouvez prendre rendez-vous avec un psychologue via la page "Prestations" > "Santé mentale" > "Consultation Psychologique". Cliquez sur "Prendre RDV" et choisissez un créneau.', 'rdv, psy, consultation, santé', '/prestations', TRUE),
+('Événements', 'prochain événement sportif', 'Le prochain défi sportif est le "Défi Marche Connectée" qui commence le 1er juin. Vous pouvez vous inscrire sur la page "Événements".', 'sport, défi, challenge, inscription', '/evenements', TRUE),
+('Général', 'contacter support', 'Pour toute question, vous pouvez contacter notre support via le formulaire de contact disponible sur la page "Aide & Support".', 'aide, assistance, problème, contact', '/support', TRUE),
+('Compte', 'comment supprimer mon compte', 'La suppression de compte doit être demandée auprès de l'administrateur de votre entreprise ou via notre support client.', 'suppression, désactiver, fermer', '/support', TRUE),
+('Prestations', 'tarif consultation ostéopathie', 'La consultation d'ostéopathie est généralement facturée 85€. Vérifiez les détails de votre contrat ou la page de la prestation.', 'prix, coût, osteo, osteopathe', '/prestations', TRUE),
+('Événements', 'date atelier cuisine', 'L'atelier "Cuisine Saine Express" aura lieu le 7 juin à 12h00.', 'cuisine, manger, recette, date', '/evenements', TRUE);
+
+INSERT INTO chatbot_interactions (personne_id, session_id, type_interaction, message_utilisateur, reponse_chatbot) VALUES
+(5, 'session_abc123', 'question', 'Comment je change mon mdp ?', 'Pour modifier votre mot de passe, allez dans "Mon Profil", section "Sécurité", puis cliquez sur "Modifier le mot de passe".'),
+(6, 'session_def456', 'question', 'Je veux voir un psy', 'Vous pouvez prendre rendez-vous avec un psychologue via la page "Prestations" > "Santé mentale" > "Consultation Psychologique". Cliquez sur "Prendre RDV" et choisissez un créneau.'),
+(5, 'session_abc123', 'question', 'Merci', 'Je vous en prie ! Puis-je vous aider avec autre chose ?'),
+(7, 'session_ghi789', 'signalement', 'Le lien vers le webinar gestion du stress ne marche pas', 'Merci pour votre signalement. Je transmets l'information à l'équipe technique pour vérification.'),
+(8, 'session_jkl012', 'question', 'C'est quand le prochain défi sportif ?', 'Le prochain défi sportif est le "Défi Marche Connectée" qui commence le 1er juin. Vous pouvez vous inscrire sur la page "Événements".');

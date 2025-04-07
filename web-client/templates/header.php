@@ -53,13 +53,7 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 
-    <!-- CSS personnalisé -->
     <link rel="stylesheet" href="<?= ASSETS_URL ?>/css/client.css">
-
-    <!-- Liens pour FullCalendar (ajoutés pour la page des rendez-vous) -->
-    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/main.min.css' rel='stylesheet' />
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/main.min.js' defer></script>
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/locales/fr.js' defer></script>
 
 </head>
 
@@ -93,9 +87,7 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
                     </li>
                     <?php // Liens directs pour Salarié
                     if (isset($userRole) && $userRole === 'salarie'): ?>
-                        <li class="nav-item">
-                            <a class="nav-link" href="<?= WEBCLIENT_URL ?>/modules/employees/reservations.php">Réservations</a>
-                        </li>
+
                         <li class="nav-item">
                             <a class="nav-link" href="<?= WEBCLIENT_URL ?>/modules/employees/advice.php">Conseils</a>
                         </li>
