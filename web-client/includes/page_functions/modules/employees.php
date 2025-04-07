@@ -1713,13 +1713,17 @@ function getCommunityTypeClass($type)
 
 function getCommunityRoleBadge($role)
 {
+    if (empty($role)) {
+        return '<span class="badge bg-primary">Membre</span>';
+    }
+
     switch ($role) {
         case 'admin':
             return '<span class="badge bg-danger">Administrateur</span>';
         case 'animateur':
             return '<span class="badge bg-warning text-dark">Animateur</span>';
         case 'membre':
-        default:
+        default: 
             return '<span class="badge bg-primary">Membre</span>';
     }
 }
