@@ -14,6 +14,8 @@ $evenements = getEmployeeEvents($userId, 'upcoming');
 
 $communautes = getEmployeeCommunities($userId);
 
+$donations = getDonationHistory($userId);
+
 $activites = getEmployeeActivityHistory($userId, 1, 5);
 
 $pageTitle = "Tableau de bord - Espace Salarié";
@@ -58,7 +60,7 @@ include_once __DIR__ . '/../../templates/header.php';
                             <div class="icon-box bg-success bg-opacity-10 text-success rounded p-3 me-3">
                                 <i class="fas fa-users fa-2x"></i>
                             </div>
-                            <div>
+                            <div class="flex-grow-1" style="min-width: 0;">
                                 <h6 class="card-subtitle text-muted mb-1">Communautés</h6>
                                 <h2 class="card-title mb-0"><?= count($communautes) ?></h2>
                             </div>
@@ -98,7 +100,7 @@ include_once __DIR__ . '/../../templates/header.php';
                             </div>
                             <div>
                                 <h6 class="card-subtitle text-muted mb-1">Dons</h6>
-                                <h2 class="card-title mb-0">--</h2>
+                                <h2 class="card-title mb-0"><?= count($donations) ?></h2>
                             </div>
                         </div>
                         <div class="mt-3">
