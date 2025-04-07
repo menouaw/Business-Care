@@ -407,32 +407,19 @@ function formatCurrency($amount, $currencySymbol = '€') {
 }
 
 /**
- * Formate un objet DateInterval en une chaîne de caractères lisible.
+ * Formate un objet DateInterval en une chaîne de caractères représentant le nombre total de mois.
  *
  * @param DateInterval|null $interval L'intervalle de temps.
- * @return string La durée formatée (ex: "1 an 2 mois 3 jours") ou "-" si null/invalide.
+ * @return string La durée formatée en mois (ex: "36 mois") ou "-" si null/invalide.
  */
 function formatDuration($interval) {
     if (!$interval instanceof DateInterval) {
         return '-';
     }
 
-    $parts = [];
-    if ($interval->y > 0) {
-        $parts[] = $interval->y . ' an' . ($interval->y > 1 ? 's' : '');
-    }
-    if ($interval->m > 0) {
-        $parts[] = $interval->m . ' mois';
-    }
-    if ($interval->d > 0 && empty($parts)) { 
-        $parts[] = $interval->d . ' jour' . ($interval->d > 1 ? 's' : '');
-    }
+    $totalMonths = ($interval->y * 12) + $interval->m;
 
-    if (empty($parts)) {
-        return '0 jours'; 
-    }
-
-    return implode(' ', $parts);
+    return $totalMonths . ' mois';
 }
 
 /**
@@ -452,3 +439,4 @@ function generateSecureReferer($defaultUrl = null, $allowedHosts = []) {
     }
     return $defaultUrl;
 }
+
