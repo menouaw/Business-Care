@@ -68,7 +68,7 @@ include '../../templates/header.php';
             </div>
 
             <div class="card">
-                <div class="card-header">Informations</div>
+                <div class="card-header">Informations sur l'utilisateur</div>
                 <div class="card-body">
                     <form action="<?php echo WEBADMIN_URL; ?>/modules/users/edit.php?id=<?php echo $userId; ?>" method="POST" novalidate>
                         <input type="hidden" name="csrf_token" value="<?php echo generateToken(); ?>">

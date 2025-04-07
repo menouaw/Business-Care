@@ -44,7 +44,7 @@ include_once '../../templates/header.php';
                     <form method="get" action="<?php echo WEBADMIN_URL; ?>/modules/services/index.php" class="row g-3 align-items-center">
                         <div class="col-md-3">
                             <label for="search" class="visually-hidden">Rechercher</label>
-                            <input type="text" class="form-control form-control-sm" id="search" name="search" placeholder="Rechercher par nom, description..." value="<?php echo htmlspecialchars($search); ?>">
+                            <input type="text" class="form-control form-control-sm" id="search" name="search" placeholder="Rechercher..." value="<?php echo htmlspecialchars($search); ?>">
                         </div>
                         <div class="col-md-3">
                             <label for="type" class="visually-hidden">Type</label>
