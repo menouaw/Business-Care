@@ -24,8 +24,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $horaireId = sanitizeInput($_POST['horaire_id'] ?? '');
 
     if ($prestationId && $dateRdv && $duree) {
-        $query = "SELECT date_heure_disponible, praticien_id, lieu FROM prestations WHERE id = ?";
-        $prestation = executeQuery($query, [$prestationId])->fetch();
+        $query = "SELECT date_heure_disponible, praticien_id, lieu FROM prestations WHERE id = :id";
+        $prestation = executeQuery($query, [':id' => $prestationId])->fetch();
+
 
         if (!$prestation || empty($prestation['date_heure_disponible'])) {
             flashMessage("Cette prestation n'est pas disponible ou n'a pas d'horaire défini", "warning");
@@ -87,27 +88,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && ($_POST[
     }
 }
 
-$upcomingAppointmentsData = getEmployeeAppointments($userId, 'upcoming', $upcomingPage, $limit);
-$pastAppointmentsData = getEmployeeAppointments($userId, 'past', $pastPage, $limit);
-$canceledAppointmentsData = getEmployeeAppointments($userId, 'canceled', $canceledPage, $limit);
+[
+    'appointments' => $upcomingAppointments,
+    'pagination' => $upcomingPagination,
+    'pagination_html' => $upcomingPaginationHtml
+] = getEmployeeAppointments($userId, 'upcoming', $upcomingPage, $limit);
 
-$upcomingAppointments = $upcomingAppointmentsData['appointments'];
-$upcomingPagination = $upcomingAppointmentsData['pagination'];
-$upcomingPaginationHtml = $upcomingAppointmentsData['pagination_html'];
+[
+    'appointments' => $pastAppointments,
+    'pagination' => $pastPagination,
+    'pagination_html' => $pastPaginationHtml
+] = getEmployeeAppointments($userId, 'past', $pastPage, $limit);
 
-$pastAppointments = $pastAppointmentsData['appointments'];
-$pastPagination = $pastAppointmentsData['pagination'];
-$pastPaginationHtml = $pastAppointmentsData['pagination_html'];
+[
+    'appointments' => $canceledAppointments,
+    'pagination' => $canceledPagination,
+    'pagination_html' => $canceledPaginationHtml
+] = getEmployeeAppointments($userId, 'canceled', $canceledPage, $limit);
 
-$canceledAppointments = $canceledAppointmentsData['appointments'];
-$canceledPagination = $canceledAppointmentsData['pagination'];
-$canceledPaginationHtml = $canceledAppointmentsData['pagination_html'];
-
-// Récupérer les prestations avec pagination
-$availablePrestationsData = getAvailablePrestationsForEmployee($userId, $prestationPage, $prestationLimit);
-$availablePrestations = $availablePrestationsData['prestations'];
-$prestationPagination = $availablePrestationsData['pagination'];
-$prestationPaginationHtml = $availablePrestationsData['pagination_html'];
+[
+    'prestations' => $availablePrestations,
+    'pagination' => $prestationPagination,
+    'pagination_html' => $prestationPaginationHtml
+] = getAvailablePrestationsForEmployee($userId, $prestationPage, $prestationLimit);
 
 $pageTitle = "Mes rendez-vous";
 require_once(__DIR__ . '/../../templates/header.php');
