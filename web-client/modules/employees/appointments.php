@@ -81,6 +81,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && ($_POST[
                 ? "Votre rendez-vous a été annulé avec succès. Il a été déplacé dans la section 'Rendez-vous annulés'."
                 : "Le rendez-vous a été marqué comme 'Annulé' et déplacé dans la section correspondante."; // Garder cette option ?
             flashMessage($message, "success");
+        } else {
+            // Message explicite d'échec pour l'utilisateur
+            flashMessage("Échec de l'annulation ! Soit le rendez-vous est déjà annulé, soit vous n'êtes pas autorisé à l'annuler, soit un problème technique est survenu !", "danger");
         }
 
         header("Location: " . $_SERVER['PHP_SELF'] . "?upcoming_page=" . $upcomingPage . "&past_page=" . $pastPage . "&canceled_page=" . $canceledPage);
