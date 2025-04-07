@@ -1,11 +1,21 @@
 <?php
 
+/**
+ * tableau de bord - salariés
+ *
+ * page d'accueil du module salariés
+ */
+
 require_once __DIR__ . '/../../includes/page_functions/modules/employees.php';
 
+// Appeler la fonction pour récupérer toutes les données du tableau de bord
+// requireRole() est déjà appelé à l'intérieur de displayEmployeeDashboard()
 $dashboardData = displayEmployeeDashboard();
 
+// Définir le titre de la page
 $pageTitle = "Tableau de bord - Espace Salarié";
 
+// Inclure l'en-tête
 include_once __DIR__ . '/../../templates/header.php';
 ?>
 
@@ -77,6 +87,7 @@ include_once __DIR__ . '/../../templates/header.php';
             </div>
         </div>
 
+        <!-- Cartes d'information -->
         <div class="row g-4 mb-4">
             <div class="col-md-6 col-lg-3">
                 <div class="card border-0 shadow-sm h-100">
@@ -87,12 +98,12 @@ include_once __DIR__ . '/../../templates/header.php';
                             </div>
                             <div>
                                 <h6 class="card-subtitle text-muted mb-1">Rendez-vous</h6>
-                                <h2 class="card-title mb-0"><?= count($dashboardData['upcoming_appointments'] ?? []) ?></h2>
+                                <h2 class="card-title mb-0"><?= count($dashboardData['upcoming_appointments']['items'] ?? []) ?></h2>
                                 <small class="text-muted">Prochainement</small>
                             </div>
                         </div>
                         <div class="mt-3">
-                            <a href="<?= WEBCLIENT_URL ?>/modules/employees/appointments.php" class="btn btn-sm btn-outline-primary">Voir mon planning</a>
+                            <a href="<?= WEBCLIENT_URL ?>/mon-planning.php" class="btn btn-sm btn-outline-primary">Voir mon planning</a>
                         </div>
                     </div>
                 </div>
@@ -112,7 +123,7 @@ include_once __DIR__ . '/../../templates/header.php';
                             </div>
                         </div>
                         <div class="mt-3">
-                            <a href="<?= WEBCLIENT_URL ?>/modules/employees/events.php" class="btn btn-sm btn-outline-success">Explorer les événements</a>
+                            <a href="<?= WEBCLIENT_URL ?>/evenements.php" class="btn btn-sm btn-outline-success">Explorer les événements</a>
                         </div>
                     </div>
                 </div>
@@ -147,6 +158,7 @@ include_once __DIR__ . '/../../templates/header.php';
                             </div>
                             <div>
                                 <h6 class="card-subtitle text-muted mb-1">Associations</h6>
+                                <!-- Compter les dons pourrait nécessiter une autre query -->
                                 <h2 class="card-title mb-0">Soutenir</h2>
                                 <small class="text-muted">Faire un don</small>
                             </div>
@@ -160,11 +172,12 @@ include_once __DIR__ . '/../../templates/header.php';
         </div>
 
         <div class="row g-4">
+            <!-- Prochains rendez-vous -->
             <div class="col-lg-6">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0">Prochains rendez-vous</h5>
-                        <a href="<?= WEBCLIENT_URL ?>/modules/employees/appointments.php" class="btn btn-sm btn-outline-primary">Voir mon planning</a>
+                        <a href="<?= WEBCLIENT_URL ?>/mon-planning.php" class="btn btn-sm btn-outline-primary">Voir mon planning</a>
                     </div>
                     <div class="card-body">
                         <?php if (empty($dashboardData['upcoming_appointments']['items'])) : ?>
@@ -204,18 +217,20 @@ include_once __DIR__ . '/../../templates/header.php';
                 </div>
             </div>
 
+            <!-- Événements à venir -->
             <div class="col-lg-6">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0">Événements à venir</h5>
-                        <a href="<?= WEBCLIENT_URL ?>/modules/employees/events.php" class="btn btn-sm btn-outline-primary">Tous les événements</a>
+                        <a href="<?= WEBCLIENT_URL ?>/evenements.php" class="btn btn-sm btn-outline-primary">Tous les événements</a>
                     </div>
                     <div class="card-body">
                         <?php if (empty($dashboardData['upcoming_events'])) : ?>
                             <p class="text-center text-muted my-5">Aucun événement à venir</p>
                         <?php else : ?>
                             <div class="list-group list-group-flush">
-                                <?php foreach (array_slice($dashboardData['upcoming_events'], 0, 3) as $event) : ?>
+                                <?php foreach (array_slice($dashboardData['upcoming_events'], 0, 3) as $event) : // Limiter à 3 pour l'aperçu
+                                ?>
                                     <div class="list-group-item border-0 px-0">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div>
@@ -227,7 +242,7 @@ include_once __DIR__ . '/../../templates/header.php';
                                                     <i class="fas fa-map-marker-alt me-1"></i> <?= htmlspecialchars($event['lieu'] ?? 'Lieu à confirmer') ?>
                                                 </p>
                                             </div>
-                                            <a href="<?= WEBCLIENT_URL ?>/events.php?id=<?= $event['id'] ?? '' ?>" class="btn btn-sm btn-outline-success">Voir détails</a>
+                                            <a href="<?= WEBCLIENT_URL ?>/evenement-details.php?id=<?= $event['id'] ?? '' ?>" class="btn btn-sm btn-outline-success">Voir détails</a>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
@@ -238,6 +253,7 @@ include_once __DIR__ . '/../../templates/header.php';
             </div>
         </div>
 
+        <!-- Activité Récente -->
         <div class="row mt-4">
             <div class="col-12">
                 <div class="card border-0 shadow-sm">
@@ -275,5 +291,6 @@ include_once __DIR__ . '/../../templates/header.php';
 </main>
 
 <?php
+// Inclure le pied de page
 include_once __DIR__ . '/../../templates/footer.php';
 ?>
