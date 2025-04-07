@@ -3,11 +3,12 @@ require_once '../../includes/page_functions/modules/services.php';
 
 requireRole(ROLE_ADMIN);
 
-$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$search = isset($_GET['search']) ? $_GET['search'] : '';
-$type = isset($_GET['type']) ? $_GET['type'] : '';
-$action = isset($_GET['action']) ? $_GET['action'] : '';
-$id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+$filterData = getQueryData(['page' => 1, 'search' => '', 'type' => '', 'action' => '', 'id' => 0]);
+$page = $filterData['page'];
+$search = $filterData['search'];
+$type = $filterData['type'];
+$action = $filterData['action'];
+$id = $filterData['id'];
 
 $errors = [];
 $serviceData = null; 
@@ -53,10 +54,11 @@ $services = $listResult['services'];
 $totalPages = $listResult['totalPages'];
 $totalServices = $listResult['totalItems'];
 $page = $listResult['currentPage'];
+$itemsPerPage = $listResult['itemsPerPage']; // Assuming the function returns itemsPerPage
 
 $serviceTypes = servicesGetTypes();
 
-$pageTitle = "Gestion des services";
+$pageTitle = "Gestion des services ({$totalServices})"; // Add total count to title
 include_once '../../templates/header.php';
 ?>
 
@@ -66,10 +68,10 @@ include_once '../../templates/header.php';
         
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h2">Gestion des services</h1>
+                <h1 class="h2"><?php echo $pageTitle; ?></h1>
                 <div class="btn-toolbar mb-2 mb-md-0">
-                    <a href="?action=add" class="btn btn-sm btn-outline-primary">
-                        <i class="fas fa-plus"></i> Nouveau service
+                    <a href="<?php echo WEBADMIN_URL; ?>/modules/services/add.php" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus"></i> Ajouter un service
                     </a>
                 </div>
             </div>
@@ -170,7 +172,7 @@ include_once '../../templates/header.php';
                             <div class="row">
                                 <div class="col-12">
                                     <button type="submit" class="btn btn-primary">Enregistrer</button>
-                                    <a href="<?php echo WEBADMIN_URL; ?>/modules/services/" class="btn btn-secondary">Annuler</a>
+                                    <a href="<?php echo WEBADMIN_URL; ?>/modules/services/index.php" class="btn btn-secondary">Annuler</a>
                                 </div>
                             </div>
                         </form>
@@ -182,10 +184,11 @@ include_once '../../templates/header.php';
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <span>Details du service</span>
                         <div>
-                            <a href="?action=edit&id=<?php echo $service['id']; ?>" class="btn btn-sm btn-primary">
+                            <a href="<?php echo WEBADMIN_URL; ?>/modules/services/edit.php?id=<?php echo $service['id']; ?>" class="btn btn-sm btn-primary">
                                 <i class="fas fa-edit"></i> Modifier
                             </a>
-                            <a href="?action=delete&id=<?php echo $service['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Etes-vous sûr de vouloir supprimer ce service ?')">
+                            <a href="<?php echo WEBADMIN_URL; ?>/modules/services/delete.php?id=<?php echo $service['id']; ?>&csrf_token=<?php echo generateToken(); ?>" class="btn btn-sm btn-danger btn-delete"
+                               onclick="return confirm('Etes-vous sûr de vouloir supprimer ce service ?')" data-bs-toggle="tooltip" title="Supprimer">
                                 <i class="fas fa-trash"></i> Supprimer
                             </a>
                         </div>
@@ -253,13 +256,14 @@ include_once '../../templates/header.php';
                                         <td><?php echo htmlspecialchars($appointment['lieu'] ?: 'Non specifie'); ?></td>
                                         <td><?php echo getStatusBadge($appointment['statut']); ?></td>
                                         <td>
-                                            <a href="<?php echo WEBADMIN_URL; ?>/modules/appointments/?action=view&id=<?php echo $appointment['id']; ?>" class="btn btn-sm btn-info">
+                                            <a href="<?php echo WEBADMIN_URL; ?>/modules/appointments/view.php?id=<?php echo $appointment['id']; ?>" class="btn btn-sm btn-info" data-bs-toggle="tooltip" title="Voir Rendez-vous">
                                                 <i class="fas fa-eye"></i>
                                             </a>
-                                            <a href="<?php echo WEBADMIN_URL; ?>/modules/appointments/?action=edit&id=<?php echo $appointment['id']; ?>" class="btn btn-sm btn-primary">
+                                            <a href="<?php echo WEBADMIN_URL; ?>/modules/appointments/edit.php?id=<?php echo $appointment['id']; ?>" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="Modifier Rendez-vous">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-                                            <a href="<?php echo WEBADMIN_URL; ?>/modules/appointments/?action=delete&id=<?php echo $appointment['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Etes-vous sûr de vouloir supprimer ce rendez-vous ?')">
+                                            <a href="<?php echo WEBADMIN_URL; ?>/modules/appointments/delete.php?id=<?php echo $appointment['id']; ?>&csrf_token=<?php echo generateToken(); ?>" class="btn btn-sm btn-danger btn-delete" 
+                                               onclick="return confirm('Etes-vous sûr de vouloir supprimer ce rendez-vous ?')" data-bs-toggle="tooltip" title="Supprimer Rendez-vous">
                                                 <i class="fas fa-trash"></i>
                                             </a>
                                         </td>
@@ -316,12 +320,14 @@ include_once '../../templates/header.php';
                 <!-- liste des services -->
                 <div class="card mb-4">
                     <div class="card-header">
-                        <form method="get" class="row g-3">
-                            <div class="col-md-5">
-                                <input type="text" class="form-control" id="search" name="search" placeholder="Rechercher par nom, description..." value="<?php echo htmlspecialchars($search); ?>">
+                        <form method="get" action="<?php echo WEBADMIN_URL; ?>/modules/services/index.php" class="row g-3 align-items-center">
+                            <div class="col-md-4">
+                                <label for="search" class="visually-hidden">Rechercher</label>
+                                <input type="text" class="form-control form-control-sm" id="search" name="search" placeholder="Rechercher par nom, description..." value="<?php echo htmlspecialchars($search); ?>">
                             </div>
                             <div class="col-md-3">
-                                <select class="form-select" id="type" name="type">
+                                <label for="type" class="visually-hidden">Type</label>
+                                <select class="form-select form-select-sm" id="type" name="type">
                                     <option value="">Tous les types</option>
                                     <?php foreach ($serviceTypes as $t): ?>
                                         <option value="<?php echo htmlspecialchars($t); ?>" <?php echo $type === $t ? 'selected' : ''; ?>>
@@ -330,17 +336,20 @@ include_once '../../templates/header.php';
                                     <?php endforeach; ?>
                                 </select>
                             </div>
-                            <div class="col-md-4">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-search"></i> Rechercher
+                            <div class="col-md-5 d-flex">
+                                <button type="submit" class="btn btn-sm btn-primary w-100 me-2">
+                                    <i class="fas fa-filter"></i> Filtrer
                                 </button>
-                                <a href="<?php echo WEBADMIN_URL; ?>/modules/services/" class="btn btn-secondary">Reinitialiser</a>
+                                <a href="<?php echo WEBADMIN_URL; ?>/modules/services/index.php" class="btn btn-sm btn-secondary" data-bs-toggle="tooltip" title="Réinitialiser les filtres">
+                                    <i class="fas fa-undo"></i>
+                                </a>
                             </div>
                         </form>
                     </div>
                     <div class="card-body">
                         <?php if (count($services) > 0): ?>
-                            <table class="table table-striped table-hover">
+                            <div class="table-responsive">
+                            <table class="table table-striped table-hover table-sm">
                                 <thead>
                                     <tr>
                                         <th>Nom</th>
@@ -359,14 +368,15 @@ include_once '../../templates/header.php';
                                             <td><?php echo number_format($service['prix'], 2, ',', ' ') . ' €'; ?></td>
                                             <td><?php echo $service['duree'] ? htmlspecialchars($service['duree']) . ' min' : '-'; ?></td>
                                             <td><?php echo htmlspecialchars($service['categorie'] ?: '-'); ?></td>
-                                            <td>
-                                                <a href="?action=view&id=<?php echo $service['id']; ?>" class="btn btn-sm btn-info">
+                                            <td class="table-actions">
+                                                <a href="<?php echo WEBADMIN_URL; ?>/modules/services/view.php?id=<?php echo $service['id']; ?>" class="btn btn-sm btn-info" data-bs-toggle="tooltip" title="Voir">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
-                                                <a href="?action=edit&id=<?php echo $service['id']; ?>" class="btn btn-sm btn-primary">
+                                                <a href="<?php echo WEBADMIN_URL; ?>/modules/services/edit.php?id=<?php echo $service['id']; ?>" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="Modifier">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
-                                                <a href="?action=delete&id=<?php echo $service['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Etes-vous sûr de vouloir supprimer ce service ?')">
+                                                <a href="<?php echo WEBADMIN_URL; ?>/modules/services/delete.php?id=<?php echo $service['id']; ?>&csrf_token=<?php echo generateToken(); ?>" class="btn btn-sm btn-danger btn-delete" 
+                                                   onclick="return confirm('Etes-vous sûr de vouloir supprimer ce service ?')" data-bs-toggle="tooltip" title="Supprimer">
                                                     <i class="fas fa-trash"></i>
                                                 </a>
                                             </td>
@@ -374,30 +384,30 @@ include_once '../../templates/header.php';
                                     <?php endforeach; ?>
                                 </tbody>
                             </table>
+                            </div>
                             
-                            <!-- pagination -->
-                            <?php if ($totalPages > 1): ?>
-                                <nav>
-                                    <ul class="pagination justify-content-center">
-                                        <li class="page-item <?php echo $page <= 1 ? 'disabled' : ''; ?>">
-                                            <a class="page-link" href="?page=<?php echo max(1, $page - 1); ?>&search=<?php echo urlencode($search); ?>&type=<?php echo urlencode($type); ?>">Precedent</a>
-                                        </li>
-                                        
-                                        <?php for ($i = max(1, $page - 2); $i <= min($page + 2, $totalPages); $i++): ?>
-                                            <li class="page-item <?php echo $i === $page ? 'active' : ''; ?>">
-                                                <a class="page-link" href="?page=<?php echo $i; ?>&search=<?php echo urlencode($search); ?>&type=<?php echo urlencode($type); ?>"><?php echo $i; ?></a>
-                                            </li>
-                                        <?php endfor; ?>
-                                        
-                                        <li class="page-item <?php echo $page >= $totalPages ? 'disabled' : ''; ?>">
-                                            <a class="page-link" href="?page=<?php echo min($totalPages, $page + 1); ?>&search=<?php echo urlencode($search); ?>&type=<?php echo urlencode($type); ?>">Suivant</a>
-                                        </li>
-                                    </ul>
-                                </nav>
-                            <?php endif; ?>
+                            <?php 
+                            // Use renderPagination
+                            $paginationInfo = [
+                                'currentPage' => $page,
+                                'totalPages' => $totalPages,
+                                'totalItems' => $totalServices,
+                                'itemsPerPage' => $itemsPerPage
+                            ];
+                            $urlPattern = WEBADMIN_URL . '/modules/services/index.php?search=' . urlencode($search) . '&type=' . urlencode($type) . '&page={page}';
+                            ?>
+                            <div class="d-flex justify-content-center">
+                                <?php echo renderPagination($paginationInfo, $urlPattern); ?>
+                            </div>
                         <?php else: ?>
+                            <?php
+                            $isFiltering = !empty($search) || !empty($type);
+                            $message = $isFiltering
+                                ? "Aucun service trouvé correspondant à vos critères de recherche."
+                                : "Aucun service trouvé. <a href=\"" . WEBADMIN_URL . "/modules/services/add.php\" class=\"alert-link\">Ajouter un nouveau service</a>";
+                            ?>
                             <div class="alert alert-info">
-                                Aucun service trouve. <a href="?action=add" class="alert-link">Ajouter un nouveau service</a>
+                                <?php echo $message; ?>
                             </div>
                         <?php endif; ?>
                     </div>

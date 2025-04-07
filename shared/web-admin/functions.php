@@ -391,3 +391,52 @@ function handleCsrfFailureRedirect($entityId, $module, $actionDescription = 'act
     );
     redirectBasedOnReferer($entityId, $module);
 }
+
+/**
+ * Formate un nombre en devise (euros).
+ *
+ * @param float|null $amount Le montant.
+ * @param string $currencySymbol Le symbole de la devise.
+ * @return string Le montant formaté ou 'N/A' si null.
+ */
+function formatCurrency($amount, $currencySymbol = '€') {
+    if ($amount === null || !is_numeric($amount)) {
+        return 'N/A';
+    }
+    return number_format($amount, 2, ',', ' ') . ' ' . $currencySymbol;
+}
+
+/**
+ * Formate un objet DateInterval en une chaîne de caractères représentant le nombre total de mois.
+ *
+ * @param DateInterval|null $interval L'intervalle de temps.
+ * @return string La durée formatée en mois (ex: "36 mois") ou "-" si null/invalide.
+ */
+function formatDuration($interval) {
+    if (!$interval instanceof DateInterval) {
+        return '-';
+    }
+
+    $totalMonths = ($interval->y * 12) + $interval->m;
+
+    return $totalMonths . ' mois';
+}
+
+/**
+ * Genere une URL de referer securisee.
+ * 
+ * @param string|null $defaultUrl L'URL par defaut si le referer n'est pas valide ou absent.
+ * @param array $allowedHosts Hotes autorises pour le referer.
+ * @return string L'URL de redirection.
+ */
+function generateSecureReferer($defaultUrl = null, $allowedHosts = []) {
+    $referer = $_SERVER['HTTP_REFERER'] ?? null;
+    if ($referer) {
+        $parsedReferer = parse_url($referer);
+        if (in_array($parsedReferer['host'], $allowedHosts, true) || empty($allowedHosts)) {
+            return $referer;
+        }
+    }
+    return $defaultUrl;
+}
+

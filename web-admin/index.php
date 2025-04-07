@@ -4,7 +4,7 @@ require_once 'includes/page_functions/dashboard.php';
 requireRole(ROLE_ADMIN);
 
 $stats = getDashboardStats();
-$recentActivities = getDashboardRecentActivities(10);
+$recentActivities = getDashboardRecentActivities();
 
 $pageTitle = "Tableau de bord";
 include 'templates/header.php';

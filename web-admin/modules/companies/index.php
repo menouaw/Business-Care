@@ -3,18 +3,18 @@ require_once '../../includes/page_functions/modules/companies.php';
 
 requireRole(ROLE_ADMIN);
 
-$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$search = isset($_GET['search']) ? $_GET['search'] : '';
-$city = isset($_GET['city']) ? trim($_GET['city']) : '';
-$size = isset($_GET['size']) ? trim($_GET['size']) : '';
-$action = isset($_GET['action']) ? $_GET['action'] : '';
-$id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+$filterData = getQueryData(['page' => 1, 'search' => '', 'city' => '', 'size' => '', 'action' => '', 'id' => 0]);
+$page = $filterData['page'];
+$search = $filterData['search'];
+$city = $filterData['city'];
+$size = $filterData['size'];
+$action = $filterData['action'];
+$id = $filterData['id'];
 
 $errors = [];
 $company = null;
 
 $cities = companiesGetCities();
-$sizes = companiesGetSizes();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = [
@@ -61,8 +61,9 @@ $companies = $result['companies'];
 $totalPages = $result['totalPages'];
 $totalCompanies = $result['totalItems'];
 $page = $result['currentPage'];
+$itemsPerPage = $result['perPage'];
 
-$pageTitle = "Gestion des entreprises";
+$pageTitle = "Gestion des entreprises ({$totalCompanies})";
 include_once '../../templates/header.php';
 ?>
 
@@ -72,7 +73,7 @@ include_once '../../templates/header.php';
         
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h2">Gestion des entreprises</h1>
+                <h1 class="h2"><?php echo $pageTitle; ?></h1>
                 <div class="btn-toolbar mb-2 mb-md-0">
                     <a href="add.php" class="btn btn-sm btn-primary">
                         <i class="fas fa-plus"></i> Ajouter une entreprise
@@ -156,7 +157,7 @@ include_once '../../templates/header.php';
                                     <select class="form-select" id="taille_entreprise" name="taille_entreprise">
                                         <option value="">Selectionnez...</option>
                                         <?php
-                                        foreach ($sizes as $s) {
+                                        foreach (COMPANY_SIZES as $s) {
                                             $selected = (isset($company['taille_entreprise']) && $company['taille_entreprise'] === $s) ? 'selected' : '';
                                             echo "<option value=\"$s\" $selected>$s</option>";
                                         }
@@ -172,7 +173,7 @@ include_once '../../templates/header.php';
                             <div class="row">
                                 <div class="col-12">
                                     <button type="submit" class="btn btn-primary">Enregistrer</button>
-                                    <a href="<?php echo WEBADMIN_URL; ?>/modules/companies/" class="btn btn-secondary">Annuler</a>
+                                    <a href="index.php" class="btn btn-secondary">Annuler</a>
                                 </div>
                             </div>
                         </form>
@@ -186,7 +187,8 @@ include_once '../../templates/header.php';
                             <a href="edit.php?id=<?php echo $company['id']; ?>" class="btn btn-sm btn-primary">
                                 <i class="fas fa-edit"></i> Modifier
                             </a>
-                            <a href="delete.php?id=<?php echo $company['id']; ?>&csrf_token=<?php echo generateToken(); ?>" class="btn btn-sm btn-danger btn-delete" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette entreprise ?')">
+                            <a href="delete.php?id=<?php echo $company['id']; ?>&csrf_token=<?php echo generateToken(); ?>" class="btn btn-sm btn-danger btn-delete" 
+                               onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette entreprise ?')" data-bs-toggle="tooltip" title="Supprimer">
                                 <i class="fas fa-trash"></i> Supprimer
                             </a>
                         </div>
@@ -237,7 +239,7 @@ include_once '../../templates/header.php';
                                         <td><?php echo number_format($contract['montant_mensuel'], 2, ',', ' ') . ' €'; ?></td>
                                         <td><?php echo getStatusBadge($contract['statut']); ?></td>
                                         <td>
-                                            <a href="<?php echo WEBADMIN_URL; ?>/modules/contracts/?action=view&id=<?php echo $contract['id']; ?>" class="btn btn-sm btn-info">
+                                            <a href="<?php echo WEBADMIN_URL; ?>/modules/contracts/view.php?id=<?php echo $contract['id']; ?>" class="btn btn-sm btn-info" data-bs-toggle="tooltip" title="Voir contrat">
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                         </td>
@@ -275,7 +277,7 @@ include_once '../../templates/header.php';
                                         <td><?php echo htmlspecialchars($user['telephone'] ?: '-'); ?></td>
                                         <td><?php echo htmlspecialchars($user['role_name']); ?></td>
                                         <td>
-                                            <a href="<?php echo WEBADMIN_URL; ?>/modules/users/?action=view&id=<?php echo $user['id']; ?>" class="btn btn-sm btn-info">
+                                            <a href="<?php echo WEBADMIN_URL; ?>/modules/users/view.php?id=<?php echo $user['id']; ?>" class="btn btn-sm btn-info" data-bs-toggle="tooltip" title="Voir utilisateur">
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                         </td>
@@ -292,12 +294,14 @@ include_once '../../templates/header.php';
             <?php else: ?>
                 <div class="card mb-4">
                     <div class="card-header">
-                        <form method="get" class="row g-3 align-items-center">
+                        <form method="get" action="<?php echo WEBADMIN_URL; ?>/modules/companies/index.php" class="row g-3 align-items-center">
                             <div class="col-md-3">
+                                <label for="search" class="visually-hidden">Rechercher</label>
                                 <input type="text" class="form-control form-control-sm" id="search" name="search" placeholder="Rechercher..." value="<?php echo htmlspecialchars($search); ?>">
                             </div>
                             <div class="col-md-3">
-                                <select name="city" class="form-select form-select-sm">
+                                <label for="city" class="visually-hidden">Ville</label>
+                                <select name="city" id="city" class="form-select form-select-sm">
                                     <option value="">Toutes les villes</option>
                                     <?php foreach ($cities as $c): ?>
                                     <option value="<?php echo htmlspecialchars($c); ?>" <?php echo $city == $c ? 'selected' : ''; ?>><?php echo htmlspecialchars($c); ?></option>
@@ -305,24 +309,28 @@ include_once '../../templates/header.php';
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <select name="size" class="form-select form-select-sm">
+                                <label for="size" class="visually-hidden">Taille</label>
+                                <select name="size" id="size" class="form-select form-select-sm">
                                     <option value="">Toutes les tailles</option>
-                                    <?php foreach ($sizes as $s): ?>
+                                    <?php foreach (COMPANY_SIZES as $s): ?>
                                     <option value="<?php echo htmlspecialchars($s); ?>" <?php echo $size == $s ? 'selected' : ''; ?>><?php echo htmlspecialchars($s); ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
                             <div class="col-md-3 d-flex">
                                 <button type="submit" class="btn btn-sm btn-primary w-100 me-2">
-                                    <i class="fas fa-search"></i> Rechercher
+                                    <i class="fas fa-filter"></i> Filtrer
                                 </button>
+                                <a href="<?php echo WEBADMIN_URL; ?>/modules/companies/index.php" class="btn btn-sm btn-secondary" data-bs-toggle="tooltip" title="Réinitialiser les filtres">
+                                    <i class="fas fa-undo"></i>
+                                </a>
                             </div>
                         </form>
                     </div>
                     <div class="card-body">
                         <?php if (count($companies) > 0): ?>
                             <div class="table-responsive">
-                                <table class="table table-striped table-hover">
+                                <table class="table table-striped table-hover table-sm">
                                     <thead>
                                         <tr>
                                             <th>Nom</th>
@@ -342,13 +350,13 @@ include_once '../../templates/header.php';
                                                 <td><?php echo htmlspecialchars($company['email'] ?: '-'); ?></td>
                                                 <td><?php echo htmlspecialchars($company['taille_entreprise'] ?: '-'); ?></td>
                                                 <td class="table-actions">
-                                                    <a href="view.php?id=<?php echo $company['id']; ?>" class="btn btn-sm btn-info" data-bs-toggle="tooltip" title="Voir">
+                                                    <a href="<?php echo WEBADMIN_URL; ?>/modules/companies/view.php?id=<?php echo $company['id']; ?>" class="btn btn-sm btn-info" data-bs-toggle="tooltip" title="Voir">
                                                         <i class="fas fa-eye"></i>
                                                     </a>
-                                                    <a href="edit.php?id=<?php echo $company['id']; ?>" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="Modifier">
+                                                    <a href="<?php echo WEBADMIN_URL; ?>/modules/companies/edit.php?id=<?php echo $company['id']; ?>" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="Modifier">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
-                                                    <a href="delete.php?id=<?php echo $company['id']; ?>&csrf_token=<?php echo generateToken(); ?>" class="btn btn-sm btn-danger btn-delete" 
+                                                    <a href="<?php echo WEBADMIN_URL; ?>/modules/companies/delete.php?id=<?php echo $company['id']; ?>&csrf_token=<?php echo generateToken(); ?>" class="btn btn-sm btn-danger btn-delete" 
                                                        data-bs-toggle="tooltip" 
                                                        title="Supprimer">
                                                         <i class="fas fa-trash"></i>
@@ -360,32 +368,27 @@ include_once '../../templates/header.php';
                                 </table>
                             </div>
                             
-                            <?php if ($totalPages > 1): ?>
-                                <nav aria-label="Page navigation">
-                                    <ul class="pagination justify-content-center">
-                                        <li class="page-item <?php echo $page <= 1 ? 'disabled' : ''; ?>">
-                                            <a class="page-link" href="?page=<?php echo max(1, $page - 1); ?>&search=<?php echo urlencode($search); ?>&city=<?php echo urlencode($city); ?>&size=<?php echo urlencode($size); ?>">Precedent</a>
-                                        </li>
-                                        
-                                        <?php 
-                                            $startPage = max(1, $page - 2);
-                                            $endPage = min($totalPages, $page + 2);
-                                            for ($i = $startPage; $i <= $endPage; $i++): 
-                                        ?>
-                                            <li class="page-item <?php echo $i === $page ? 'active' : ''; ?>">
-                                                <a class="page-link" href="?page=<?php echo $i; ?>&search=<?php echo urlencode($search); ?>&city=<?php echo urlencode($city); ?>&size=<?php echo urlencode($size); ?>"><?php echo $i; ?></a>
-                                            </li>
-                                        <?php endfor; ?>
-                                        
-                                        <li class="page-item <?php echo $page >= $totalPages ? 'disabled' : ''; ?>">
-                                            <a class="page-link" href="?page=<?php echo min($totalPages, $page + 1); ?>&search=<?php echo urlencode($search); ?>&city=<?php echo urlencode($city); ?>&size=<?php echo urlencode($size); ?>">Suivant</a>
-                                        </li>
-                                    </ul>
-                                </nav>
-                            <?php endif; ?>
+                            <?php
+                            $paginationInfo = [
+                                'currentPage' => $page,
+                                'totalPages' => $totalPages,
+                                'totalItems' => $totalCompanies,
+                                'itemsPerPage' => $itemsPerPage
+                            ];
+                            $urlPattern = WEBADMIN_URL . '/modules/companies/index.php?search=' . urlencode($search) . '&city=' . urlencode($city) . '&size=' . urlencode($size) . '&page={page}';
+                            ?>
+                            <div class="d-flex justify-content-center">
+                                <?php echo renderPagination($paginationInfo, $urlPattern); ?>
+                            </div>
                         <?php else: ?>
                             <div class="alert alert-info">
-                                Aucune entreprise trouvee. <a href="add.php" class="alert-link">Ajouter une nouvelle entreprise</a>
+                                <?php 
+                                $isFiltering = !empty($search) || !empty($city) || !empty($size);
+                                $message = $isFiltering 
+                                    ? "Aucune entreprise trouvée correspondant à vos critères."
+                                    : "Aucune entreprise trouvée. <a href=\"" . WEBADMIN_URL . "/modules/companies/add.php\" class=\"alert-link\">Ajouter une entreprise</a>";
+                                echo $message;
+                                ?>
                             </div>
                         <?php endif; ?>
                     </div>

@@ -11,7 +11,7 @@ require_once __DIR__ . '/../../init.php';
  * @param string $size Filtre par taille
  * @return array Donnees de pagination et liste des entreprises
  */
-function companiesGetList($page = 1, $perPage = 10, $search = '', $city = '', $size = '') {
+function companiesGetList($page = 1, $perPage = DEFAULT_ITEMS_PER_PAGE, $search = '', $city = '', $size = '') {
     $whereClauses = [];
     $params = [];
 
@@ -92,6 +92,10 @@ function companiesSave($data, $id = 0) {
         $errors[] = "Le nom de l'entreprise est obligatoire";
     }
     
+    if (!empty($data['taille_entreprise']) && !in_array($data['taille_entreprise'], COMPANY_SIZES)) {
+        $errors[] = "La taille d'entreprise sélectionnée n'est pas valide.";
+    }
+    
     if (!empty($errors)) {
         return [
             'success' => false,
@@ -114,6 +118,8 @@ function companiesSave($data, $id = 0) {
     ];
     
     try {
+        beginTransaction();
+
         if ($id > 0) {
             $affectedRows = updateRow(TABLE_COMPANIES, $dbData, "id = :where_id", ['where_id' => $id]);
             
@@ -121,6 +127,7 @@ function companiesSave($data, $id = 0) {
                 logBusinessOperation($_SESSION['user_id'], 'company_update', 
                     "[SUCCESS] Mise à jour entreprise: {$dbData['nom']} (ID: $id)");
                 $message = "L'entreprise a ete mise a jour avec succes";
+                commitTransaction();
                 return ['success' => true, 'message' => $message];
             } else {
                 throw new Exception("La mise à jour a échoué ou aucune ligne n'a été modifiée.");
@@ -133,6 +140,7 @@ function companiesSave($data, $id = 0) {
                 logBusinessOperation($_SESSION['user_id'], 'company_create', 
                     "[SUCCESS] Création entreprise: {$dbData['nom']} (ID: $newId)");
                 $message = "L'entreprise a ete creee avec succes";
+                commitTransaction();
                 return ['success' => true, 'message' => $message, 'newId' => $newId];
             } else {
                  throw new Exception("L'insertion a échoué.");
@@ -140,6 +148,7 @@ function companiesSave($data, $id = 0) {
         }
         
     } catch (Exception $e) {
+        rollbackTransaction();
         $errorMessage = "Erreur de base de données : " . $e->getMessage();
         $errors[] = $errorMessage;
         logSystemActivity('error', "[ERROR] Erreur BDD dans companiesSave: " . $e->getMessage());
@@ -161,32 +170,27 @@ function companiesSave($data, $id = 0) {
  */
 function companiesDelete($id) {
     
-    $personCount = executeQuery("SELECT COUNT(id) FROM " . TABLE_USERS . " WHERE entreprise_id = ?", [$id])->fetchColumn();
-    
-    $contractCount = executeQuery("SELECT COUNT(id) FROM " . TABLE_CONTRACTS . " WHERE entreprise_id = ?", [$id])->fetchColumn();
-    
-    if ($personCount > 0) {
-        logBusinessOperation($_SESSION['user_id'], 'company_delete_attempt', 
-            "[ERROR] Tentative échouée de suppression d'entreprise ID: $id - Utilisateurs associés existent");
-        return [
-            'success' => false,
-            'message' => "Impossible de supprimer cette entreprise car elle a des utilisateurs associes"
-        ];
-    } 
-    
-    if ($contractCount > 0) {
-        logBusinessOperation($_SESSION['user_id'], 'company_delete_attempt', 
-            "[ERROR] Tentative échouée de suppression d'entreprise ID: $id - Contrats associés existent");
-        return [
-            'success' => false,
-            'message' => "Impossible de supprimer cette entreprise car elle a des contrats associes"
-        ];
-    }
-    
     try {
+        beginTransaction();
+
+        $personCount = executeQuery("SELECT COUNT(id) FROM " . TABLE_USERS . " WHERE entreprise_id = ?", [$id])->fetchColumn();
+        if ($personCount > 0) {
+            rollbackTransaction();
+            logBusinessOperation($_SESSION['user_id'], 'company_delete_attempt', "[ERROR] ID: $id - Utilisateurs associés existent");
+            return ['success' => false, 'message' => "Impossible de supprimer car des utilisateurs sont associés"];
+        }
+
+        $contractCount = executeQuery("SELECT COUNT(id) FROM " . TABLE_CONTRACTS . " WHERE entreprise_id = ?", [$id])->fetchColumn();
+        if ($contractCount > 0) {
+            rollbackTransaction();
+            logBusinessOperation($_SESSION['user_id'], 'company_delete_attempt', "[ERROR] ID: $id - Contrats associés existent");
+            return ['success' => false, 'message' => "Impossible de supprimer car des contrats sont associés"];
+        }
+
         $deletedRows = deleteRow(TABLE_COMPANIES, "id = ?", [$id]);
         
         if ($deletedRows > 0) {
+            commitTransaction();
             logBusinessOperation($_SESSION['user_id'], 'company_delete', 
                 "[SUCCESS] Suppression entreprise ID: $id");
             return [
@@ -194,6 +198,7 @@ function companiesDelete($id) {
                 'message' => "L'entreprise a ete supprimee avec succes"
             ];
         } else {
+            rollbackTransaction();
             logBusinessOperation($_SESSION['user_id'], 'company_delete_attempt', 
                 "[ERROR] Tentative échouée de suppression entreprise ID: $id - Entreprise non trouvée?");
             return [
@@ -202,11 +207,12 @@ function companiesDelete($id) {
             ];
         }
     } catch (Exception $e) {
-         logSystemActivity('error', "[ERROR] Erreur BDD dans companiesDelete: " . $e->getMessage());
-         return [
+        rollbackTransaction();
+        logSystemActivity('error', "[ERROR] Erreur BDD dans companiesDelete: " . $e->getMessage());
+        return [
             'success' => false,
             'message' => "Erreur de base de données lors de la suppression."
-         ];
+        ];
     }
 }
 

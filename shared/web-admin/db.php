@@ -184,11 +184,12 @@ function insertRow($table, $data)
  * Met à jour les enregistrements d'une table avec les données fournies.
  *
  * Cette fonction valide le nom de la table, construit dynamiquement la clause SET en encapsulant les noms de colonnes avec des backticks et en utilisant des placeholders préfixés par "set_", puis exécute une requête SQL UPDATE avec une clause WHERE personnalisée. Si le tableau de données est vide, une exception est levée. En cas d'erreur lors de l'exécution de la requête, l'erreur est loguée et une exception PDO est relancée.
+ * Utilise des placeholders nommés pour les clauses SET et WHERE.
  *
  * @param string $table Nom de la table cible.
- * @param array $data Tableau associatif contenant les colonnes et leurs nouvelles valeurs.
+ * @param array $data Tableau associatif contenant les colonnes et leurs nouvelles valeurs (pour SET).
  * @param string $where Clause SQL WHERE avec des placeholders nommés (ex: "id = :where_id").
- * @param array $whereParams Tableau associatif des valeurs pour les placeholders de la clause WHERE.
+ * @param array $whereParams Tableau associatif des valeurs pour les placeholders de la clause WHERE (ex: [':where_id' => 1]).
  * @return int Nombre d'enregistrements mis à jour.
  *
  * @throws Exception Si le tableau $data est vide.
@@ -211,10 +212,15 @@ function updateRow($table, $data, $where, $whereParams = [])
     
     $setParams = [];
     foreach ($data as $key => $value) {
-        $setParams["set_$key"] = $value;
+        $setParams[":set_$key"] = $value;
     }
 
-    $params = array_merge($setParams, $whereParams);
+    $finalWhereParams = [];
+    foreach ($whereParams as $key => $value) {
+         $finalWhereParams[(strpos($key, ':') === 0 ? $key : ':' . $key)] = $value;
+    }
+
+    $params = array_merge($setParams, $finalWhereParams);
 
     try {
         $stmt = executeQuery($sql, $params);

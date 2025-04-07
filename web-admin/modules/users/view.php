@@ -7,14 +7,14 @@ $userId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
 if ($userId <= 0) {
     flashMessage('Identifiant utilisateur invalide.', 'danger');
-    redirectTo('/web-admin/modules/users/index.php');
+    redirectTo(WEBADMIN_URL . '/modules/users/index.php');
 }
 
 $user = usersGetDetails($userId); 
 
 if (!$user) {
     flashMessage("Utilisateur non trouvé.", 'danger');
-    redirectTo('/web-admin/modules/users/index.php');
+    redirectTo(WEBADMIN_URL . '/modules/users/index.php');
 }
 
 $pageTitle = "Informations de l'utilisateur";
@@ -30,10 +30,10 @@ include '../../templates/header.php';
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                 <h1 class="h2"><?php echo $pageTitle; ?></h1>
                 <div class="btn-toolbar mb-2 mb-md-0">
-                    <a href="edit.php?id=<?php echo $user['id']; ?>" class="btn btn-sm btn-primary me-2" data-bs-toggle="tooltip" title="Modifier cet utilisateur">
+                    <a href="<?php echo WEBADMIN_URL; ?>/modules/users/edit.php?id=<?php echo $user['id']; ?>" class="btn btn-sm btn-primary me-2" data-bs-toggle="tooltip" title="Modifier cet utilisateur">
                         <i class="fas fa-edit"></i> Modifier
                     </a>
-                    <form action="delete.php" method="POST" class="d-inline" id="deleteForm">
+                    <form action="<?php echo WEBADMIN_URL; ?>/modules/users/delete.php" method="POST" class="d-inline" id="deleteForm">
                          <input type="hidden" name="id" id="deleteUserId" value="<?php echo $user['id']; ?>">
                          <input type="hidden" name="csrf_token" value="<?php echo generateToken(); ?>">
                          <button type="submit" class="btn btn-sm btn-danger btn-delete me-2" 
@@ -50,7 +50,7 @@ include '../../templates/header.php';
                         </div>
                         <?php endif; ?>
                     <?php endif; ?>
-                     <a href="index.php" class="btn btn-sm btn-outline-secondary ms-2" data-bs-toggle="tooltip" title="Retour à la liste des utilisateurs">
+                     <a href="<?php echo WEBADMIN_URL; ?>/modules/users/index.php" class="btn btn-sm btn-outline-secondary ms-2" data-bs-toggle="tooltip" title="Retourner à la liste">
                         <i class="fas fa-arrow-left"></i> Retour
                     </a>
                 </div>
@@ -198,7 +198,7 @@ include '../../templates/header.php';
                                     </td>
                                     <td>
                                         <?php if(isset($resa['praticien_id'])): ?>
-                                        <a href="view.php?id=<?php echo $resa['praticien_id']; ?>" data-bs-toggle="tooltip" title="Voir le profil de <?php echo htmlspecialchars(trim(($resa['praticien_prenom'] ?? '') . ' ' . ($resa['praticien_nom'] ?? ''))); ?>">
+                                        <a href="<?php echo WEBADMIN_URL; ?>/modules/users/view.php?id=<?php echo $resa['praticien_id']; ?>" data-bs-toggle="tooltip" title="Voir le profil de <?php echo htmlspecialchars(trim(($resa['praticien_prenom'] ?? '') . ' ' . ($resa['praticien_nom'] ?? ''))); ?>">
                                             <?php echo htmlspecialchars(trim(($resa['praticien_prenom'] ?? '') . ' ' . ($resa['praticien_nom'] ?? ''))); ?>
                                         </a>
                                         <?php else: ?>
@@ -403,8 +403,8 @@ include '../../templates/header.php';
                                         <td><?php echo htmlspecialchars($employee['email']); ?></td>
                                         <td><?php echo getStatusBadge($employee['statut']); ?></td>
                                         <td>
-                                            <a href="view.php?id=<?php echo $employee['id']; ?>" class="btn btn-sm btn-info" data-bs-toggle="tooltip" title="Voir Salarié"><i class="fas fa-eye"></i></a>
-                                            <a href="edit.php?id=<?php echo $employee['id']; ?>" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="Modifier Salarié"><i class="fas fa-edit"></i></a>
+                                            <a href="<?php echo WEBADMIN_URL; ?>/modules/users/view.php?id=<?php echo $employee['id']; ?>" class="btn btn-sm btn-info" data-bs-toggle="tooltip" title="Voir Salarié"><i class="fas fa-eye"></i></a>
+                                            <a href="<?php echo WEBADMIN_URL; ?>/modules/users/edit.php?id=<?php echo $employee['id']; ?>" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="Modifier Salarié"><i class="fas fa-edit"></i></a>
                                         </td>
                                     </tr>
                                     <?php endforeach; ?>
@@ -414,7 +414,7 @@ include '../../templates/header.php';
                         <?php endif; ?>
                     </div>
                      <div class="card-footer text-muted small">
-                        <a href="index.php?entreprise_id=<?php echo $entrepriseId; ?>&role=<?php echo ROLE_SALARIE; ?>">Voir tous les salariés de cette entreprise</a>
+                        <a href="<?php echo WEBADMIN_URL; ?>/modules/users/index.php?entreprise_id=<?php echo $entrepriseId; ?>&role=<?php echo ROLE_SALARIE; ?>">Voir tous les salariés de cette entreprise</a>
                     </div>
                 </div>
                 <?php endif; ?>

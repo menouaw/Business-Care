@@ -95,15 +95,15 @@ include '../../templates/header.php';
                             </div>
                             <div class="mb-3">
                                 <small class="text-muted d-block">Taille</small>
-                                <strong><?php echo htmlspecialchars($company['taille_entreprise'] ?: '-'); ?></strong>
+                                <strong><?php echo htmlspecialchars($company['taille_entreprise'] ?: 'Non renseignee'); ?></strong>
                             </div>
                             <div class="mb-3">
                                 <small class="text-muted d-block">Secteur d'activite</small>
-                                <strong><?php echo htmlspecialchars($company['secteur_activite'] ?: '-'); ?></strong>
+                                <strong><?php echo htmlspecialchars($company['secteur_activite'] ?: 'Non renseigne'); ?></strong>
                             </div>
                             <div class="mb-3">
                                 <small class="text-muted d-block">Date de creation</small>
-                                <strong><?php echo $company['date_creation'] ? formatDate($company['date_creation'], 'd/m/Y') : '-'; ?></strong>
+                                <strong><?php echo $company['date_creation'] ? formatDate($company['date_creation'], 'd/m/Y') : 'Non renseignée'; ?></strong>
                             </div>
                         </div>
                     </div>
@@ -135,7 +135,7 @@ include '../../templates/header.php';
                                             <td><?php echo htmlspecialchars($contract['type_contrat']); ?></td>
                                             <td><?php echo formatDate($contract['date_debut'], 'd/m/Y'); ?></td>
                                             <td><?php echo $contract['date_fin'] ? formatDate($contract['date_fin'], 'd/m/Y') : '-'; ?></td>
-                                            <td><?php echo number_format($contract['montant_mensuel'], 2, ',', ' ') . ' €'; ?></td>
+                                            <td><?php echo formatMoney((float)$contract['montant_mensuel'], '€'); ?></td>
                                             <td><?php echo getStatusBadge($contract['statut']); ?></td>
                                             <td>
                                                 <a href="<?php echo WEBADMIN_URL; ?>/modules/contracts/view.php?id=<?php echo $contract['id']; ?>" 

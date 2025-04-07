@@ -5,19 +5,19 @@ require_once __DIR__ . '/../../init.php';
  * Recupere la liste des contrats avec pagination et filtrage
  * 
  * @param int $page Numero de la page
- * @param int $perPage Nombre d'elements par page
+ * @param int $perPage Nombre d'elements par page (defaut via constante)
  * @param string $search Terme de recherche
  * @param string $statut Filtre par statut
- * @param int $entrepriseId Filtre par entreprise
+ * @param string $typeContrat Filtre par type de contrat
  * @return array Donnees de pagination et liste des contrats
  */
-function contractsGetList($page = 1, $perPage = 10, $search = '', $statut = '', $entrepriseId = 0) {
+function contractsGetList($page = 1, $perPage = DEFAULT_ITEMS_PER_PAGE, $search = '', $statut = '', $typeContrat = '') {
     $params = [];
     $conditions = [];
 
-    if ($entrepriseId > 0) {
-        $conditions[] = "c.entreprise_id = ?";
-        $params[] = $entrepriseId;
+    if ($typeContrat) {
+        $conditions[] = "c.type_contrat = ?";
+        $params[] = $typeContrat;
     }
 
     if ($statut) {
@@ -115,15 +115,21 @@ function contractsSave($data, $id = 0) {
         $errors[] = "Le type de contrat est obligatoire";
     }
     
-    if (!empty($data['date_fin']) && strtotime($data['date_fin']) < strtotime($data['date_debut'])) {
-        $errors[] = "La date de fin ne peut pas etre anterieure a la date de debut";
+    if (!empty($data['date_fin']) && $data['date_fin'] < $data['date_debut']) {
+        $errors[] = "La date de fin ne peut pas être antérieure à la date de début";
+    }
+    
+    if (!in_array($data['type_contrat'], CONTRACT_TYPES)) {
+        $errors[] = "Le type de contrat sélectionné n'est pas valide.";
+    }
+    
+    $status = $data['statut'] ?? DEFAULT_CONTRACT_STATUS;
+    if (!in_array($status, CONTRACT_STATUSES)) {
+        $errors[] = "Le statut sélectionné n'est pas valide.";
     }
     
     if (!empty($errors)) {
-        return [
-            'success' => false,
-            'errors' => $errors
-        ];
+        return ['success' => false, 'errors' => $errors];
     }
     
     $dbData = [
@@ -133,18 +139,21 @@ function contractsSave($data, $id = 0) {
         'montant_mensuel' => !empty($data['montant_mensuel']) ? (float)$data['montant_mensuel'] : null,
         'nombre_salaries' => !empty($data['nombre_salaries']) ? (int)$data['nombre_salaries'] : null,
         'type_contrat' => $data['type_contrat'],
-        'statut' => $data['statut'] ?? 'en_attente', // Default status
+        'statut' => $status,
         'conditions_particulieres' => $data['conditions_particulieres'] ?? null
     ];
 
     try {
+        beginTransaction();
+
         if ($id > 0) {
-            $affectedRows = updateRow(TABLE_CONTRACTS, $dbData, "id = ?", [$id]);
+            $affectedRows = updateRow(TABLE_CONTRACTS, $dbData, "id = :where_id", [':where_id' => $id]);
             
             if ($affectedRows !== false) {
                 logBusinessOperation($_SESSION['user_id'], 'contract_update', 
                     "[SUCCESS] Mise à jour contrat ID: $id, entreprise ID: {$dbData['entreprise_id']}, type: {$dbData['type_contrat']}");
                 $message = "Le contrat a ete mis a jour avec succes";
+                commitTransaction();
                 return ['success' => true, 'message' => $message];
             } else {
                 throw new Exception("La mise à jour a échoué ou aucune ligne n'a été modifiée.");
@@ -157,6 +166,7 @@ function contractsSave($data, $id = 0) {
                 logBusinessOperation($_SESSION['user_id'], 'contract_create', 
                     "[SUCCESS] Création contrat ID: $newId, entreprise ID: {$dbData['entreprise_id']}, type: {$dbData['type_contrat']}");
                 $message = "Le contrat a ete cree avec succes";
+                commitTransaction();
                 return ['success' => true, 'message' => $message, 'newId' => $newId];
             } else {
                  throw new Exception("L'insertion a échoué.");
@@ -164,6 +174,7 @@ function contractsSave($data, $id = 0) {
         }
         
     } catch (Exception $e) {
+        rollbackTransaction();
         $errorMessage = "Erreur de base de données : " . $e->getMessage();
         $errors[] = $errorMessage;
         logSystemActivity('error', "[ERROR] Erreur BDD dans contractsSave: " . $e->getMessage());
@@ -186,9 +197,11 @@ function contractsSave($data, $id = 0) {
 function contractsDelete($id) {
 
     try {
+        beginTransaction();
         $deletedRows = deleteRow(TABLE_CONTRACTS, "id = ?", [$id]);
         
         if ($deletedRows > 0) {
+            commitTransaction();
             logBusinessOperation($_SESSION['user_id'], 'contract_delete', 
                 "Suppression contrat ID: $id");
             return [
@@ -196,6 +209,7 @@ function contractsDelete($id) {
                 'message' => "Le contrat a ete supprime avec succes"
             ];
         } else {
+            rollbackTransaction();
             logBusinessOperation($_SESSION['user_id'], 'contract_delete_attempt', 
                 "[ERROR] Tentative échouée de suppression contrat ID: $id - Contrat non trouvé?");
             return [
@@ -204,11 +218,34 @@ function contractsDelete($id) {
             ];
         }
     } catch (Exception $e) {
+         rollbackTransaction();
          logSystemActivity('error', "[ERROR] Erreur BDD dans contractsDelete: " . $e->getMessage());
          return [
             'success' => false,
             'message' => "Erreur de base de données lors de la suppression."
          ];
+    }
+}
+
+/**
+ * Compte le nombre d'utilisateurs actifs associés à une entreprise.
+ *
+ * @param int $entrepriseId L'ID de l'entreprise.
+ * @return int Le nombre d'utilisateurs actifs.
+ */
+function contractsGetActiveUserCountForCompany(int $entrepriseId): int {
+    if ($entrepriseId <= 0) {
+        return 0;
+    }
+    $userTable = defined('TABLE_USERS') ? TABLE_USERS : 'personnes';
+    $sql = "SELECT COUNT(id) FROM " . $userTable . " WHERE entreprise_id = ? AND statut = 'actif'";
+    
+    try {
+        $count = executeQuery($sql, [$entrepriseId])->fetchColumn();
+        return (int)$count;
+    } catch (Exception $e) {
+        logSystemActivity('error', '[ERROR] Erreur lors de la récupération du nombre d\'utilisateurs actifs pour l\'entreprise ID ' . $entrepriseId . ': ' . $e->getMessage());
+        return 0; 
     }
 }
 
@@ -222,15 +259,13 @@ function contractsDelete($id) {
  * @return bool True si le statut a été mis à jour avec succès, false sinon.
  */
 function contractsUpdateStatus($id, $status) {
-    $validStatuses = ['actif', 'inactif', 'en_attente', 'suspendu', 'expire', 'resilie'];
-    
-    if (!in_array($status, $validStatuses)) {
+    if (!in_array($status, CONTRACT_STATUSES)) {
         logBusinessOperation($_SESSION['user_id'], 'contract_status_update_attempt', 
             "[ERROR] Tentative échouée de mise à jour de statut contrat ID: $id avec valeur invalide: $status");
         return false;
     }
     
-    $affectedRows = updateRow(TABLE_CONTRACTS, ['statut' => $status], "id = ?", [$id]);
+    $affectedRows = updateRow(TABLE_CONTRACTS, ['statut' => $status], "id = :where_id", [':where_id' => $id]);
     
     if ($affectedRows > 0) { 
         logBusinessOperation($_SESSION['user_id'], 'contract_status_update', 
