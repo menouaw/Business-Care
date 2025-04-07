@@ -8,9 +8,10 @@ require_once __DIR__ . '/../../init.php';
  * @param int $perPage Nombre d'elements par page
  * @param string $search Terme de recherche
  * @param string $type Filtre par type
+ * @param string $category Filtre par categorie
  * @return array Donnees de pagination et liste des services
  */
-function servicesGetList($page = 1, $perPage = DEFAULT_ITEMS_PER_PAGE, $search = '', $type = '') {
+function servicesGetList($page = 1, $perPage = DEFAULT_ITEMS_PER_PAGE, $search = '', $type = '', $category = '') {
     $whereClauses = [];
     $params = [];
 
@@ -23,6 +24,11 @@ function servicesGetList($page = 1, $perPage = DEFAULT_ITEMS_PER_PAGE, $search =
     if ($type) {
         $whereClauses[] = "type = ?";
         $params[] = $type;
+    }
+
+    if ($category) {
+        $whereClauses[] = "categorie = ?";
+        $params[] = $category;
     }
     
     $whereSql = !empty($whereClauses) ? implode(' AND ', $whereClauses) : '1';
@@ -90,7 +96,17 @@ function servicesGetDetails($id, $fetchRelated = false) {
  * @return array Liste des types
  */
 function servicesGetTypes() {
-    $sql = "SELECT DISTINCT type FROM " . TABLE_PRESTATIONS . " ORDER BY type";
+    $sql = "SELECT DISTINCT type FROM " . TABLE_PRESTATIONS . " WHERE type IS NOT NULL AND type != '' ORDER BY type";
+    return executeQuery($sql)->fetchAll(PDO::FETCH_COLUMN);
+}
+
+/**
+ * Recupere la liste des categories de services distinctes
+ * 
+ * @return array Liste des categories
+ */
+function servicesGetCategories() {
+    $sql = "SELECT DISTINCT categorie FROM " . TABLE_PRESTATIONS . " WHERE categorie IS NOT NULL AND categorie != '' ORDER BY categorie";
     return executeQuery($sql)->fetchAll(PDO::FETCH_COLUMN);
 }
 
