@@ -295,15 +295,129 @@ function getEmployeeReservations($employee_id, $status = 'all')
     return $reservations;
 }
 
+/**
+ * @internal Construit les parties dynamiques des requêtes SQL pour getEmployeeAppointments.
+ *
+ * @param string $status Le statut des rendez-vous ('upcoming', 'past', 'canceled').
+ * @param array &$params Tableau de paramètres pour la requête préparée (modifié par référence).
+ * @param string $now Timestamp actuel formaté.
+ * @return array Tableau contenant 'whereClause', 'countWhereClause', 'orderByClause'.
+ */
+function _buildEmployeeAppointmentsQueryParts(string $status, array &$params, string $now): array
+{
+    $whereClause = '';
+    $countWhereClause = '';
+    $orderByClause = '';
+
+    switch ($status) {
+        case 'upcoming':
+            $whereClause = " AND rv.date_rdv > :now AND rv.statut NOT IN ('annule', 'manque')";
+            $countWhereClause = " AND rv.date_rdv > :now AND rv.statut NOT IN ('annule', 'manque')";
+            $params[':now'] = $now;
+            $orderByClause = " ORDER BY rv.date_rdv ASC";
+            break;
+        case 'past':
+            $whereClause = " AND (rv.date_rdv < :now AND rv.statut NOT IN ('annule', 'manque'))";
+            $countWhereClause = " AND (rv.date_rdv < :now AND rv.statut NOT IN ('annule', 'manque'))";
+            $params[':now'] = $now;
+            $orderByClause = " ORDER BY rv.date_rdv DESC";
+            break;
+        case 'canceled':
+            $whereClause = " AND rv.statut IN ('annule', 'manque')";
+            $countWhereClause = " AND rv.statut IN ('annule', 'manque')";
+            $orderByClause = " ORDER BY rv.date_rdv DESC";
+            break;
+        default:
+            // Pas de condition de statut spécifique, tri par défaut
+            $orderByClause = " ORDER BY rv.date_rdv DESC";
+            break;
+    }
+
+    return [
+        'whereClause' => $whereClause,
+        'countWhereClause' => $countWhereClause,
+        'orderByClause' => $orderByClause
+    ];
+}
+
+/**
+ * @internal Formate un tableau de rendez-vous pour l'affichage.
+ *
+ * @param array $appointments Tableau de rendez-vous bruts de la BDD.
+ * @return array Tableau de rendez-vous formatés.
+ */
+function _formatEmployeeAppointments(array $appointments): array
+{
+    foreach ($appointments as &$appointment) { // Utilisation de &$ pour modifier directement
+        if (isset($appointment['date_rdv'])) {
+            try {
+                $date = new DateTime($appointment['date_rdv']);
+                $appointment['date_rdv_formatee'] = $date->format('d/m/Y H:i');
+            } catch (Exception $e) {
+                $appointment['date_rdv_formatee'] = 'Date invalide';
+                // Log l'erreur si nécessaire
+                // error_log("Erreur formatage date RDV #{$appointment['rdv_id']}: " . $e->getMessage());
+            }
+        }
+
+        if (isset($appointment['statut'])) {
+            $appointment['statut_badge'] = getStatusBadge($appointment['statut']);
+        }
+    }
+    return $appointments;
+}
+
+/**
+ * @internal Construit le modèle d'URL pour la pagination des rendez-vous.
+ *
+ * @param string $status Le statut actuel des rendez-vous.
+ * @return string Le modèle d'URL pour renderPagination.
+ */
+function _buildAppointmentsPaginationUrlPattern(string $status): string
+{
+    $urlPattern = "?";
+    $upcoming_page = sanitizeInput($_GET['upcoming_page'] ?? 1);
+    $past_page = sanitizeInput($_GET['past_page'] ?? 1);
+    $canceled_page = sanitizeInput($_GET['canceled_page'] ?? 1);
+
+    switch ($status) {
+        case 'upcoming':
+            $urlPattern .= "upcoming_page={page}&past_page=" . $past_page . "&canceled_page=" . $canceled_page;
+            break;
+        case 'past':
+            $urlPattern .= "upcoming_page=" . $upcoming_page . "&past_page={page}&canceled_page=" . $canceled_page;
+            break;
+        case 'canceled':
+            $urlPattern .= "upcoming_page=" . $upcoming_page . "&past_page=" . $past_page . "&canceled_page={page}";
+            break;
+        default:
+            // Fallback si le statut n'est pas l'un des trois prévus
+            $urlPattern .= "page={page}&status=" . urlencode($status); // Inclure le statut inconnu
+            if ($upcoming_page !== 1) $urlPattern .= "&upcoming_page=" . $upcoming_page;
+            if ($past_page !== 1) $urlPattern .= "&past_page=" . $past_page;
+            if ($canceled_page !== 1) $urlPattern .= "&canceled_page=" . $canceled_page;
+            break;
+    }
+    return $urlPattern;
+}
+
+/**
+ * Récupère les rendez-vous d'un employé avec pagination.
+ *
+ * @param int $employee_id ID de l'employé.
+ * @param string $status Statut des rendez-vous ('upcoming', 'past', 'canceled').
+ * @param int $page Page actuelle.
+ * @param int $limit Nombre d'éléments par page.
+ * @return array Tableau contenant les rendez-vous et les informations de pagination.
+ */
 function getEmployeeAppointments($employee_id, $status = 'upcoming', $page = 1, $limit = 5)
 {
-    // Validation et sanitization
+    // 1. Validation et sanitization
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
     $status = sanitizeInput($status);
-    $page = (int)sanitizeInput($page);
-    $limit = (int)sanitizeInput($limit);
+    $page = max(1, (int)sanitizeInput($page)); // Assurer page >= 1
+    $limit = max(1, (int)sanitizeInput($limit)); // Assurer limit >= 1
 
-    // Vérification de l'ID employé
     if (!$employee_id) {
         error_log("ID d'employé invalide dans getEmployeeAppointments");
         return [
@@ -313,87 +427,54 @@ function getEmployeeAppointments($employee_id, $status = 'upcoming', $page = 1, 
         ];
     }
 
-
+    // 2. Initialisation
     $offset = ($page - 1) * $limit;
-
-
-    $query = "SELECT rv.id as rdv_id, rv.date_rdv, rv.duree, rv.type_rdv, rv.statut, rv.lieu, rv.notes,
-              p.id as prestation_id, p.nom as prestation_nom, p.description as prestation_description, 
-              pp.id as praticien_id, CONCAT(pp.prenom, ' ', pp.nom) as praticien_nom,
-              e.id as evenement_id, e.titre as evenement_titre, e.lieu as evenement_lieu
-              FROM rendez_vous rv
-              LEFT JOIN prestations p ON rv.prestation_id = p.id
-              LEFT JOIN personnes pp ON rv.praticien_id = pp.id
-              LEFT JOIN evenements e ON rv.evenement_id = e.id
-              WHERE rv.personne_id = :employee_id"; // Marqueur nommé
-
-    $params = [':employee_id' => $employee_id]; // Utiliser le marqueur nommé
-
     $now = date('Y-m-d H:i:s');
+    $baseQuery = "SELECT rv.id as rdv_id, rv.date_rdv, rv.duree, rv.type_rdv, rv.statut, rv.lieu, rv.notes,
+                  p.id as prestation_id, p.nom as prestation_nom, p.description as prestation_description,
+                  pp.id as praticien_id, CONCAT(pp.prenom, ' ', pp.nom) as praticien_nom,
+                  e.id as evenement_id, e.titre as evenement_titre, e.lieu as evenement_lieu
+                  FROM rendez_vous rv
+                  LEFT JOIN prestations p ON rv.prestation_id = p.id
+                  LEFT JOIN personnes pp ON rv.praticien_id = pp.id
+                  LEFT JOIN evenements e ON rv.evenement_id = e.id
+                  WHERE rv.personne_id = :employee_id";
+    $baseCountQuery = "SELECT COUNT(*) as total FROM rendez_vous rv WHERE rv.personne_id = :employee_id";
+    $params = [':employee_id' => $employee_id];
+    $countParams = [':employee_id' => $employee_id]; // Copie pour la requête de comptage
 
-    switch ($status) {
-        case 'upcoming':
-            $query .= " AND rv.date_rdv > :now AND rv.statut NOT IN ('annule', 'manque')";
-            $params[':now'] = $now;
-            $query .= " ORDER BY rv.date_rdv ASC";
-            break;
+    // 3. Construire les parties dynamiques des requêtes
+    $queryParts = _buildEmployeeAppointmentsQueryParts($status, $params, $now);
+    $countQueryParts = _buildEmployeeAppointmentsQueryParts($status, $countParams, $now); // Appeler aussi pour countParams
 
-        case 'past':
-            $query .= " AND (rv.date_rdv < :now AND rv.statut NOT IN ('annule', 'manque'))";
-            $params[':now'] = $now;
-            $query .= " ORDER BY rv.date_rdv DESC";
-            break;
+    // 4. Finaliser les requêtes
+    $query = $baseQuery . $queryParts['whereClause'] . $queryParts['orderByClause']
+        . " LIMIT " . $limit . " OFFSET " . $offset;
+    $countQuery = $baseCountQuery . $countQueryParts['countWhereClause']; // Utiliser countWhereClause ici
 
-        case 'canceled':
-            $query .= " AND rv.statut IN ('annule', 'manque')";
-            $query .= " ORDER BY rv.date_rdv DESC";
-            break;
+    // 5. Exécuter les requêtes
+    try {
+        $stmt = executeQuery($query, $params);
+        $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        default:
-            $query .= " ORDER BY rv.date_rdv DESC";
+        $countStmt = executeQuery($countQuery, $countParams);
+        $countResult = $countStmt->fetch(PDO::FETCH_ASSOC);
+        $total = $countResult['total'] ?? 0;
+    } catch (Exception $e) {
+        error_log("Erreur DB dans getEmployeeAppointments: " . $e->getMessage());
+        return [ // Retourner une structure vide en cas d'erreur DB
+            'appointments' => [],
+            'pagination' => ['current' => $page, 'limit' => $limit, 'total' => 0, 'totalPages' => 0],
+            'pagination_html' => '<div class="alert alert-danger">Erreur lors de la récupération des rendez-vous.</div>'
+        ];
     }
 
-    $query .= " LIMIT " . intval($limit) . " OFFSET " . intval($offset);
+    // 6. Formater les résultats
+    $formattedAppointments = _formatEmployeeAppointments($appointments);
 
-    // Comptage du nombre total d'éléments pour la pagination
-    $countQuery = "SELECT COUNT(*) as total FROM rendez_vous rv WHERE rv.personne_id = :employee_id";
-    $countParams = [':employee_id' => $employee_id];
-
-    switch ($status) {
-        case 'upcoming':
-            $countQuery .= " AND rv.date_rdv > :now AND rv.statut NOT IN ('annule', 'manque')";
-            $countParams[':now'] = $now;
-            break;
-
-        case 'past':
-            $countQuery .= " AND (rv.date_rdv < :now AND rv.statut NOT IN ('annule', 'manque'))";
-            $countParams[':now'] = $now;
-            break;
-
-        case 'canceled':
-            $countQuery .= " AND rv.statut IN ('annule', 'manque')";
-            break;
-    }
-
-    $stmt = executeQuery($query, $params);
-    $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    foreach ($appointments as &$appointment) {
-        if (isset($appointment['date_rdv'])) {
-            $date = new DateTime($appointment['date_rdv']);
-            $appointment['date_rdv_formatee'] = $date->format('d/m/Y H:i');
-        }
-
-        if (isset($appointment['statut'])) {
-            $appointment['statut_badge'] = getStatusBadge($appointment['statut']);
-        }
-    }
-
-    $countStmt = executeQuery($countQuery, $countParams);
-    $countResult = $countStmt->fetch(PDO::FETCH_ASSOC);
-    $total = $countResult['total'];
-
-    $totalPages = ceil($total / $limit);
+    // 7. Calculer la pagination
+    $totalPages = $limit > 0 ? ceil($total / $limit) : 1;
+    $page = max(1, min($page, $totalPages > 0 ? $totalPages : 1)); // Réajuster $page si nécessaire après comptage
 
     $paginationData = [
         'currentPage' => $page,
@@ -402,24 +483,12 @@ function getEmployeeAppointments($employee_id, $status = 'upcoming', $page = 1, 
         'perPage' => $limit
     ];
 
-    $urlPattern = "?";
+    // 8. Construire l'URL de pagination
+    $urlPattern = _buildAppointmentsPaginationUrlPattern($status);
 
-    switch ($status) {
-        case 'upcoming':
-            $urlPattern .= "upcoming_page={page}&past_page=" . sanitizeInput($_GET['past_page'] ?? 1) . "&canceled_page=" . sanitizeInput($_GET['canceled_page'] ?? 1);
-            break;
-
-        case 'past':
-            $urlPattern .= "upcoming_page=" . sanitizeInput($_GET['upcoming_page'] ?? 1) . "&past_page={page}&canceled_page=" . sanitizeInput($_GET['canceled_page'] ?? 1);
-            break;
-
-        case 'canceled':
-            $urlPattern .= "upcoming_page=" . sanitizeInput($_GET['upcoming_page'] ?? 1) . "&past_page=" . sanitizeInput($_GET['past_page'] ?? 1) . "&canceled_page={page}";
-            break;
-    }
-
+    // 9. Retourner les données
     return [
-        'appointments' => $appointments,
+        'appointments' => $formattedAppointments,
         'pagination' => [
             'current' => $page,
             'limit' => $limit,
@@ -429,6 +498,7 @@ function getEmployeeAppointments($employee_id, $status = 'upcoming', $page = 1, 
         'pagination_html' => renderPagination($paginationData, $urlPattern)
     ];
 }
+
 
 function generatePaginationHtml($paginationData, $urlPattern, $ariaLabel = 'Pagination')
 {
