@@ -42,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     'date_rdv' => $prestation['date_heure_disponible'], // Utiliser l'heure stockée
                     'duree' => $duree,
                     'type_rdv' => $typeRdv,
-                    'lieu' => $prestation['lieu'],
+                    'lieu' => $prestation['lieu']??'',
                     'notes' => $notes
                 ];
 
@@ -64,8 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             }
         }
 
-        header("Location: " . $_SERVER['PHP_SELF']);
-        exit;
+        header("Location: " . $_SERVER['PHP_SELF'] . "?upcoming_page=" . $upcomingPage . "&past_page=" . $pastPage . "&canceled_page=" . $canceledPage);        exit;
     } else {
         flashMessage("Veuillez remplir tous les champs obligatoires", "warning");
     }

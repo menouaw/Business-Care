@@ -75,6 +75,7 @@ function flashMessage($message, $type = 'success')
     }
 
     if (mb_strlen($message) > MAX_FLASH_MESSAGE_LENGTH) {
+        error_log("Message flash tronqué pour dépassement de taille !");
         $message = mb_substr($message, 0, MAX_FLASH_MESSAGE_LENGTH) . ' [...]';
     }
 
