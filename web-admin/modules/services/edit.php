@@ -146,7 +146,16 @@ include_once '../../templates/header.php';
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="categorie" class="form-label">Categorie</label>
-                                <input type="text" class="form-control <?php echo isset($errors['categorie']) ? 'is-invalid' : ''; ?>" id="categorie" name="categorie" value="<?php echo htmlspecialchars($formData['categorie'] ?? ''); ?>">
+                                <select class="form-select <?php echo isset($errors['categorie']) ? 'is-invalid' : ''; ?>" id="categorie" name="categorie">
+                                    <option value="">Selectionnez...</option>
+                                    <?php
+                                    $categories = servicesGetCategories(); 
+                                    foreach ($categories as $cat) {
+                                        $selected = (isset($formData['categorie']) && $formData['categorie'] === $cat) ? 'selected' : '';
+                                        echo "<option value=\"".htmlspecialchars($cat)."\" $selected>" . ucfirst(htmlspecialchars($cat)) . "</option>";
+                                    }
+                                    ?>
+                                </select>
                                 <?php if (isset($errors['categorie'])) { echo '<div class="invalid-feedback">' . htmlspecialchars($errors['categorie']) . '</div>'; } ?>
                             </div>
                             <div class="col-md-6">
