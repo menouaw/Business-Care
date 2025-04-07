@@ -278,9 +278,16 @@ function getUserById($userId)
     }
 
     try {
-        return fetchOne('personnes', 'id = :id', [':id' => $userId]);
-    } catch (Exception $e) {
-        logSystemActivity('error', "Erreur getUserById #$userId: " . $e->getMessage());
+        $user = fetchOne('personnes', 'id = :id', [':id' => $userId]);
+        // Si fetchOne retourne false (non trouvÃ©), ce n'est pas une erreur systÃ¨me
+        // S'il y a une exception PDO pendant fetchOne, elle sera attrapÃ©e ci-dessous
+        return $user; // Retourne l'utilisateur ou false si non trouvÃ©
+    } catch (PDOException $e) { // Capturer spÃ©cifiquement PDOException
+        logSystemActivity('error', "Erreur BDD dans getUserById #$userId: " . $e->getMessage());
+        // Ne pas montrer de message flash ici, car la fonction appelante gÃ¨rera peut-Ãªtre
+        return false; // Indique une erreur critique
+    } catch (Exception $e) { // Capturer d'autres exceptions potentielles
+        logSystemActivity('error', "Erreur inattendue dans getUserById #$userId: " . $e->getMessage());
         return false;
     }
 }
@@ -320,13 +327,28 @@ function updateUserProfile($userId, $data)
 
         $affectedRows = updateRow('personnes', $filteredData, 'id = :id', [':id' => $userId]);
 
-        if ($affectedRows > 0) {
-            logBusinessOperation($userId, 'update_profile', "Mise à jour profil utilisateur #$userId");
+        // updateRow est supposÃ© retourner le nombre de lignes ou false en cas d'Ã©chec
+        if ($affectedRows !== false) {
+            if ($affectedRows > 0) {
+                logBusinessOperation($userId, 'update_profile', "Mise Ã  jour profil utilisateur #$userId");
+                flashMessage("Profil mis à jour avec succès.", 'success');
+            } else {
+                // Aucune ligne modifiÃ©e, mais la requÃªte a rÃ©ussi
+                flashMessage("Aucune modification n'a été appliquée au profil (données identiques ?).", 'info');
+            }
+            return true; // L'opÃ©ration a rÃ©ussi (mÃªme si 0 ligne affectÃ©e)
+        } else {
+            // updateRow a retournÃ© false, indiquant une erreur d'exÃ©cution
+            logSystemActivity('error', "updateRow a Ã©chouÃ© dans updateUserProfile pour user #$userId");
+            flashMessage('Une erreur technique est survenue lors de la mise à jour du profil.', 'danger');
+            return false;
         }
-
-        return $affectedRows !== false;
-    } catch (Exception $e) {
-        logSystemActivity('error', "Erreur updateUserProfile #$userId: " . $e->getMessage());
+    } catch (PDOException $e) { // Capturer spÃ©cifiquement PDOException
+        logSystemActivity('error', "Erreur BDD dans updateUserProfile #$userId: " . $e->getMessage());
+        flashMessage('Une erreur de base de données est survenue lors de la mise à jour du profil.', 'danger');
+        return false;
+    } catch (Exception $e) { // Capturer d'autres exceptions
+        logSystemActivity('error', "Erreur inattendue dans updateUserProfile #$userId: " . $e->getMessage());
         flashMessage('Une erreur technique est survenue lors de la mise à jour du profil.', 'danger');
         return false;
     }
@@ -346,7 +368,7 @@ function changeUserPassword($userId, $currentPassword, $newPassword)
             return false;
         }
         if (!password_verify($currentPassword, $user['mot_de_passe'])) {
-            flashMessage("Le mot de passe actuel fourni est incorrect.", "danger"); // Ajouter le message flash ici
+            flashMessage("Le mot de passe actuel fourni est incorrect.", "danger");
             return false;
         }
 
@@ -369,27 +391,26 @@ function changeUserPassword($userId, $currentPassword, $newPassword)
         $affectedRows = updateRow('personnes', $updateData, 'id = :id', [':id' => $userId]);
 
         if ($affectedRows > 0) {
-            logBusinessOperation($userId, 'change_password', "Changement mot de passe utilisateur #$userId"); // Restore this line
-            flashMessage("Mot de passe modifié avec succès.", "success"); // Restore this line
+            logBusinessOperation($userId, 'change_password', "Changement mot de passe utilisateur #$userId");
+            flashMessage("Mot de passe modifié avec succès.", "success");
             return true;
         } else {
-            logSystemActivity('warning', "changeUserPassword: updateRow a retourné '" . var_export($affectedRows, true) . "' pour user #$userId."); // Ajout d'un log détaillé
-            flashMessage("La mise à jour du mot de passe dans la base de données a échoué.", "danger"); // Ajout d'un message
-            return false; // La mise à jour a échoué
+            logSystemActivity('warning', "changeUserPassword: updateRow a retournÃ© '" . $affectedRows . "' (<= 0) pour user #$userId.");
+            flashMessage("Le mot de passe n'a pas pu être mis à jour (aucune modification détectée ?).", "warning");
+            return false;
         }
-    } catch (Exception $e) {
-        logSystemActivity('error', "Erreur changeUserPassword #$userId: " . $e->getMessage());
+    } catch (PDOException $e) {
+        logSystemActivity('error', "Erreur BDD dans changeUserPassword #$userId: " . $e->getMessage());
+        flashMessage('Une erreur de base de données est survenue lors du changement de mot de passe.', 'danger');
+        return false;
+    } catch (Exception $e) { 
+        logSystemActivity('error', "Erreur inattendue dans changeUserPassword #$userId: " . $e->getMessage());
         flashMessage('Une erreur technique est survenue lors du changement de mot de passe.', 'danger');
         return false;
     }
 }
 
-/**
- * Vérifie si l'utilisateur est connecté et a le rôle de salarié.
- * Si ce n'est pas le cas, affiche un message flash et redirige vers la page de connexion.
- *
- * @return void
- */
+
 function requireEmployeeLogin()
 {
     // Vérifie si les clés de session existent et si le rôle est correct

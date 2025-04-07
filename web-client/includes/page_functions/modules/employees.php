@@ -1055,6 +1055,7 @@ function bookEmployeeAppointment($employee_id, $appointment_data)
     }
 }
 
+
 function getAvailableSchedulesForPrestation($prestation_id)
 {
     $prestation_id = filter_var($prestation_id, FILTER_VALIDATE_INT);
@@ -1095,6 +1096,9 @@ function getAvailableSchedulesForPrestation($prestation_id)
             ];
         }
     } catch (Exception $e) {
+        // Log l'erreur si le format de la date est invalide
+        error_log("Erreur lors de la conversion de date pour prestation #{$prestation_id}: " . $e->getMessage());
+        // Retourne un tableau vide car le créneau n'a pas pu être déterminé
     }
 
     return $schedules;
