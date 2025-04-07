@@ -283,7 +283,9 @@ function generateInvoiceNumber()
  * Gère les exceptions PDO et autres erreurs potentielles.
  *
  * @param int|string $userId L'identifiant de l'utilisateur à rechercher.
- * @return array|false Tableau contenant les données de l'utilisateur si trouvé, sinon false.
+ * @return array|false Tableau contenant les données de l'utilisateur si trouvé. 
+ *                   Retourne `false` si l'ID est invalide, si l'utilisateur n'est pas trouvé,
+ *                   ou en cas d'erreur critique lors de l'accès à la base de données.
  */
 function getUserById($userId)
 {

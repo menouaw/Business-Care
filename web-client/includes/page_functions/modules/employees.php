@@ -387,10 +387,8 @@ function _buildAppointmentsPaginationUrlPattern(string $status): string
         $currentPages[$paramName] = sanitizeInput($_GET[$paramName] ?? 1);
     }
 
-    // Déterminer le nom du paramètre pour la page {page}
     $currentPageParam = $pageParamsMap[$status] ?? 'page'; // 'page' si statut inconnu
 
-    // Commencer l'URL avec le paramètre de la page actuelle
     $urlPattern = "?{$currentPageParam}={page}";
 
     // Ajouter les paramètres des autres statuts
@@ -401,11 +399,8 @@ function _buildAppointmentsPaginationUrlPattern(string $status): string
         }
     }
 
-    // Gérer le cas d'un statut non reconnu (ajouter le paramètre 'status')
     if (!isset($pageParamsMap[$status])) {
         $urlPattern .= "&status=" . urlencode($status);
-        // Si statut inconnu, on ajoute explicitement les autres pages si elles ne sont pas à 1
-        // (redondant avec la boucle précédente mais clarifie l'intention pour le cas défaut)
         if ($currentPages['upcoming_page'] != 1) $urlPattern .= "&upcoming_page=" . $currentPages['upcoming_page'];
         if ($currentPages['past_page'] != 1) $urlPattern .= "&past_page=" . $currentPages['past_page'];
         if ($currentPages['canceled_page'] != 1) $urlPattern .= "&canceled_page=" . $currentPages['canceled_page'];
@@ -440,7 +435,6 @@ function getEmployeeAppointments($employee_id, $status = 'upcoming', $page = 1, 
         ];
     }
 
-    // 2. Initialisation
     $offset = ($page - 1) * $limit;
     $now = date('Y-m-d H:i:s');
     $baseQuery = "SELECT rv.id as rdv_id, rv.date_rdv, rv.duree, rv.type_rdv, rv.statut, rv.lieu, rv.notes,
@@ -456,17 +450,14 @@ function getEmployeeAppointments($employee_id, $status = 'upcoming', $page = 1, 
     $params = [':employee_id' => $employee_id];
     $countParams = [':employee_id' => $employee_id]; // Copie pour la requête de comptage
 
-    // 3. Construire les parties dynamiques des requêtes
     $queryParts = _buildEmployeeAppointmentsQueryParts($status, $params, $now);
     $countQueryParts = _buildEmployeeAppointmentsQueryParts($status, $countParams, $now); // Appeler aussi pour countParams
 
-    // 4. Finaliser les requêtes
     $query = $baseQuery . $queryParts['whereClause'] . $queryParts['orderByClause']
         . " LIMIT " . $limit . " OFFSET " . $offset;
     $countQuery = $baseCountQuery . $countQueryParts['countWhereClause']; // Utiliser countWhereClause ici
 
-    // 5. Exécuter les requêtes
-    try {
+        try {
         $stmt = executeQuery($query, $params);
         $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -1042,42 +1033,67 @@ function cancelEmployeeAppointment($employee_id, $rdv_id)
 function bookEmployeeAppointment($employee_id, $appointment_data)
 {
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
-    $appointment_data = sanitizeInput($appointment_data); // Sanitize the whole array first
+    $appointment_data = sanitizeInput($appointment_data);
 
     if (!$employee_id || empty($appointment_data)) {
-        flashMessage("Données de réservation invalides.", "danger");
+        flashMessage("Données de réservation invalides (ID employé ou données manquantes).", "danger");
         return false;
     }
 
     $prestation_id = filter_var($appointment_data['prestation_id'] ?? 0, FILTER_VALIDATE_INT);
-    $date_rdv = $appointment_data['date_rdv'] ?? '';
+    $date_rdv_string = $appointment_data['date_rdv'] ?? ''; // Renommé pour éviter confusion avec l'objet DateTime plus tard
     $duree = filter_var($appointment_data['duree'] ?? 0, FILTER_VALIDATE_INT);
 
-    if (!$prestation_id || empty($date_rdv) || $duree <= 0) {
-        flashMessage("Informations de réservation incomplètes (prestation, date ou durée manquante).", "danger");
+
+    if (!$prestation_id || empty($date_rdv_string) || $duree <= 0) {
+        flashMessage("Informations de réservation incomplètes (prestation, date ou durée invalide/manquante).", "danger");
         return false;
     }
 
+    $date_pattern = '/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}(?::\d{2})?$/';
+    if (!preg_match($date_pattern, $date_rdv_string)) {
+        flashMessage("Format de date invalide. Le format attendu est YYYY-MM-DD HH:MM:SS.", "danger");
+        error_log("Format de date invalide reçu dans bookEmployeeAppointment: " . $date_rdv_string);
+        return false;
+    }
+
+    try {
+        $datetime_rdv = new DateTime($date_rdv_string);
+        $now = new DateTime();
+
+        if ($datetime_rdv <= $now) {
+            flashMessage("La date du rendez-vous doit être dans le futur.", "warning");
+            return false;
+        }
+    } catch (Exception $e) {
+        // Gérer l'exception si DateTime échoue (ex: date invalide comme 2023-02-30)
+        flashMessage("La date fournie n'est pas valide.", "danger");
+        error_log("Échec création DateTime dans bookEmployeeAppointment pour la chaîne: " . $date_rdv_string . " - Erreur: " . $e->getMessage());
+        return false;
+    }
+
+
     $praticien_id = filter_var($appointment_data['praticien_id'] ?? null, FILTER_VALIDATE_INT);
-    $type_rdv = $appointment_data['type_rdv'] ?? 'presentiel'; // Default value
+    $type_rdv = $appointment_data['type_rdv'] ?? 'presentiel'; // Valeur par défaut
     $lieu = $appointment_data['lieu'] ?? '';
     $notes = $appointment_data['notes'] ?? '';
-    $evenement_id = filter_var($appointment_data['evenement_id'] ?? null, FILTER_VALIDATE_INT); // Récupérer depuis les données si fourni
-
+    $evenement_id = filter_var($appointment_data['evenement_id'] ?? null, FILTER_VALIDATE_INT);
 
     try {
         beginTransaction();
 
+        // Vérifier le praticien si fourni
         if ($praticien_id) {
             $checkPraticien = "SELECT id FROM personnes WHERE id = :id AND role_id = :role_id";
             $praticienExists = executeQuery($checkPraticien, [':id' => $praticien_id, ':role_id' => ROLE_PRESTATAIRE])->fetch();
             if (!$praticienExists) {
-                // Comportement actuel : ignorer l'ID invalide. Alternative : rejeter.
-                flashMessage("Le praticien spécifié est invalide.", "warning");
-                $praticien_id = null; // Ou rollbackTransaction(); return false;
+                rollbackTransaction(); // Rejeter si praticien invalide
+                flashMessage("Le praticien spécifié est invalide.", "danger");
+                return false;
             }
         }
 
+        // Vérifier la prestation
         $checkPrestation = "SELECT id, nom, est_disponible, capacite_max FROM prestations WHERE id = :id";
         $prestation = executeQuery($checkPrestation, [':id' => $prestation_id])->fetch();
 
@@ -1087,21 +1103,21 @@ function bookEmployeeAppointment($employee_id, $appointment_data)
             return false;
         }
 
-        if (!$prestation['est_disponible']) {
-
-            if (empty($prestation['capacite_max']) || $prestation['capacite_max'] <= 1) {
-                rollbackTransaction();
-                flashMessage("Cette prestation n'est plus disponible.", "warning");
-                return false;
-            }
+        // Vérifier la disponibilité globale (sauf si capacité > 1)
+        if (!$prestation['est_disponible'] && (empty($prestation['capacite_max']) || $prestation['capacite_max'] <= 1)) {
+            rollbackTransaction();
+            flashMessage("Cette prestation n'est plus disponible.", "warning");
+            return false;
         }
 
-        if (!isTimeSlotAvailable($date_rdv, $duree, $prestation_id)) {
+        // Vérifier la disponibilité du créneau horaire
+        if (!isTimeSlotAvailable($date_rdv_string, $duree, $prestation_id)) {
             rollbackTransaction();
             flashMessage("Le créneau horaire demandé n'est pas disponible.", "warning");
             return false;
         }
 
+        // Insérer le rendez-vous
         $insertQuery = "INSERT INTO rendez_vous (personne_id, prestation_id, praticien_id, date_rdv, duree, 
                         type_rdv, lieu, notes, statut, created_at, evenement_id) 
                         VALUES (:pid, :prestaid, :pracid, :daterdv, :duree, :typerdv, :lieu, :notes, 'confirme', NOW(), :eventid)";
@@ -1110,7 +1126,7 @@ function bookEmployeeAppointment($employee_id, $appointment_data)
             ':pid' => $employee_id,
             ':prestaid' => $prestation_id,
             ':pracid' => $praticien_id, // Peut être NULL
-            ':daterdv' => $date_rdv,
+            ':daterdv' => $date_rdv_string, // Utiliser la chaîne validée
             ':duree' => $duree,
             ':typerdv' => $type_rdv,
             ':lieu' => $lieu,
@@ -1123,15 +1139,16 @@ function bookEmployeeAppointment($employee_id, $appointment_data)
         $rdvId = getDbConnection()->lastInsertId();
 
         if ($rowCount > 0 && $rdvId) {
+            // Mettre à jour la disponibilité de la prestation si nécessaire (capacité <= 1)
             if (empty($prestation['capacite_max']) || $prestation['capacite_max'] <= 1) {
                 $updatePrestation = "UPDATE prestations SET est_disponible = FALSE WHERE id = :id";
                 executeQuery($updatePrestation, [':id' => $prestation_id]);
             }
 
             commitTransaction();
-            flashMessage("Votre rendez-vous pour '{$prestation['nom']}' a été réservé avec succès.", "success");
-            // TODO: Ajouter notification utilisateur ?
-            // TODO: Ajouter log business operation ?
+            // Le message flash de succès est géré par le script appelant (appointments.php)
+            // flashMessage("Votre rendez-vous pour '{$prestation['nom']}' a été réservé avec succès.", "success");
+            logBusinessOperation($employee_id, 'book_appointment', "Réservation RDV #$rdvId pour presta #$prestation_id"); // Ajouter log
             return $rdvId;
         } else {
             // L'insertion a échoué
