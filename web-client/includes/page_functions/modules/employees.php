@@ -1383,10 +1383,12 @@ function getCommunityMessages($community_id, $page = 1, $limit = 10)
 
     $offset = ($page - 1) * $limit;
 
+    // Optimiser avec un INDEX HINT pour la performance sur les requêtes avec ORDER BY + LIMIT
     $query = "SELECT m.id, m.contenu, m.date_creation, m.est_modere, m.raison_moderation,
               p.id as auteur_id, p.nom as auteur_nom, p.prenom as auteur_prenom, p.photo_url,
               (SELECT MAX(role_communaute) FROM communautes_membres WHERE personne_id = p.id AND communaute_id = ?) as role_membre
               FROM communautes_messages m
+              USE INDEX (idx_communaute_moderation_date)
               JOIN personnes p ON m.personne_id = p.id
               WHERE m.communaute_id = ? AND m.est_modere = 0
               ORDER BY m.date_creation DESC
