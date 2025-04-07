@@ -152,7 +152,7 @@ function servicesSave($data, $id = 0) {
         beginTransaction();
 
         if ($id > 0) {
-            $affectedRows = updateRow(TABLE_PRESTATIONS, $dbData, "id = ?", [$id]);
+            $affectedRows = updateRow(TABLE_PRESTATIONS, $dbData, "id = :where_id", [':where_id' => $id]);
             
             if ($affectedRows !== false) {
                  logBusinessOperation($_SESSION['user_id'], 'service_update', 

@@ -147,7 +147,7 @@ function contractsSave($data, $id = 0) {
         beginTransaction();
 
         if ($id > 0) {
-            $affectedRows = updateRow(TABLE_CONTRACTS, $dbData, "id = ?", [$id]);
+            $affectedRows = updateRow(TABLE_CONTRACTS, $dbData, "id = :where_id", [':where_id' => $id]);
             
             if ($affectedRows !== false) {
                 logBusinessOperation($_SESSION['user_id'], 'contract_update', 
@@ -265,7 +265,7 @@ function contractsUpdateStatus($id, $status) {
         return false;
     }
     
-    $affectedRows = updateRow(TABLE_CONTRACTS, ['statut' => $status], "id = ?", [$id]);
+    $affectedRows = updateRow(TABLE_CONTRACTS, ['statut' => $status], "id = :where_id", [':where_id' => $id]);
     
     if ($affectedRows > 0) { 
         logBusinessOperation($_SESSION['user_id'], 'contract_status_update', 
