@@ -1,4 +1,5 @@
 <?php
+
 /**
  * tableau de bord - salariés
  *
@@ -8,30 +9,14 @@
 // Inclure les fonctions spécifiques au module salariés
 require_once __DIR__ . '/../../includes/page_functions/modules/employees.php';
 
-// vérifier que l'utilisateur est connecté et a le rôle salarié
-requireRole(ROLE_SALARIE);
+// Appeler la fonction pour récupérer toutes les données du tableau de bord
+// requireRole() est déjà appelé à l'intérieur de displayEmployeeDashboard()
+$dashboardData = displayEmployeeDashboard();
 
-// récupérer les informations de l'utilisateur
-$userId = $_SESSION['user_id'];
-$user = getEmployeeDetails($userId);
-$entrepriseId = $_SESSION['user_entreprise'];
-
-// récupérer les rendez-vous à venir
-$rdvs = getEmployeeAppointments($userId, 'upcoming');
-
-// récupérer les événements à venir
-$evenements = getEmployeeEvents($userId, 'upcoming');
-
-// récupérer les communautés de l'utilisateur
-$communautes = getEmployeeCommunities($userId);
-
-// récupérer l'historique d'activité récente
-$activites = getEmployeeActivityHistory($userId, 1, 5);
-
-// définir le titre de la page
+// Définir le titre de la page
 $pageTitle = "Tableau de bord - Espace Salarié";
 
-// inclure l'en-tête
+// Inclure l'en-tête
 include_once __DIR__ . '/../../templates/header.php';
 ?>
 
@@ -40,11 +25,11 @@ include_once __DIR__ . '/../../templates/header.php';
         <div class="row mb-4">
             <div class="col">
                 <h1 class="h2">Tableau de bord</h1>
-                <p class="text-muted">Bienvenue dans votre espace salarié, <?= $_SESSION['user_name'] ?></p>
+                <p class="text-muted">Bienvenue dans votre espace salarié, <?= htmlspecialchars($dashboardData['user']['prenom'] ?? 'Utilisateur') ?>!</p>
             </div>
         </div>
 
-        <!-- cartes d'information -->
+        <!-- Cartes d'information -->
         <div class="row g-4 mb-4">
             <div class="col-md-6 col-lg-3">
                 <div class="card border-0 shadow-sm h-100">
@@ -55,16 +40,17 @@ include_once __DIR__ . '/../../templates/header.php';
                             </div>
                             <div>
                                 <h6 class="card-subtitle text-muted mb-1">Rendez-vous</h6>
-                                <h2 class="card-title mb-0"><?= count($rdvs) ?></h2>
+                                <h2 class="card-title mb-0"><?= count($dashboardData['upcoming_appointments'] ?? []) ?></h2>
+                                <small class="text-muted">Prochainement</small>
                             </div>
                         </div>
                         <div class="mt-3">
-                            <a href="mes-rendez-vous.php" class="btn btn-sm btn-outline-primary">Tous les rendez-vous</a>
+                            <a href="<?= WEBCLIENT_URL ?>/mon-planning.php" class="btn btn-sm btn-outline-primary">Voir mon planning</a>
                         </div>
                     </div>
                 </div>
             </div>
-            
+
             <div class="col-md-6 col-lg-3">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body">
@@ -73,36 +59,38 @@ include_once __DIR__ . '/../../templates/header.php';
                                 <i class="fas fa-users fa-2x"></i>
                             </div>
                             <div>
-                                <h6 class="card-subtitle text-muted mb-1">Communautés</h6>
-                                <h2 class="card-title mb-0"><?= count($communautes) ?></h2>
+                                <h6 class="card-subtitle text-muted mb-1">Événements</h6>
+                                <h2 class="card-title mb-0"><?= count($dashboardData['upcoming_events'] ?? []) ?></h2>
+                                <small class="text-muted">À venir</small>
                             </div>
                         </div>
                         <div class="mt-3">
-                            <a href="communautes.php" class="btn btn-sm btn-outline-success">Explorer</a>
+                            <a href="<?= WEBCLIENT_URL ?>/evenements.php" class="btn btn-sm btn-outline-success">Explorer les événements</a>
                         </div>
                     </div>
                 </div>
             </div>
-            
+
             <div class="col-md-6 col-lg-3">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body">
                         <div class="d-flex align-items-center">
                             <div class="icon-box bg-warning bg-opacity-10 text-warning rounded p-3 me-3">
-                                <i class="fas fa-star fa-2x"></i>
+                                <i class="fas fa-bell fa-2x"></i>
                             </div>
                             <div>
-                                <h6 class="card-subtitle text-muted mb-1">Événements</h6>
-                                <h2 class="card-title mb-0"><?= count($evenements) ?></h2>
+                                <h6 class="card-subtitle text-muted mb-1">Notifications</h6>
+                                <h2 class="card-title mb-0"><?= count($dashboardData['unread_notifications'] ?? []) ?></h2>
+                                <small class="text-muted">Non lues</small>
                             </div>
                         </div>
                         <div class="mt-3">
-                            <a href="evenements.php" class="btn btn-sm btn-outline-warning">Voir tous</a>
+                            <a href="<?= WEBCLIENT_URL ?>/notifications.php" class="btn btn-sm btn-outline-warning">Voir les notifications</a>
                         </div>
                     </div>
                 </div>
             </div>
-            
+
             <div class="col-md-6 col-lg-3">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body">
@@ -111,12 +99,14 @@ include_once __DIR__ . '/../../templates/header.php';
                                 <i class="fas fa-hand-holding-heart fa-2x"></i>
                             </div>
                             <div>
-                                <h6 class="card-subtitle text-muted mb-1">Dons</h6>
-                                <h2 class="card-title mb-0">--</h2>
+                                <h6 class="card-subtitle text-muted mb-1">Associations</h6>
+                                <!-- Compter les dons pourrait nécessiter une autre query -->
+                                <h2 class="card-title mb-0">Soutenir</h2>
+                                <small class="text-muted">Faire un don</small>
                             </div>
                         </div>
                         <div class="mt-3">
-                            <a href="dons.php" class="btn btn-sm btn-outline-info">Faire un don</a>
+                            <a href="<?= WEBCLIENT_URL ?>/associations.php" class="btn btn-sm btn-outline-info">Voir les associations</a>
                         </div>
                     </div>
                 </div>
@@ -124,37 +114,34 @@ include_once __DIR__ . '/../../templates/header.php';
         </div>
 
         <div class="row g-4">
-            <!-- prochains rendez-vous -->
+            <!-- Prochains rendez-vous -->
             <div class="col-lg-6">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0">Prochains rendez-vous</h5>
-                        <a href="mes-rendez-vous.php" class="btn btn-sm btn-outline-primary">Voir tous</a>
+                        <a href="<?= WEBCLIENT_URL ?>/mon-planning.php" class="btn btn-sm btn-outline-primary">Voir mon planning</a>
                     </div>
                     <div class="card-body">
-                        <?php if (empty($rdvs)): ?>
+                        <?php if (empty($dashboardData['upcoming_appointments'])) : ?>
                             <p class="text-center text-muted my-5">Aucun rendez-vous planifié</p>
-                        <?php else: ?>
+                        <?php else : ?>
                             <div class="list-group list-group-flush">
-                                <?php foreach (array_slice($rdvs, 0, 5) as $rdv): 
-                                    // récupérer les détails de la prestation si nécessaire
-                                    $prestation = isset($rdv['prestation']) ? $rdv['prestation'] : (isset($rdv['prestation_id']) ? fetchOne('prestations', "id = {$rdv['prestation_id']}") : null);
-                                ?>
+                                <?php foreach ($dashboardData['upcoming_appointments'] as $rdv) : ?>
                                     <div class="list-group-item border-0 px-0">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div>
-                                                <h6 class="mb-1"><?= $prestation['nom'] ?? $rdv['prestation_nom'] ?? 'Prestation inconnue' ?></h6>
-                                                <p class="text-muted mb-0">
-                                                    <i class="far fa-calendar-alt me-1"></i> <?= isset($rdv['date_formatee']) ? $rdv['date_formatee'] : formatDate($rdv['date_rdv'], 'd/m/Y') ?>
-                                                    <i class="far fa-clock ms-2 me-1"></i> <?= isset($rdv['heure_formatee']) ? $rdv['heure_formatee'] : formatDate($rdv['date_rdv'], 'H:i') ?>
+                                                <h6 class="mb-1"><?= htmlspecialchars($rdv['prestation_nom'] ?? 'Prestation inconnue') ?></h6>
+                                                <p class="text-muted mb-0 small">
+                                                    <i class="far fa-calendar-alt me-1"></i> <?= htmlspecialchars($rdv['date_rdv_formatee'] ?? 'Date inconnue') ?>
+                                                    <?php if (!empty($rdv['praticien_complet']) && $rdv['praticien_complet'] !== 'Non assigné') : ?>
+                                                        <i class="fas fa-user-md ms-2 me-1"></i> <?= htmlspecialchars($rdv['praticien_complet']) ?>
+                                                    <?php endif; ?>
                                                 </p>
-                                                <p class="text-muted mb-0">
-                                                    <i class="fas fa-map-marker-alt me-1"></i> <?= $rdv['lieu'] ?? 'Non précisé' ?>
+                                                <p class="text-muted mb-0 small">
+                                                    <i class="fas fa-map-marker-alt me-1"></i> <?= htmlspecialchars($rdv['lieu'] ?: ($rdv['type_rdv'] === 'visio' ? 'Visioconférence' : 'Téléphone')) ?>
                                                 </p>
                                             </div>
-                                            <span class="badge bg-<?= isset($rdv['statut_classe']) ? $rdv['statut_classe'] : ($rdv['statut'] == 'confirme' ? 'success' : 'warning') ?> ms-2">
-                                                <?= ucfirst($rdv['statut']) ?>
-                                            </span>
+                                            <?= $rdv['statut_badge'] ?? '' ?>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
@@ -164,32 +151,32 @@ include_once __DIR__ . '/../../templates/header.php';
                 </div>
             </div>
 
-            <!-- événements à venir -->
+            <!-- Événements à venir -->
             <div class="col-lg-6">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0">Événements à venir</h5>
-                        <a href="evenements.php" class="btn btn-sm btn-outline-primary">Tous les événements</a>
+                        <a href="<?= WEBCLIENT_URL ?>/evenements.php" class="btn btn-sm btn-outline-primary">Tous les événements</a>
                     </div>
                     <div class="card-body">
-                        <?php if (empty($evenements)): ?>
+                        <?php if (empty($dashboardData['upcoming_events'])) : ?>
                             <p class="text-center text-muted my-5">Aucun événement à venir</p>
-                        <?php else: ?>
+                        <?php else : ?>
                             <div class="list-group list-group-flush">
-                                <?php foreach (array_slice($evenements, 0, 3) as $event): ?>
+                                <?php foreach (array_slice($dashboardData['upcoming_events'], 0, 3) as $event) : // Limiter à 3 pour l'aperçu 
+                                ?>
                                     <div class="list-group-item border-0 px-0">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div>
-                                                <h6 class="mb-1"><?= $event['titre'] ?></h6>
-                                                <p class="text-muted mb-0">
-                                                    <i class="far fa-calendar-alt me-1"></i> <?= isset($event['date_formatee']) ? $event['date_formatee'] : formatDate($event['date_debut'], 'd/m/Y') ?>
-                                                    <i class="far fa-clock ms-2 me-1"></i> <?= isset($event['heure_formatee']) ? $event['heure_formatee'] : formatDate($event['date_debut'], 'H:i') ?>
+                                                <h6 class="mb-1"><?= htmlspecialchars($event['titre'] ?? 'Événement sans titre') ?></h6>
+                                                <p class="text-muted mb-0 small">
+                                                    <i class="far fa-calendar-alt me-1"></i> <?= htmlspecialchars($event['date_debut_formatee'] ?? 'Date inconnue') ?>
                                                 </p>
-                                                <p class="text-muted mb-0">
-                                                    <i class="fas fa-map-marker-alt me-1"></i> <?= $event['lieu'] ?? 'Non précisé' ?>
+                                                <p class="text-muted mb-0 small">
+                                                    <i class="fas fa-map-marker-alt me-1"></i> <?= htmlspecialchars($event['lieu'] ?? 'Lieu à confirmer') ?>
                                                 </p>
                                             </div>
-                                            <a href="inscription-evenement.php?id=<?= $event['id'] ?>" class="btn btn-sm btn-outline-success">S'inscrire</a>
+                                            <a href="<?= WEBCLIENT_URL ?>/evenement-details.php?id=<?= $event['id'] ?>" class="btn btn-sm btn-outline-success">Voir détails</a>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
@@ -200,7 +187,42 @@ include_once __DIR__ . '/../../templates/header.php';
             </div>
         </div>
 
-        <!-- actions rapides -->
+        <!-- Activité Récente -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">Activité Récente</h5>
+                        <a href="<?= WEBCLIENT_URL ?>/mon-historique.php" class="btn btn-sm btn-outline-secondary">Voir tout</a>
+                    </div>
+                    <div class="card-body">
+                        <?php
+                        $activites = $dashboardData['recent_activity']['activities'] ?? []; // Récupérer depuis $dashboardData 
+                        ?>
+                        <?php if (empty($activites)): ?>
+                            <p class="text-center text-muted">Aucune activité récente enregistrée.</p>
+                        <?php else: ?>
+                            <ul class="list-group list-group-flush">
+                                <?php foreach ($activites as $activite): ?>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                                        <div>
+                                            <i class="<?= htmlspecialchars($activite['icon'] ?? 'fas fa-history text-muted') ?> me-2"></i>
+                                            <?= htmlspecialchars(ucfirst(str_replace('_', ' ', $activite['action']))) ?>
+                                            <?php if (!empty($activite['details'])): ?>
+                                                <small class="text-muted d-block ms-4"><?= htmlspecialchars(substr($activite['details'], 0, 100)) . (strlen($activite['details']) > 100 ? '...' : '') ?></small>
+                                            <?php endif; ?>
+                                        </div>
+                                        <small class="text-muted ms-3 text-nowrap"><?= htmlspecialchars($activite['created_at_formatted'] ?? 'Date inconnue') ?></small>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions rapides -->
         <div class="row mt-4">
             <div class="col-12">
                 <div class="card border-0 shadow-sm">
@@ -209,24 +231,24 @@ include_once __DIR__ . '/../../templates/header.php';
                     </div>
                     <div class="card-body">
                         <div class="row g-3">
-                            <div class="col-md-3">
-                                <a href="recherche-prestations.php" class="btn btn-primary d-block py-3">
-                                    <i class="fas fa-search me-2"></i>Rechercher prestations
+                            <div class="col-sm-6 col-md-3 mb-2 mb-md-0">
+                                <a href="<?= WEBCLIENT_URL ?>/catalogue.php" class="btn btn-primary d-block py-3">
+                                    <i class="fas fa-search me-2"></i>Catalogue Services
                                 </a>
                             </div>
-                            <div class="col-md-3">
-                                <a href="signaler-situation.php" class="btn btn-warning d-block py-3">
-                                    <i class="fas fa-exclamation-triangle me-2"></i>Signaler situation
+                            <div class="col-sm-6 col-md-3 mb-2 mb-md-0">
+                                <a href="<?= WEBCLIENT_URL ?>/signaler-situation.php" class="btn btn-warning d-block py-3">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>Signaler Situation
                                 </a>
                             </div>
-                            <div class="col-md-3">
-                                <a href="conseils-bien-etre.php" class="btn btn-success d-block py-3">
-                                    <i class="fas fa-heart me-2"></i>Conseils bien-être
+                            <div class="col-sm-6 col-md-3 mb-2 mb-md-0">
+                                <a href="<?= WEBCLIENT_URL ?>/conseils.php" class="btn btn-success d-block py-3">
+                                    <i class="fas fa-heart me-2"></i>Conseils Bien-être
                                 </a>
                             </div>
-                            <div class="col-md-3">
-                                <a href="defis-sportifs.php" class="btn btn-info d-block py-3">
-                                    <i class="fas fa-running me-2"></i>Défis sportifs
+                            <div class="col-sm-6 col-md-3 mb-2 mb-md-0">
+                                <a href="<?= WEBCLIENT_URL ?>/communautes.php" class="btn btn-info d-block py-3">
+                                    <i class="fas fa-comments me-2"></i>Communautés
                                 </a>
                             </div>
                         </div>
@@ -238,6 +260,6 @@ include_once __DIR__ . '/../../templates/header.php';
 </main>
 
 <?php
-// inclure le pied de page
+// Inclure le pied de page
 include_once __DIR__ . '/../../templates/footer.php';
 ?>
