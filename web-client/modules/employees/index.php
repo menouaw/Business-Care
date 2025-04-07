@@ -12,15 +12,15 @@ $userId = $_SESSION['user_id'];
 $user = getEmployeeDetails($userId);
 $entrepriseId = $_SESSION['user_entreprise'];
 
-$rdvs_data = getEmployeeAppointments($userId, 'upcoming');
+$rdvs_data = getEmployeeAppointments($employee_id, 'upcoming');
 
 $evenements = getEmployeeEvents($userId, 'upcoming');
 
 $communautes = getEmployeeCommunities($userId);
 
-$donations = getDonationHistory($userId);
+$donations = getDonationHistory($employee_id);
 
-$activites = getEmployeeActivityHistory($userId, 1, 5);
+$activites = getEmployeeActivityHistory($employee_id, 1, 5);
 
 include_once __DIR__ . '/../../templates/header.php';
 ?>

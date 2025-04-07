@@ -34,7 +34,7 @@ function verifyCsrfToken()
 
             flashMessage("Erreur de sécurité (jeton invalide). Veuillez réessayer.", "danger");
             redirectTo($_SERVER['HTTP_REFERER'] ?? WEBCLIENT_URL . '/index.php');
-            exit; 
+            exit;
         }
-        
-generateCsrfToken();
+    }
+}

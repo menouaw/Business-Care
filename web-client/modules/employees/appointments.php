@@ -42,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     'date_rdv' => $prestation['date_heure_disponible'], // Utiliser l'heure stockée
                     'duree' => $duree,
                     'type_rdv' => $typeRdv,
-                    'lieu' => $prestation['lieu']??'',
+                    'lieu' => $prestation['lieu'] ?? '',
                     'notes' => $notes
                 ];
 
@@ -58,13 +58,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
                     flashMessage("Votre rendez-vous a été réservé avec succès", "success");
                 } else {
-                    // Le message flash d'erreur est déjà géré dans bookEmployeeAppointment
-                    // flashMessage("Une erreur est survenue lors de la réservation", "danger");
+                    flashMessage("Une erreur est survenue lors de la réservation", "danger");
                 }
             }
         }
 
-        header("Location: " . $_SERVER['PHP_SELF'] . "?upcoming_page=" . $upcomingPage . "&past_page=" . $pastPage . "&canceled_page=" . $canceledPage);        exit;
+        header("Location: " . $_SERVER['PHP_SELF'] . "?upcoming_page=" . $upcomingPage . "&past_page=" . $pastPage . "&canceled_page=" . $canceledPage);
+        exit;
     } else {
         flashMessage("Veuillez remplir tous les champs obligatoires", "warning");
     }
@@ -81,16 +81,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && ($_POST[
                 : "Le rendez-vous a été marqué comme 'Annulé' et déplacé dans la section correspondante."; // Garder cette option ?
             flashMessage($message, "success");
         }
-        // Si cancelEmployeeAppointment retourne false, un message flash (erreur, warning, info) a déjà été défini.
 
-        // Redirige dans tous les cas pour afficher le message flash et rafraîchir l'état
-        $upcomingPage = isset($_GET['upcoming_page']) ? (int)$_GET['upcoming_page'] : 1;
-        $pastPage = isset($_GET['past_page']) ? (int)$_GET['past_page'] : 1;
-        $canceledPage = isset($_GET['canceled_page']) ? (int)$_GET['canceled_page'] : 1;
         header("Location: " . $_SERVER['PHP_SELF'] . "?upcoming_page=" . $upcomingPage . "&past_page=" . $pastPage . "&canceled_page=" . $canceledPage);
         exit;
     }
-    // else: Si $rdvId est invalide, on pourrait ajouter un flashMessage ici aussi, mais cancelEmployeeAppointment le gère déjà.
 }
 
 $upcomingAppointmentsData = getEmployeeAppointments($userId, 'upcoming', $upcomingPage, $limit);
