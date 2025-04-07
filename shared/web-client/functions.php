@@ -400,3 +400,54 @@ function generateInvoiceNumber()
 
     return INVOICE_PREFIX . "-$date-$nextId";
 }
+
+/**
+ * Formate un nombre en devise (euros).
+ *
+ * @param float|null $amount Le montant.
+ * @param string $currencySymbol Le symbole de la devise.
+ * @return string Le montant formaté ou 'N/A' si null.
+ */
+function formatCurrency($amount, $currencySymbol = '€')
+{
+    if ($amount === null || !is_numeric($amount)) {
+        return 'N/A';
+    }
+    return number_format($amount, 2, ',', ' ') . ' ' . $currencySymbol;
+}
+
+/**
+ * Formate un objet DateInterval en une chaîne de caractères représentant le nombre total de mois.
+ *
+ * @param DateInterval|null $interval L'intervalle de temps.
+ * @return string La durée formatée en mois (ex: "36 mois") ou "-" si null/invalide.
+ */
+function formatDuration($interval)
+{
+    if (!$interval instanceof DateInterval) {
+        return '-';
+    }
+    $totalMonths = ($interval->y * 12) + $interval->m;
+    return $totalMonths . ' mois';
+}
+
+/**
+ * Gère la redirection en cas d'échec de validation CSRF pour le client.
+ * Log l'échec, affiche un message flash et redirige vers une page par défaut (ex: index).
+ *
+ * @param string $actionDescription Description de l'action tentée (ex: 'soumission formulaire').
+ * @param string $redirectUrl URL de redirection par défaut.
+ * @return void
+ */
+function handleClientCsrfFailureRedirect($actionDescription = 'action', $redirectUrl = null)
+{
+    $redirectUrl = $redirectUrl ?? WEBCLIENT_URL . '/index.php';
+    flashMessage('Jeton de sécurité invalide ou expiré. Veuillez réessayer.', 'danger');
+    $requestMethod = $_SERVER['REQUEST_METHOD'] ?? 'UNKNOWN';
+    logSecurityEvent(
+        $_SESSION['user_id'] ?? null,
+        'csrf_failure',
+        "[SECURITY FAILURE] Tentative de {$actionDescription} avec jeton invalide via {$requestMethod} sur web-client"
+    );
+    redirectTo($redirectUrl);
+}

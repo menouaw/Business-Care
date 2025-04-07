@@ -30,7 +30,6 @@ function login($email, $password, $rememberMe = false)
         $_SESSION['user_photo'] = $user['photo_url'];
         $_SESSION['last_activity'] = time();
 
-        // stocker les préférences utilisateur
         loadUserPreferences($user['id']);
 
         if ($rememberMe) {
@@ -218,7 +217,7 @@ function getUserInfo($userId = null)
  */
 function resetPassword($email)
 {
-    $user = fetchOne('personnes', "email = '$email'");
+    $user = fetchOne('personnes', "email = :email", [':email' => $email]);
 
     if (!$user) {
         logSecurityEvent(null, 'password_reset', "[FAILURE] Tentative de réinitialisation pour email inexistant: $email", true);
@@ -228,16 +227,18 @@ function resetPassword($email)
     $token = bin2hex(random_bytes(32));
     $expires = date('Y-m-d H:i:s', strtotime('+1 hour'));
 
-    updateRow('personnes', [
+    $updated = updateRow('personnes', [
         'token' => $token,
         'expires' => $expires
-    ], "id = {$user['id']}");
+    ], "id = :id", [':id' => $user['id']]);
 
-    logSecurityEvent($user['id'], 'password_reset', '[SUCCESS] Demande de réinitialisation de mot de passe initiée');
-
-    // TODO: envoyer un email de reinitialisation de mot de passe avec lien contenant le token
-
-    return true;
+    if ($updated > 0) {
+        logSecurityEvent($user['id'], 'password_reset', '[SUCCESS] Demande de réinitialisation de mot de passe initiée');
+        return true;
+    } else {
+        logSecurityEvent($user['id'], 'password_reset', '[FAILURE] Échec de la mise à jour du token de réinitialisation en BDD', true);
+        return false;
+    }
 }
 
 /**
@@ -306,7 +307,6 @@ function validateRememberMeToken($token)
             $_SESSION['user_photo'] = $user['photo_url'];
             $_SESSION['last_activity'] = time();
 
-            // charger les préférences utilisateur
             loadUserPreferences($user['id']);
 
             logSecurityEvent($user['id'], 'auto_login', '[SUCCESS] Connexion automatique via jeton "Se souvenir de moi"');
@@ -324,6 +324,16 @@ function validateRememberMeToken($token)
  */
 function deleteRememberMeToken($token)
 {
-    $result = deleteRow('remember_me_tokens', "token = '$token'");
-    return $result > 0;
+    $tokenInfo = fetchOne('remember_me_tokens', "token = :token", [':token' => $token]);
+    $userId = $tokenInfo ? $tokenInfo['user_id'] : null;
+
+    $rowsAffected = deleteRow('remember_me_tokens', "token = :token", [':token' => $token]);
+
+    if ($rowsAffected > 0) {
+        logSecurityEvent($userId, 'remember_token', '[SUCCESS] Suppression du jeton "Se souvenir de moi"');
+        return true;
+    } else {
+        logSecurityEvent($userId, 'remember_token', '[FAILURE] Échec de suppression du jeton "Se souvenir de moi" (token introuvable ou erreur)', true);
+        return false;
+    }
 }

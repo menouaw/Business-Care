@@ -205,16 +205,36 @@ function updateRow($table, $data, $where, $whereParams = [])
 {
     $table = validateTableName($table);
 
+    if (empty($data)) {
+        throw new Exception("Aucune donnée fournie pour la mise à jour.");
+    }
+
     $fields = array_keys($data);
     $setClause = array_map(function ($field) {
-        return "$field = :$field";
+        return "`$field` = :set_$field";
     }, $fields);
 
-    $sql = "UPDATE $table SET " . implode(', ', $setClause) . " WHERE $where";
+    $sql = "UPDATE `$table` SET " . implode(', ', $setClause) . " WHERE $where";
 
-    $params = array_merge($data, $whereParams);
-    $stmt = executeQuery($sql, $params);
-    return $stmt->rowCount();
+    $setParams = [];
+    foreach ($data as $key => $value) {
+        $setParams[":set_$key"] = $value;
+    }
+
+    $finalWhereParams = [];
+    foreach ($whereParams as $key => $value) {
+        $finalWhereParams[(strpos($key, ':') === 0 ? $key : ':' . $key)] = $value;
+    }
+
+    $params = array_merge($setParams, $finalWhereParams);
+
+    try {
+        $stmt = executeQuery($sql, $params);
+        return $stmt->rowCount();
+    } catch (PDOException $e) {
+        error_log("Erreur updateRow: " . $e->getMessage() . " SQL: " . $sql . " Params: " . json_encode($params));
+        throw $e;
+    }
 }
 
 /**
