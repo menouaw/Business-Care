@@ -1,34 +1,6 @@
 <?php
 
-
 require_once __DIR__ . '/../../includes/page_functions/modules/employees.php';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $message = '';
-    $messageType = 'danger';
-    $redirect = true;
-    if (!isset($_POST['csrf_token']) || !validateToken($_POST['csrf_token'])) {
-        $userIdForLog = $_SESSION['user_id'] ?? null;
-        logSecurityEvent($userIdForLog, 'csrf_failure', "[SECURITY FAILURE] Tentative d'annulation via POST avec jeton invalide sur appointments.php");
-    } else {
-        $reservation_id = isset($_POST['reservation_id']) ? filter_var($_POST['reservation_id'], FILTER_VALIDATE_INT) : false;
-        if (!$reservation_id) {
-            $message = "ID de réservation invalide pour l'annulation.";
-        } else {
-
-            handleCancelReservation($reservation_id);
-        }
-    }
-
-    if (!empty($message)) {
-        flashMessage($message, $messageType);
-    }
-
-
-    $currentFilterForRedirect = isset($_GET['filter']) ? sanitizeInput($_GET['filter']) : 'upcoming';
-    redirectTo(WEBCLIENT_URL . '/modules/employees/appointments.php?filter=' . $currentFilterForRedirect);
-    exit;
-}
 
 $pageData = displayEmployeeAppointmentsPage();
 $appointments = $pageData['appointments'] ?? [];
@@ -42,10 +14,12 @@ include_once __DIR__ . '/../../templates/header.php';
 
 <main class="employee-appointments-page py-4">
     <div class="container">
-        <div class="row mb-4 align-items-center">
+        <?php echo displayFlashMessages(); ?>
+
+        <div class="row mb-4">
             <div class="col">
-                <h1 class="h2 mb-0">Mon Planning</h1>
-                <p class="text-muted mb-0">Consultez l'historique et les détails de vos réservations (consultations, ateliers, etc.).</p>
+                <h1 class="h2">Mes Rendez-vous</h1>
+                <p class="text-muted">Consultez l'historique et les détails de vos consultations.</p>
             </div>
             <div class="col-auto">
                 <a href="<?= WEBCLIENT_URL ?>/modules/employees/index.php" class="btn btn-outline-secondary">
@@ -54,8 +28,7 @@ include_once __DIR__ . '/../../templates/header.php';
             </div>
         </div>
 
-        <?php echo displayFlashMessages(); ?>
-
+        <!-- Filtres -->
         <div class="row mb-4">
             <div class="col">
                 <div class="btn-group" role="group" aria-label="Filtrer les rendez-vous">
@@ -64,9 +37,6 @@ include_once __DIR__ . '/../../templates/header.php';
                     <a href="?filter=annule" class="btn <?= $currentFilter === 'annule' ? 'btn-danger' : 'btn-outline-danger' ?>">Annulés</a>
                     <a href="?filter=all" class="btn <?= $currentFilter === 'all' ? 'btn-info' : 'btn-outline-info' ?>">Tous</a>
                 </div>
-            </div>
-            <div class="col text-end">
-                <a href="<?= WEBCLIENT_URL ?>/modules/employees/services.php" class="btn btn-sm btn-outline-success"><i class="fas fa-book-open me-1"></i> Voir le catalogue</a>
             </div>
         </div>
 
@@ -94,7 +64,7 @@ include_once __DIR__ . '/../../templates/header.php';
                 </h5>
             </div>
             <div class="card-body">
-                <?php if (empty($appointments)) : ?>
+                <?php if (empty($appointments['items'])) : ?>
                     <p class="text-center text-muted my-5">
                         <?php
                         switch ($currentFilter) {
@@ -114,10 +84,11 @@ include_once __DIR__ . '/../../templates/header.php';
                         }
                         ?>
                         <br>
+                        <a href="<?= WEBCLIENT_URL ?>/modules/employees/services.php" class="btn btn-sm btn-primary mt-3">Voir le catalogue des prestations</a>
                     </p>
                 <?php else : ?>
-                    <div class="list-group ">
-                        <?php foreach ($appointments as $rdv) : ?>
+                    <div class="list-group list-group-flush">
+                        <?php foreach ($appointments['items'] as $rdv) : ?>
                             <div class="list-group-item border-0 px-0 py-3">
                                 <div class="row align-items-center">
                                     <div class="col-md-6 col-lg-7 mb-2 mb-md-0">
@@ -139,9 +110,8 @@ include_once __DIR__ . '/../../templates/header.php';
                                         <?= $rdv['statut_badge'] ?? '' ?>
                                     </div>
                                     <div class="col-md-3 col-lg-3 text-md-end">
-                                        <?php if (in_array($rdv['statut'], APPOINTMENT_CANCELABLE_STATUSES)) : ?>
-                                            <!-- Formulaire pour l'annulation -->
-                                            <form action="<?= WEBCLIENT_URL ?>/modules/employees/appointments.php" method="POST" class="d-inline">
+                                        <?php if (in_array($rdv['statut'], ['planifie', 'confirme'])) : ?>
+                                            <form action="<?= WEBCLIENT_URL ?>/actions/cancel_appointment.php" method="POST" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir annuler ce rendez-vous ?');">
                                                 <input type="hidden" name="reservation_id" value="<?= $rdv['id'] ?>">
                                                 <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
                                                 <button type="submit" class="btn btn-sm btn-outline-danger">
@@ -149,18 +119,16 @@ include_once __DIR__ . '/../../templates/header.php';
                                                 </button>
                                             </form>
                                         <?php elseif ($rdv['statut'] === 'termine') : ?>
-                                            <!-- Optionnel: Lien pour évaluer la prestation -->
                                             <a href="<?= WEBCLIENT_URL ?>/evaluer-prestation.php?prestation_id=<?= $rdv['prestation_id'] ?>&rdv_id=<?= $rdv['id'] ?>" class="btn btn-sm btn-outline-warning">
                                                 <i class="fas fa-star me-1"></i> Évaluer
                                             </a>
                                         <?php endif; ?>
-
-
                                     </div>
                                 </div>
                             </div>
                         <?php endforeach; ?>
                     </div>
+                    <?= $appointments['pagination_html'] ?? '' ?>
                 <?php endif; ?>
             </div>
         </div>

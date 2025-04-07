@@ -845,7 +845,7 @@ function displayEmployeeAppointmentsPage()
 
     $data = [];
     $filter = $_GET['filter'] ?? 'upcoming';
-    $validFilters = ['upcoming', 'past', 'all', 'annule'];
+    $validFilters = ['upcoming', 'past', 'all'];
     if (!in_array($filter, $validFilters)) {
         $filter = 'upcoming';
     }
@@ -930,6 +930,9 @@ function displayEmployeeEventsPage()
 
     return $data;
 }
+
+
+
 
 function displayEmployeeProfile()
 {
@@ -1660,12 +1663,6 @@ function getCommunityIcon($type)
     }
 }
 
-/**
- * Prépare les données nécessaires pour la page de détails d'une communauté.
- *
- * @param int $community_id L'ID de la communauté.
- * @return array Les données de la page (détails communauté, posts, token CSRF, etc.).
- */
 
 function handleNewCommunityPost($community_id, $employee_id, $message): bool
 {
@@ -1703,13 +1700,6 @@ function handleNewCommunityPost($community_id, $employee_id, $message): bool
     }
 }
 
-
-/**
- * Retourne l'icône Font Awesome correspondant à un type d'événement.
- *
- * @param string $eventType Le type d'événement (ex: 'conference', 'webinar').
- * @return string La classe CSS de l'icône Font Awesome.
- */
 function getEventIcon($eventType)
 {
     $eventType = strtolower(trim($eventType ?? 'autre'));
@@ -1727,13 +1717,7 @@ function getEventIcon($eventType)
     return $iconMap[$eventType] ?? $iconMap['default'];
 }
 
-/**
- * Gère l'inscription d'un employé à un événement.
- *
- * @param int $employee_id ID de l'employé.
- * @param int $event_id ID de l'événement.
- * @return bool True si l'inscription a réussi, false sinon.
- */
+
 function handleRegisterForEvent($employee_id, $event_id)
 {
     requireRole(ROLE_SALARIE);
@@ -1833,13 +1817,7 @@ function handleRegisterForEvent($employee_id, $event_id)
     }
 }
 
-/**
- * Gère la désinscription d'un employé à un événement.
- *
- * @param int $employee_id ID de l'employé.
- * @param int $event_id ID de l'événement.
- * @return bool True si la désinscription a réussi, false sinon.
- */
+
 function handleUnregisterFromEvent($employee_id, $event_id)
 {
     requireRole(ROLE_SALARIE);
@@ -1913,5 +1891,82 @@ function handleUnregisterFromEvent($employee_id, $event_id)
         logSystemActivity('error', "Exception lors de la désinscription de l'événement ID: $event_id: " . $e->getMessage());
         flashMessage("Erreur technique lors de la désinscription.", "danger");
         return false;
+    }
+}
+
+function handleChangePassword($employee_id, $current_password, $new_password, $confirm_password)
+{
+    $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
+    if (!$employee_id || empty($current_password) || empty($new_password) || empty($confirm_password)) {
+        flashMessage("Tous les champs de mot de passe sont requis.", "danger");
+        return false;
+    }
+
+    if ($new_password !== $confirm_password) {
+        flashMessage("Le nouveau mot de passe et la confirmation ne correspondent pas.", "danger");
+        return false;
+    }
+
+    if (strlen($new_password) < 8) {
+        flashMessage("Le nouveau mot de passe doit comporter au moins 8 caractères.", "danger");
+        return false;
+    }
+
+    if ($current_password === $new_password) {
+        flashMessage("Le nouveau mot de passe doit être différent de l'ancien.", "warning");
+        return false;
+    }
+
+    try {
+        $employee = fetchOne('personnes', 'id = :id AND role_id = :role_id', [':id' => $employee_id, ':role_id' => ROLE_SALARIE]);
+        if (!$employee || !isset($employee['mot_de_passe'])) {
+            flashMessage("Utilisateur non trouvé.", "danger");
+            return false;
+        }
+
+        if (!password_verify($current_password, $employee['mot_de_passe'])) {
+            flashMessage("Le mot de passe actuel fourni est incorrect.", "danger");
+            logSecurityEvent($employee_id, 'password_change_fail', 'Échec changement MDP: mot de passe actuel incorrect');
+            return false;
+        }
+
+        $newPasswordHash = password_hash($new_password, PASSWORD_DEFAULT);
+        if (!$newPasswordHash) {
+            logSystemActivity('error', "Erreur hachage nouveau mot de passe pour employé #$employee_id");
+            flashMessage('Une erreur technique est survenue lors du hachage du mot de passe.', 'danger');
+            return false;
+        }
+
+        $updateData = ['mot_de_passe' => $newPasswordHash];
+        $affectedRows = updateRow('personnes', $updateData, 'id = :id', [':id' => $employee_id]);
+
+        if ($affectedRows > 0) {
+            logSecurityEvent($employee_id, 'password_change_success', "Mot de passe modifié avec succès par l'employé");
+            flashMessage("Votre mot de passe a été modifié avec succès.", "success");
+            return true;
+        } else {
+            flashMessage("Aucune modification n'a été appliquée ou une erreur est survenue.", "warning");
+            return false;
+        }
+    } catch (Exception $e) {
+        logSystemActivity('error', "Erreur handleChangePassword pour employé #$employee_id: " . $e->getMessage());
+        flashMessage('Une erreur technique est survenue lors du changement de mot de passe.', 'danger');
+        return false;
+    }
+}
+
+function handleAnonymousReport($sujet, $description)
+{
+
+
+    $sujet = sanitizeInput($sujet);
+    $description = sanitizeInput($description);
+
+    try {
+        logSystemActivity('anonymous_report_received', "Sujet: " . $sujet . " - Description: " . $description);
+        return true;
+    } catch (Exception $e) {
+        logSystemActivity('error', "Erreur lors du traitement du signalement anonyme: " . $e->getMessage());
+        return false; 
     }
 }
