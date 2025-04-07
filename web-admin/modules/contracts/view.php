@@ -19,6 +19,9 @@ if (!$contract) {
 
 $activeUserCount = contractsGetActiveUserCountForCompany($contract['entreprise_id']);
 
+$dureeTexte = '-';
+$montantTotalEstimeFormatted = '-';
+
 $pageTitle = "Details du contrat";
 include_once '../../templates/header.php';
 ?>
@@ -82,33 +85,35 @@ include_once '../../templates/header.php';
                 <div class="card-body">
                     <div class="row">
                         <?php
-                        try {
-                            $dateDebut = new DateTime($contract['date_debut']);
-                            $now = new DateTime();
-                            $dateFinCalcul = $contract['date_fin'] ? new DateTime($contract['date_fin']) : $now;
-                            
-                            if ($dateFinCalcul < $dateDebut) {
-                                $dateFinCalcul = $dateDebut;
-                            }
+                        if (!empty($contract['date_debut'])) {
+                            $isValidStartDate = (bool)strtotime($contract['date_debut']);
+                            $isValidEndDate = empty($contract['date_fin']) || (bool)strtotime($contract['date_fin']);
 
-                            $duree = $dateDebut->diff($dateFinCalcul);
-                            $dureeTexte = formatDuration($duree);
+                            if ($isValidStartDate && $isValidEndDate) {
+                                $dateDebut = new DateTime($contract['date_debut']);
+                                $dateFin = !empty($contract['date_fin']) ? new DateTime($contract['date_fin']) : new DateTime();
 
-                            $montantTotalEstime = 0;
-                            if ($contract['montant_mensuel']) {
-                                $interval = $dateDebut->diff($dateFinCalcul);
-                                $mois = ($interval->y * 12) + $interval->m;
-                                if ($interval->d > 0 || ($interval->m == 0 && $interval->y == 0 && $dateDebut->format('d') > $dateFinCalcul->format('d'))) {
-                                    $mois += 1;
+                                $dateFinCalcul = ($dateFin >= $dateDebut) ? $dateFin : $dateDebut;
+
+                                $duree = $dateDebut->diff($dateFinCalcul);
+                                $dureeTexte = formatDuration($duree);
+
+                                if (isset($contract['montant_mensuel']) && is_numeric($contract['montant_mensuel']) && $contract['montant_mensuel'] > 0) {
+                                    $totalMonths = ($duree->y * 12) + $duree->m;
+
+                                    if ($totalMonths == 0 && $dateDebut <= $dateFinCalcul) {
+                                        $totalMonths = 1;
+                                    } elseif ($duree->d > 0) {
+                                        $totalMonths++;
+                                    }
+
+                                    $montantTotalEstime = $totalMonths * (float)$contract['montant_mensuel'];
+                                    $montantTotalEstimeFormatted = formatMoney($montantTotalEstime);
                                 }
-                                $montantTotalEstime = $mois * $contract['montant_mensuel'];
                             } else {
-                                $montantTotalEstime = null; 
+                                if (!$isValidStartDate) logSystemActivity('warning', 'Date de début invalide pour contrat ID: ' . ($contract['id'] ?? 'N/A'));
+                                if (!$isValidEndDate && !empty($contract['date_fin'])) logSystemActivity('warning', 'Date de fin invalide pour contrat ID: ' . ($contract['id'] ?? 'N/A'));
                             }
-                        } catch (Exception $e) {
-                            $dureeTexte = "Erreur de calcul";
-                            $montantTotalEstime = null;
-                            logSystemActivity('error', 'Erreur de calcul: ' . $e->getMessage());
                         }
                         ?>
                         <div class="col-md-4 text-center">
@@ -122,7 +127,7 @@ include_once '../../templates/header.php';
                             </div>
                             <div class="col-md-4 text-center">
                                 <h6>Montant total <?php echo ($contract['date_fin'] ? 'facture' : 'estime'); ?></h6>
-                                <p class="h4"><?php echo $montantTotalEstime !== null ? formatCurrency($montantTotalEstime) : 'N/A'; ?></p>
+                                <p class="h4"><?php echo $montantTotalEstimeFormatted; ?></p>
                             </div>
                         <?php endif; ?>
                     </div>
@@ -133,5 +138,3 @@ include_once '../../templates/header.php';
         </main>
     </div>
 </div>
-
-</rewritten_file>
