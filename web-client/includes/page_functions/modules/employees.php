@@ -1,25 +1,10 @@
 <?php
 
-/**
- * fonctions pour la gestion des salariés
- *
- * ce fichier contient les fonctions nécessaires pour gérer les salariés des entreprises clientes
- */
 
 require_once __DIR__ . '/../../../includes/init.php';
 
-/**
- * récupère la liste des salariés avec pagination et recherche
- * 
- * @param int|null $company_id identifiant de l'entreprise (null pour tous)
- * @param int $page numéro de page
- * @param int $limit nombre d'éléments par page
- * @param string $search terme de recherche
- * @return array liste des salariés et informations de pagination
- */
 function getEmployeesList($company_id = null, $page = 1, $limit = 5, $search = '')
 {
-    // Sanitize input parameters
     $company_id = sanitizeInput($company_id);
     if ($company_id !== null) {
         $company_id = filter_var($company_id, FILTER_VALIDATE_INT);
@@ -28,10 +13,8 @@ function getEmployeesList($company_id = null, $page = 1, $limit = 5, $search = '
     $limit = (int)sanitizeInput($limit);
     $search = sanitizeInput($search);
 
-    // Calcul de l'offset pour la pagination
     $offset = ($page - 1) * $limit;
 
-    // Construction de la requête de base
     $query = "SELECT p.id, p.nom, p.prenom, p.email, p.telephone, p.statut, p.photo_url, 
               p.derniere_connexion, e.nom as entreprise_nom 
               FROM personnes p
@@ -40,14 +23,12 @@ function getEmployeesList($company_id = null, $page = 1, $limit = 5, $search = '
     $countQuery = "SELECT COUNT(id) as total FROM personnes WHERE role_id = ?";
     $params = [ROLE_SALARIE];
 
-    // Filtre par entreprise si spécifié
     if ($company_id) {
         $query .= " AND p.entreprise_id = ?";
         $countQuery .= " AND entreprise_id = ?";
         $params[] = $company_id;
     }
 
-    // Ajout de la condition de recherche si nécessaire
     if (!empty($search)) {
         $query .= " AND (p.nom LIKE ? OR p.prenom LIKE ? OR p.email LIKE ?)";
         $countQuery .= " AND (nom LIKE ? OR prenom LIKE ? OR email LIKE ?)";
@@ -55,16 +36,13 @@ function getEmployeesList($company_id = null, $page = 1, $limit = 5, $search = '
         $params = array_merge($params, [$searchTerm, $searchTerm, $searchTerm]);
     }
 
-    // Ajout de l'ordre et de la limite
     $query .= " ORDER BY p.nom, p.prenom ASC LIMIT ? OFFSET ?";
     $params[] = $limit;
     $params[] = $offset;
 
-    // Exécution de la requête principale
     $stmt = executeQuery($query, $params);
     $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Pour chaque employé, ajouter le badge de statut
     foreach ($employees as &$employee) {
         if (isset($employee['statut'])) {
             $employee['statut_badge'] = getStatusBadge($employee['statut']);
@@ -74,15 +52,12 @@ function getEmployeesList($company_id = null, $page = 1, $limit = 5, $search = '
         }
     }
 
-    // Calcul du nombre total pour la pagination
     $countStmt = executeQuery($countQuery, array_slice($params, 0, -2));
     $countResult = $countStmt->fetch(PDO::FETCH_ASSOC);
     $total = $countResult['total'];
 
-    // Calcul des informations de pagination
     $totalPages = ceil($total / $limit);
 
-    // Préparer les données pour renderPagination
     $paginationData = [
         'currentPage' => $page,
         'totalPages' => $totalPages,
@@ -90,7 +65,6 @@ function getEmployeesList($company_id = null, $page = 1, $limit = 5, $search = '
         'perPage' => $limit
     ];
 
-    // Construction de l'URL pour la pagination (considérer les filtres existants)
     $urlPattern = "?page={page}";
     if ($company_id) {
         $urlPattern .= "&company_id=" . urlencode($company_id);
@@ -111,12 +85,7 @@ function getEmployeesList($company_id = null, $page = 1, $limit = 5, $search = '
     ];
 }
 
-/**
- * récupère les détails d'un salarié
- * 
- * @param int $employee_id identifiant du salarié
- * @return array|false détails du salarié ou false si non trouvé
- */
+
 function getEmployeeDetails($employee_id)
 {
     // Validation de l'ID
@@ -126,7 +95,6 @@ function getEmployeeDetails($employee_id)
         return false;
     }
 
-    // Récupération des informations du salarié avec fetchOne
     $employee = fetchOne('personnes', "id = $employee_id AND role_id = " . ROLE_SALARIE);
 
     if (!$employee) {
@@ -134,12 +102,10 @@ function getEmployeeDetails($employee_id)
         return false;
     }
 
-    // Ajouter le badge de statut
     if (isset($employee['statut'])) {
         $employee['statut_badge'] = getStatusBadge($employee['statut']);
     }
 
-    // Formater les dates
     if (isset($employee['date_naissance'])) {
         $employee['date_naissance_formatee'] = formatDate($employee['date_naissance'], 'd/m/Y');
     }
@@ -147,7 +113,6 @@ function getEmployeeDetails($employee_id)
         $employee['derniere_connexion_formatee'] = formatDate($employee['derniere_connexion']);
     }
 
-    // Récupération de l'entreprise associée
     if (!empty($employee['entreprise_id'])) {
         $entreprise = fetchOne('entreprises', "id = " . $employee['entreprise_id']);
         if ($entreprise) {
@@ -155,7 +120,6 @@ function getEmployeeDetails($employee_id)
         }
     }
 
-    // Récupération des préférences utilisateur
     $preferences = fetchAll('preferences_utilisateurs', "personne_id = " . $employee_id);
     if (!empty($preferences)) {
         $employee['preferences'] = $preferences[0];
@@ -164,16 +128,9 @@ function getEmployeeDetails($employee_id)
     return $employee;
 }
 
-/**
- * met à jour le profil d'un salarié
- * 
- * @param int $employee_id identifiant du salarié
- * @param array $profile_data données du profil à mettre à jour
- * @return bool résultat de la mise à jour
- */
+
 function updateEmployeeProfile($employee_id, $profile_data)
 {
-    // Validation and sanitization
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
     $profile_data = sanitizeInput($profile_data);
 
@@ -211,7 +168,6 @@ function updateEmployeeProfile($employee_id, $profile_data)
         return false;
     }
 
-    // Liste des champs autorisés
     $allowedFields = [
         'nom',
         'prenom',
@@ -222,7 +178,6 @@ function updateEmployeeProfile($employee_id, $profile_data)
         'photo_url'
     ];
 
-    // Filtrage des paramètres
     $filteredData = array_intersect_key($profile_data, array_flip($allowedFields));
 
     if (empty($filteredData)) {
@@ -363,55 +318,222 @@ function getEmployeeReservations($employee_id, $status = 'all')
 }
 
 /**
- * récupère les rendez-vous médicaux d'un salarié
+ * récupère les rendez-vous d'un salarié avec pagination
  * 
  * @param int $employee_id identifiant du salarié
- * @param string $status filtre par statut (upcoming, past, all)
- * @return array liste des rendez-vous médicaux
+ * @param string $status statut des rendez-vous à récupérer (upcoming, past, canceled)
+ * @param int $page numéro de page
+ * @param int $limit nombre d'éléments par page
+ * @return array rendez-vous et informations de pagination
  */
-function getEmployeeAppointments($employee_id, $status = 'upcoming')
+function getEmployeeAppointments($employee_id, $status = 'upcoming', $page = 1, $limit = 5)
 {
-    // Validation de l'ID
+    // Validation et sanitization
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
+    $status = sanitizeInput($status);
+    $page = (int)sanitizeInput($page);
+    $limit = (int)sanitizeInput($limit);
+
+    // Vérification de l'ID employé
     if (!$employee_id) {
-        return [];
+        error_log("ID d'employé invalide dans getEmployeeAppointments");
+        return [
+            'appointments' => [],
+            'pagination' => ['current' => 1, 'limit' => $limit, 'total' => 0, 'totalPages' => 0],
+            'pagination_html' => ''
+        ];
     }
 
-    // Construction de la requête
-    $query = "SELECT r.id, r.date_rdv, r.duree, r.lieu, r.type_rdv, r.statut,
-              p.nom as prestation_nom
-              FROM rendez_vous r
-              JOIN prestations p ON r.prestation_id = p.id
-              WHERE r.personne_id = ? AND p.type = 'consultation'";
+    // Calcul de l'offset pour la pagination
+    $offset = ($page - 1) * $limit;
+
+    // Construction de la requête de base
+    $query = "SELECT rv.id as rdv_id, rv.date_rdv, rv.duree, rv.type_rdv, rv.statut, rv.lieu, rv.notes,
+              p.id as prestation_id, p.nom as prestation_nom, p.description as prestation_description, 
+              pp.id as praticien_id, CONCAT(pp.prenom, ' ', pp.nom) as praticien_nom,
+              e.id as evenement_id, e.titre as evenement_titre, e.lieu as evenement_lieu
+              FROM rendez_vous rv
+              LEFT JOIN prestations p ON rv.prestation_id = p.id
+              LEFT JOIN personnes pp ON rv.praticien_id = pp.id
+              LEFT JOIN evenements e ON rv.evenement_id = e.id
+              WHERE rv.personne_id = ?";
+
+    // Conditions selon le statut demandé
     $params = [$employee_id];
 
-    // Filtre par statut
-    if ($status === 'upcoming') {
-        $query .= " AND r.date_rdv >= CURDATE() AND r.statut NOT IN ('annule', 'termine')";
-    } else if ($status === 'past') {
-        $query .= " AND (r.date_rdv < CURDATE() OR r.statut = 'termine')";
+    $now = date('Y-m-d H:i:s');
+
+    switch ($status) {
+        case 'upcoming':
+            $query .= " AND rv.date_rdv > ? AND rv.statut NOT IN ('annule', 'manque')";
+            $params[] = $now;
+            $query .= " ORDER BY rv.date_rdv ASC";
+            break;
+
+        case 'past':
+            $query .= " AND (rv.date_rdv < ? AND rv.statut NOT IN ('annule', 'manque'))";
+            $params[] = $now;
+            $query .= " ORDER BY rv.date_rdv DESC";
+            break;
+
+        case 'canceled':
+            $query .= " AND rv.statut IN ('annule', 'manque')";
+            $query .= " ORDER BY rv.date_rdv DESC";
+            break;
+
+        default:
+            $query .= " ORDER BY rv.date_rdv DESC";
     }
 
-    $query .= " ORDER BY r.date_rdv";
-    if ($status === 'upcoming') {
-        $query .= " ASC";
-    } else {
-        $query .= " DESC";
+    // Ajout de la limitation et offset
+    $query .= " LIMIT ? OFFSET ?";
+    $params[] = $limit;
+    $params[] = $offset;
+
+    // Comptage du nombre total d'éléments pour la pagination
+    $countQuery = "SELECT COUNT(*) as total FROM rendez_vous rv WHERE rv.personne_id = ?";
+    $countParams = [$employee_id];
+
+    switch ($status) {
+        case 'upcoming':
+            $countQuery .= " AND rv.date_rdv > ? AND rv.statut NOT IN ('annule', 'manque')";
+            $countParams[] = $now;
+            break;
+
+        case 'past':
+            $countQuery .= " AND (rv.date_rdv < ? AND rv.statut NOT IN ('annule', 'manque'))";
+            $countParams[] = $now;
+            break;
+
+        case 'canceled':
+            $countQuery .= " AND rv.statut IN ('annule', 'manque')";
+            break;
     }
 
-    $appointments = executeQuery($query, $params)->fetchAll();
+    // Exécution de la requête principale
+    $stmt = executeQuery($query, $params);
+    $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Formater les dates et ajouter les badges de statut
+    // Pour chaque rendez-vous, formater les données
     foreach ($appointments as &$appointment) {
+        // Formatage de la date
         if (isset($appointment['date_rdv'])) {
-            $appointment['date_rdv_formatee'] = formatDate($appointment['date_rdv'], 'd/m/Y H:i');
+            $date = new DateTime($appointment['date_rdv']);
+            $appointment['date_rdv_formatee'] = $date->format('d/m/Y H:i');
         }
+
+        // Formatage du statut avec un badge
         if (isset($appointment['statut'])) {
             $appointment['statut_badge'] = getStatusBadge($appointment['statut']);
         }
     }
 
-    return $appointments;
+    // Comptage du nombre total pour la pagination
+    $countStmt = executeQuery($countQuery, $countParams);
+    $countResult = $countStmt->fetch(PDO::FETCH_ASSOC);
+    $total = $countResult['total'];
+
+    // Calcul des informations de pagination
+    $totalPages = ceil($total / $limit);
+
+    // Préparer les données pour la pagination
+    $paginationData = [
+        'currentPage' => $page,
+        'totalPages' => $totalPages,
+        'totalItems' => $total,
+        'perPage' => $limit
+    ];
+
+    // Construction de l'URL pour la pagination
+    $urlPattern = "?";
+
+    switch ($status) {
+        case 'upcoming':
+            $urlPattern .= "upcoming_page={page}&past_page=" . sanitizeInput($_GET['past_page'] ?? 1) . "&canceled_page=" . sanitizeInput($_GET['canceled_page'] ?? 1);
+            break;
+
+        case 'past':
+            $urlPattern .= "upcoming_page=" . sanitizeInput($_GET['upcoming_page'] ?? 1) . "&past_page={page}&canceled_page=" . sanitizeInput($_GET['canceled_page'] ?? 1);
+            break;
+
+        case 'canceled':
+            $urlPattern .= "upcoming_page=" . sanitizeInput($_GET['upcoming_page'] ?? 1) . "&past_page=" . sanitizeInput($_GET['past_page'] ?? 1) . "&canceled_page={page}";
+            break;
+    }
+
+    return [
+        'appointments' => $appointments,
+        'pagination' => [
+            'current' => $page,
+            'limit' => $limit,
+            'total' => $total,
+            'totalPages' => $totalPages
+        ],
+        'pagination_html' => renderPagination($paginationData, $urlPattern)
+    ];
+}
+
+/**
+ * Génère le HTML de pagination
+ * 
+ * @param array $paginationData Données de pagination (currentPage, totalPages, totalItems, perPage)
+ * @param string $urlPattern Modèle d'URL pour les liens de pagination
+ * @param string $ariaLabel Texte pour l'attribut aria-label
+ * @return string HTML de pagination
+ */
+function generatePaginationHtml($paginationData, $urlPattern, $ariaLabel = 'Pagination')
+{
+    if ($paginationData['totalPages'] <= 1) {
+        return '';
+    }
+
+    $html = '<nav aria-label="' . htmlspecialchars($ariaLabel) . '">';
+    $html .= '<ul class="pagination">';
+
+    // Premier et Précédent
+    if ($paginationData['currentPage'] > 1) {
+        $firstUrl = str_replace('{page}', '1', $urlPattern);
+        $prevUrl = str_replace('{page}', $paginationData['currentPage'] - 1, $urlPattern);
+
+        $html .= '<li class="page-item">';
+        $html .= '<a class="page-link" href="' . $firstUrl . '" aria-label="Première">';
+        $html .= '<span aria-hidden="true">&laquo;&laquo;</span>';
+        $html .= '</a></li>';
+
+        $html .= '<li class="page-item">';
+        $html .= '<a class="page-link" href="' . $prevUrl . '" aria-label="Précédente">';
+        $html .= '<span aria-hidden="true">&laquo;</span>';
+        $html .= '</a></li>';
+    }
+
+    // Pages
+    for ($i = max(1, $paginationData['currentPage'] - 2); $i <= min($paginationData['totalPages'], $paginationData['currentPage'] + 2); $i++) {
+        $pageUrl = str_replace('{page}', $i, $urlPattern);
+        $activeClass = ($i == $paginationData['currentPage']) ? ' active' : '';
+
+        $html .= '<li class="page-item' . $activeClass . '">';
+        $html .= '<a class="page-link" href="' . $pageUrl . '">' . $i . '</a>';
+        $html .= '</li>';
+    }
+
+    // Suivant et Dernier
+    if ($paginationData['currentPage'] < $paginationData['totalPages']) {
+        $nextUrl = str_replace('{page}', $paginationData['currentPage'] + 1, $urlPattern);
+        $lastUrl = str_replace('{page}', $paginationData['totalPages'], $urlPattern);
+
+        $html .= '<li class="page-item">';
+        $html .= '<a class="page-link" href="' . $nextUrl . '" aria-label="Suivante">';
+        $html .= '<span aria-hidden="true">&raquo;</span>';
+        $html .= '</a></li>';
+
+        $html .= '<li class="page-item">';
+        $html .= '<a class="page-link" href="' . $lastUrl . '" aria-label="Dernière">';
+        $html .= '<span aria-hidden="true">&raquo;&raquo;</span>';
+        $html .= '</a></li>';
+    }
+
+    $html .= '</ul></nav>';
+    return $html;
 }
 
 /**
@@ -564,6 +686,12 @@ function manageEmployeeDonations($employee_id, $donation_data)
         return false;
     }
 
+    // Vérifier que le type est bien une valeur acceptée par l'enum de la base de données
+    if (!in_array($donation_data['type'], ['financier', 'materiel'])) {
+        flashMessage("Type de don invalide", "danger");
+        return false;
+    }
+
     // Validation supplémentaire pour les montants financiers
     if ($donation_data['type'] == 'financier') {
         $montant = filter_var($donation_data['montant'], FILTER_VALIDATE_FLOAT);
@@ -595,6 +723,18 @@ function manageEmployeeDonations($employee_id, $donation_data)
             'statut' => 'en_attente'
         ];
 
+        // Ajouter l'association_id si spécifié
+        if (!empty($donation_data['association_id'])) {
+            $association_id = filter_var($donation_data['association_id'], FILTER_VALIDATE_INT);
+            if ($association_id) {
+                // Vérifier que l'association existe
+                $association = fetchOne('associations', "id = $association_id AND actif = 1");
+                if ($association) {
+                    $donData['association_id'] = $association_id;
+                }
+            }
+        }
+
         // Insertion du don
         $donationId = insertRow('dons', $donData);
 
@@ -621,14 +761,6 @@ function manageEmployeeDonations($employee_id, $donation_data)
                 flashMessage("Erreur lors de l'enregistrement de la transaction", "danger");
                 return false;
             }
-
-            // Mettre à jour le numéro de référence avec l'ID de transaction
-            updateRow(
-                'dons',
-                ['reference' => 'DON-' . $donationId . '-TR' . $transactionId],
-                'id = :id',
-                ['id' => $donationId]
-            );
         }
 
         // Validation de la transaction
@@ -692,7 +824,7 @@ function getEmployeeEvents($employee_id, $event_type = 'all')
     // Formater les dates
     foreach ($events as &$event) {
         if (isset($event['date_debut'])) {
-            $event['date_debut_formatee'] = formatDate($event['date_debut'], 'd/m/Y');
+            $event['date_debut_formatted'] = formatDate($event['date_debut'], 'd/m/Y');
         }
         if (isset($event['date_fin'])) {
             $event['date_fin_formatee'] = formatDate($event['date_fin'], 'd/m/Y');
@@ -770,97 +902,1056 @@ function updateEmployeeSettings($employee_id, $settings)
 }
 
 /**
+ * Vérifie si une prestation est disponible à une date donnée
+ * Cette fonction retourne toujours true pour permettre de s'inscrire 
+ * plusieurs fois à la même prestation
+ * 
+ * @param int $prestation_id ID de la prestation
+ * @param string $date_rdv Date du rendez-vous au format 'Y-m-d H:i:s'
+ * @return bool True si disponible, false sinon
+ */
+function isPrestationAvailable($prestation_id, $date_rdv)
+{
+    // On retourne toujours true pour permettre les inscriptions multiples
+    return true;
+}
+
+/**
+ * récupère les prestations disponibles pour un salarié avec pagination
+ * 
+ * @param int $employee_id identifiant du salarié
+ * @param int $page numéro de page
+ * @param int $limit nombre d'éléments par page
+ * @return array prestations et informations de pagination
+ */
+function getAvailablePrestationsForEmployee($employee_id, $page = 1, $limit = 20)
+{
+    $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
+    $page = (int)sanitizeInput($page);
+    $limit = (int)sanitizeInput($limit);
+
+    if (!$employee_id) {
+        return [
+            'prestations' => [],
+            'pagination' => ['current' => 1, 'limit' => $limit, 'total' => 0, 'totalPages' => 0],
+            'pagination_html' => ''
+        ];
+    }
+
+    $offset = ($page - 1) * $limit;
+
+    $tomorrow = date('Y-m-d', strtotime('+1 day'));
+
+    $query = "SELECT p.id, p.nom, p.description, p.prix, p.duree, p.type, p.date_heure_disponible, 
+              p.capacite_max, p.niveau_difficulte, p.lieu, p.est_disponible, p.categorie,
+              pp.id as praticien_id, CONCAT(pp.prenom, ' ', pp.nom) as praticien_nom
+              FROM prestations p
+              LEFT JOIN personnes pp ON p.praticien_id = pp.id
+              ORDER BY p.nom ASC
+              LIMIT ? OFFSET ?";
+
+    $params = [$limit, $offset];
+
+    $stmt = executeQuery($query, $params);
+    $prestations = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    foreach ($prestations as &$prestation) {
+        if (isset($prestation['prix'])) {
+            $prix = floatval($prestation['prix']);
+            $prestation['prix_formate'] = ($prix > 0) ? number_format($prix, 2, ',', ' ') . ' €' : 'Gratuit';
+        } else {
+            $prestation['prix_formate'] = 'Gratuit';
+        }
+
+        if (!empty($prestation['date_heure_disponible'])) {
+            $date = new DateTime($prestation['date_heure_disponible']);
+            $prestation['date_disponible_formatee'] = $date->format('d/m/Y à H:i');
+        } else {
+            $prestation['date_heure_disponible'] = $tomorrow . ' 09:00:00';
+            $prestation['date_disponible_formatee'] = 'Non précisée';
+        }
+
+        if (!isset($prestation['est_disponible'])) {
+            $prestation['est_disponible'] = true;
+        }
+    }
+
+    $countQuery = "SELECT COUNT(*) as total FROM prestations";
+    $countStmt = executeQuery($countQuery, []);
+    $countResult = $countStmt->fetch(PDO::FETCH_ASSOC);
+    $total = $countResult['total'];
+
+    $totalPages = ceil($total / $limit);
+
+    $paginationData = [
+        'currentPage' => $page,
+        'totalPages' => $totalPages,
+        'totalItems' => $total,
+        'perPage' => $limit
+    ];
+
+    $urlPattern = "?prestation_page={page}";
+
+    return [
+        'prestations' => $prestations,
+        'pagination' => [
+            'current' => $page,
+            'limit' => $limit,
+            'total' => $total,
+            'totalPages' => $totalPages
+        ],
+        'pagination_html' => renderPagination($paginationData, $urlPattern)
+    ];
+}
+
+/**
+ * annule un rendez-vous
+ * 
+ * @param int $employee_id identifiant du salarié
+ * @param int $rdv_id identifiant du rendez-vous
+ * @return bool résultat de l'annulation
+ */
+function cancelEmployeeAppointment($employee_id, $rdv_id)
+{
+    $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
+    $rdv_id = filter_var(sanitizeInput($rdv_id), FILTER_VALIDATE_INT);
+
+    if (!$employee_id || !$rdv_id) {
+        return false;
+    }
+
+    $query = "SELECT prestation_id FROM rendez_vous WHERE id = ? AND personne_id = ?";
+    $result = executeQuery($query, [$rdv_id, $employee_id])->fetch();
+
+    if (!$result) {
+        return false;
+    }
+
+    $updateQuery = "UPDATE rendez_vous SET statut = 'annule' WHERE id = ?";
+    $success = executeQuery($updateQuery, [$rdv_id])->rowCount() > 0;
+
+    if ($success && !empty($result['prestation_id'])) {
+        $updatePrestationQuery = "UPDATE prestations SET est_disponible = TRUE WHERE id = ?";
+        executeQuery($updatePrestationQuery, [$result['prestation_id']]);
+    }
+
+    return $success;
+}
+
+/**
  * réserve un rendez-vous pour un salarié
  * 
  * @param int $employee_id identifiant du salarié
  * @param array $appointment_data données du rendez-vous
- * @return int|false ID du rendez-vous créé ou false en cas d'erreur
+ * @return bool|int résultat de la réservation (id du rendez-vous ou false)
  */
 function bookEmployeeAppointment($employee_id, $appointment_data)
 {
-    // Validation de l'ID et des données
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
-    $appointment_data = sanitizeInput($appointment_data);
 
     if (!$employee_id || empty($appointment_data)) {
-        flashMessage("Données de rendez-vous invalides", "danger");
         return false;
     }
 
-    // Vérification des données requises
-    $requiredFields = ['prestation_id', 'date_rdv', 'duree', 'type_rdv'];
-    foreach ($requiredFields as $field) {
-        if (empty($appointment_data[$field])) {
-            flashMessage("Des champs obligatoires sont manquants", "danger");
-            return false;
-        }
-    }
+    $prestation_id = filter_var($appointment_data['prestation_id'] ?? 0, FILTER_VALIDATE_INT);
+    $praticien_id = filter_var($appointment_data['praticien_id'] ?? 0, FILTER_VALIDATE_INT);
+    $date_rdv = sanitizeInput($appointment_data['date_rdv'] ?? '');
+    $duree = filter_var($appointment_data['duree'] ?? 0, FILTER_VALIDATE_INT);
+    $type_rdv = sanitizeInput($appointment_data['type_rdv'] ?? '');
+    $lieu = sanitizeInput($appointment_data['lieu'] ?? '');
+    $notes = sanitizeInput($appointment_data['notes'] ?? '');
 
-    // Vérification de la disponibilité du créneau
-    $prestation_id = filter_var($appointment_data['prestation_id'], FILTER_VALIDATE_INT);
-    $dateHeure = $appointment_data['date_rdv'];
-    $duree = filter_var($appointment_data['duree'], FILTER_VALIDATE_INT);
-
-    if (!isTimeSlotAvailable($dateHeure, $duree, $prestation_id)) {
-        flashMessage("Ce créneau horaire n'est pas disponible", "warning");
+    if (!$prestation_id || empty($date_rdv) || $duree <= 0) {
         return false;
     }
 
     try {
-        // Début de transaction
-        beginTransaction();
+        // Vérification de l'existence du praticien
+        $praticienExists = false;
+        if ($praticien_id) {
+            $checkPraticien = "SELECT id FROM personnes WHERE id = ? AND role_id = " . ROLE_PRESTATAIRE;
+            $praticienExists = executeQuery($checkPraticien, [$praticien_id])->fetch();
 
-        // Préparation des données pour insertion
-        $rdvData = [
-            'personne_id' => $employee_id,
-            'prestation_id' => $prestation_id,
-            'date_rdv' => $dateHeure,
-            'duree' => $duree,
-            'lieu' => $appointment_data['lieu'] ?? null,
-            'type_rdv' => $appointment_data['type_rdv'],
-            'statut' => 'planifie',
-            'notes' => $appointment_data['notes'] ?? null
-        ];
+            if (!$praticienExists) {
+                // Si le praticien n'existe pas, on met praticien_id à NULL
+                $praticien_id = null;
+            }
+        } else {
+            // Si praticien_id est 0, on le met à NULL
+            $praticien_id = null;
+        }
 
-        // Insertion du rendez-vous
-        $appointmentId = insertRow('rendez_vous', $rdvData);
+        $checkPrestation = "SELECT id, est_disponible FROM prestations WHERE id = ?";
+        $prestation = executeQuery($checkPrestation, [$prestation_id])->fetch();
 
-        if (!$appointmentId) {
-            rollbackTransaction();
-            flashMessage("Impossible de créer le rendez-vous", "danger");
+        if (!$prestation || !$prestation['est_disponible']) {
             return false;
         }
 
-        // Ajout d'une notification si nécessaire
-        if (!empty($appointment_data['notifier']) && $appointment_data['notifier'] === true) {
-            $notifData = [
-                'personne_id' => $employee_id,
-                'titre' => 'Nouveau rendez-vous confirmé',
-                'message' => 'Votre rendez-vous du ' . formatDate($dateHeure) . ' a été confirmé.',
-                'type' => 'info',
-                'lien' => '/rendez-vous/' . $appointmentId
-            ];
+        if (empty($date_rdv)) {
+            $date_rdv = date('Y-m-d H:i:s', strtotime('+1 day 9:00:00'));
+        }
 
-            try {
-                insertRow('notifications', $notifData);
-            } catch (Exception $notifError) {
-                // Une erreur sur la notification ne doit pas annuler le rendez-vous
-                logSystemActivity('warning', "Erreur création notification pour RDV #$appointmentId: " . $notifError->getMessage());
+        // Vérifions s'il existe au moins un événement dans la base de données
+        $eventQuery = "SELECT id FROM evenements ORDER BY id LIMIT 1";
+        $eventResult = executeQuery($eventQuery)->fetch();
+
+        // Si un événement existe, utilisons son ID, sinon nous devrons omettre ce champ
+        if ($eventResult && isset($eventResult['id'])) {
+            $insertQuery = "INSERT INTO rendez_vous (personne_id, prestation_id, praticien_id, date_rdv, duree, 
+                            type_rdv, lieu, notes, statut, created_at, evenement_id) 
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'confirme', NOW(), ?)";
+
+            $insertParams = [$employee_id, $prestation_id, $praticien_id, $date_rdv, $duree, $type_rdv, $lieu, $notes, $eventResult['id']];
+        } else {
+            // Omettre evenement_id de la requête si aucun événement n'existe
+            $insertQuery = "INSERT INTO rendez_vous (personne_id, prestation_id, praticien_id, date_rdv, duree, 
+                            type_rdv, lieu, notes, statut, created_at) 
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'confirme', NOW())";
+
+            $insertParams = [$employee_id, $prestation_id, $praticien_id, $date_rdv, $duree, $type_rdv, $lieu, $notes];
+        }
+
+        $success = executeQuery($insertQuery, $insertParams)->rowCount() > 0;
+
+        if ($success) {
+            $rdvId = executeQuery("SELECT LAST_INSERT_ID()")->fetchColumn();
+
+            $updatePrestation = "UPDATE prestations SET est_disponible = FALSE WHERE id = ?";
+            executeQuery($updatePrestation, [$prestation_id]);
+
+            return $rdvId;
+        }
+
+        return false;
+    } catch (Exception $e) {
+        return false;
+    }
+}
+
+/**
+ * Récupère les horaires disponibles pour une prestation
+ * 
+ * @param int $prestation_id ID de la prestation
+ * @return array Liste des horaires disponibles (date, heure, lieu)
+ */
+function getAvailableSchedulesForPrestation($prestation_id)
+{
+    $prestation_id = filter_var($prestation_id, FILTER_VALIDATE_INT);
+
+    if (!$prestation_id) {
+        return [];
+    }
+
+    $query = "SELECT p.id, p.nom, p.description, p.duree, p.type, p.niveau_difficulte, 
+              p.praticien_id, p.date_heure_disponible, p.lieu, p.est_disponible,
+              CONCAT(pers.prenom, ' ', pers.nom) as praticien_nom
+              FROM prestations p
+              LEFT JOIN personnes pers ON p.praticien_id = pers.id
+              WHERE p.id = ?";
+
+    $prestation = executeQuery($query, [$prestation_id])->fetch();
+
+    if (!$prestation || empty($prestation['date_heure_disponible'])) {
+        return [];
+    }
+
+    $schedules = [];
+    $now = new DateTime();
+
+    try {
+        $dateHoraire = new DateTime($prestation['date_heure_disponible']);
+
+        if ($dateHoraire > $now) {
+            $schedules[] = [
+                'id' => $prestation_id . '-0',
+                'date_value' => $prestation['date_heure_disponible'],
+                'date_debut_formattee' => formatDate($prestation['date_heure_disponible'], 'd/m/Y H:i'),
+                'duree' => $prestation['duree'],
+                'titre' => $prestation['nom'],
+                'disponibilite' => '1 place(s) disponible(s)',
+                'praticien_nom' => $prestation['praticien_nom'] ?? 'Non assigné',
+                'lieu' => $prestation['lieu'] ?? 'À déterminer'
+            ];
+        }
+    } catch (Exception $e) {
+    }
+
+    return $schedules;
+}
+
+/**
+ * récupère les communautés dont un salarié est membre
+ * 
+ * @param int $employee_id identifiant du salarié
+ * @return array liste des communautés
+ */
+function getEmployeeMemberships($employee_id)
+{
+    $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
+    if (!$employee_id) {
+        return [];
+    }
+
+    $query = "SELECT c.id, c.nom, c.description, c.type, c.niveau, c.capacite_max,
+              cm.date_inscription, cm.role_communaute,
+              (SELECT COUNT(*) FROM communautes_membres WHERE communaute_id = c.id) as nombre_membres
+              FROM communautes c
+              JOIN communautes_membres cm ON c.id = cm.communaute_id
+              WHERE cm.personne_id = ?
+              ORDER BY cm.date_inscription DESC";
+
+    $memberships = executeQuery($query, [$employee_id])->fetchAll();
+
+    foreach ($memberships as &$membership) {
+        $membership['type_class'] = getCommunityTypeClass($membership['type']);
+
+        if (isset($membership['date_inscription'])) {
+            $membership['date_inscription_formatted'] = formatDate($membership['date_inscription']);
+        }
+
+        $membership['role_badge'] = getCommunityRoleBadge($membership['role_communaute']);
+    }
+
+    return $memberships;
+}
+
+/**
+ * récupère les détails d'une communauté
+ * 
+ * @param int $community_id identifiant de la communauté
+ * @param int $employee_id identifiant du salarié
+ * @return array|false détails de la communauté ou false si non trouvée
+ */
+function getCommunityDetails($community_id, $employee_id = null)
+{
+    $community_id = filter_var(sanitizeInput($community_id), FILTER_VALIDATE_INT);
+    if (!$community_id) {
+        flashMessage("ID de communauté invalide", "danger");
+        return false;
+    }
+
+    if ($employee_id !== null) {
+        $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
+    }
+
+    $community = fetchOne('communautes', "id = $community_id");
+
+    if (!$community) {
+        flashMessage("Communauté non trouvée", "warning");
+        return false;
+    }
+
+    $community['type_class'] = getCommunityTypeClass($community['type']);
+
+    if (isset($community['created_at'])) {
+        $community['created_at_formatted'] = formatDate($community['created_at']);
+    }
+    if (isset($community['updated_at'])) {
+        $community['updated_at_formatted'] = formatDate($community['updated_at']);
+    }
+
+    if ($employee_id) {
+        $query = "SELECT COUNT(*) as count FROM communautes_membres 
+                 WHERE communaute_id = ? AND personne_id = ?";
+        $result = executeQuery($query, [$community_id, $employee_id])->fetch();
+        $community['est_membre'] = (int)$result['count'] > 0;
+    } else {
+        $community['est_membre'] = false;
+    }
+
+    $query = "SELECT COUNT(*) as count FROM communautes_membres WHERE communaute_id = ?";
+    $result = executeQuery($query, [$community_id])->fetch();
+    $community['nombre_membres'] = (int)$result['count'];
+
+    $community['derniers_messages'] = getCommunityLastMessages($community_id);
+
+    $community['evenements'] = getCommunityEvents($community_id);
+
+    return $community;
+}
+
+/**
+ * récupère les membres d'une communauté
+ * 
+ * @param int $community_id identifiant de la communauté
+ * @param int $page numéro de page
+ * @param int $limit nombre d'éléments par page
+ * @return array liste des membres et informations de pagination
+ */
+function getCommunityMembers($community_id, $page = 1, $limit = 20)
+{
+    $community_id = filter_var(sanitizeInput($community_id), FILTER_VALIDATE_INT);
+    $page = (int)sanitizeInput($page);
+    $limit = (int)sanitizeInput($limit);
+
+    if (!$community_id) {
+        return [
+            'members' => [],
+            'pagination' => [
+                'current' => $page,
+                'limit' => $limit,
+                'total' => 0,
+                'totalPages' => 0
+            ],
+            'pagination_html' => ''
+        ];
+    }
+
+    $offset = ($page - 1) * $limit;
+
+    $query = "SELECT p.id, p.nom, p.prenom, p.email, p.photo_url, p.entreprise_id,
+              cm.date_inscription, cm.role_communaute,
+              e.nom as entreprise_nom
+              FROM communautes_membres cm
+              JOIN personnes p ON cm.personne_id = p.id
+              LEFT JOIN entreprises e ON p.entreprise_id = e.id
+              WHERE cm.communaute_id = ?
+              ORDER BY cm.role_communaute DESC, p.nom, p.prenom
+              LIMIT ? OFFSET ?";
+
+    $members = executeQuery($query, [$community_id, $limit, $offset])->fetchAll();
+
+    foreach ($members as &$member) {
+        if (isset($member['date_inscription'])) {
+            $member['date_inscription_formatted'] = formatDate($member['date_inscription']);
+        }
+
+        $member['role_badge'] = getCommunityRoleBadge($member['role_communaute']);
+    }
+
+    $countQuery = "SELECT COUNT(*) as total FROM communautes_membres WHERE communaute_id = ?";
+    $total = executeQuery($countQuery, [$community_id])->fetch()['total'];
+
+    $totalPages = ceil($total / $limit);
+
+    $paginationData = [
+        'currentPage' => $page,
+        'totalPages' => $totalPages,
+        'totalItems' => $total,
+        'perPage' => $limit
+    ];
+
+    $urlPattern = "?id=$community_id&members_page={page}";
+
+    return [
+        'members' => $members,
+        'pagination' => [
+            'current' => $page,
+            'limit' => $limit,
+            'total' => $total,
+            'totalPages' => $totalPages
+        ],
+        'pagination_html' => renderPagination($paginationData, $urlPattern)
+    ];
+}
+
+/**
+ * récupère les messages d'une communauté avec pagination
+ * 
+ * @param int $community_id identifiant de la communauté
+ * @param int $page numéro de page
+ * @param int $limit nombre d'éléments par page
+ * @return array messages et informations de pagination
+ */
+function getCommunityMessages($community_id, $page = 1, $limit = 10)
+{
+    $community_id = filter_var(sanitizeInput($community_id), FILTER_VALIDATE_INT);
+    $page = (int)sanitizeInput($page);
+    $limit = (int)sanitizeInput($limit);
+
+    if (!$community_id) {
+        return [
+            'messages' => [],
+            'pagination' => [
+                'current' => $page,
+                'limit' => $limit,
+                'total' => 0,
+                'totalPages' => 0
+            ],
+            'pagination_html' => ''
+        ];
+    }
+
+    $offset = ($page - 1) * $limit;
+
+    $query = "SELECT m.id, m.contenu, m.date_creation, m.est_modere, m.raison_moderation,
+              p.id as auteur_id, p.nom as auteur_nom, p.prenom as auteur_prenom, p.photo_url,
+              (SELECT MAX(role_communaute) FROM communautes_membres WHERE personne_id = p.id AND communaute_id = ?) as role_membre
+              FROM communautes_messages m
+              JOIN personnes p ON m.personne_id = p.id
+              WHERE m.communaute_id = ? AND m.est_modere = 0
+              ORDER BY m.date_creation DESC
+              LIMIT ? OFFSET ?";
+
+    $messages = executeQuery($query, [$community_id, $community_id, $limit, $offset])->fetchAll();
+
+    foreach ($messages as &$message) {
+        if (isset($message['date_creation'])) {
+            $message['date_creation_formatted'] = formatDate($message['date_creation']);
+        }
+
+        $message['role_badge'] = getCommunityRoleBadge($message['role_membre'] ?? 'membre');
+    }
+
+    $countQuery = "SELECT COUNT(*) as total FROM communautes_messages 
+                  WHERE communaute_id = ? AND est_modere = 0";
+    $total = executeQuery($countQuery, [$community_id])->fetch()['total'];
+
+    $totalPages = ceil($total / $limit);
+
+    $paginationData = [
+        'currentPage' => $page,
+        'totalPages' => $totalPages,
+        'totalItems' => $total,
+        'perPage' => $limit
+    ];
+
+    $urlPattern = "?id=$community_id&messages_page={page}";
+
+    return [
+        'messages' => $messages,
+        'pagination' => [
+            'current' => $page,
+            'limit' => $limit,
+            'total' => $total,
+            'totalPages' => $totalPages
+        ],
+        'pagination_html' => renderPagination($paginationData, $urlPattern)
+    ];
+}
+
+/**
+ * récupère les derniers messages d'une communauté
+ * 
+ * @param int $community_id identifiant de la communauté
+ * @param int $limit nombre de messages à récupérer
+ * @return array liste des derniers messages
+ */
+function getCommunityLastMessages($community_id, $limit = 5)
+{
+    $community_id = filter_var(sanitizeInput($community_id), FILTER_VALIDATE_INT);
+    $limit = (int)sanitizeInput($limit);
+
+    if (!$community_id) {
+        return [];
+    }
+
+    $query = "SELECT m.id, m.contenu, m.date_creation, m.est_modere, m.raison_moderation,
+              p.id as auteur_id, p.nom as auteur_nom, p.prenom as auteur_prenom, p.photo_url
+              FROM communautes_messages m
+              JOIN personnes p ON m.personne_id = p.id
+              WHERE m.communaute_id = ? AND m.est_modere = 0
+              ORDER BY m.date_creation DESC
+              LIMIT ?";
+
+    $messages = executeQuery($query, [$community_id, $limit])->fetchAll();
+
+    foreach ($messages as &$message) {
+        if (isset($message['date_creation'])) {
+            $message['date_creation_formatted'] = formatDate($message['date_creation']);
+        }
+    }
+
+    return $messages;
+}
+
+/**
+ * récupère les événements d'une communauté
+ * 
+ * @param int $community_id identifiant de la communauté
+ * @param int $limit nombre d'événements à récupérer
+ * @return array liste des événements
+ */
+function getCommunityEvents($community_id, $limit = 5)
+{
+    $community_id = filter_var(sanitizeInput($community_id), FILTER_VALIDATE_INT);
+    $limit = (int)sanitizeInput($limit);
+
+    if (!$community_id) {
+        return [];
+    }
+
+    $query = "SELECT e.id, e.titre, e.description, e.date_debut, e.date_fin, e.lieu, e.type,
+              e.capacite_max, e.niveau_difficulte
+              FROM evenements e
+              JOIN communautes_evenements ce ON e.id = ce.evenement_id
+              WHERE ce.communaute_id = ? AND e.date_debut >= CURDATE()
+              ORDER BY e.date_debut ASC
+              LIMIT ?";
+
+    $events = executeQuery($query, [$community_id, $limit])->fetchAll();
+
+    foreach ($events as &$event) {
+        if (isset($event['date_debut'])) {
+            $event['date_debut_formatted'] = formatDate($event['date_debut']);
+        }
+        if (isset($event['date_fin'])) {
+            $event['date_fin_formatted'] = formatDate($event['date_fin']);
+        }
+    }
+
+    return $events;
+}
+
+/**
+ * ajoute un salarié à une communauté
+ * 
+ * @param int $employee_id identifiant du salarié
+ * @param int $community_id identifiant de la communauté
+ * @return bool résultat de l'ajout
+ */
+function joinCommunity($employee_id, $community_id)
+{
+    $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
+    $community_id = filter_var(sanitizeInput($community_id), FILTER_VALIDATE_INT);
+
+    if (!$employee_id || !$community_id) {
+        flashMessage("Paramètres invalides", "danger");
+        return false;
+    }
+
+    $employee = fetchOne('personnes', "id = $employee_id AND role_id = " . ROLE_SALARIE . " AND statut = 'actif'");
+    if (!$employee) {
+        flashMessage("Le salarié n'existe pas ou n'est pas actif", "danger");
+        return false;
+    }
+
+    $community = fetchOne('communautes', "id = $community_id");
+    if (!$community) {
+        flashMessage("La communauté n'existe pas", "danger");
+        return false;
+    }
+
+    $query = "SELECT COUNT(*) as count FROM communautes_membres 
+             WHERE communaute_id = ? AND personne_id = ?";
+    $result = executeQuery($query, [$community_id, $employee_id])->fetch();
+
+    if ((int)$result['count'] > 0) {
+        flashMessage("Vous êtes déjà membre de cette communauté", "info");
+        return false;
+    }
+
+    if (!empty($community['capacite_max'])) {
+        $query = "SELECT COUNT(*) as count FROM communautes_membres WHERE communaute_id = ?";
+        $result = executeQuery($query, [$community_id])->fetch();
+
+        if ((int)$result['count'] >= $community['capacite_max']) {
+            flashMessage("La capacité maximale de cette communauté est atteinte", "warning");
+            return false;
+        }
+    }
+
+    $data = [
+        'communaute_id' => $community_id,
+        'personne_id' => $employee_id,
+        'date_inscription' => date('Y-m-d H:i:s'),
+        'role_communaute' => 'membre'
+    ];
+
+    $result = insertRow('communautes_membres', $data);
+
+    if ($result) {
+        logBusinessOperation($employee_id, 'join_community', "Adhésion à la communauté #{$community_id} - {$community['nom']}");
+
+        $notifData = [
+            'personne_id' => $employee_id,
+            'titre' => 'Nouvelle communauté',
+            'message' => "Vous avez rejoint la communauté '{$community['nom']}'",
+            'type' => 'info',
+            'lien' => "/salarie/communities.php?id=$community_id"
+        ];
+        insertRow('notifications', $notifData);
+
+        flashMessage("Vous avez rejoint la communauté avec succès", "success");
+        return true;
+    }
+
+    flashMessage("Une erreur est survenue lors de l'adhésion à la communauté", "danger");
+    return false;
+}
+
+/**
+ * quitte une communauté
+ * 
+ * @param int $employee_id identifiant du salarié
+ * @param int $community_id identifiant de la communauté
+ * @return bool résultat de l'opération
+ */
+function leaveCommunity($employee_id, $community_id)
+{
+    $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
+    $community_id = filter_var(sanitizeInput($community_id), FILTER_VALIDATE_INT);
+
+    if (!$employee_id || !$community_id) {
+        flashMessage("Paramètres invalides", "danger");
+        return false;
+    }
+
+    $query = "SELECT COUNT(*) as count FROM communautes_membres 
+             WHERE communaute_id = ? AND personne_id = ?";
+    $result = executeQuery($query, [$community_id, $employee_id])->fetch();
+
+    if ((int)$result['count'] == 0) {
+        flashMessage("Vous n'êtes pas membre de cette communauté", "info");
+        return false;
+    }
+
+    $query = "DELETE FROM communautes_membres WHERE communaute_id = ? AND personne_id = ?";
+    $result = executeQuery($query, [$community_id, $employee_id])->rowCount() > 0;
+
+    if ($result) {
+        $community = fetchOne('communautes', "id = $community_id");
+        $communityName = $community ? $community['nom'] : "ID #$community_id";
+
+        logBusinessOperation($employee_id, 'leave_community', "Départ de la communauté #{$community_id} - {$communityName}");
+
+        flashMessage("Vous avez quitté la communauté avec succès", "success");
+        return true;
+    }
+
+    flashMessage("Une erreur est survenue lors du départ de la communauté", "danger");
+    return false;
+}
+
+/**
+ * ajoute un message dans une communauté avec modération automatique
+ * 
+ * @param int $employee_id identifiant du salarié
+ * @param int $community_id identifiant de la communauté
+ * @param string $message contenu du message
+ * @return int|false identifiant du message créé ou false en cas d'erreur
+ */
+function addCommunityMessage($employee_id, $community_id, $message)
+{
+    $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
+    $community_id = filter_var(sanitizeInput($community_id), FILTER_VALIDATE_INT);
+    $message = sanitizeInput($message);
+
+    if (!$employee_id || !$community_id || empty($message)) {
+        flashMessage("Paramètres invalides", "danger");
+        return false;
+    }
+
+    $query = "SELECT COUNT(*) as count FROM communautes_membres 
+             WHERE communaute_id = ? AND personne_id = ?";
+    $result = executeQuery($query, [$community_id, $employee_id])->fetch();
+
+    if ((int)$result['count'] == 0) {
+        flashMessage("Vous devez être membre de cette communauté pour publier un message", "warning");
+        return false;
+    }
+
+    $moderationResult = automaticContentModeration($message);
+    $est_modere = $moderationResult['moderated'];
+    $raison_moderation = $moderationResult['reason'];
+
+    $data = [
+        'communaute_id' => $community_id,
+        'personne_id' => $employee_id,
+        'contenu' => $message,
+        'date_creation' => date('Y-m-d H:i:s'),
+        'est_modere' => $est_modere ? 1 : 0,
+        'raison_moderation' => $raison_moderation
+    ];
+
+    $message_id = insertRow('communautes_messages', $data);
+
+    if ($message_id) {
+        logBusinessOperation($employee_id, 'add_community_message', "Message ajouté dans la communauté #{$community_id}");
+
+        if ($est_modere) {
+            flashMessage("Votre message a été soumis à modération pour la raison suivante : {$raison_moderation}", "warning");
+        } else {
+            flashMessage("Votre message a été publié avec succès", "success");
+        }
+
+        return $message_id;
+    }
+
+    flashMessage("Une erreur est survenue lors de la publication du message", "danger");
+    return false;
+}
+
+/**
+ * modère automatiquement un contenu
+ * 
+ * @param string $content contenu à modérer
+ * @return array résultat de la modération [moderated, reason]
+ */
+function automaticContentModeration($content)
+{
+    $forbidden_words = [
+        'insulte',
+        'grossier',
+        'raciste',
+        'discrimination',
+        'haine',
+        'pornographie',
+        'violence',
+        'drogue',
+        'illégal',
+        'fraude'
+    ];
+
+    // mb = multibyte = caractères spéciaux
+    $content_lower = mb_strtolower($content);
+
+    foreach ($forbidden_words as $word) {
+        if (strpos($content_lower, $word) !== false) {
+            return [
+                'moderated' => true,
+                'reason' => "Contenu contenant des termes inappropriés"
+            ];
+        }
+    }
+
+    if (strlen(trim($content)) < 2) {
+        return [
+            'moderated' => true,
+            'reason' => "Contenu trop court"
+        ];
+    }
+
+    if (
+        strpos($content, 'http://') !== false ||
+        strpos($content, 'https://') !== false ||
+        strpos($content, 'www.') !== false
+    ) {
+        $allowed_domains = ['business-care.fr', 'businesscare.fr'];
+        $is_allowed = false;
+
+        foreach ($allowed_domains as $domain) {
+            if (strpos($content, $domain) !== false) {
+                $is_allowed = true;
+                break;
             }
         }
 
-        // Validation de la transaction
-        commitTransaction();
+        if (!$is_allowed) {
+            return [
+                'moderated' => true,
+                'reason' => "Contenu contenant des liens externes non autorisés"
+            ];
+        }
+    }
 
-        // Journalisation
-        logReservationActivity($employee_id, $prestation_id, 'creation', "RDV #$appointmentId créé");
-        flashMessage("Votre rendez-vous a été réservé avec succès", "success");
+    return [
+        'moderated' => false,
+        'reason' => null
+    ];
+}
 
-        return $appointmentId;
+/**
+ * retourne la classe CSS pour un type de communauté
+ * 
+ * @param string $type type de communauté
+ * @return string classe CSS
+ */
+function getCommunityTypeClass($type)
+{
+    $classMap = [
+        'sport' => 'bg-primary',
+        'bien_etre' => 'bg-success',
+        'sante' => 'bg-info',
+        'autre' => 'bg-secondary'
+    ];
+
+    return $classMap[$type] ?? 'bg-secondary';
+}
+
+/**
+ * retourne un badge pour un rôle dans la communauté
+ * 
+ * @param string $role rôle dans la communauté
+ * @return string HTML du badge
+ */
+function getCommunityRoleBadge($role)
+{
+    switch ($role) {
+        case 'admin':
+            return '<span class="badge bg-danger">Administrateur</span>';
+        case 'animateur':
+            return '<span class="badge bg-warning text-dark">Animateur</span>';
+        case 'membre':
+        default:
+            return '<span class="badge bg-primary">Membre</span>';
+    }
+}
+
+/**
+ * récupère la liste des communautés avec pagination et recherche
+ * 
+ * @param int $employee_id identifiant du salarié
+ * @param int $page numéro de page
+ * @param int $limit nombre d'éléments par page
+ * @param string $search terme de recherche
+ * @param string $type_filter filtre par type de communauté
+ * @return array liste des communautés et informations de pagination
+ */
+function getCommunities($employee_id = null, $page = 1, $limit = 10, $search = '', $type_filter = '')
+{
+    $basic_communities = getEmployeeCommunities($employee_id);
+
+    $filtered_communities = [];
+
+    $employee_id = sanitizeInput($employee_id);
+    if ($employee_id !== null) {
+        $employee_id = filter_var($employee_id, FILTER_VALIDATE_INT);
+    }
+    $page = (int)sanitizeInput($page);
+    $limit = (int)sanitizeInput($limit);
+    $search = sanitizeInput($search);
+    $type_filter = sanitizeInput($type_filter);
+
+    foreach ($basic_communities as $community) {
+        if (!empty($search)) {
+            $search_term = strtolower($search);
+            $community_name = strtolower($community['nom']);
+            $community_desc = strtolower($community['description'] ?? '');
+
+            if (
+                strpos($community_name, $search_term) === false &&
+                strpos($community_desc, $search_term) === false
+            ) {
+                continue;
+            }
+        }
+
+        if (!empty($type_filter) && $community['type'] !== $type_filter) {
+            continue;
+        }
+
+        $community['type_class'] = getCommunityTypeClass($community['type']);
+
+        if (isset($community['created_at'])) {
+            $community['created_at_formatted'] = formatDate($community['created_at']);
+        }
+
+        if ($employee_id) {
+            $query = "SELECT COUNT(*) as count FROM communautes_membres 
+                     WHERE communaute_id = ? AND personne_id = ?";
+            $result = executeQuery($query, [$community['id'], $employee_id])->fetch();
+            $community['est_membre'] = (int)$result['count'] > 0;
+        } else {
+            $community['est_membre'] = false;
+        }
+
+        $query = "SELECT COUNT(*) as count FROM communautes_membres WHERE communaute_id = ?";
+        $result = executeQuery($query, [$community['id']])->fetch();
+        $community['nombre_membres'] = (int)$result['count'];
+
+        $filtered_communities[] = $community;
+    }
+
+    usort($filtered_communities, function ($a, $b) {
+        return strcmp($a['nom'], $b['nom']);
+    });
+
+    $total = count($filtered_communities);
+    $totalPages = ceil($total / $limit);
+    $offset = ($page - 1) * $limit;
+
+    $filtered_communities = array_slice($filtered_communities, $offset, $limit);
+
+    $paginationData = [
+        'currentPage' => $page,
+        'totalPages' => $totalPages,
+        'totalItems' => $total,
+        'perPage' => $limit
+    ];
+
+    $urlPattern = "?page={page}";
+    if (!empty($search)) {
+        $urlPattern .= "&search=" . urlencode($search);
+    }
+    if (!empty($type_filter)) {
+        $urlPattern .= "&type=" . urlencode($type_filter);
+    }
+
+    return [
+        'communities' => $filtered_communities,
+        'pagination' => [
+            'current' => $page,
+            'limit' => $limit,
+            'total' => $total,
+            'totalPages' => $totalPages
+        ],
+        'pagination_html' => renderPagination($paginationData, $urlPattern)
+    ];
+}
+
+/**
+ * récupère l'historique des dons d'un salarié
+ * 
+ * @param int $employee_id identifiant du salarié
+ * @return array liste des dons
+ */
+function getDonationHistory($employee_id)
+{
+    $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
+
+    if (!$employee_id) {
+        return [];
+    }
+
+    $query = "SELECT d.* 
+              FROM dons d
+              WHERE d.personne_id = ?
+              ORDER BY d.date_don DESC";
+
+    $dons = executeQuery($query, [$employee_id])->fetchAll();
+
+    $associations = getAssociations();
+    $associations_by_id = [];
+
+    foreach ($associations as $association) {
+        $associations_by_id[$association['id']] = $association['nom'];
+    }
+
+    foreach ($dons as &$don) {
+        if (!empty($don['association_id']) && isset($associations_by_id[$don['association_id']])) {
+            $don['association_nom'] = $associations_by_id[$don['association_id']];
+        } else {
+            $don['association_nom'] = 'Non spécifiée';
+        }
+    }
+
+    return $dons;
+}
+
+/**
+ * compte le nombre de dons d'un salarié
+ * 
+ * @param int $employee_id identifiant du salarié
+ * @return int nombre de dons
+ */
+function getEmployeeDonationsCount($employee_id)
+{
+    $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
+
+    if (!$employee_id) {
+        return 0;
+    }
+
+    $query = "SELECT COUNT(*) as total FROM dons WHERE personne_id = ?";
+    $result = executeQuery($query, [$employee_id])->fetch();
+
+    return $result['total'] ?? 0;
+}
+
+function getAssociations()
+{
+    try {
+        $query = "SELECT id, nom, domaine, description, logo_url, site_web 
+                 FROM associations 
+                 WHERE actif = 1 
+                 ORDER BY nom ASC";
+
+        $stmt = executeQuery($query);
+        return $stmt->fetchAll();
     } catch (Exception $e) {
-        rollbackTransaction();
-        logSystemActivity('error', "Erreur création rendez-vous: " . $e->getMessage());
-        flashMessage("Une erreur est survenue lors de la création du rendez-vous", "danger");
-        return false;
+        logSystemActivity('error', "Erreur récupération associations: " . $e->getMessage());
+        return [];
     }
 }
