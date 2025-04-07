@@ -440,7 +440,7 @@ function generatePaginationHtml($paginationData, $urlPattern, $ariaLabel = 'Pagi
     }
 
     $html = '<nav aria-label="' . htmlspecialchars($ariaLabel) . '">';
-    $html .= '<ul class="pagination">';
+    $html .= '<ul class="pagination pagination-sm">'; // Added pagination-sm
 
     if ($paginationData['currentPage'] > 1) {
         $firstUrl = str_replace('{page}', '1', $urlPattern);
@@ -1733,315 +1733,73 @@ function handlePostActions($employee_id)
     }
 }
 
-function displayJoinLeaveButton($community_id, $is_member, $is_detail = false)
+function getConseils(int $page = 1, int $limit = 10, ?string $category = null, ?string $searchTerm = null): array
 {
-    if ($is_member) {
-        $btn_class = $is_detail ? 'btn-outline-danger' : 'btn-sm btn-outline-danger';
-        $icon = $is_detail ? 'fa-sign-out-alt me-2' : 'fa-sign-out-alt me-1';
-        $text = $is_detail ? 'Quitter cette communauté' : 'Quitter';
-    } else {
-        $btn_class = $is_detail ? 'btn-success' : 'btn-sm btn-success';
-        $icon = $is_detail ? 'fa-plus-circle me-2' : 'fa-plus-circle me-1';
-        $text = $is_detail ? 'Rejoindre cette communauté' : 'Rejoindre';
-    }
-?>
-    <form method="post" class="d-inline" action="">
-        <input type="hidden" name="community_id" value="<?= $community_id ?>">
-        <button type="submit" name="<?= $is_member ? 'leave_community' : 'join_community' ?>" class="btn <?= $btn_class ?>">
-            <i class="fas <?= $icon ?>"></i><?= htmlspecialchars($text) ?>
-        </button>
-    </form>
-<?php
-}
+    $params = [];
+    $whereClauses = ['c.est_publie = TRUE'];
 
-function displayAvatar($photo_url, $size = 30)
-{
-    $avatar_url = !empty($photo_url)
-        ? $photo_url
-        : ROOT_URL . '/assets/images/avatar-placeholder.png';
-?>
-    <img src="<?= htmlspecialchars($avatar_url) ?>" class="rounded-circle me-2" width="<?= $size ?>" height="<?= $size ?>" alt="Avatar">
-<?php
-}
-
-function displayCommunityDetail($community_id, $employee_id)
-{
-    $community = getCommunityDetails($community_id, $employee_id);
-
-    if (!$community) {
-        echo '<div class="alert alert-danger">La communauté demandée n\'existe pas ou a été supprimée.</div>';
-        return;
-    }
-?>
-    <div class="row">
-        <div class="col-md-8">
-            <h2 class="h4"><?= htmlspecialchars($community['nom']) ?></h2>
-            <span class="badge <?= $community['type_class'] ?> mb-3">
-                <?= htmlspecialchars(ucfirst($community['type'])) ?>
-            </span>
-
-            <p class="lead">
-                <?= nl2br(htmlspecialchars($community['description'])) ?>
-            </p>
-
-            <div class="mb-4">
-                <p>
-                    <i class="fas fa-users me-2"></i>
-                    <strong><?= $community['nombre_membres'] ?></strong> membres
-                    <?php if (!empty($community['capacite_max'])): ?>
-                        (capacité max: <?= $community['capacite_max'] ?>)
-                    <?php endif; ?>
-                </p>
-
-                <?php displayJoinLeaveButton($community_id, $community['est_membre'], true); ?>
-
-                <a href="?page=1" class="btn btn-outline-secondary ms-2">
-                    <i class="fas fa-arrow-left me-2"></i>Retour à la liste
-                </a>
-            </div>
-
-            <h3 class="h5 mt-4 mb-3">Messages de la communauté</h3>
-
-            <?php displayCommunityMessages($community_id, $community['est_membre']); ?>
-        </div>
-
-        <div class="col-md-4">
-            <?php
-            displayCommunityEvents($community);
-            displayCommunityMembers($community_id);
-            ?>
-        </div>
-    </div>
-    <?php
-}
-function displayCommunityMessages($community_id, $is_member)
-{
-    $messages_page = filter_input(INPUT_GET, 'messages_page', FILTER_VALIDATE_INT) ?: 1;
-    $messages_result = getCommunityMessages($community_id, $messages_page);
-
-    if (empty($messages_result['messages'])) {
-        echo '<div class="alert alert-info">Aucun message dans cette communauté pour le moment.</div>';
-    } else {
-        foreach ($messages_result['messages'] as $message) {
-    ?>
-            <div class="card mb-3">
-                <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                    <div>
-                        <?php displayAvatar($message['photo_url']); ?>
-                        <strong>
-                            <?= htmlspecialchars($message['auteur_prenom'] . ' ' . $message['auteur_nom']) ?>
-                        </strong>
-                        <?= $message['role_badge'] ?>
-                    </div>
-                    <small class="text-muted">
-                        <?= $message['date_creation_formatted'] ?>
-                    </small>
-                </div>
-                <div class="card-body">
-                    <p class="card-text">
-                        <?= nl2br(htmlspecialchars($message['contenu'])) ?>
-                    </p>
-                </div>
-            </div>
-        <?php
-        }
-
-        echo $messages_result['pagination_html'];
+    if ($category !== null && $category !== '') {
+        $whereClauses[] = 'c.categorie = :category'; // Use named placeholders for clarity with paginateResults
+        $params['category'] = $category;
     }
 
-    if ($is_member) {
-        ?>
-        <div class="card mt-4">
-            <div class="card-header bg-light">
-                <h4 class="h6 mb-0">Publier un message</h4>
-            </div>
-            <div class="card-body">
-                <form method="post" action="">
-                    <input type="hidden" name="community_id" value="<?= $community_id ?>">
-                    <div class="form-group mb-3">
-                        <textarea name="message" class="form-control" rows="3" placeholder="Partagez votre message avec la communauté..." required></textarea>
-                        <small class="form-text text-muted">Les messages sont soumis à une modération automatique.</small>
-                    </div>
-                    <button type="submit" name="add_message" class="btn btn-primary">
-                        <i class="fas fa-paper-plane me-2"></i>Publier
-                    </button>
-                </form>
-            </div>
-        </div>
-    <?php
-    } else {
-        echo '<div class="alert alert-info mt-4">Rejoignez cette communauté pour pouvoir publier des messages.</div>';
-    }
-}
-
-/**
- * Affiche les événements à venir d'une communauté
- * Appelé depuis displayCommunityDetail
- * 
- * @param array $community Détails de la communauté
- * @return void
- */
-function displayCommunityEvents($community)
-{
-    ?>
-    <div class="card mb-4">
-        <div class="card-header bg-light">
-            <h4 class="h6 mb-0">Événements à venir</h4>
-        </div>
-        <div class="card-body">
-            <?php
-            if (empty($community['evenements'])) {
-                echo '<p class="text-muted">Aucun événement à venir.</p>';
-            } else {
-                echo '<ul class="list-group list-group-flush">';
-                foreach ($community['evenements'] as $event) {
-            ?>
-                    <li class="list-group-item">
-                        <h5 class="h6"><?= htmlspecialchars($event['titre']) ?></h5>
-                        <p class="small text-muted mb-1">
-                            <i class="fas fa-calendar-alt me-1"></i>
-                            <?= $event['date_debut_formatted'] ?>
-                        </p>
-                        <p class="small text-muted mb-0">
-                            <i class="fas fa-map-marker-alt me-1"></i>
-                            <?= htmlspecialchars($event['lieu']) ?>
-                        </p>
-                    </li>
-            <?php
-                }
-                echo '</ul>';
-            }
-            ?>
-        </div>
-    </div>
-<?php
-}
-function displayCommunityMembers($community_id)
-{
-?>
-    <div class="card">
-        <div class="card-header bg-light">
-            <h4 class="h6 mb-0">Membres de la communauté</h4>
-        </div>
-        <div class="card-body">
-            <?php
-            $members_page = filter_input(INPUT_GET, 'members_page', FILTER_VALIDATE_INT) ?: 1;
-            $members_result = getCommunityMembers($community_id, $members_page, 5);
-
-            if (empty($members_result['members'])) {
-                echo '<p class="text-muted">Aucun membre pour le moment.</p>';
-            } else {
-                echo '<ul class="list-group list-group-flush">';
-                foreach ($members_result['members'] as $member) {
-            ?>
-                    <li class="list-group-item d-flex align-items-center">
-                        <?php displayAvatar($member['photo_url'], 36); ?>
-                        <div>
-                            <p class="mb-0">
-                                <?= htmlspecialchars($member['prenom'] . ' ' . $member['nom']) ?>
-                                <?= $member['role_badge'] ?>
-                            </p>
-                            <small class="text-muted">
-                                Depuis le <?= $member['date_inscription_formatted'] ?>
-                            </small>
-                        </div>
-                    </li>
-            <?php
-                }
-                echo '</ul>';
-
-                echo $members_result['pagination_html'];
-            }
-            ?>
-        </div>
-    </div>
-<?php
-}
-
-function displayCommunitiesList($employee_id, $page, $search, $type_filter)
-{
-?>
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <a href="../../modules/employees/index.php" class="btn btn-secondary mb-3">
-                <i class="fas fa-arrow-left me-2"></i>Retour au tableau de bord
-            </a>
-            <h3 class="h5 mb-3">Découvrez les communautés</h3>
-        </div>
-        <div class="col-md-4">
-            <form method="get" class="mb-3" action="">
-                <div class="input-group">
-                    <input type="text" name="search" class="form-control" placeholder="Rechercher..." value="<?= htmlspecialchars($search) ?>">
-                    <select name="type" class="form-select">
-                        <option value="">Tous les types</option>
-                        <option value="sport" <?= $type_filter === 'sport' ? 'selected' : '' ?>>Sport</option>
-                        <option value="bien_etre" <?= $type_filter === 'bien_etre' ? 'selected' : '' ?>>Bien-être</option>
-                        <option value="sante" <?= $type_filter === 'sante' ? 'selected' : '' ?>>Santé</option>
-                        <option value="autre" <?= $type_filter === 'autre' ? 'selected' : '' ?>>Autre</option>
-                    </select>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <?php
-    $communities_result = getCommunities($employee_id, $page, 10, $search, $type_filter);
-
-    if (empty($communities_result['communities'])) {
-        echo '<div class="alert alert-info">Aucune communauté ne correspond à votre recherche.</div>';
-        return;
+    if ($searchTerm !== null && $searchTerm !== '') {
+        $whereClauses[] = '(c.titre LIKE :searchTerm OR c.contenu LIKE :searchTerm OR c.mots_cles LIKE :searchTerm)';
+        $params['searchTerm'] = '%' . $searchTerm . '%';
     }
 
-    echo '<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">';
+    $whereSql = !empty($whereClauses) ? implode(' AND ', $whereClauses) : '1=1'; // Use 1=1 if no clauses
+    $orderBySql = 'c.date_publication DESC, c.ordre_affichage ASC, c.id DESC';
 
-    foreach ($communities_result['communities'] as $community) {
-        displayCommunityCard($community);
+    $countQuery = "SELECT COUNT(c.id) as total 
+                   FROM conseils c 
+                   LEFT JOIN personnes p ON c.auteur_personne_id = p.id 
+                   WHERE {$whereSql}";
+    $totalResult = executeQuery($countQuery, $params)->fetch(PDO::FETCH_ASSOC);
+    $totalConseils = $totalResult['total'] ?? 0;
+
+    $totalPages = $limit > 0 ? ceil($totalConseils / $limit) : 1;
+    $page = max(1, min($page, $totalPages > 0 ? $totalPages : 1));
+    $offset = ($page - 1) * $limit;
+
+    $query = "SELECT c.*,
+                     DATE_FORMAT(c.date_publication, '%d/%m/%Y') as date_publication_formatee,
+                     p.nom as auteur_nom_personne, p.prenom as auteur_prenom_personne
+              FROM conseils c
+              LEFT JOIN personnes p ON c.auteur_personne_id = p.id
+              WHERE {$whereSql}
+              ORDER BY {$orderBySql}
+              LIMIT {$limit} OFFSET {$offset}";
+
+    $conseils = executeQuery($query, $params)->fetchAll(PDO::FETCH_ASSOC);
+
+    $paginationData = [
+        'currentPage' => $page,
+        'totalPages' => $totalPages,
+        'totalItems' => $totalConseils,
+        'perPage' => $limit
+    ];
+
+    $urlParams = [];
+    if ($category !== null && $category !== '') $urlParams['category'] = $category;
+    if ($searchTerm !== null && $searchTerm !== '') $urlParams['search'] = $searchTerm;
+    $urlPattern = $_SERVER['PHP_SELF'] . "?page={page}";
+    if (!empty($urlParams)) {
+        $urlPattern .= "&" . http_build_query($urlParams);
     }
 
-    echo '</div>';
+    $paginationHtml = renderPagination($paginationData, $urlPattern);
 
-    // Afficher la pagination
-    echo '<div class="mt-4">';
-    echo $communities_result['pagination_html'];
-    echo '</div>';
+    return [
+        'conseils' => $conseils,
+        'pagination' => $paginationData, // Renvoyer les données calculées
+        'pagination_html' => $paginationHtml
+    ];
 }
 
-function displayCommunityCard($community)
+
+function getConseilCategories(): array
 {
-    ?>
-    <div class="col">
-        <div class="card h-100 shadow-sm">
-            <div class="card-header <?= $community['type_class'] ?> text-white">
-                <h5 class="mb-0"><?= htmlspecialchars($community['nom']) ?></h5>
-            </div>
-            <div class="card-body">
-                <p class="card-text">
-                    <?php
-                    $description = $community['description'] ?? '';
-                    echo strlen($description) > 100 ?
-                        htmlspecialchars(substr($description, 0, 100)) . '...' :
-                        htmlspecialchars($description);
-                    ?>
-                </p>
-                <p class="text-muted small">
-                    <i class="fas fa-users me-1"></i> <?= $community['nombre_membres'] ?> membres
-                    <?php if (!empty($community['capacite_max'])): ?>
-                        (max: <?= $community['capacite_max'] ?>)
-                    <?php endif; ?>
-                </p>
-            </div>
-            <div class="card-footer bg-white d-flex justify-content-between">
-                <a href="?id=<?= $community['id'] ?>" class="btn btn-sm btn-outline-primary">
-                    <i class="fas fa-info-circle me-1"></i>Détails
-                </a>
-
-                <?php displayJoinLeaveButton($community['id'], $community['est_membre']); ?>
-            </div>
-        </div>
-    </div>
-<?php
+    $query = "SELECT DISTINCT categorie FROM conseils WHERE est_publie = TRUE AND categorie IS NOT NULL AND categorie != '' ORDER BY categorie ASC";
+    return executeQuery($query)->fetchAll(PDO::FETCH_COLUMN);
 }
-

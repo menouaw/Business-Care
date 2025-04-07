@@ -209,7 +209,7 @@ include_once __DIR__ . '/../../templates/header.php';
                                 </a>
                             </div>
                             <div class="col-md-3">
-                                <a href="conseils-bien-etre.php" class="btn btn-success d-block py-3">
+                                <a href="advice.php" class="btn btn-success d-block py-3">
                                     <i class="fas fa-heart me-2"></i>Conseils bien-être
                                 </a>
                             </div>
