@@ -121,7 +121,7 @@ include_once '../../templates/header.php';
                 <div class="col-lg-4">
                     <div class="card mb-4">
                         <div class="card-header">
-                            <i class="fas fa-user-injured me-1"></i> Patient (Salarie)
+                            <i class="fas fa-user-injured me-1"></i> Patient
                         </div>
                         <div class="card-body">
                             <?php if ($appointment['personne_id']): ?>

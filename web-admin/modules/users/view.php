@@ -183,6 +183,7 @@ include '../../templates/header.php';
                                     <th>Praticien</th>
                                     <th>Statut</th>
                                     <th>Réservé le</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -207,6 +208,14 @@ include '../../templates/header.php';
                                     </td>
                                     <td><?php echo getStatusBadge($resa['statut']); ?></td>
                                     <td><?php echo formatDate($resa['created_at'], 'd/m/Y'); ?></td>
+                                    <td class="table-actions">
+                                        <a href="<?php echo WEBADMIN_URL; ?>/modules/appointments/view.php?id=<?php echo $resa['id']; ?>" class="btn btn-sm btn-info" data-bs-toggle="tooltip" title="Voir le rendez-vous">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="<?php echo WEBADMIN_URL; ?>/modules/appointments/edit.php?id=<?php echo $resa['id']; ?>" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="Modifier le rendez-vous">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </td>
                                 </tr>
                                 <?php endforeach; ?>
                             </tbody>
@@ -334,7 +343,72 @@ include '../../templates/header.php';
                 </div>
             </div>
             <?php endif; ?>
-            
+
+            <?php if ($user['role_id'] == ROLE_PRESTATAIRE && isset($user['appointments_given'])): ?>
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-calendar-check me-1"></i> Rendez-vous donnés
+                </div>
+                <div class="card-body p-0">
+                    <?php if (empty($user['appointments_given'])): ?>
+                    <div class="card-body text-center text-muted fst-italic">
+                        Aucun rendez-vous récent trouvé pour ce praticien.
+                    </div>
+                    <?php else: ?>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped table-hover mb-0 small">
+                            <thead>
+                                <tr>
+                                    <th>Date RDV</th>
+                                    <th>Prestation</th>
+                                    <th>Patient</th>
+                                    <th>Type</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($user['appointments_given'] as $app): 
+                                    $isUpcoming = isset($app['date_rdv']) && new DateTime($app['date_rdv']) > new DateTime();
+                                ?>
+                                <tr class="<?php echo $isUpcoming ? 'table-info' : ''; ?>">
+                                    <td><?php echo formatDate($app['date_rdv']); ?> <?php echo $isUpcoming ? '<i class="fas fa-clock text-primary ms-1" title="À venir"></i>' : ''; ?></td>
+                                    <td>
+                                        <a href="<?php echo WEBADMIN_URL; ?>/modules/services/view.php?id=<?php echo $app['prestation_id']; ?>" data-bs-toggle="tooltip" title="Voir la prestation '<?php echo htmlspecialchars($app['prestation_nom'] ?? ''); ?>'">
+                                           <?php echo htmlspecialchars($app['prestation_nom'] ?? 'N/A'); ?>
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <?php if(isset($app['personne_id'])): ?>
+                                        <a href="<?php echo WEBADMIN_URL; ?>/modules/users/view.php?id=<?php echo $app['personne_id']; ?>" data-bs-toggle="tooltip" title="Voir le profil de <?php echo htmlspecialchars(trim(($app['client_prenom'] ?? '') . ' ' . ($app['client_nom'] ?? ''))); ?>">
+                                            <?php echo htmlspecialchars(trim(($app['client_prenom'] ?? '') . ' ' . ($app['client_nom'] ?? ''))); ?>
+                                        </a>
+                                        <?php else: ?>
+                                            -
+                                        <?php endif; ?>
+                                    </td>
+                                     <td><?php echo htmlspecialchars(ucfirst($app['type_rdv'] ?? 'N/A')); ?></td>
+                                    <td><?php echo getStatusBadge($app['statut']); ?></td>
+                                    <td class="table-actions">
+                                        <a href="<?php echo WEBADMIN_URL; ?>/modules/appointments/view.php?id=<?php echo $app['id']; ?>" class="btn btn-sm btn-info" data-bs-toggle="tooltip" title="Voir le rendez-vous">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="<?php echo WEBADMIN_URL; ?>/modules/appointments/edit.php?id=<?php echo $app['id']; ?>" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="Modifier le rendez-vous">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                    <?php endif; ?>
+                </div>
+                <div class="card-footer text-muted small">
+                    Affichage des 10 derniers rendez-vous donnés. <span class="badge bg-info text-dark">Bleu</span> = à venir.
+                </div>
+            </div>
+            <?php endif; ?>
 
             <?php if ($user['role_id'] == ROLE_ENTREPRISE && isset($user['entreprise_id'])): 
                 $pattern = '/@([^.]+)\./';
@@ -579,7 +653,7 @@ include '../../templates/header.php';
                  <?php if (isset($user['security_actions'])): ?>
                 <div class="card mb-4">
                     <div class="card-header bg-warning text-dark">
-                        <i class="fas fa-shield-alt me-1"></i> Actions de Sécurité Récentes (10 dernières)
+                        <i class="fas fa-shield-alt me-1"></i> Actions de Sécurité Récentes
                     </div>
                     <div class="card-body p-0">
                         <?php if (empty($user['security_actions'])): ?>
