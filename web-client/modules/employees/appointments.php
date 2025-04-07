@@ -75,21 +75,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && ($_POST[
     $rdvId = filter_var($_POST['rdv_id'] ?? 0, FILTER_VALIDATE_INT);
 
     if ($rdvId) {
-        if (cancelEmployeeAppointment($userId, $rdvId)) {
+        $cancellationSuccess = cancelEmployeeAppointment($userId, $rdvId);
+        if ($cancellationSuccess) {
             $message = $_POST['action'] === 'annuler'
                 ? "Votre rendez-vous a été annulé avec succès. Il a été déplacé dans la section 'Rendez-vous annulés'."
-                : "Le rendez-vous a été marqué comme 'Annulé' et déplacé dans la section correspondante.";
+                : "Le rendez-vous a été marqué comme 'Annulé' et déplacé dans la section correspondante."; // Garder cette option ?
             flashMessage($message, "success");
-        } else {
-            flashMessage("Une erreur est survenue lors de l'annulation", "danger");
         }
+        // Si cancelEmployeeAppointment retourne false, un message flash (erreur, warning, info) a déjà été défini.
 
+        // Redirige dans tous les cas pour afficher le message flash et rafraîchir l'état
         $upcomingPage = isset($_GET['upcoming_page']) ? (int)$_GET['upcoming_page'] : 1;
         $pastPage = isset($_GET['past_page']) ? (int)$_GET['past_page'] : 1;
         $canceledPage = isset($_GET['canceled_page']) ? (int)$_GET['canceled_page'] : 1;
         header("Location: " . $_SERVER['PHP_SELF'] . "?upcoming_page=" . $upcomingPage . "&past_page=" . $pastPage . "&canceled_page=" . $canceledPage);
         exit;
     }
+    // else: Si $rdvId est invalide, on pourrait ajouter un flashMessage ici aussi, mais cancelEmployeeAppointment le gère déjà.
 }
 
 $upcomingAppointmentsData = getEmployeeAppointments($userId, 'upcoming', $upcomingPage, $limit);

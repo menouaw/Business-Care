@@ -882,17 +882,13 @@ function isPrestationAvailable($prestation_id, $date_rdv)
 
 function getAvailablePrestationsForEmployee($employee_id, $page = 1, $limit = 20)
 {
-    // Assainit et valide l'ID de l'employé et les paramètres de pagination.
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
     $page = max(1, (int)sanitizeInput($page));
     $limit = max(1, (int)sanitizeInput($limit));
 
     if (!$employee_id) {
-        // Bien que non utilisé pour le filtre SQL pour l'instant, on vérifie l'ID
         error_log("Tentative d'accès aux prestations avec ID employé invalide: $employee_id");
-        // On pourrait retourner une erreur, mais pour l'instant on retourne la liste générale.
-        // Si la logique future DOIT dépendre de l'employé, retourner une erreur ici.
-        // Retourne une structure vide si l'ID employé est invalide.
+
         return [
             'prestations' => [],
             'pagination' => ['current' => 1, 'limit' => $limit, 'total' => 0, 'totalPages' => 0],
@@ -983,26 +979,63 @@ function cancelEmployeeAppointment($employee_id, $rdv_id)
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
     $rdv_id = filter_var(sanitizeInput($rdv_id), FILTER_VALIDATE_INT);
 
+    // Vérification initiale des IDs
     if (!$employee_id || !$rdv_id) {
+        flashMessage("Données d'annulation invalides.", "danger");
         return false;
     }
 
-    $query = "SELECT prestation_id FROM rendez_vous WHERE id = ? AND personne_id = ?";
-    $result = executeQuery($query, [$rdv_id, $employee_id])->fetch();
+    try {
+        // Récupérer le RDV et vérifier qu'il appartient bien à l'employé et n'est pas déjà annulé
+        $query = "SELECT id, prestation_id, statut FROM rendez_vous WHERE id = :rdv_id AND personne_id = :employee_id";
+        $rdv = executeQuery($query, [':rdv_id' => $rdv_id, ':employee_id' => $employee_id])->fetch();
 
-    if (!$result) {
+        if (!$rdv) {
+            flashMessage("Rendez-vous non trouvé ou ne vous appartient pas.", "warning");
+            return false;
+        }
+
+        if ($rdv['statut'] === 'annule') {
+            flashMessage("Ce rendez-vous est déjà annulé.", "info");
+            return false; // Ou true si on considère que l'état désiré est atteint
+        }
+
+        // Mettre à jour le statut du RDV
+        $updateQuery = "UPDATE rendez_vous SET statut = 'annule' WHERE id = :rdv_id";
+        $affectedRows = executeQuery($updateQuery, [':rdv_id' => $rdv_id])->rowCount();
+
+        if ($affectedRows > 0) {
+            // Si c'était une prestation individuelle, la rendre à nouveau disponible
+            // (Vérifier si la prestation existe et a une capacité <= 1)
+            if (!empty($rdv['prestation_id'])) {
+                $prestationQuery = "SELECT id, capacite_max FROM prestations WHERE id = :presta_id";
+                $prestation = executeQuery($prestationQuery, [':presta_id' => $rdv['prestation_id']])->fetch();
+
+                if ($prestation && (empty($prestation['capacite_max']) || $prestation['capacite_max'] <= 1)) {
+                    $updatePrestationQuery = "UPDATE prestations SET est_disponible = TRUE WHERE id = :presta_id";
+                    executeQuery($updatePrestationQuery, [':presta_id' => $rdv['prestation_id']]);
+                    // Log ou notification optionnelle sur la remise en disponibilité
+                }
+            }
+            // Log l'opération métier
+            logBusinessOperation($employee_id, 'cancel_appointment', "Annulation du RDV #$rdv_id");
+            // Le message de succès sera géré par le script appelant
+            return true;
+        } else {
+            // Échec de la mise à jour (devrait être rare si le RDV existe et n'est pas déjà annulé)
+            logSystemActivity('warning', "cancelEmployeeAppointment: échec de la mise à jour du statut pour RDV #$rdv_id.");
+            flashMessage("La mise à jour du statut du rendez-vous a échoué.", "danger");
+            return false;
+        }
+    } catch (PDOException $e) {
+        logSystemActivity('error', "Erreur BDD dans cancelEmployeeAppointment pour RDV #$rdv_id: " . $e->getMessage());
+        flashMessage("Une erreur de base de données est survenue lors de l'annulation.", "danger");
+        return false;
+    } catch (Exception $e) {
+        logSystemActivity('error', "Erreur inattendue dans cancelEmployeeAppointment pour RDV #$rdv_id: " . $e->getMessage());
+        flashMessage("Une erreur technique est survenue lors de l'annulation.", "danger");
         return false;
     }
-
-    $updateQuery = "UPDATE rendez_vous SET statut = 'annule' WHERE id = ?";
-    $success = executeQuery($updateQuery, [$rdv_id])->rowCount() > 0;
-
-    if ($success && !empty($result['prestation_id'])) {
-        $updatePrestationQuery = "UPDATE prestations SET est_disponible = TRUE WHERE id = ?";
-        executeQuery($updatePrestationQuery, [$result['prestation_id']]);
-    }
-
-    return $success;
 }
 
 
