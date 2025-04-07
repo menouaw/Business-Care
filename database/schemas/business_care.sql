@@ -296,30 +296,6 @@ CREATE TABLE contrats_prestations (
     FOREIGN KEY (prestation_id) REFERENCES prestations(id) ON DELETE CASCADE
 );
 
-/*
-CREATE TABLE prestataires_prestations (
-    prestataire_id INT NOT NULL,
-    prestation_id INT NOT NULL,
-    habilitation_verifiee BOOLEAN DEFAULT FALSE,
-    tarif_negocie DECIMAL(10,2) NULL,
-    PRIMARY KEY (prestataire_id, prestation_id),
-    FOREIGN KEY (prestataire_id) REFERENCES personnes(id) ON DELETE CASCADE,
-    FOREIGN KEY (prestation_id) REFERENCES prestations(id) ON DELETE CASCADE
-);
-
-CREATE TABLE evenements_participants (
-    evenement_id INT NOT NULL,
-    personne_id INT NOT NULL,
-    date_inscription DATETIME DEFAULT CURRENT_TIMESTAMP,
-    statut_inscription ENUM('inscrit', 'annule', 'present', 'absent') DEFAULT 'inscrit',
-    notes_participant TEXT NULL,
-    PRIMARY KEY (evenement_id, personne_id),
-    FOREIGN KEY (evenement_id) REFERENCES evenements(id) ON DELETE CASCADE,
-    FOREIGN KEY (personne_id) REFERENCES personnes(id) ON DELETE CASCADE,
-    INDEX idx_personne (personne_id),
-    INDEX idx_statut (statut_inscription)
-);
-
 CREATE TABLE signalements (
     id INT PRIMARY KEY AUTO_INCREMENT,
     entreprise_id INT NULL,
@@ -343,6 +319,7 @@ CREATE TABLE signalements (
     INDEX idx_assigne (assigne_a)
 );
 
+/*
 CREATE TABLE participations_benevoles (
     id INT PRIMARY KEY AUTO_INCREMENT,
     personne_id INT NOT NULL,
@@ -379,6 +356,34 @@ CREATE TABLE conseils (
     INDEX idx_categorie (categorie),
     INDEX idx_publication (est_publie, date_publication),
     INDEX idx_auteur (auteur_personne_id)
+);
+
+CREATE TABLE chatbot_knowledge (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    categorie VARCHAR(100) NULL,        -- Catégorie de la question (ex: 'Prestations', 'Compte', 'Événements')
+    question_pattern VARCHAR(255) NOT NULL, -- Un motif ou mot-clé principal de la question
+    reponse TEXT NOT NULL,              -- La réponse standard
+    mots_cles TEXT NULL,                -- Mots clés additionnels pour améliorer la recherche
+    lien_utile VARCHAR(255) NULL,       -- Lien vers une page pertinente si nécessaire
+    actif BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_categorie (categorie),
+    INDEX idx_actif (actif)
+    -- FULLTEXT INDEX idx_ft_question_motscles (question_pattern, mots_cles) -- Optionnel: pour recherche full-text si MySQL >= 5.6
+);
+
+CREATE TABLE chatbot_interactions (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    personne_id INT NOT NULL,
+    session_id VARCHAR(255) NULL,       -- Pour regrouper les messages d'une même conversation
+    type_interaction ENUM('question', 'signalement', 'autre') NOT NULL,
+    message_utilisateur TEXT NULL,      -- Ce que l'utilisateur a tapé
+    reponse_chatbot TEXT NULL,          -- Ce que le chatbot a répondu
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (personne_id) REFERENCES personnes(id) ON DELETE CASCADE, -- Lier à l'utilisateur qui interagit
+    INDEX idx_personne_temps (personne_id, timestamp),
+    INDEX idx_type (type_interaction)
 );
 
 */

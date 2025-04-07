@@ -75,7 +75,6 @@ try {
     $message = ['type' => 'danger', 'text' => 'Une erreur inattendue est survenue.'];
 }
 
-// Stocker le message dans la session et rediriger
 $_SESSION['signalement_message'] = $message;
 header('Location: /Business-Care/web-client/modules/employees/signalement.php');
 exit;

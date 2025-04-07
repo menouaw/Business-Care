@@ -693,9 +693,9 @@ function getEmployeeEvents($employee_id, $event_type = 'all')
         return [];
     }
 
-    // Récupérer les colonnes existantes DANS LA TABLE evenements, y compris la nouvelle colonne nombre_inscrits
+    // Récupérer les colonnes existantes dans la table simplifiée
     $query = "SELECT id, titre, description, date_debut, date_fin, lieu, type, 
-              capacite_max, nombre_inscrits, niveau_difficulte 
+              capacite_max, niveau_difficulte 
               FROM evenements 
               WHERE date_debut >= CURDATE()";
     $params = [];
@@ -1948,10 +1948,6 @@ function registerEmployeeToEvent($employee_id, $event_id)
         $inserted = insertRow('evenements_participants', $data);
 
         if ($inserted) {
-            // Incrémenter le nombre d'inscrits dans la table evenements
-            $updateEventCountSql = "UPDATE evenements SET nombre_inscrits = nombre_inscrits + 1 WHERE id = :event_id";
-            executeQuery($updateEventCountSql, [':event_id' => $event_id]);
-
             // Log l'activité (si la fonction existe)
             if (function_exists('logBusinessOperation')) {
                 logBusinessOperation($employee_id, 'event_registration', "Inscription à l'événement #{$event_id} - {$event['titre']}");
@@ -2024,10 +2020,6 @@ function unregisterEmployeeFromEvent($employee_id, $event_id)
         $deleted = deleteRow('evenements_participants', $whereClause, $params);
 
         if ($deleted > 0) {
-            // Décrémenter le nombre d'inscrits dans la table evenements (en s'assurant qu'il ne passe pas en dessous de 0)
-            $updateEventCountSql = "UPDATE evenements SET nombre_inscrits = GREATEST(0, nombre_inscrits - 1) WHERE id = :event_id";
-            executeQuery($updateEventCountSql, [':event_id' => $event_id]);
-
             // Log l'activité
             if (function_exists('logBusinessOperation')) {
                 logBusinessOperation($employee_id, 'event_unregistration', "Désinscription de l'événement #{$event_id} - {$event['titre']}");

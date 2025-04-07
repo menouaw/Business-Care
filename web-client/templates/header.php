@@ -45,27 +45,26 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title><?= htmlspecialchars($pageTitle) ?></title>
 
-    <!-- Favicon -->
     <link rel="icon" href="<?= ASSETS_URL ?>/images/logo/noBgBlack.png" type="image/png">
 
-    <!-- CSS Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 
     <!-- CSS personnalisé -->
     <link rel="stylesheet" href="<?= ASSETS_URL ?>/css/client.css">
+
+    <!-- Liens pour FullCalendar (ajoutés pour la page des rendez-vous) -->
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/main.min.css' rel='stylesheet' />
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/main.min.js' defer></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/locales/fr.js' defer></script>
+
 </head>
 
 <body>
-    <!-- Bouton "Retour en haut" -->
-    <a id="back-to-top" class="d-none d-lg-block">
-        <i class="fas fa-arrow-up"></i>
-    </a>
+
 
     <!-- Barre de navigation -->
     <nav class="navbar navbar-expand-lg <?= isset($transparentNav) && $transparentNav ? 'navbar-dark' : 'navbar-light bg-white' ?> fixed-top">
@@ -83,20 +82,38 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
                 <!-- Navigation principale -->
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="<?= WEBCLIENT_URL ?>">Accueil</a>
+                        <?php
+                        // Déterminer le lien pour "Accueil" en fonction du rôle
+                        $accueil_link = WEBCLIENT_URL; // Lien par défaut
+                        if (isset($userRole) && $userRole === 'salarie') {
+                            $accueil_link = WEBCLIENT_URL . '/modules/employees/index.php'; // Lien vers le tableau de bord salarié
+                        }
+                        ?>
+                        <a class="nav-link" href="<?= $accueil_link ?>">Accueil</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?= WEBCLIENT_URL ?>/index.php#services">Services</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?= WEBCLIENT_URL ?>/index.php#offres">Tarifs</a>
-                    </li>
+                    <?php // Liens directs pour Salarié
+                    if (isset($userRole) && $userRole === 'salarie'): ?>
+                        <li class="nav-item">
+                            <a class="nav-link" href="<?= WEBCLIENT_URL ?>/modules/employees/reservations.php">Réservations</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="<?= WEBCLIENT_URL ?>/modules/employees/advice.php">Conseils</a>
+                        </li>
+                    <?php endif; ?>
+                    <?php // Liens masqués pour Salarié
+                    if (!isset($userRole) || $userRole !== 'salarie'): ?>
+                        <li class="nav-item">
+                            <a class="nav-link" href="<?= WEBCLIENT_URL ?>/index.php#services">Services</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="<?= WEBCLIENT_URL ?>/index.php#offres">Tarifs</a>
+                        </li>
+                    <?php endif; ?>
                     <li class="nav-item">
                         <a class="nav-link" href="<?= WEBCLIENT_URL ?>/modules/companies/contact.php">Contact</a>
                     </li>
 
                     <?php if ($isLoggedIn): ?>
-                        <!-- Menu spécifique selon le rôle -->
                         <?php if ($userRole === 'entreprise'): ?>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -119,12 +136,11 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
                                     Salarié
                                 </a>
                                 <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/index.php">Tableau de bord</a></li>
-                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/reservations.php">Réservations</a></li>
                                     <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/challenges.php">Défis sportifs</a></li>
                                     <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/communities.php">Communautés</a></li>
                                     <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/appointments.php">Rendez-vous</a></li>
-                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/advice.php">Conseils</a></li>
+                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/chatbot.php">Chatbot</a></li>
+                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/signalement.php">Signaler situation</a></li>
                                     <li>
                                         <hr class="dropdown-divider">
                                     </li>

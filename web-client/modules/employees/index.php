@@ -163,36 +163,32 @@ include_once __DIR__ . '/../../templates/header.php';
                         <a href="events.php" class="btn btn-sm btn-outline-primary">Tous les événements</a>
                     </div>
                     <div class="card-body">
-                        <?php if (empty($evenements)): ?>
-                            <p class="text-center text-muted my-5">Aucun événement à venir</p>
-                        <?php else:
-                            // Utiliser array_slice pour ne prendre que les 3 premiers événements
+                        <?php
+                        if (empty($evenements)) {
+                            echo '<p class="text-center text-muted my-5">Aucun événement à venir</p>';
+                        } else {
                             $upcomingEventsPreview = array_slice($evenements, 0, 3);
                         ?>
                             <div class="list-group list-group-flush">
-                                <?php foreach ($upcomingEventsPreview as $event): // Boucler sur les 3 premiers 
-                                ?>
+                                <?php foreach ($upcomingEventsPreview as $event) { ?>
                                     <div class="list-group-item border-0 px-0">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div>
-                                                <h6 class="mb-1"><?= htmlspecialchars($event['titre']) // Sécuriser avec htmlspecialchars 
-                                                                    ?></h6>
+                                                <h6 class="mb-1"><?= htmlspecialchars($event['titre']) ?></h6>
                                                 <p class="text-muted mb-0 small">
-                                                    <i class="far fa-calendar-alt me-1"></i> <?= $event['date_debut_formatted'] ?? formatDate($event['date_debut'], 'd/m/Y') // Utiliser le champ formaté si dispo, sinon formater ici 
-                                                                                                ?>
+                                                    <i class="far fa-calendar-alt me-1"></i> <?= $event['date_debut_formatted'] ?? formatDate($event['date_debut'], 'd/m/Y') ?>
                                                     <i class="far fa-clock ms-2 me-1"></i> <?= formatDate($event['date_debut'], 'H:i') ?>
                                                 </p>
                                                 <p class="text-muted mb-0 small">
                                                     <i class="fas fa-map-marker-alt me-1"></i> <?= htmlspecialchars($event['lieu'] ?? 'Non précisé') ?>
                                                 </p>
                                             </div>
-                                            <!-- Lien vers la page d'inscription ou d'événements -->
                                             <a href="events.php" class="btn btn-sm btn-outline-success">Voir</a>
                                         </div>
                                     </div>
-                                <?php endforeach; ?>
+                                <?php } ?>
                             </div>
-                        <?php endif; ?>
+                        <?php } ?>
                     </div>
                 </div>
             </div>

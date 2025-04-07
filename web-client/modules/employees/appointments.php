@@ -104,8 +104,6 @@ $availablePrestations = $availablePrestationsData['prestations'];
 $prestationPagination = $availablePrestationsData['pagination'];
 $prestationPaginationHtml = $availablePrestationsData['pagination_html'];
 
-
-
 $pageTitle = "Mes rendez-vous";
 require_once(__DIR__ . '/../../templates/header.php');
 ?>
