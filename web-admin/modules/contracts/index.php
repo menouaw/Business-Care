@@ -340,7 +340,6 @@ include_once '../../templates/header.php';
                     </div>
                     
                     <?php 
-                    // Use renderPagination
                     $paginationInfo = [
                         'currentPage' => $page,
                         'totalPages' => $totalPages,
