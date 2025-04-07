@@ -121,10 +121,10 @@ include_once '../../templates/header.php';
                                             <td><?php echo htmlspecialchars(ucfirst($appointment['type_rdv'] ?? 'N/A')); ?></td>
                                             <td><?php echo getStatusBadge($appointment['statut']); ?></td>
                                             <td class="table-actions">
-                                                <a href="#" class="btn btn-sm btn-info disabled" data-bs-toggle="tooltip" title="Voir RDV (lien à implémenter)">
+                                                <a href="<?php echo WEBADMIN_URL; ?>/modules/appointments/view.php?id=<?php echo $appointment['id']; ?>" class="btn btn-sm btn-info" data-bs-toggle="tooltip" title="Voir le rendez-vous">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
-                                                <a href="#" class="btn btn-sm btn-primary disabled" data-bs-toggle="tooltip" title="Modifier RDV (lien à implémenter)">
+                                                <a href="<?php echo WEBADMIN_URL; ?>/modules/appointments/edit.php?id=<?php echo $appointment['id']; ?>" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="Modifier le rendez-vous">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
                                             </td>
