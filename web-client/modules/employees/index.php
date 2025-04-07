@@ -1,37 +1,23 @@
 <?php
-/**
- * tableau de bord - salariés
- *
- * page d'accueil du module salariés
- */
 
-// Inclure les fonctions spécifiques au module salariés
 require_once __DIR__ . '/../../includes/page_functions/modules/employees.php';
 
-// vérifier que l'utilisateur est connecté et a le rôle salarié
 requireRole(ROLE_SALARIE);
 
-// récupérer les informations de l'utilisateur
 $userId = $_SESSION['user_id'];
 $user = getEmployeeDetails($userId);
 $entrepriseId = $_SESSION['user_entreprise'];
 
-// récupérer les rendez-vous à venir
-$rdvs = getEmployeeAppointments($userId, 'upcoming');
+$rdvs_data = getEmployeeAppointments($userId, 'upcoming');
 
-// récupérer les événements à venir
 $evenements = getEmployeeEvents($userId, 'upcoming');
 
-// récupérer les communautés de l'utilisateur
 $communautes = getEmployeeCommunities($userId);
 
-// récupérer l'historique d'activité récente
 $activites = getEmployeeActivityHistory($userId, 1, 5);
 
-// définir le titre de la page
 $pageTitle = "Tableau de bord - Espace Salarié";
 
-// inclure l'en-tête
 include_once __DIR__ . '/../../templates/header.php';
 ?>
 
@@ -55,16 +41,16 @@ include_once __DIR__ . '/../../templates/header.php';
                             </div>
                             <div>
                                 <h6 class="card-subtitle text-muted mb-1">Rendez-vous</h6>
-                                <h2 class="card-title mb-0"><?= count($rdvs) ?></h2>
+                                <h2 class="card-title mb-0"><?= count($rdvs_data['appointments']) ?></h2>
                             </div>
                         </div>
                         <div class="mt-3">
-                            <a href="mes-rendez-vous.php" class="btn btn-sm btn-outline-primary">Tous les rendez-vous</a>
+                            <a href="appointments.php" class="btn btn-sm btn-outline-primary">Tous les rendez-vous</a>
                         </div>
                     </div>
                 </div>
             </div>
-            
+
             <div class="col-md-6 col-lg-3">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body">
@@ -83,7 +69,7 @@ include_once __DIR__ . '/../../templates/header.php';
                     </div>
                 </div>
             </div>
-            
+
             <div class="col-md-6 col-lg-3">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body">
@@ -102,7 +88,7 @@ include_once __DIR__ . '/../../templates/header.php';
                     </div>
                 </div>
             </div>
-            
+
             <div class="col-md-6 col-lg-3">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body">
@@ -124,36 +110,38 @@ include_once __DIR__ . '/../../templates/header.php';
         </div>
 
         <div class="row g-4">
-            <!-- prochains rendez-vous -->
             <div class="col-lg-6">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0">Prochains rendez-vous</h5>
-                        <a href="mes-rendez-vous.php" class="btn btn-sm btn-outline-primary">Voir tous</a>
+                        <a href="appointments.php" class="btn btn-sm btn-outline-primary">Voir tous</a>
                     </div>
                     <div class="card-body">
-                        <?php if (empty($rdvs)): ?>
+                        <?php
+                        $upcomingAppointments = isset($rdvs_data['appointments']) && is_array($rdvs_data['appointments']) ? $rdvs_data['appointments'] : [];
+
+                        if (empty($upcomingAppointments)):
+                        ?>
                             <p class="text-center text-muted my-5">Aucun rendez-vous planifié</p>
                         <?php else: ?>
                             <div class="list-group list-group-flush">
-                                <?php foreach (array_slice($rdvs, 0, 5) as $rdv): 
-                                    // récupérer les détails de la prestation si nécessaire
-                                    $prestation = isset($rdv['prestation']) ? $rdv['prestation'] : (isset($rdv['prestation_id']) ? fetchOne('prestations', "id = {$rdv['prestation_id']}") : null);
-                                ?>
+                                <?php foreach (array_slice($upcomingAppointments, 0, 5) as $rdv): ?>
+                                    <?php // Les commentaires redondants sur fetchOne ont été supprimés 
+                                    ?>
                                     <div class="list-group-item border-0 px-0">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div>
-                                                <h6 class="mb-1"><?= $prestation['nom'] ?? $rdv['prestation_nom'] ?? 'Prestation inconnue' ?></h6>
+                                                <h6 class="mb-1"><?= htmlspecialchars($rdv['prestation_nom'] ?? 'Prestation inconnue') ?></h6>
                                                 <p class="text-muted mb-0">
                                                     <i class="far fa-calendar-alt me-1"></i> <?= isset($rdv['date_formatee']) ? $rdv['date_formatee'] : formatDate($rdv['date_rdv'], 'd/m/Y') ?>
                                                     <i class="far fa-clock ms-2 me-1"></i> <?= isset($rdv['heure_formatee']) ? $rdv['heure_formatee'] : formatDate($rdv['date_rdv'], 'H:i') ?>
                                                 </p>
                                                 <p class="text-muted mb-0">
-                                                    <i class="fas fa-map-marker-alt me-1"></i> <?= $rdv['lieu'] ?? 'Non précisé' ?>
+                                                    <i class="fas fa-map-marker-alt me-1"></i> <?= htmlspecialchars($rdv['lieu'] ?? 'Non précisé') ?>
                                                 </p>
                                             </div>
                                             <span class="badge bg-<?= isset($rdv['statut_classe']) ? $rdv['statut_classe'] : ($rdv['statut'] == 'confirme' ? 'success' : 'warning') ?> ms-2">
-                                                <?= ucfirst($rdv['statut']) ?>
+                                                <?= htmlspecialchars(ucfirst($rdv['statut'])) ?>
                                             </span>
                                         </div>
                                     </div>
@@ -164,7 +152,6 @@ include_once __DIR__ . '/../../templates/header.php';
                 </div>
             </div>
 
-            <!-- événements à venir -->
             <div class="col-lg-6">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
@@ -238,6 +225,5 @@ include_once __DIR__ . '/../../templates/header.php';
 </main>
 
 <?php
-// inclure le pied de page
 include_once __DIR__ . '/../../templates/footer.php';
 ?>

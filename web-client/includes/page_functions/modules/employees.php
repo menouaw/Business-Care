@@ -940,13 +940,16 @@ function getAvailablePrestationsForEmployee($employee_id, $page = 1, $limit = 20
 
     $offset = ($page - 1) * $limit;
 
-    $tomorrow = date('Y-m-d', strtotime('+1 day'));
+    $tomorrow = date('Y-m-d', strtotime('+1 day')); // Correction: Réinsérer la définition de $tomorrow
 
+    // Note: On récupère toutes les prestations disponibles, sans filtrer par contrat entreprise pour le moment
+    // car la logique exacte dépend des règles métier (toutes prestations dispo? ou seulement celles du contrat?)
     $query = "SELECT p.id, p.nom, p.description, p.prix, p.duree, p.type, p.date_heure_disponible, 
               p.capacite_max, p.niveau_difficulte, p.lieu, p.est_disponible, p.categorie,
               pp.id as praticien_id, CONCAT(pp.prenom, ' ', pp.nom) as praticien_nom
               FROM prestations p
               LEFT JOIN personnes pp ON p.praticien_id = pp.id
+              WHERE p.est_disponible = TRUE
               ORDER BY p.nom ASC
               LIMIT ? OFFSET ?";
 

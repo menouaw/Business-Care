@@ -123,6 +123,7 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
                                     <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/reservations.php">Réservations</a></li>
                                     <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/challenges.php">Défis sportifs</a></li>
                                     <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/communities.php">Communautés</a></li>
+                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/appointments.php">Rendez-vous</a></li>
                                     <li>
                                         <hr class="dropdown-divider">
                                     </li>
