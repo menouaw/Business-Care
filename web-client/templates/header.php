@@ -146,10 +146,8 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
                     <?php endif; ?>
                 </ul>
 
-                <!-- Partie droite : connexion ou profil/déconnexion -->
                 <ul class="navbar-nav ms-auto">
                     <?php if ($isLoggedIn): ?>
-                        <!-- Notifications -->
                         <li class="nav-item dropdown">
                             <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="fas fa-bell"></i>
@@ -204,7 +202,6 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <?php
-                                // Déterminer le lien des paramètres en fonction du rôle
                                 $settings_link = WEBCLIENT_URL . '/profile.php'; // Lien par défaut si pas de settings spécifique au rôle
                                 if (isset($userRole)) {
                                     switch ($userRole) {

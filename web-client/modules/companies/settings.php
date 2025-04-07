@@ -3,6 +3,7 @@
 require_once __DIR__ . '/../../includes/init.php';
 require_once __DIR__ . '/../../includes/page_functions/modules/companies.php';
 
+
 requireRole(ROLE_ENTREPRISE);
 
 $entrepriseId = $_SESSION['user_entreprise'];
@@ -29,10 +30,8 @@ $profileSubmittedData = [
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!verifyCsrfToken()) {
-        flashMessage('Erreur de sécurité (jeton CSRF invalide).', 'danger');
-        redirectTo('settings.php'); // Recharger la page pour obtenir un nouveau token
-    }
+    // Vérifie le token CSRF. La fonction redirige et arrête le script en cas d'échec.
+    verifyCsrfToken();
 
     if (isset($_POST['update_profile'])) { // Identifier le formulaire soumis
         $profileSubmittedData = sanitizeInput($_POST);
@@ -70,6 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } elseif (isset($_POST['change_password'])) { // Identifier le formulaire soumis
         $passwordData = sanitizeInput($_POST);
+        $passwordErrors = []; // Réinitialiser les erreurs spécifiques à cette soumission
 
         // Validation
         if (empty($passwordData['current_password'])) {
@@ -85,18 +85,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $passwordErrors[] = "Le nouveau mot de passe doit être différent de l'ancien.";
         }
 
-        if (empty($passwordErrors)) {
+        if (!empty($passwordErrors)) {
+            // Erreurs de validation: stocker dans flash et rediriger
+            flashMessage(implode('<br>', $passwordErrors), 'danger');
+            redirectTo('settings.php');
+        } else {
+            // Aucune erreur de validation, tenter de changer le mot de passe
             $changeSuccess = changeUserPassword($userId, $passwordData['current_password'], $passwordData['new_password']);
-
-            if ($changeSuccess) {
-
-                $successMessage = urlencode('Mot de passe modifié avec succès.');
-                $redirectUrl = 'settings.php?password_success=' . $successMessage;
-                redirectTo($redirectUrl);
-            } else {
-
-                $passwordErrors[] = "Le mot de passe actuel fourni est incorrect.";
-            }
+            // Rediriger dans tous les cas (succès ou échec, changeUserPassword a mis le flash)
+            redirectTo('settings.php');
         }
     }
 }
@@ -107,29 +104,36 @@ include_once __DIR__ . '/../../templates/header.php';
 ?>
 
 <main class="container py-4">
+    <!-- Zone d'affichage des messages flash -->
+    <div class="container mt-0 mb-3 p-0">
+        <?php
+        if (isset($_SESSION['flash_messages']) && is_array($_SESSION['flash_messages'])):
+            foreach ($_SESSION['flash_messages'] as $message):
+                $type = $message['type'] ?? 'info'; // Type par défaut : info
+                $text = $message['message'] ?? 'Message non défini';
+                // Assurer que le type est valide pour les classes Bootstrap
+                $valid_types = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark'];
+                if (!in_array($type, $valid_types)) {
+                    $type = 'info';
+                }
+        ?>
+                <div class="alert alert-<?= htmlspecialchars($type) ?> alert-dismissible fade show" role="alert">
+                    <?= htmlspecialchars($text) ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+        <?php endforeach;
+            // Vider les messages flash après affichage
+            unset($_SESSION['flash_messages']);
+        endif;
+        ?>
+    </div>
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="mb-0">Paramètres</h1>
         <a href="index.php" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left me-1"></i> Retour
         </a>
     </div>
-
-    <?php
-
-    if (isset($_GET['profile_success'])) {
-        $successMessageDecoded = urldecode($_GET['profile_success']);
-        echo '<div class="alert alert-success alert-dismissible fade show" role="alert">'
-            . htmlspecialchars($successMessageDecoded)
-            . '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>'
-            . '</div>';
-    } elseif (isset($_GET['password_success'])) {
-        $successMessageDecoded = urldecode($_GET['password_success']);
-        echo '<div class="alert alert-success alert-dismissible fade show" role="alert">'
-            . htmlspecialchars($successMessageDecoded)
-            . '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>'
-            . '</div>';
-    }
-    ?>
 
     <style>
         #back-to-top {
