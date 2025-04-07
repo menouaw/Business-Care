@@ -1723,7 +1723,7 @@ function getCommunityRoleBadge($role)
         case 'animateur':
             return '<span class="badge bg-warning text-dark">Animateur</span>';
         case 'membre':
-        default: 
+        default:
             return '<span class="badge bg-primary">Membre</span>';
     }
 }
@@ -1828,26 +1828,22 @@ function getDonationHistory($employee_id)
         return [];
     }
 
-    $query = "SELECT d.* 
+    // Utiliser LEFT JOIN pour récupérer le nom de l'association directement
+    $query = "SELECT d.*, a.nom as association_nom
               FROM dons d
+              LEFT JOIN associations a ON d.association_id = a.id AND a.actif = 1
               WHERE d.personne_id = ?
               ORDER BY d.date_don DESC";
 
-    $dons = executeQuery($query, [$employee_id])->fetchAll();
+    $dons = executeQuery($query, [$employee_id])->fetchAll(PDO::FETCH_ASSOC);
 
-    $associations = getAssociations();
-    $associations_by_id = [];
-
-    foreach ($associations as $association) {
-        $associations_by_id[$association['id']] = $association['nom'];
-    }
-
+    // Formater les données si nécessaire (le nom de l'association est déjà là)
     foreach ($dons as &$don) {
-        if (!empty($don['association_id']) && isset($associations_by_id[$don['association_id']])) {
-            $don['association_nom'] = $associations_by_id[$don['association_id']];
-        } else {
+        // Ajouter un fallback si association_nom est NULL (pas de jointure trouvée ou association_id était NULL)
+        if (!isset($don['association_nom'])) {
             $don['association_nom'] = 'Non spécifiée';
         }
+        // Autres formatages éventuels pour les dons ici...
     }
 
     return $dons;
