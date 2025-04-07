@@ -213,7 +213,7 @@ include_once __DIR__ . '/../../templates/header.php';
                                 </a>
                             </div>
                             <div class="col-lg col-md-4 col-6">
-                                <a href="signaler-situation.php" class="btn btn-warning d-block py-3 text-truncate">
+                                <a href="signalement.php" class="btn btn-warning d-block py-3 text-truncate">
                                     <i class="fas fa-exclamation-triangle me-2"></i>Signaler situation
                                 </a>
                             </div>
