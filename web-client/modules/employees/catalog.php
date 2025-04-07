@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../../includes/init.php';
 require_once __DIR__ . '/../../includes/page_functions/modules/employees.php';
 
-requireRole(ROLE_SALARIE);
+requireEmployeeLogin();
 
 $employee_id = $_SESSION['user_id'];
 

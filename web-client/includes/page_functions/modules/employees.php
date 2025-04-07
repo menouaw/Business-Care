@@ -325,22 +325,22 @@ function getEmployeeAppointments($employee_id, $status = 'upcoming', $page = 1, 
               LEFT JOIN prestations p ON rv.prestation_id = p.id
               LEFT JOIN personnes pp ON rv.praticien_id = pp.id
               LEFT JOIN evenements e ON rv.evenement_id = e.id
-              WHERE rv.personne_id = ?";
+              WHERE rv.personne_id = :employee_id"; // Marqueur nommé
 
-    $params = [$employee_id];
+    $params = [':employee_id' => $employee_id]; // Utiliser le marqueur nommé
 
     $now = date('Y-m-d H:i:s');
 
     switch ($status) {
         case 'upcoming':
-            $query .= " AND rv.date_rdv > ? AND rv.statut NOT IN ('annule', 'manque')";
-            $params[] = $now;
+            $query .= " AND rv.date_rdv > :now AND rv.statut NOT IN ('annule', 'manque')";
+            $params[':now'] = $now;
             $query .= " ORDER BY rv.date_rdv ASC";
             break;
 
         case 'past':
-            $query .= " AND (rv.date_rdv < ? AND rv.statut NOT IN ('annule', 'manque'))";
-            $params[] = $now;
+            $query .= " AND (rv.date_rdv < :now AND rv.statut NOT IN ('annule', 'manque'))";
+            $params[':now'] = $now;
             $query .= " ORDER BY rv.date_rdv DESC";
             break;
 
@@ -353,24 +353,21 @@ function getEmployeeAppointments($employee_id, $status = 'upcoming', $page = 1, 
             $query .= " ORDER BY rv.date_rdv DESC";
     }
 
-    // Ajout de la limitation et offset
-    $query .= " LIMIT ? OFFSET ?";
-    $params[] = $limit;
-    $params[] = $offset;
+    $query .= " LIMIT " . intval($limit) . " OFFSET " . intval($offset);
 
     // Comptage du nombre total d'éléments pour la pagination
-    $countQuery = "SELECT COUNT(*) as total FROM rendez_vous rv WHERE rv.personne_id = ?";
-    $countParams = [$employee_id];
+    $countQuery = "SELECT COUNT(*) as total FROM rendez_vous rv WHERE rv.personne_id = :employee_id";
+    $countParams = [':employee_id' => $employee_id];
 
     switch ($status) {
         case 'upcoming':
-            $countQuery .= " AND rv.date_rdv > ? AND rv.statut NOT IN ('annule', 'manque')";
-            $countParams[] = $now;
+            $countQuery .= " AND rv.date_rdv > :now AND rv.statut NOT IN ('annule', 'manque')";
+            $countParams[':now'] = $now;
             break;
 
         case 'past':
-            $countQuery .= " AND (rv.date_rdv < ? AND rv.statut NOT IN ('annule', 'manque'))";
-            $countParams[] = $now;
+            $countQuery .= " AND (rv.date_rdv < :now AND rv.statut NOT IN ('annule', 'manque'))";
+            $countParams[':now'] = $now;
             break;
 
         case 'canceled':
@@ -696,15 +693,16 @@ function getEmployeeEvents($employee_id, $event_type = 'all')
         return [];
     }
 
+    // Récupérer les colonnes existantes DANS LA TABLE evenements, y compris la nouvelle colonne nombre_inscrits
     $query = "SELECT id, titre, description, date_debut, date_fin, lieu, type, 
-              capacite_max, niveau_difficulte 
+              capacite_max, nombre_inscrits, niveau_difficulte 
               FROM evenements 
               WHERE date_debut >= CURDATE()";
     $params = [];
 
     if ($event_type !== 'all') {
-        $query .= " AND type = ?";
-        $params[] = $event_type;
+        $query .= " AND type = :event_type"; // Marqueur nommé
+        $params[':event_type'] = $event_type; // Utiliser le marqueur nommé
     }
 
     $query .= " ORDER BY date_debut, titre";
@@ -712,12 +710,27 @@ function getEmployeeEvents($employee_id, $event_type = 'all')
     $events = executeQuery($query, $params)->fetchAll();
 
     foreach ($events as &$event) {
+        // Formatage Date Début (avec heure)
         if (isset($event['date_debut'])) {
-            $event['date_debut_formatted'] = formatDate($event['date_debut'], 'd/m/Y');
+            $event['date_debut_formatted'] = formatDate($event['date_debut'], 'd/m/Y H:i');
         }
+        // Formatage Date Fin (avec heure)
         if (isset($event['date_fin'])) {
-            $event['date_fin_formatee'] = formatDate($event['date_fin'], 'd/m/Y');
+            $event['date_fin_formatted'] = formatDate($event['date_fin'], 'd/m/Y H:i');
         }
+        // Formatage Niveau
+        if (!empty($event['niveau_difficulte'])) {
+            $event['niveau_formatted'] = ucfirst(sanitizeInput($event['niveau_difficulte']));
+        } else {
+            $event['niveau_formatted'] = 'N/A';
+        }
+        // Formatage Capacité
+        if (!empty($event['capacite_max'])) {
+            $event['capacite_formatted'] = sanitizeInput($event['capacite_max']) . ' pers.';
+        } else {
+            $event['capacite_formatted'] = 'N/A';
+        }
+        // PAS DE FORMATAGE DE COÛT ICI
     }
 
     return $events;
@@ -1877,4 +1890,181 @@ function getPrestationDetails(int $prestation_id): array|false
     }
 
     return $prestation; // Retourne le tableau de la prestation ou false
+}
+
+/**
+ * Inscrit un salarié à un événement.
+ *
+ * @param int $employee_id ID du salarié.
+ * @param int $event_id ID de l'événement.
+ * @return bool True si l'inscription réussit, False sinon.
+ */
+function registerEmployeeToEvent($employee_id, $event_id)
+{
+    $employee_id = filter_var($employee_id, FILTER_VALIDATE_INT);
+    $event_id = filter_var($event_id, FILTER_VALIDATE_INT);
+
+    if (!$employee_id || !$event_id) {
+        flashMessage("Données d'inscription invalides.", "danger");
+        return false;
+    }
+
+    try {
+        // Vérifier si l'événement existe et récupérer sa capacité
+        $event = fetchOne('evenements', 'id = :id', [':id' => $event_id]);
+        if (!$event) {
+            flashMessage("L'événement demandé n'existe pas.", "warning");
+            return false;
+        }
+
+        // Vérifier si l'employé est déjà inscrit
+        $existingRegistration = fetchOne('evenements_participants', 'evenement_id = :event_id AND personne_id = :employee_id', [
+            ':event_id' => $event_id,
+            ':employee_id' => $employee_id
+        ]);
+
+        if ($existingRegistration) {
+            flashMessage("Vous êtes déjà inscrit à cet événement.", "info");
+            return false; // Déjà inscrit, pas une erreur mais on ne réinscrit pas
+        }
+
+        // Vérifier la capacité maximale si elle est définie
+        if (!empty($event['capacite_max'])) {
+            $currentParticipants = countTableRows('evenements_participants', 'evenement_id = :event_id', [':event_id' => $event_id]);
+            if ($currentParticipants >= $event['capacite_max']) {
+                flashMessage("La capacité maximale pour cet événement est atteinte.", "warning");
+                return false;
+            }
+        }
+
+        // Inscrire l'employé
+        $data = [
+            'evenement_id' => $event_id,
+            'personne_id' => $employee_id,
+            'date_inscription' => date('Y-m-d H:i:s'),
+            'statut_inscription' => 'inscrit' // Statut par défaut
+        ];
+
+        $inserted = insertRow('evenements_participants', $data);
+
+        if ($inserted) {
+            // Incrémenter le nombre d'inscrits dans la table evenements
+            $updateEventCountSql = "UPDATE evenements SET nombre_inscrits = nombre_inscrits + 1 WHERE id = :event_id";
+            executeQuery($updateEventCountSql, [':event_id' => $event_id]);
+
+            // Log l'activité (si la fonction existe)
+            if (function_exists('logBusinessOperation')) {
+                logBusinessOperation($employee_id, 'event_registration', "Inscription à l'événement #{$event_id} - {$event['titre']}");
+            }
+            // Créer une notification (si la table et la fonction existent)
+            $notifData = [
+                'personne_id' => $employee_id,
+                'titre' => 'Inscription confirmée',
+                'message' => "Vous êtes bien inscrit à l'événement : {$event['titre']}",
+                'type' => 'success',
+                'lien' => WEBCLIENT_URL . '/modules/employees/events.php' // Ou lien vers l'événement spécifique si page détail existe
+            ];
+            insertRow('notifications', $notifData);
+
+            flashMessage("Inscription à l'événement '{$event['titre']}' réussie !", "success");
+            return true;
+        } else {
+            flashMessage("Une erreur est survenue lors de l'inscription.", "danger");
+            return false;
+        }
+    } catch (Exception $e) {
+        // Log l'erreur système
+        if (function_exists('logSystemActivity')) {
+            logSystemActivity('error', "Erreur inscription événement #{$event_id} pour user #{$employee_id}: " . $e->getMessage());
+        }
+        flashMessage("Une erreur technique est survenue.", "danger");
+        return false;
+    }
+}
+
+/**
+ * Désinscrit un salarié d'un événement.
+ *
+ * @param int $employee_id ID du salarié.
+ * @param int $event_id ID de l'événement.
+ * @return bool True si la désinscription réussit ou si l'utilisateur n'était pas inscrit, False en cas d'erreur.
+ */
+function unregisterEmployeeFromEvent($employee_id, $event_id)
+{
+    $employee_id = filter_var($employee_id, FILTER_VALIDATE_INT);
+    $event_id = filter_var($event_id, FILTER_VALIDATE_INT);
+
+    if (!$employee_id || !$event_id) {
+        flashMessage("Données de désinscription invalides.", "danger");
+        return false;
+    }
+
+    try {
+        // Vérifier si l'événement existe (optionnel mais bonne pratique)
+        $event = fetchOne('evenements', 'id = :id', [':id' => $event_id]);
+        if (!$event) {
+            flashMessage("L'événement spécifié n'existe pas.", "warning");
+            return false;
+        }
+
+        // Vérifier si l'employé est réellement inscrit
+        $whereClause = 'evenement_id = :event_id AND personne_id = :employee_id';
+        $params = [
+            ':event_id' => $event_id,
+            ':employee_id' => $employee_id
+        ];
+        $existingRegistration = fetchOne('evenements_participants', $whereClause, $params);
+
+        if (!$existingRegistration) {
+            flashMessage("Vous n'êtes pas inscrit à cet événement.", "info");
+            return true; // Pas une erreur, l'état désiré (non inscrit) est atteint
+        }
+
+        // Supprimer l'inscription
+        $deleted = deleteRow('evenements_participants', $whereClause, $params);
+
+        if ($deleted > 0) {
+            // Décrémenter le nombre d'inscrits dans la table evenements (en s'assurant qu'il ne passe pas en dessous de 0)
+            $updateEventCountSql = "UPDATE evenements SET nombre_inscrits = GREATEST(0, nombre_inscrits - 1) WHERE id = :event_id";
+            executeQuery($updateEventCountSql, [':event_id' => $event_id]);
+
+            // Log l'activité
+            if (function_exists('logBusinessOperation')) {
+                logBusinessOperation($employee_id, 'event_unregistration', "Désinscription de l'événement #{$event_id} - {$event['titre']}");
+            }
+            // Créer une notification (optionnel)
+            $notifData = [
+                'personne_id' => $employee_id,
+                'titre' => 'Désinscription confirmée',
+                'message' => "Vous avez été désinscrit de l'événement : {$event['titre']}",
+                'type' => 'info',
+                'lien' => WEBCLIENT_URL . '/modules/employees/events.php'
+            ];
+            insertRow('notifications', $notifData);
+
+            flashMessage("Vous avez été désinscrit de l'événement '{$event['titre']}'.", "success");
+            return true;
+        } else {
+            flashMessage("Une erreur est survenue lors de la désinscription.", "danger");
+            return false;
+        }
+    } catch (Exception $e) {
+        if (function_exists('logSystemActivity')) {
+            logSystemActivity('error', "Erreur désinscription événement #{$event_id} pour user #{$employee_id}: " . $e->getMessage());
+        }
+        flashMessage("Une erreur technique est survenue lors de la désinscription.", "danger");
+        return false;
+    }
+}
+
+
+function getRegisteredEventIds($employee_id)
+{
+    $sql = "SELECT evenement_id 
+            FROM evenements_participants 
+            WHERE personne_id = :employee_id 
+              AND statut_inscription = 'inscrit'";
+
+    $stmt = executeQuery($sql, [':employee_id' => $employee_id]);
+    return $stmt->fetchAll(PDO::FETCH_COLUMN);
 }

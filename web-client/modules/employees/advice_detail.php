@@ -2,17 +2,13 @@
 require_once __DIR__ . '/../../includes/init.php';
 require_once __DIR__ . '/../../includes/page_functions/modules/employees.php';
 
-requireRole(ROLE_SALARIE); // Assurer que seul un salarié connecté peut voir cette page
+requireEmployeeLogin();
 
 $conseil_id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 
-if (!$conseil_id || $conseil_id <= 0) {
-    $pageTitle = "Erreur";
-    include_once __DIR__ . '/../../templates/header.php';
-    echo '<main class="container py-5"><div class="alert alert-danger">ID de conseil invalide.</div>';
-    echo '<a href="advice.php" class="btn btn-secondary"><i class="fas fa-arrow-left me-1"></i> Retour aux conseils</a></main>';
-    include_once __DIR__ . '/../../templates/footer.php';
-    exit;
+if (!$conseil_id) {
+    flashMessage('ID de conseil invalide.', 'danger');
+    redirectTo('advice.php'); // Rediriger vers la liste des conseils
 }
 
 $conseil = getConseilDetails($conseil_id);

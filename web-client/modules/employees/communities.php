@@ -3,23 +3,17 @@
 require_once __DIR__ . '/../../includes/init.php';
 require_once __DIR__ . '/../../includes/page_functions/modules/employees.php';
 
+requireEmployeeLogin();
+
 $page_title = "Espace communautaire";
 $page_description = "Rejoignez des communautés et participez à des activités avec vos collègues";
-
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_role']) || $_SESSION['user_role'] != ROLE_SALARIE) {
-    if (function_exists('flashMessage')) {
-        flashMessage("Vous devez être connecté en tant que salarié pour accéder à cette page", "warning");
-    }
-    header('Location: ' . ROOT_URL . '/common/connexion/');
-    exit;
-}
 
 $employee_id = $_SESSION['user_id'];
 
 $community_id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 $page = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT) ?: 1;
-$search = filter_input(INPUT_GET, 'search', FILTER_SANITIZE_STRING) ?: '';
-$type_filter = filter_input(INPUT_GET, 'type', FILTER_SANITIZE_STRING) ?: '';
+$search = filter_input(INPUT_GET, 'search') ?: '';
+$type_filter = filter_input(INPUT_GET, 'type') ?: '';
 
 handlePostActions($employee_id);
 
@@ -44,6 +38,19 @@ include_once __DIR__ . '/../../templates/header.php';
                         displayFlashMessages();
                     }
 
+                    // On affiche le bouton seulement si on est sur la liste des communautés
+                    if (!$community_id) : ?>
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div>
+                                <!-- Titre ou autre contenu -->
+                            </div>
+                            <a href="index.php" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-1"></i> Retour au tableau de bord
+                            </a>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php
                     if ($community_id) {
                         $community = getCommunityDetails($community_id, $employee_id);
 
@@ -66,9 +73,7 @@ include_once __DIR__ . '/../../templates/header.php';
 
                     ?>
                             <div class="row">
-                                <!-- Colonne principale (Détails, Messages) -->
                                 <div class="col-lg-8 mb-4 mb-lg-0">
-                                    <!-- Community Header -->
                                     <div class="d-flex align-items-center mb-3">
                                         <img src="<?= htmlspecialchars($logo_url) ?>" alt="Logo <?= htmlspecialchars($community['nom']) ?>" class="rounded me-3" style="width: 60px; height: 60px; object-fit: cover;">
                                         <div>
@@ -95,7 +100,6 @@ include_once __DIR__ . '/../../templates/header.php';
                                     <h4 class="mb-3">Mur de la communauté</h4>
 
                                     <?php if ($community['est_membre']) : ?>
-                                        <!-- Add Message Form -->
                                         <form method="post" action="communities.php?id=<?= $community_id ?>" class="mb-3 p-3 bg-light rounded">
                                             <input type="hidden" name="community_id" value="<?= $community_id ?>">
                                             <div class="mb-2">
@@ -199,7 +203,7 @@ include_once __DIR__ . '/../../templates/header.php';
                         <?php
                         }
                     } else {
-                        $limit = 12; 
+                        $limit = 12;
                         $communitiesData = getCommunities($employee_id, $page, $limit, $search, $type_filter);
                         $communities = $communitiesData['communities'];
                         $pagination_html = $communitiesData['pagination_html'];

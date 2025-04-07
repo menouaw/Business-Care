@@ -77,19 +77,12 @@ function executeQuery($sql, $params = [])
     }
 }
 
-/**
- * Compte le nombre d'enregistrements d'une table, avec une clause WHERE optionnelle
- *
- * @param string $table Nom de la table
- * @param string $where Clause SQL optionnelle pour filtrer les enregistrements
- * @return int Nombre d'enregistrements répondant aux critères
- */
-function countTableRows($table, $where = '')
+
+function countTableRows($table, $where = '', $params = [])
 {
     $table = validateTableName($table);
 
     $sql = "SELECT COUNT(*) FROM $table";
-    $params = [];
     if ($where) {
         $sql .= " WHERE $where";
     }
@@ -175,7 +168,7 @@ function fetchOne($table, $where, $params = [], $orderBy = '')
  *
  * @param string $table Nom de la table dans laquelle insérer la nouvelle ligne
  * @param array $data Tableau associatif des colonnes et valeurs à insérer
- * @return int|false Identifiant de la ligne insérée ou false si l'insertion échoue
+ * @return bool true si la ligne a été insérée, false sinon
  */
 function insertRow($table, $data)
 {
@@ -189,7 +182,9 @@ function insertRow($table, $data)
     $sql = "INSERT INTO $table (" . implode(', ', $fields) . ") VALUES (" . implode(', ', $placeholders) . ")";
 
     $stmt = executeQuery($sql, $data);
-    return $stmt->rowCount() > 0 ? getDbConnection()->lastInsertId() : false;
+    // Retourner true si au moins une ligne a été insérée, false sinon.
+    // Ne pas se baser sur lastInsertId() pour les tables sans auto-increment.
+    return $stmt->rowCount() > 0;
 }
 
 /**

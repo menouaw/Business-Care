@@ -3,17 +3,10 @@
 require_once __DIR__ . '/../../includes/init.php';
 require_once __DIR__ . '/../../includes/page_functions/modules/employees.php';
 
+requireEmployeeLogin();
+
 $page_title = "Dons et engagements";
 $page_description = "Effectuez des dons financiers ou matériels et participez aux actions solidaires";
-
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_role']) || $_SESSION['user_role'] != ROLE_SALARIE) {
-    // Rediriger vers la page de connexion si non connecté ou non salarié
-    if (function_exists('flashMessage')) {
-        flashMessage("Vous devez être connecté en tant que salarié pour accéder à cette page", "warning");
-    }
-    header('Location: ' . ROOT_URL . '/common/connexion/');
-    exit;
-}
 
 $employee_id = $_SESSION['user_id'];
 

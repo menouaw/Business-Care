@@ -3,14 +3,16 @@
 require_once __DIR__ . '/../../includes/init.php';
 require_once __DIR__ . '/../../includes/page_functions/modules/employees.php';
 
-requireRole(ROLE_SALARIE);
+// Vérifier si l'utilisateur est connecté et est un salarié
+requireEmployeeLogin();
 
-$employeeId = $_SESSION['user_id'];
+$employee_id = $_SESSION['user_id'];
+$pageTitle = generatePageTitle('Mes Paramètres');
 
-$employeeDetails = getEmployeeDetails($employeeId);
+$employeeDetails = getEmployeeDetails($employee_id);
 if (!$employeeDetails) {
-    flashMessage("impossible de récupérer les informations du salarié.", 'danger');
-    redirectTo('index.php');
+    flashMessage("Impossible de récupérer les informations de l'utilisateur.", "danger");
+    redirectTo(WEBCLIENT_URL . '/modules/employees/index.php');
 }
 
 $profileErrors = [];
@@ -57,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'date_naissance' => $profileSubmittedData['date_naissance']
             ];
 
-            $updateSuccess = updateEmployeeProfile($employeeId, $updateData);
+            $updateSuccess = updateEmployeeProfile($employee_id, $updateData);
 
             if ($updateSuccess) {
                 $_SESSION['user_name'] = $profileSubmittedData['prenom'] . ' ' . $profileSubmittedData['nom'];
@@ -89,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             flashMessage(implode('<br>', $passwordErrors), 'danger');
             redirectTo('settings.php');
         } else {
-            $changeSuccess = changeUserPassword($employeeId, $passwordData['current_password'], $passwordData['new_password']);
+            $changeSuccess = changeUserPassword($employee_id, $passwordData['current_password'], $passwordData['new_password']);
             redirectTo('settings.php');
         }
     } elseif (isset($_POST['update_settings'])) {
@@ -101,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'theme' => $settingsData['theme'] ?? 'light'
         ];
 
-        $updateSuccess = updateEmployeeSettings($employeeId, $settings);
+        $updateSuccess = updateEmployeeSettings($employee_id, $settings);
 
         if ($updateSuccess) {
             redirectTo('settings.php');

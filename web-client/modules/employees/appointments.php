@@ -3,20 +3,17 @@ require_once(__DIR__ . '/../../includes/init.php');
 
 require_once(__DIR__ . '/../../includes/page_functions/modules/employees.php');
 
-if (!isAuthenticated() || !isSalarieUser()) {
-    header('Location: ' . WEBCLIENT_URL . '/login.php');
-    exit;
-}
+requireEmployeeLogin();
 
 $userId = $_SESSION['user_id'];
 
 $upcomingPage = isset($_GET['upcoming_page']) ? (int)$_GET['upcoming_page'] : 1;
 $pastPage = isset($_GET['past_page']) ? (int)$_GET['past_page'] : 1;
 $canceledPage = isset($_GET['canceled_page']) ? (int)$_GET['canceled_page'] : 1;
-$limit = 5; 
+$limit = 5;
 
 $prestationPage = isset($_GET['prestation_page']) ? (int)$_GET['prestation_page'] : 1;
-$prestationLimit = 5; 
+$prestationLimit = 5;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'reserver') {
     $prestationId = filter_var($_POST['prestation_id'] ?? 0, FILTER_VALIDATE_INT);
@@ -399,7 +396,6 @@ require_once(__DIR__ . '/../../templates/header.php');
     </div>
 </div>
 
-<!-- Modal pour l'annulation de rendez-vous -->
 <div class="modal fade" id="modalAnnulation" tabindex="-1" aria-labelledby="modalAnnulationLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -427,45 +423,3 @@ require_once(__DIR__ . '/../../templates/header.php');
 </div>
 
 <?php require_once(__DIR__ . '/../../templates/footer.php'); ?>
-
-<!-- Script pour la gestion des modales -->
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Modal d'annulation
-        const modalAnnulation = document.getElementById('modalAnnulation');
-        if (modalAnnulation) {
-            modalAnnulation.addEventListener('show.bs.modal', function(event) {
-                const button = event.relatedTarget;
-                const rdvId = button.getAttribute('data-rdv-id');
-                const rdvDate = button.getAttribute('data-rdv-date');
-                const rdvPrestation = button.getAttribute('data-rdv-prestation');
-
-                document.getElementById('rdv-id-annulation').value = rdvId;
-                document.getElementById('rdv-date-annulation').textContent = rdvDate;
-                document.getElementById('rdv-prestation-annulation').textContent = rdvPrestation;
-            });
-        }
-
-        // Vérifier si on doit ouvrir le modal des prestations automatiquement
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('prestation_page')) {
-            // Ouvrir automatiquement le modal
-            const reservationModal = new bootstrap.Modal(document.getElementById('modalReservation'));
-            reservationModal.show();
-        }
-
-        // Modifier les liens de pagination pour qu'ils ouvrent le modal
-        const paginationLinks = document.querySelectorAll('.pagination a.page-link');
-        paginationLinks.forEach(function(link) {
-            link.addEventListener('click', function(e) {
-                const href = this.getAttribute('href');
-
-                // Si c'est un lien de pagination des prestations
-                if (href.includes('prestation_page')) {
-                    e.preventDefault(); // Empêcher la navigation normale
-                    window.location.href = href; // Rediriger vers la même page avec les paramètres de pagination
-                }
-            });
-        });
-    });
-</script>

@@ -80,9 +80,9 @@ function flashMessage($message, $type = 'success')
 
 function getFlashMessages()
 {
-    $messages = $_SESSION['flash_messages'] ?? []; 
+    $messages = $_SESSION['flash_messages'] ?? [];
     if (!empty($messages)) {
-        unset($_SESSION['flash_messages']); 
+        unset($_SESSION['flash_messages']);
     }
     return $messages;
 }
@@ -303,7 +303,7 @@ function updateUserProfile($userId, $data)
 
 
     if (empty($filteredData)) {
-        return false; 
+        return false;
     }
 
     try {
@@ -343,7 +343,7 @@ function changeUserPassword($userId, $currentPassword, $newPassword)
     try {
         $user = getUserById($userId); // Utilise la fonction getUserById définie ci-dessus
         if (!$user || !isset($user['mot_de_passe'])) {
-            return false; 
+            return false;
         }
         if (!password_verify($currentPassword, $user['mot_de_passe'])) {
             flashMessage("Le mot de passe actuel fourni est incorrect.", "danger"); // Ajouter le message flash ici
@@ -382,4 +382,28 @@ function changeUserPassword($userId, $currentPassword, $newPassword)
         flashMessage('Une erreur technique est survenue lors du changement de mot de passe.', 'danger');
         return false;
     }
+}
+
+/**
+ * Vérifie si l'utilisateur est connecté et a le rôle de salarié.
+ * Si ce n'est pas le cas, affiche un message flash et redirige vers la page de connexion.
+ *
+ * @return void
+ */
+function requireEmployeeLogin()
+{
+    // Vérifie si les clés de session existent et si le rôle est correct
+    if (
+        !isset($_SESSION['user_id']) ||
+        !isset($_SESSION['user_role']) ||
+        $_SESSION['user_role'] != ROLE_SALARIE
+    ) {
+        // Si la vérification échoue, définir un message et rediriger
+        flashMessage('Vous devez être connecté en tant que salarié pour accéder à cette page.', 'danger');
+        // Assurez-vous que la constante WEBCLIENT_URL est définie (normalement dans config.php)
+        // et que la fonction redirectTo est disponible
+        redirectTo(WEBCLIENT_URL . '/login.php');
+        // La fonction redirectTo contient un exit, donc le script s'arrête ici en cas d'échec.
+    }
+    // Si la vérification réussit, la fonction ne fait rien et le script continue.
 }

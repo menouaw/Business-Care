@@ -173,15 +173,12 @@ CREATE TABLE evenements (
     lieu VARCHAR(255),
     type ENUM('conference', 'webinar', 'atelier', 'defi_sportif', 'autre') NOT NULL,
     capacite_max INT NULL,
+    nombre_inscrits INT UNSIGNED DEFAULT 0, -- Nombre actuel de participants inscrits
     niveau_difficulte ENUM('debutant', 'intermediaire', 'avance') NULL,
     materiel_necessaire TEXT NULL,
     prerequis TEXT NULL,
-    prestation_liee_id INT NULL,
-    organisateur_id INT NULL,
-    cout_participation DECIMAL(10,2) DEFAULT 0.00,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (prestation_liee_id) REFERENCES prestations(id),
     INDEX idx_dates (date_debut, date_fin),
     INDEX idx_type (type)
 );

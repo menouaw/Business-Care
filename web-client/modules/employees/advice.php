@@ -3,13 +3,14 @@
 require_once __DIR__ . '/../../includes/init.php';
 require_once __DIR__ . '/../../includes/page_functions/modules/employees.php';
 
-requireRole(ROLE_SALARIE);
+requireEmployeeLogin();
 
-$userId = $_SESSION['user_id'];
+$employee_id = $_SESSION['user_id'];
+$pageTitle = generatePageTitle('Conseils Bien-être');
 
-$page = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT) ?: 1;
-$category = filter_input(INPUT_GET, 'category', FILTER_SANITIZE_STRING) ?: null;
-$searchTerm = filter_input(INPUT_GET, 'search', FILTER_SANITIZE_STRING) ?: null;
+$page = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT, ['options' => ['default' => 1]]);
+$category = filter_input(INPUT_GET, 'category');
+$search = filter_input(INPUT_GET, 'search');
 $limit = 6;
 if (!function_exists('getConseils')) {
     die("Erreur: La fonction getConseils n'est pas définie. Vérifiez le fichier includes/page_functions/modules/employees.php");
@@ -19,14 +20,13 @@ if (!function_exists('getConseilCategories')) {
 }
 
 
-$conseilsData = getConseils($page, $limit, $category, $searchTerm);
+$conseilsData = getConseils($page, $limit, $category, $search);
 $conseils = $conseilsData['conseils'];
 $paginationHtml = $conseilsData['pagination_html'];
 $totalConseils = $conseilsData['pagination']['totalItems'];
 
 $categories = getConseilCategories();
 
-$pageTitle = "Conseils Bien-être";
 $pageDescription = "Retrouvez tous nos conseils pour améliorer votre bien-être au quotidien et au travail.";
 
 include_once __DIR__ . '/../../templates/header.php';
@@ -53,7 +53,7 @@ include_once __DIR__ . '/../../templates/header.php';
             <form method="GET" action="" class="row g-3 align-items-end">
                 <div class="col-md-5">
                     <label for="search" class="form-label">Rechercher un conseil</label>
-                    <input type="text" class="form-control" id="search" name="search" value="<?= htmlspecialchars($searchTerm ?? '') ?>" placeholder="Mot-clé, titre...">
+                    <input type="text" class="form-control" id="search" name="search" value="<?= htmlspecialchars($search ?? '') ?>" placeholder="Mot-clé, titre...">
                 </div>
                 <div class="col-md-5">
                     <label for="category" class="form-label">Filtrer par catégorie</label>
@@ -79,7 +79,7 @@ include_once __DIR__ . '/../../templates/header.php';
     <?php if (empty($conseils)): ?>
         <div class="alert alert-info text-center" role="alert">
             <i class="fas fa-info-circle fa-3x mb-3"></i><br>
-            <?php if ($searchTerm || $category): ?>
+            <?php if ($search || $category): ?>
                 Aucun conseil ne correspond à vos critères de recherche ou de filtre.
             <?php else: ?>
                 Aucun conseil n'est disponible pour le moment. Revenez bientôt !
@@ -140,57 +140,3 @@ include_once __DIR__ . '/../../templates/header.php';
 <?php
 include_once __DIR__ . '/../../templates/footer.php';
 ?>
-
-<style>
-    /* Optionnel: Ajoute un petit effet au survol des cartes */
-    .conseil-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
-        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-    }
-
-    /* Réduire les espacements internes pour des cartes plus compactes */
-    .conseil-card .card-body {
-        padding: 0.8rem;
-        /* Réduire le padding général du corps */
-    }
-
-    .conseil-card .card-title {
-        font-size: 1rem;
-        /* Réduire taille du titre */
-        margin-bottom: 0.4rem;
-        /* Réduire marge sous le titre */
-    }
-
-    .conseil-card .card-text {
-        font-size: 0.85rem;
-        /* Réduire taille du texte */
-        margin-bottom: 0.6rem;
-        /* Ajuster marge sous le texte */
-    }
-
-    .conseil-card .badge {
-        font-size: 0.7rem;
-        /* Réduire taille du badge catégorie */
-        margin-bottom: 0.5rem !important;
-    }
-
-    .conseil-card .btn {
-        padding: 0.25rem 0.5rem;
-        /* Rendre le bouton plus petit */
-        font-size: 0.8rem;
-    }
-
-    .conseil-card .card-footer {
-        padding: 0.5rem 0.8rem;
-        /* Réduire padding du pied de carte */
-        font-size: 0.75rem;
-        /* Réduire taille texte pied de carte */
-    }
-
-    /* Optionnel: réduire légèrement la hauteur de l'image */
-    .conseil-card .card-img-top {
-        height: 180px;
-        /* Ex: passer de 200px à 180px */
-    }
-</style>

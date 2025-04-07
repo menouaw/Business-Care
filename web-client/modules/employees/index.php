@@ -1,8 +1,12 @@
 <?php
+require_once __DIR__ . '/../../includes/init.php';
+
+requireEmployeeLogin();
+
+$employee_id = $_SESSION['user_id'];
+$pageTitle = generatePageTitle('Tableau de bord Salarié');
 
 require_once __DIR__ . '/../../includes/page_functions/modules/employees.php';
-
-requireRole(ROLE_SALARIE);
 
 $userId = $_SESSION['user_id'];
 $user = getEmployeeDetails($userId);
@@ -17,8 +21,6 @@ $communautes = getEmployeeCommunities($userId);
 $donations = getDonationHistory($userId);
 
 $activites = getEmployeeActivityHistory($userId, 1, 5);
-
-$pageTitle = "Tableau de bord - Espace Salarié";
 
 include_once __DIR__ . '/../../templates/header.php';
 ?>
@@ -85,7 +87,7 @@ include_once __DIR__ . '/../../templates/header.php';
                             </div>
                         </div>
                         <div class="mt-3">
-                            <a href="evenements.php" class="btn btn-sm btn-outline-warning">Voir tous</a>
+                            <a href="events.php" class="btn btn-sm btn-outline-warning">Voir tous</a>
                         </div>
                     </div>
                 </div>
@@ -158,27 +160,34 @@ include_once __DIR__ . '/../../templates/header.php';
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0">Événements à venir</h5>
-                        <a href="evenements.php" class="btn btn-sm btn-outline-primary">Tous les événements</a>
+                        <a href="events.php" class="btn btn-sm btn-outline-primary">Tous les événements</a>
                     </div>
                     <div class="card-body">
                         <?php if (empty($evenements)): ?>
                             <p class="text-center text-muted my-5">Aucun événement à venir</p>
-                        <?php else: ?>
+                        <?php else:
+                            // Utiliser array_slice pour ne prendre que les 3 premiers événements
+                            $upcomingEventsPreview = array_slice($evenements, 0, 3);
+                        ?>
                             <div class="list-group list-group-flush">
-                                <?php foreach (array_slice($evenements, 0, 3) as $event): ?>
+                                <?php foreach ($upcomingEventsPreview as $event): // Boucler sur les 3 premiers 
+                                ?>
                                     <div class="list-group-item border-0 px-0">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div>
-                                                <h6 class="mb-1"><?= $event['titre'] ?></h6>
-                                                <p class="text-muted mb-0">
-                                                    <i class="far fa-calendar-alt me-1"></i> <?= isset($event['date_formatee']) ? $event['date_formatee'] : formatDate($event['date_debut'], 'd/m/Y') ?>
-                                                    <i class="far fa-clock ms-2 me-1"></i> <?= isset($event['heure_formatee']) ? $event['heure_formatee'] : formatDate($event['date_debut'], 'H:i') ?>
+                                                <h6 class="mb-1"><?= htmlspecialchars($event['titre']) // Sécuriser avec htmlspecialchars 
+                                                                    ?></h6>
+                                                <p class="text-muted mb-0 small">
+                                                    <i class="far fa-calendar-alt me-1"></i> <?= $event['date_debut_formatted'] ?? formatDate($event['date_debut'], 'd/m/Y') // Utiliser le champ formaté si dispo, sinon formater ici 
+                                                                                                ?>
+                                                    <i class="far fa-clock ms-2 me-1"></i> <?= formatDate($event['date_debut'], 'H:i') ?>
                                                 </p>
-                                                <p class="text-muted mb-0">
-                                                    <i class="fas fa-map-marker-alt me-1"></i> <?= $event['lieu'] ?? 'Non précisé' ?>
+                                                <p class="text-muted mb-0 small">
+                                                    <i class="fas fa-map-marker-alt me-1"></i> <?= htmlspecialchars($event['lieu'] ?? 'Non précisé') ?>
                                                 </p>
                                             </div>
-                                            <a href="inscription-evenement.php?id=<?= $event['id'] ?>" class="btn btn-sm btn-outline-success">S'inscrire</a>
+                                            <!-- Lien vers la page d'inscription ou d'événements -->
+                                            <a href="events.php" class="btn btn-sm btn-outline-success">Voir</a>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>

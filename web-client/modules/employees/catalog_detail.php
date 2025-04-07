@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../../includes/init.php';
 require_once __DIR__ . '/../../includes/page_functions/modules/employees.php';
 
-requireRole(ROLE_SALARIE);
+requireEmployeeLogin();
 
 $employee_id = $_SESSION['user_id'];
 
@@ -44,10 +44,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book_appointment'])) 
             }
         }
     }
-
 }
 
-// 3. Récupérer les détails de la prestation (après une éventuelle tentative de réservation)
 if (!function_exists('getPrestationDetails')) {
     die("Erreur: La fonction getPrestationDetails n'est pas définie.");
 }
@@ -72,7 +70,7 @@ include_once __DIR__ . '/../../templates/header.php';
         <div class="alert alert-warning">Le service demandé n'existe pas ou n'est plus disponible.</div>
         <a href="catalog.php" class="btn btn-secondary"><i class="fas fa-arrow-left me-1"></i> Retour au catalogue</a>
     <?php else:
-       if (!function_exists('getAvailableSchedulesForPrestation')) {
+        if (!function_exists('getAvailableSchedulesForPrestation')) {
             die("Erreur: La fonction getAvailableSchedulesForPrestation n'est pas définie.");
         }
         $schedules = getAvailableSchedulesForPrestation($prestation_id);
@@ -122,7 +120,6 @@ include_once __DIR__ . '/../../templates/header.php';
 
             </div>
 
-            <!-- Colonne de droite : Réservation -->
             <div class="col-lg-4">
                 <div class="card shadow-sm sticky-lg-top" style="top: 20px;">
                     <div class="card-header">
