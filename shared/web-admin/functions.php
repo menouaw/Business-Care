@@ -246,7 +246,15 @@ function getStatusBadge($status)
         'expire' => 'danger',
         'resilie' => 'danger',
         'accepte' => 'success',
-        'refuse' => 'danger'
+        'refuse' => 'danger',
+        'confirme' => 'success',
+        'annule' => 'danger',
+        'termine' => 'secondary',
+        'planifie' => 'primary',
+        'no_show' => 'danger',
+        'payee' => 'success',
+        'impayee' => 'danger',
+        'retard' => 'warning'
     ];
 
     $class = isset($badges[$status]) ? $badges[$status] : 'primary';

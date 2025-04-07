@@ -1,10 +1,10 @@
 <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
-    <div class="position-sticky pt-3">
+    <div class="position-sticky pt-3 sidebar-sticky">
         <ul class="nav flex-column">
             <li class="nav-item">
                 <a class="nav-link <?php echo basename($_SERVER['SCRIPT_NAME']) == 'index.php' ? 'active' : ''; ?>" href="<?php echo WEBADMIN_URL; ?>/">
                     <i class="fas fa-tachometer-alt me-2"></i>
-                    Tableau de bord
+                    Accueil
                 </a>
             </li>
             <li class="nav-item">
@@ -29,6 +29,12 @@
                 <a class="nav-link <?php echo strpos($_SERVER['SCRIPT_NAME'], '/modules/services/') !== false ? 'active' : ''; ?>" href="<?php echo WEBADMIN_URL; ?>/modules/services/">
                     <i class="fas fa-concierge-bell me-2"></i>
                     Services
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link <?php echo strpos($_SERVER['SCRIPT_NAME'], '/modules/appointments/') !== false ? 'active' : ''; ?>" href="<?php echo WEBADMIN_URL; ?>/modules/appointments/">
+                    <i class="fas fa-calendar-check me-2"></i>
+                    Rendez-vous
                 </a>
             </li>
             <li class="nav-item">

@@ -9,14 +9,12 @@ require_once __DIR__ . '/../../init.php';
  * @param string $search Terme de recherche (nom/prenom patient/praticien, nom prestation)
  * @param string $status Filtre par statut
  * @param string $type Filtre par type de rdv
- * @param int $practitionerId Filtre par ID praticien
- * @param int $personId Filtre par ID personne (salarie)
  * @param int $prestationId Filtre par ID prestation
  * @param string $startDate Filtre par date de debut (YYYY-MM-DD)
  * @param string $endDate Filtre par date de fin (YYYY-MM-DD)
  * @return array Donnees de pagination et liste des rendez-vous
  */
-function appointmentsGetList($page = 1, $perPage = DEFAULT_ITEMS_PER_PAGE, $search = '', $status = '', $type = '', $practitionerId = 0, $personId = 0, $prestationId = 0, $startDate = '', $endDate = '') {
+function appointmentsGetList($page = 1, $perPage = DEFAULT_ITEMS_PER_PAGE, $search = '', $status = '', $type = '', $prestationId = 0, $startDate = '', $endDate = '') {
     $params = [];
     $conditions = [];
 
@@ -34,16 +32,6 @@ function appointmentsGetList($page = 1, $perPage = DEFAULT_ITEMS_PER_PAGE, $sear
     if ($type && in_array($type, APPOINTMENT_TYPES)) {
         $conditions[] = "rv.type_rdv = ?";
         $params[] = $type;
-    }
-
-    if ($practitionerId > 0) {
-        $conditions[] = "rv.praticien_id = ?";
-        $params[] = (int)$practitionerId;
-    }
-    
-    if ($personId > 0) {
-        $conditions[] = "rv.personne_id = ?";
-        $params[] = (int)$personId;
     }
 
     if ($prestationId > 0) {
@@ -73,7 +61,7 @@ function appointmentsGetList($page = 1, $perPage = DEFAULT_ITEMS_PER_PAGE, $sear
     $totalAppointments = executeQuery($countSql, $params)->fetchColumn();
     
     $totalPages = ceil($totalAppointments / $perPage);
-    $page = max(1, min($page, $totalPages)); 
+    $page = max(1, min($page, $totalPages > 0 ? $totalPages : 1));
     $offset = ($page - 1) * $perPage;
 
     $sql = "SELECT rv.*, 
@@ -140,7 +128,7 @@ function appointmentsSave($data, $id = 0) {
     $data['duree'] = isset($data['duree']) ? (int)$data['duree'] : 0;
     $data['lieu'] = trim($data['lieu'] ?? '');
     $data['type_rdv'] = $data['type_rdv'] ?? '';
-    $data['statut'] = $data['statut'] ?? ($isNew ? 'planifie' : null); // Default status
+    $data['statut'] = $data['statut'] ?? ($isNew ? 'planifie' : null);
     $data['notes'] = trim($data['notes'] ?? '');
     
     if (empty($data['personne_id']) || !fetchOne(TABLE_USERS, 'id = ? AND role_id = ?', '', [$data['personne_id'], ROLE_SALARIE])) {
@@ -299,7 +287,6 @@ function appointmentsGetPractitioners() {
     $sql = "SELECT id, nom, prenom, email FROM " . TABLE_USERS . " WHERE role_id = ? AND statut = 'actif' ORDER BY nom, prenom";
     $users = executeQuery($sql, [ROLE_PRESTATAIRE])->fetchAll();
     $options = [];
-     $options[''] = '-- Sélectionner un praticien (Optionnel) --'; // Add an empty/optional choice
     foreach ($users as $user) {
         $options[$user['id']] = $user['nom'] . ' ' . $user['prenom'] . ' (' . $user['email'] . ')';
     }
@@ -329,7 +316,7 @@ function appointmentsGetServices() {
 function appointmentsGetStatuses() {
     $statuses = [];
     foreach (APPOINTMENT_STATUSES as $status) {
-        $statuses[$status] = ucfirst(str_replace('_', ' ', $status)); // Simple formatting
+        $statuses[$status] = ucfirst(str_replace('_', ' ', $status));
     }
     return $statuses;
 }
@@ -342,7 +329,7 @@ function appointmentsGetStatuses() {
 function appointmentsGetTypes() {
      $types = [];
     foreach (APPOINTMENT_TYPES as $type) {
-        $types[$type] = ucfirst($type); // Simple formatting
+        $types[$type] = ucfirst($type);
     }
     return $types;
 }
