@@ -6,6 +6,7 @@ define('DEFAULT_ITEMS_PER_PAGE', 10);
 define('DEFAULT_DATE_FORMAT', 'd/m/Y H:i');
 define('DEFAULT_CURRENCY', '€');
 define('INVOICE_PREFIX', 'F');
+define('MAX_FLASH_MESSAGE_LENGTH', 1024);
 
 
 function formatDate($date, $format = DEFAULT_DATE_FORMAT)
@@ -72,6 +73,11 @@ function flashMessage($message, $type = 'success')
     if (!isset($_SESSION['flash_messages'])) {
         $_SESSION['flash_messages'] = [];
     }
+
+    if (mb_strlen($message) > MAX_FLASH_MESSAGE_LENGTH) {
+        $message = mb_substr($message, 0, MAX_FLASH_MESSAGE_LENGTH) . ' [...]';
+    }
+
     $_SESSION['flash_messages'][] = [
         'message' => $message,
         'type' => $type
@@ -403,7 +409,7 @@ function changeUserPassword($userId, $currentPassword, $newPassword)
         logSystemActivity('error', "Erreur BDD dans changeUserPassword #$userId: " . $e->getMessage());
         flashMessage('Une erreur de base de données est survenue lors du changement de mot de passe.', 'danger');
         return false;
-    } catch (Exception $e) { 
+    } catch (Exception $e) {
         logSystemActivity('error', "Erreur inattendue dans changeUserPassword #$userId: " . $e->getMessage());
         flashMessage('Une erreur technique est survenue lors du changement de mot de passe.', 'danger');
         return false;

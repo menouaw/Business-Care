@@ -122,8 +122,7 @@ include_once __DIR__ . '/../../templates/header.php';
                     </div>
                     <div class="card-body">
                         <?php
-                        $upcomingAppointments = isset($rdvs_data['appointments']) && is_array($rdvs_data['appointments']) ? $rdvs_data['appointments'] : [];
-
+                        $upcomingAppointments = (isset($rdvs_data) && is_array($rdvs_data) && isset($rdvs_data['appointments']) && is_array($rdvs_data['appointments'])) ? $rdvs_data['appointments'] : [];
                         if (empty($upcomingAppointments)):
                         ?>
                             <p class="text-center text-muted my-5">Aucun rendez-vous planifié</p>
@@ -239,3 +238,55 @@ include_once __DIR__ . '/../../templates/header.php';
 <?php
 include_once __DIR__ . '/../../templates/footer.php';
 ?>
+
+/**
+* @internal Vérifie les prérequis avant de réserver un rendez-vous.
+*
+* @param int $prestation_id ID de la prestation.
+* @param ?int $praticien_id ID du praticien (optionnel).
+* @param string $date_rdv Date et heure du RDV.
+* @param int $duree Durée du RDV en minutes.
+* @return array|false Détails de la prestation si OK, false sinon.
+*/
+function _checkBookingPrerequisites(int $prestation_id, ?int $praticien_id, string $date_rdv, int $duree): array|false
+{
+// 1. Vérifier le praticien (si fourni)
+if ($praticien_id) {
+$checkPraticien = "SELECT id FROM personnes WHERE id = :id AND role_id = :role_id";
+$praticienExists = executeQuery($checkPraticien, [':id' => $praticien_id, ':role_id' => ROLE_PRESTATAIRE])->fetch();
+if (!$praticienExists) {
+flashMessage("Le praticien spécifié est invalide.", "warning");
+// Retourne false si le praticien fourni est invalide
+return false;
+}
+}
+
+// 2. Vérifier la prestation
+$checkPrestation = "SELECT id, nom, est_disponible, capacite_max FROM prestations WHERE id = :id";
+$prestation = executeQuery($checkPrestation, [':id' => $prestation_id])->fetch();
+
+if (!$prestation) {
+flashMessage("La prestation demandée n'existe pas.", "danger");
+return false;
+}
+
+// 3. Vérifier la disponibilité GLOBALE de la prestation
+// TODO: Logique à affiner. Doit vérifier capacite_max vs inscrits si capacite_max > 1.
+if (!$prestation['est_disponible']) {
+// Si la capacité n'est pas définie ou est <= 1, alors indisponible signifie vraiment indisponible.
+    if (empty($prestation['capacite_max']) || $prestation['capacite_max'] <=1) {
+    flashMessage("Cette prestation n'est plus disponible.", "warning" );
+    return false;
+    }
+    // Si capacité> 1, la disponibilité du créneau spécifique sera vérifiée ensuite.
+    }
+
+    // 4. Vérifier la disponibilité du CRÉNEAU HORAIRE spécifique
+    if (!isTimeSlotAvailable($date_rdv, $duree, $prestation_id)) {
+    flashMessage("Le créneau horaire demandé n'est pas disponible.", "warning");
+    return false;
+    }
+
+    // Si toutes les vérifications passent, retourner les détails de la prestation
+    return $prestation;
+    }

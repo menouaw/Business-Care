@@ -375,29 +375,42 @@ function _formatEmployeeAppointments(array $appointments): array
  */
 function _buildAppointmentsPaginationUrlPattern(string $status): string
 {
-    $urlPattern = "?";
-    $upcoming_page = sanitizeInput($_GET['upcoming_page'] ?? 1);
-    $past_page = sanitizeInput($_GET['past_page'] ?? 1);
-    $canceled_page = sanitizeInput($_GET['canceled_page'] ?? 1);
+    $pageParamsMap = [
+        'upcoming' => 'upcoming_page',
+        'past'     => 'past_page',
+        'canceled' => 'canceled_page',
+    ];
 
-    switch ($status) {
-        case 'upcoming':
-            $urlPattern .= "upcoming_page={page}&past_page=" . $past_page . "&canceled_page=" . $canceled_page;
-            break;
-        case 'past':
-            $urlPattern .= "upcoming_page=" . $upcoming_page . "&past_page={page}&canceled_page=" . $canceled_page;
-            break;
-        case 'canceled':
-            $urlPattern .= "upcoming_page=" . $upcoming_page . "&past_page=" . $past_page . "&canceled_page={page}";
-            break;
-        default:
-            // Fallback si le statut n'est pas l'un des trois prévus
-            $urlPattern .= "page={page}&status=" . urlencode($status); // Inclure le statut inconnu
-            if ($upcoming_page !== 1) $urlPattern .= "&upcoming_page=" . $upcoming_page;
-            if ($past_page !== 1) $urlPattern .= "&past_page=" . $past_page;
-            if ($canceled_page !== 1) $urlPattern .= "&canceled_page=" . $canceled_page;
-            break;
+    // Récupérer les valeurs actuelles des paramètres de page (ou 1 par défaut)
+    $currentPages = [];
+    foreach ($pageParamsMap as $s => $paramName) {
+        $currentPages[$paramName] = sanitizeInput($_GET[$paramName] ?? 1);
     }
+
+    // Déterminer le nom du paramètre pour la page {page}
+    $currentPageParam = $pageParamsMap[$status] ?? 'page'; // 'page' si statut inconnu
+
+    // Commencer l'URL avec le paramètre de la page actuelle
+    $urlPattern = "?{$currentPageParam}={page}";
+
+    // Ajouter les paramètres des autres statuts
+    foreach ($pageParamsMap as $s => $paramName) {
+        // N'ajouter que si ce n'est PAS le statut actuel ET si la valeur n'est pas 1 (pour alléger l'URL)
+        if ($paramName !== $currentPageParam && $currentPages[$paramName] != 1) {
+            $urlPattern .= "&{$paramName}=" . $currentPages[$paramName];
+        }
+    }
+
+    // Gérer le cas d'un statut non reconnu (ajouter le paramètre 'status')
+    if (!isset($pageParamsMap[$status])) {
+        $urlPattern .= "&status=" . urlencode($status);
+        // Si statut inconnu, on ajoute explicitement les autres pages si elles ne sont pas à 1
+        // (redondant avec la boucle précédente mais clarifie l'intention pour le cas défaut)
+        if ($currentPages['upcoming_page'] != 1) $urlPattern .= "&upcoming_page=" . $currentPages['upcoming_page'];
+        if ($currentPages['past_page'] != 1) $urlPattern .= "&past_page=" . $currentPages['past_page'];
+        if ($currentPages['canceled_page'] != 1) $urlPattern .= "&canceled_page=" . $currentPages['canceled_page'];
+    }
+
     return $urlPattern;
 }
 
@@ -870,85 +883,86 @@ function isPrestationAvailable($prestation_id, $date_rdv)
 function getAvailablePrestationsForEmployee($employee_id, $page = 1, $limit = 20)
 {
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
-    $page = (int)sanitizeInput($page);
-    $limit = (int)sanitizeInput($limit);
+    $page = max(1, (int)sanitizeInput($page));
+    $limit = max(1, (int)sanitizeInput($limit));
 
     if (!$employee_id) {
-        return [
-            'prestations' => [],
-            'pagination' => ['current' => 1, 'limit' => $limit, 'total' => 0, 'totalPages' => 0],
-            'pagination_html' => ''
-        ];
+        // Bien que non utilisé pour le filtre SQL pour l'instant, on vérifie l'ID
+        error_log("Tentative d'accès aux prestations avec ID employé invalide: $employee_id");
+        // On pourrait retourner une erreur, mais pour l'instant on retourne la liste générale.
+        // Si la logique future DOIT dépendre de l'employé, retourner une erreur ici.
     }
 
-    $offset = ($page - 1) * $limit;
+    // Utiliser paginateResults pour simplifier la récupération et la pagination
+    $selectFields = "p.id, p.nom, p.description, p.prix, p.duree, p.type, p.date_heure_disponible, 
+                     p.capacite_max, p.niveau_difficulte, p.lieu, p.est_disponible, p.categorie, 
+                     pp.id as praticien_id, CONCAT(pp.prenom, ' ', pp.nom) as praticien_nom";
+    $fromClause = "prestations p LEFT JOIN personnes pp ON p.praticien_id = pp.id";
+    $whereClause = "p.est_disponible = TRUE";
+    $orderByClause = "p.nom ASC";
 
-    $tomorrow = date('Y-m-d', strtotime('+1 day')); // Correction: Réinsérer la définition de $tomorrow
+    // Corriger l'appel : utiliser paginateResults
+    $paginationResult = paginateResults(
+        'prestations p',
+        $page,
+        $limit,
+        $whereClause,
+        $orderByClause,
+        "p.id, p.nom, p.description, p.prix, p.duree, p.type, p.date_heure_disponible, 
+                                     p.capacite_max, p.niveau_difficulte, p.lieu, p.est_disponible, p.categorie, 
+                                     pp.id as praticien_id, CONCAT(pp.prenom, ' ', pp.nom) as praticien_nom",
+        "LEFT JOIN personnes pp ON p.praticien_id = pp.id"
+    );
 
-    // Note: On récupère toutes les prestations disponibles, sans filtrer par contrat entreprise pour le moment
-    // car la logique exacte dépend des règles métier (toutes prestations dispo? ou seulement celles du contrat?)
-    $query = "SELECT p.id, p.nom, p.description, p.prix, p.duree, p.type, p.date_heure_disponible, 
-              p.capacite_max, p.niveau_difficulte, p.lieu, p.est_disponible, p.categorie,
-              pp.id as praticien_id, CONCAT(pp.prenom, ' ', pp.nom) as praticien_nom
-              FROM prestations p
-              LEFT JOIN personnes pp ON p.praticien_id = pp.id
-              WHERE p.est_disponible = TRUE
-              ORDER BY p.nom ASC
-              LIMIT ? OFFSET ?";
-
-    $params = [$limit, $offset];
-
-    $stmt = executeQuery($query, $params);
-    $prestations = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    foreach ($prestations as &$prestation) {
+    /*
+     * Voilà un chargement de prestations disponible : plus fourni qu'un train de ravitaillement !
+     * Mais surveille-moi ce tomorrow qui surgit soudainement, caporal.
+     * T'es sûr de vouloir imposer 9:00 à tout le monde ?
+     * (Commentaire original de Coderabbitai - Note: l'assignation 9:00 a été retirée)
+     */
+    // Formater les résultats récupérés
+    foreach ($paginationResult['items'] as &$prestation) {
+        // Formatage du prix
         if (isset($prestation['prix'])) {
             $prix = floatval($prestation['prix']);
             $prestation['prix_formate'] = ($prix > 0) ? number_format($prix, 2, ',', ' ') . ' €' : 'Gratuit';
         } else {
-            $prestation['prix_formate'] = 'Gratuit';
+            // Si le prix est NULL ou non défini dans le SELECT
+            $prestation['prix_formate'] = 'Prix non spécifié'; // Ou 'Gratuit' selon la règle métier
         }
 
+        // Formatage de la date de disponibilité
         if (!empty($prestation['date_heure_disponible'])) {
-            $date = new DateTime($prestation['date_heure_disponible']);
-            $prestation['date_disponible_formatee'] = $date->format('d/m/Y à H:i');
+            try {
+                $date = new DateTime($prestation['date_heure_disponible']);
+                $prestation['date_disponible_formatee'] = $date->format('d/m/Y à H:i');
+            } catch (Exception $e) {
+                $prestation['date_disponible_formatee'] = 'Date invalide';
+                error_log("Erreur formatage date_heure_disponible pour prestation #{$prestation['id']}: " . $e->getMessage());
+            }
         } else {
-            $prestation['date_heure_disponible'] = $tomorrow . ' 09:00:00';
             $prestation['date_disponible_formatee'] = 'Non précisée';
         }
-
-        if (!isset($prestation['est_disponible'])) {
-            $prestation['est_disponible'] = true;
-        }
+        // La colonne est_disponible n'a plus besoin d'être vérifiée/modifiée ici
     }
 
-    $countQuery = "SELECT COUNT(*) as total FROM prestations";
-    $countStmt = executeQuery($countQuery, []);
-    $countResult = $countStmt->fetch(PDO::FETCH_ASSOC);
-    $total = $countResult['total'];
-
-    $totalPages = ceil($total / $limit);
-
-    $paginationData = [
-        'currentPage' => $page,
-        'totalPages' => $totalPages,
-        'totalItems' => $total,
-        'perPage' => $limit
-    ];
-
+    // Construire l'URL de pagination
     $urlPattern = "?prestation_page={page}";
+    // Ajouter d'autres paramètres si nécessaire (ex: filtres)
 
+    // Retourner la structure attendue
     return [
-        'prestations' => $prestations,
+        'prestations' => $paginationResult['items'],
         'pagination' => [
-            'current' => $page,
-            'limit' => $limit,
-            'total' => $total,
-            'totalPages' => $totalPages
+            'current' => $paginationResult['currentPage'],
+            'limit' => $paginationResult['perPage'],
+            'total' => $paginationResult['totalItems'],
+            'totalPages' => $paginationResult['totalPages']
         ],
-        'pagination_html' => renderPagination($paginationData, $urlPattern)
+        'pagination_html' => renderPagination($paginationResult, $urlPattern) // renderPagination attend le résultat de paginateResults
     ];
 }
+
 function cancelEmployeeAppointment($employee_id, $rdv_id)
 {
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
@@ -976,81 +990,117 @@ function cancelEmployeeAppointment($employee_id, $rdv_id)
     return $success;
 }
 
+
 function bookEmployeeAppointment($employee_id, $appointment_data)
 {
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
+    $appointment_data = sanitizeInput($appointment_data); // Sanitize the whole array first
 
     if (!$employee_id || empty($appointment_data)) {
+        flashMessage("Données de réservation invalides.", "danger");
         return false;
     }
 
     $prestation_id = filter_var($appointment_data['prestation_id'] ?? 0, FILTER_VALIDATE_INT);
-    $praticien_id = filter_var($appointment_data['praticien_id'] ?? 0, FILTER_VALIDATE_INT);
-    $date_rdv = sanitizeInput($appointment_data['date_rdv'] ?? '');
+    $date_rdv = $appointment_data['date_rdv'] ?? '';
     $duree = filter_var($appointment_data['duree'] ?? 0, FILTER_VALIDATE_INT);
-    $type_rdv = sanitizeInput($appointment_data['type_rdv'] ?? '');
-    $lieu = sanitizeInput($appointment_data['lieu'] ?? '');
-    $notes = sanitizeInput($appointment_data['notes'] ?? '');
 
     if (!$prestation_id || empty($date_rdv) || $duree <= 0) {
+        flashMessage("Informations de réservation incomplètes (prestation, date ou durée manquante).", "danger");
         return false;
     }
 
-    try {
-        $praticienExists = false;
-        if ($praticien_id) {
-            $checkPraticien = "SELECT id FROM personnes WHERE id = ? AND role_id = " . ROLE_PRESTATAIRE;
-            $praticienExists = executeQuery($checkPraticien, [$praticien_id])->fetch();
+    $praticien_id = filter_var($appointment_data['praticien_id'] ?? null, FILTER_VALIDATE_INT);
+    $type_rdv = $appointment_data['type_rdv'] ?? 'presentiel'; // Default value
+    $lieu = $appointment_data['lieu'] ?? '';
+    $notes = $appointment_data['notes'] ?? '';
+    $evenement_id = filter_var($appointment_data['evenement_id'] ?? null, FILTER_VALIDATE_INT); // Récupérer depuis les données si fourni
 
+
+    try {
+        beginTransaction();
+
+        if ($praticien_id) {
+            $checkPraticien = "SELECT id FROM personnes WHERE id = :id AND role_id = :role_id";
+            $praticienExists = executeQuery($checkPraticien, [':id' => $praticien_id, ':role_id' => ROLE_PRESTATAIRE])->fetch();
             if (!$praticienExists) {
-                // Si le praticien n'existe pas, on met praticien_id à NULL
-                $praticien_id = null;
+                // Comportement actuel : ignorer l'ID invalide. Alternative : rejeter.
+                flashMessage("Le praticien spécifié est invalide.", "warning");
+                $praticien_id = null; // Ou rollbackTransaction(); return false;
             }
-        } else {
-            $praticien_id = null;
         }
 
-        $checkPrestation = "SELECT id, est_disponible FROM prestations WHERE id = ?";
-        $prestation = executeQuery($checkPrestation, [$prestation_id])->fetch();
+        $checkPrestation = "SELECT id, nom, est_disponible, capacite_max FROM prestations WHERE id = :id";
+        $prestation = executeQuery($checkPrestation, [':id' => $prestation_id])->fetch();
 
-        if (!$prestation || !$prestation['est_disponible']) {
+        if (!$prestation) {
+            rollbackTransaction();
+            flashMessage("La prestation demandée n'existe pas.", "danger");
             return false;
         }
 
-        if (empty($date_rdv)) {
-            $date_rdv = date('Y-m-d H:i:s', strtotime('+1 day 9:00:00'));
+        if (!$prestation['est_disponible']) {
+
+            if (empty($prestation['capacite_max']) || $prestation['capacite_max'] <= 1) {
+                rollbackTransaction();
+                flashMessage("Cette prestation n'est plus disponible.", "warning");
+                return false;
+            }
         }
 
-        $eventQuery = "SELECT id FROM evenements ORDER BY id LIMIT 1";
-        $eventResult = executeQuery($eventQuery)->fetch();
-
-        if ($eventResult && isset($eventResult['id'])) {
-            $insertQuery = "INSERT INTO rendez_vous (personne_id, prestation_id, praticien_id, date_rdv, duree, 
-                            type_rdv, lieu, notes, statut, created_at, evenement_id) 
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'confirme', NOW(), ?)";
-
-            $insertParams = [$employee_id, $prestation_id, $praticien_id, $date_rdv, $duree, $type_rdv, $lieu, $notes, $eventResult['id']];
-        } else {
-            $insertQuery = "INSERT INTO rendez_vous (personne_id, prestation_id, praticien_id, date_rdv, duree, 
-                            type_rdv, lieu, notes, statut, created_at) 
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'confirme', NOW())";
-
-            $insertParams = [$employee_id, $prestation_id, $praticien_id, $date_rdv, $duree, $type_rdv, $lieu, $notes];
+        if (!isTimeSlotAvailable($date_rdv, $duree, $prestation_id)) {
+            rollbackTransaction();
+            flashMessage("Le créneau horaire demandé n'est pas disponible.", "warning");
+            return false;
         }
 
-        $success = executeQuery($insertQuery, $insertParams)->rowCount() > 0;
+        $insertQuery = "INSERT INTO rendez_vous (personne_id, prestation_id, praticien_id, date_rdv, duree, 
+                        type_rdv, lieu, notes, statut, created_at, evenement_id) 
+                        VALUES (:pid, :prestaid, :pracid, :daterdv, :duree, :typerdv, :lieu, :notes, 'confirme', NOW(), :eventid)";
 
-        if ($success) {
-            $rdvId = executeQuery("SELECT LAST_INSERT_ID()")->fetchColumn();
+        $insertParams = [
+            ':pid' => $employee_id,
+            ':prestaid' => $prestation_id,
+            ':pracid' => $praticien_id, // Peut être NULL
+            ':daterdv' => $date_rdv,
+            ':duree' => $duree,
+            ':typerdv' => $type_rdv,
+            ':lieu' => $lieu,
+            ':notes' => $notes,
+            ':eventid' => $evenement_id // Peut être NULL
+        ];
 
-            $updatePrestation = "UPDATE prestations SET est_disponible = FALSE WHERE id = ?";
-            executeQuery($updatePrestation, [$prestation_id]);
+        $stmt = executeQuery($insertQuery, $insertParams);
+        $rowCount = $stmt->rowCount();
+        $rdvId = getDbConnection()->lastInsertId();
 
+        if ($rowCount > 0 && $rdvId) {
+            if (empty($prestation['capacite_max']) || $prestation['capacite_max'] <= 1) {
+                $updatePrestation = "UPDATE prestations SET est_disponible = FALSE WHERE id = :id";
+                executeQuery($updatePrestation, [':id' => $prestation_id]);
+            }
+
+            commitTransaction();
+            flashMessage("Votre rendez-vous pour '{$prestation['nom']}' a été réservé avec succès.", "success");
+            // TODO: Ajouter notification utilisateur ?
+            // TODO: Ajouter log business operation ?
             return $rdvId;
+        } else {
+            // L'insertion a échoué
+            rollbackTransaction();
+            logSystemActivity('error', "Échec insertion RDV pour user #$employee_id, presta #$prestation_id. rowCount=$rowCount");
+            flashMessage("Une erreur est survenue lors de l'enregistrement du rendez-vous.", "danger");
+            return false;
         }
-
+    } catch (PDOException $e) {
+        rollbackTransaction();
+        logSystemActivity('error', "Erreur BDD bookEmployeeAppointment: " . $e->getMessage());
+        flashMessage("Une erreur de base de données est survenue lors de la réservation.", "danger");
         return false;
     } catch (Exception $e) {
+        rollbackTransaction();
+        logSystemActivity('error', "Erreur inattendue bookEmployeeAppointment: " . $e->getMessage());
+        flashMessage("Une erreur technique est survenue lors de la réservation.", "danger");
         return false;
     }
 }
@@ -1096,9 +1146,7 @@ function getAvailableSchedulesForPrestation($prestation_id)
             ];
         }
     } catch (Exception $e) {
-        // Log l'erreur si le format de la date est invalide
         error_log("Erreur lors de la conversion de date pour prestation #{$prestation_id}: " . $e->getMessage());
-        // Retourne un tableau vide car le créneau n'a pas pu être déterminé
     }
 
     return $schedules;
@@ -1810,7 +1858,7 @@ function handlePostActions($employee_id)
 
     if (isset($_POST['add_message']) && !empty($_POST['message']) && !empty($_POST['community_id'])) {
         $msg_community_id = filter_input(INPUT_POST, 'community_id', FILTER_VALIDATE_INT);
-        $message = filter_input(INPUT_POST, 'message', FILTER_SANITIZE_STRING);
+        $message = htmlspecialchars(filter_input(INPUT_POST, 'message', FILTER_UNSAFE_RAW));
         if (addCommunityMessage($employee_id, $msg_community_id, $message)) {
             // Redirection pour éviter le problème de re-soumission du formulaire
             header('Location: ' . $_SERVER['REQUEST_URI']);
@@ -1942,12 +1990,28 @@ function getPrestationDetails(int $prestation_id): array|false
     $prestation = executeQuery($query, $params)->fetch(PDO::FETCH_ASSOC);
 
     if ($prestation) {
+        /*
+         * Détails de prestation, soldat ? Garde un œil sur la variable prix_formate,
+         * qu'elle n'envoie pas du flan au client !
+         * (Commentaire original de Coderabbitai)
+         */
         // Formater le prix
         if (isset($prestation['prix'])) {
-            $prix = floatval($prestation['prix']);
-            $prestation['prix_formate'] = ($prix > 0) ? number_format($prix, 2, ',', ' ') . ' €' : 'Gratuit';
+            $prix = $prestation['prix']; // Garder la valeur originale pour vérifier NULL
+            if ($prix === null) {
+                $prestation['prix_formate'] = 'Prix non disponible';
+            } else {
+                $prixFloat = floatval($prix);
+                if ($prixFloat > 0) {
+                    $prestation['prix_formate'] = number_format($prixFloat, 2, ',', ' ') . ' €';
+                } else {
+                    // Gère 0, négatif, ou conversion de non-numérique en 0
+                    $prestation['prix_formate'] = 'Gratuit';
+                }
+            }
         } else {
-            $prestation['prix_formate'] = 'Non spécifié';
+            // Fallback si la colonne prix n'existe pas dans le résultat
+            $prestation['prix_formate'] = 'Prix non disponible';
         }
 
         // Formater la date de disponibilité si elle existe
