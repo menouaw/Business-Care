@@ -36,8 +36,7 @@ include_once '../../templates/header.php';
                         <i class="fas fa-edit"></i> Modifier
                     </a>
                     <a href="<?php echo WEBADMIN_URL; ?>/modules/contracts/delete.php?id=<?php echo $contract['id']; ?>&csrf_token=<?php echo generateToken(); ?>" class="btn btn-sm btn-danger me-2 btn-delete"
-                       data-bs-toggle="tooltip" title="Supprimer ce contrat"
-                       onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce contrat ?')">
+                       data-bs-toggle="tooltip" title="Supprimer ce contrat">
                         <i class="fas fa-trash"></i> Supprimer
                     </a>
                      <a href="<?php echo WEBADMIN_URL; ?>/modules/contracts/index.php" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" title="Retourner à la liste">

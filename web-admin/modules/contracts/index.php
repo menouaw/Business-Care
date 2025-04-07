@@ -182,8 +182,7 @@ include_once '../../templates/header.php';
                         <i class="fas fa-edit"></i> Modifier
                     </a>
                     <a href="<?php echo WEBADMIN_URL; ?>/modules/contracts/delete.php?id=<?php echo $contract['id']; ?>&csrf_token=<?php echo generateToken(); ?>" class="btn btn-sm btn-danger btn-delete"
-                       data-bs-toggle="tooltip" title="Supprimer"
-                       onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce contrat ?')">
+                       data-bs-toggle="tooltip" title="Supprimer">
                         <i class="fas fa-trash"></i> Supprimer
                     </a>
                 </div>
@@ -330,8 +329,7 @@ include_once '../../templates/header.php';
                                         </a>
                                         <a href="<?php echo WEBADMIN_URL; ?>/modules/contracts/delete.php?id=<?php echo $contract['id']; ?>&csrf_token=<?php echo generateToken(); ?>" class="btn btn-sm btn-danger btn-delete" 
                                            data-bs-toggle="tooltip" 
-                                           title="Supprimer"
-                                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce contrat ?')">
+                                           title="Supprimer">
                                             <i class="fas fa-trash"></i>
                                         </a>
                                     </td>
