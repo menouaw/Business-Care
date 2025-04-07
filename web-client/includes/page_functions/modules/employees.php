@@ -457,7 +457,7 @@ function getEmployeeAppointments($employee_id, $status = 'upcoming', $page = 1, 
         . " LIMIT " . $limit . " OFFSET " . $offset;
     $countQuery = $baseCountQuery . $countQueryParts['countWhereClause']; // Utiliser countWhereClause ici
 
-        try {
+    try {
         $stmt = executeQuery($query, $params);
         $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -1066,7 +1066,6 @@ function bookEmployeeAppointment($employee_id, $appointment_data)
             return false;
         }
     } catch (Exception $e) {
-        // Gérer l'exception si DateTime échoue (ex: date invalide comme 2023-02-30)
         flashMessage("La date fournie n'est pas valide.", "danger");
         error_log("Échec création DateTime dans bookEmployeeAppointment pour la chaîne: " . $date_rdv_string . " - Erreur: " . $e->getMessage());
         return false;
@@ -1082,42 +1081,14 @@ function bookEmployeeAppointment($employee_id, $appointment_data)
     try {
         beginTransaction();
 
-        // Vérifier le praticien si fourni
-        if ($praticien_id) {
-            $checkPraticien = "SELECT id FROM personnes WHERE id = :id AND role_id = :role_id";
-            $praticienExists = executeQuery($checkPraticien, [':id' => $praticien_id, ':role_id' => ROLE_PRESTATAIRE])->fetch();
-            if (!$praticienExists) {
-                rollbackTransaction(); // Rejeter si praticien invalide
-                flashMessage("Le praticien spécifié est invalide.", "danger");
-                return false;
-            }
-        }
-
-        // Vérifier la prestation
-        $checkPrestation = "SELECT id, nom, est_disponible, capacite_max FROM prestations WHERE id = :id";
-        $prestation = executeQuery($checkPrestation, [':id' => $prestation_id])->fetch();
-
+       
+        $prestation = fetchOne('prestations', 'id = :id', [':id' => $prestation_id]);
         if (!$prestation) {
             rollbackTransaction();
-            flashMessage("La prestation demandée n'existe pas.", "danger");
+            flashMessage("Erreur interne: Impossible de récupérer les détails de la prestation valide.", "danger");
             return false;
         }
 
-        // Vérifier la disponibilité globale (sauf si capacité > 1)
-        if (!$prestation['est_disponible'] && (empty($prestation['capacite_max']) || $prestation['capacite_max'] <= 1)) {
-            rollbackTransaction();
-            flashMessage("Cette prestation n'est plus disponible.", "warning");
-            return false;
-        }
-
-        // Vérifier la disponibilité du créneau horaire
-        if (!isTimeSlotAvailable($date_rdv_string, $duree, $prestation_id)) {
-            rollbackTransaction();
-            flashMessage("Le créneau horaire demandé n'est pas disponible.", "warning");
-            return false;
-        }
-
-        // Insérer le rendez-vous
         $insertQuery = "INSERT INTO rendez_vous (personne_id, prestation_id, praticien_id, date_rdv, duree, 
                         type_rdv, lieu, notes, statut, created_at, evenement_id) 
                         VALUES (:pid, :prestaid, :pracid, :daterdv, :duree, :typerdv, :lieu, :notes, 'confirme', NOW(), :eventid)";
@@ -1125,13 +1096,13 @@ function bookEmployeeAppointment($employee_id, $appointment_data)
         $insertParams = [
             ':pid' => $employee_id,
             ':prestaid' => $prestation_id,
-            ':pracid' => $praticien_id, // Peut être NULL
-            ':daterdv' => $date_rdv_string, // Utiliser la chaîne validée
+            ':pracid' => $praticien_id, 
+            ':daterdv' => $date_rdv_string, 
             ':duree' => $duree,
             ':typerdv' => $type_rdv,
             ':lieu' => $lieu,
             ':notes' => $notes,
-            ':eventid' => $evenement_id // Peut être NULL
+            ':eventid' => $evenement_id 
         ];
 
         $stmt = executeQuery($insertQuery, $insertParams);
@@ -1139,19 +1110,15 @@ function bookEmployeeAppointment($employee_id, $appointment_data)
         $rdvId = getDbConnection()->lastInsertId();
 
         if ($rowCount > 0 && $rdvId) {
-            // Mettre à jour la disponibilité de la prestation si nécessaire (capacité <= 1)
             if (empty($prestation['capacite_max']) || $prestation['capacite_max'] <= 1) {
                 $updatePrestation = "UPDATE prestations SET est_disponible = FALSE WHERE id = :id";
                 executeQuery($updatePrestation, [':id' => $prestation_id]);
             }
 
             commitTransaction();
-            // Le message flash de succès est géré par le script appelant (appointments.php)
-            // flashMessage("Votre rendez-vous pour '{$prestation['nom']}' a été réservé avec succès.", "success");
-            logBusinessOperation($employee_id, 'book_appointment', "Réservation RDV #$rdvId pour presta #$prestation_id"); // Ajouter log
+            logBusinessOperation($employee_id, 'book_appointment', "Réservation RDV #$rdvId pour presta #$prestation_id");
             return $rdvId;
         } else {
-            // L'insertion a échoué
             rollbackTransaction();
             logSystemActivity('error', "Échec insertion RDV pour user #$employee_id, presta #$prestation_id. rowCount=$rowCount");
             flashMessage("Une erreur est survenue lors de l'enregistrement du rendez-vous.", "danger");
