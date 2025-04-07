@@ -6,7 +6,6 @@ require_once __DIR__ . '/../../includes/page_functions/modules/employees.php';
 
 
 $personne_id = $_SESSION['user_id'] ?? null;
-// $entreprise_id = getEmployeeEntrepriseId($personne_id); // Fonction hypothétique pour récupérer l'ID entreprise
 
 $pageTitle = "Chatbot - Business Care";
 

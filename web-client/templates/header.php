@@ -136,7 +136,7 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
                                     Salarié
                                 </a>
                                 <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/challenges.php">Défis sportifs</a></li>
+                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/challenge.php">Défis sportifs</a></li>
                                     <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/communities.php">Communautés</a></li>
                                     <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/appointments.php">Rendez-vous</a></li>
                                     <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/chatbot.php">Chatbot</a></li>
