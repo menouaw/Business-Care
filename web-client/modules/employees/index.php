@@ -160,23 +160,30 @@ include_once __DIR__ . '/../../templates/header.php';
                         <?php else : ?>
                             <div class="list-group list-group-flush">
                                 <?php foreach ($dashboardData['upcoming_appointments'] as $rdv) : ?>
-                                    <div class="list-group-item border-0 px-0">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <h6 class="mb-1"><?= htmlspecialchars($rdv['prestation_nom'] ?? 'Prestation inconnue') ?></h6>
-                                                <p class="text-muted mb-0 small">
-                                                    <i class="far fa-calendar-alt me-1"></i> <?= htmlspecialchars($rdv['date_rdv_formatee'] ?? 'Date inconnue') ?>
-                                                    <?php if (!empty($rdv['praticien_complet']) && $rdv['praticien_complet'] !== 'Non assigné') : ?>
-                                                        <i class="fas fa-user-md ms-2 me-1"></i> <?= htmlspecialchars($rdv['praticien_complet']) ?>
-                                                    <?php endif; ?>
-                                                </p>
-                                                <p class="text-muted mb-0 small">
-                                                    <i class="fas fa-map-marker-alt me-1"></i> <?= htmlspecialchars($rdv['lieu'] ?: ($rdv['type_rdv'] === 'visio' ? 'Visioconférence' : 'Téléphone')) ?>
-                                                </p>
+                                    <?php if (is_array($rdv)):
+                                    ?>
+                                        <div class="list-group-item border-0 px-0">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h6 class="mb-1"><?= htmlspecialchars($rdv['prestation_nom'] ?? 'Prestation inconnue') ?></h6>
+                                                    <p class="text-muted mb-0 small">
+                                                        <i class="far fa-calendar-alt me-1"></i> <?= htmlspecialchars($rdv['date_rdv_formatee'] ?? 'Date inconnue') ?>
+                                                        <?php if (!empty($rdv['praticien_complet']) && $rdv['praticien_complet'] !== 'Non assigné') : ?>
+                                                            <i class="fas fa-user-md ms-2 me-1"></i> <?= htmlspecialchars($rdv['praticien_complet']) ?>
+                                                        <?php endif; ?>
+                                                    </p>
+                                                    <p class="text-muted mb-0 small">
+                                                        <i class="fas fa-map-marker-alt me-1"></i> <?= htmlspecialchars($rdv['lieu'] ?: ($rdv['type_rdv'] === 'visio' ? 'Visioconférence' : 'Téléphone')) ?>
+                                                    </p>
+                                                </div>
+                                                <?= $rdv['statut_badge'] ?? '<span class="badge bg-secondary">Inconnu</span>'; ?>
                                             </div>
-                                            <?= $rdv['statut_badge'] ?? '' ?>
                                         </div>
-                                    </div>
+                                    <?php else:
+                                        error_log("[Warning] Invalid data type found in upcoming_appointments array in index.php. Expected array, got: " . gettype($rdv));
+                                    ?>
+                                        <div class="list-group-item border-0 px-0 text-danger">Donnée de rendez-vous invalide.</div>
+                                    <?php endif; ?>
                                 <?php endforeach; ?>
                             </div>
                         <?php endif; ?>
@@ -209,7 +216,7 @@ include_once __DIR__ . '/../../templates/header.php';
                                                     <i class="fas fa-map-marker-alt me-1"></i> <?= htmlspecialchars($event['lieu'] ?? 'Lieu à confirmer') ?>
                                                 </p>
                                             </div>
-                                            <a href="<?= WEBCLIENT_URL ?>/events.php?id=<?= $event['id'] ?>" class="btn btn-sm btn-outline-success">Voir détails</a>
+                                            <a href="<?= WEBCLIENT_URL ?>/events.php?id=<?= $event['id'] ?? '' ?>" class="btn btn-sm btn-outline-success">Voir détails</a>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>

@@ -70,7 +70,6 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
             <div class="collapse navbar-collapse" id="navbarMain">
                 <ul class="navbar-nav me-auto">
                     <?php if (!$isLoggedIn): ?>
-                        <!-- Links for visitors -->
                         <li class="nav-item">
                             <a class="nav-link" href="<?= WEBCLIENT_URL ?>">Accueil</a>
                         </li>
@@ -84,9 +83,7 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
                             <a class="nav-link" href="<?= WEBCLIENT_URL ?>/modules/companies/contact.php">Contact</a>
                         </li>
                     <?php else: ?>
-                        <!-- Menu spécifique selon le rôle -->
                         <?php if ($userRole === 'entreprise'): ?>
-                            <!-- Entreprise Links (Keep as is or adjust if needed) -->
                             <li class="nav-item">
                                 <a class="nav-link" href="<?= WEBCLIENT_URL ?>/modules/companies/contact.php">Contact</a>
                             </li>
@@ -106,10 +103,10 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
                                 </ul>
                             </li>
                         <?php elseif ($userRole === 'salarie'): ?>
-                            <!-- Salarié Links -->
+
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle active" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    Mon Espace Salarié
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Salarié
                                 </a>
                                 <ul class="dropdown-menu">
                                     <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/index.php"><i class="fas fa-tachometer-alt me-2"></i>Tableau de bord</a></li>
@@ -137,29 +134,33 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
                                 <a class="nav-link" href="<?= WEBCLIENT_URL ?>/modules/employees/signalement.php"><i class="fas fa-exclamation-triangle me-1"></i>Signalement</a>
                             </li>
                         <?php elseif ($userRole === 'prestataire'): ?>
-                            <!-- Prestataire Links (Keep as is or adjust if needed) -->
+                            <!-- Prestataire Links -->
                             <li class="nav-item">
-                                <a class="nav-link" href="<?= WEBCLIENT_URL ?>/modules/companies/contact.php">Contact</a>
+                                <a class="nav-link" href="<?= WEBCLIENT_URL ?>/modules/companies/contact.php"><i class="fas fa-headset me-1"></i>Contact</a>
                             </li>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    Prestataire
+                                    <i class="fas fa-briefcase me-1"></i>Mon Espace Prestataire
                                 </a>
                                 <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/providers/index.php">Tableau de bord</a></li>
-                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/providers/calendar.php">Calendrier</a></li>
-                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/providers/services.php">Services</a></li>
-                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/providers/invoices.php">Facturation</a></li>
+                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/providers/index.php"><i class="fas fa-tachometer-alt me-2"></i>Tableau de bord</a></li>
+                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/providers/calendar.php"><i class="fas fa-calendar-alt me-2"></i>Mon Calendrier</a></li>
+                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/providers/interventions.php"><i class="fas fa-tasks me-2"></i>Mes Interventions</a></li>
+                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/providers/services.php"><i class="fas fa-concierge-bell me-2"></i>Mes Services</a></li>
+                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/providers/evaluations.php"><i class="fas fa-star-half-alt me-2"></i>Mes Évaluations</a></li>
+                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/providers/invoices.php"><i class="fas fa-file-invoice-dollar me-2"></i>Ma Facturation</a></li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/providers/settings.php"><i class="fas fa-cog me-2"></i>Mes Paramètres</a></li>
                                 </ul>
                             </li>
                         <?php endif; ?>
                     <?php endif; ?>
                 </ul>
 
-                <!-- Partie droite : connexion ou profil/déconnexion -->
                 <ul class="navbar-nav ms-auto">
                     <?php if ($isLoggedIn): ?>
-                        <!-- Notifications -->
                         <li class="nav-item dropdown">
                             <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="fas fa-bell"></i>
