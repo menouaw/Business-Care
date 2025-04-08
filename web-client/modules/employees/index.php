@@ -1,31 +1,25 @@
 <?php
 
-/**
- * tableau de bord - salariés
- *
- * page d'accueil du module salariés
- */
-
-// Inclure les fonctions spécifiques au module salariés
 require_once __DIR__ . '/../../includes/page_functions/modules/employees.php';
 
-// Appeler la fonction pour récupérer toutes les données du tableau de bord
-// requireRole() est déjà appelé à l'intérieur de displayEmployeeDashboard()
 $dashboardData = displayEmployeeDashboard();
 
-// Définir le titre de la page
 $pageTitle = "Tableau de bord - Espace Salarié";
 
-// Inclure l'en-tête
 include_once __DIR__ . '/../../templates/header.php';
 ?>
 
 <main class="dashboard-page py-4">
     <div class="container">
-        <div class="row mb-4">
+        <div class="row mb-4 align-items-center">
             <div class="col">
-                <h1 class="h2">Tableau de bord</h1>
-                <p class="text-muted">Bienvenue dans votre espace salarié, <?= htmlspecialchars($dashboardData['user']['prenom'] ?? 'Utilisateur') ?>!</p>
+                <h1 class="h2 mb-0">Tableau de bord</h1>
+                <p class="text-muted mb-0">Bienvenue dans votre espace salarié, <?= htmlspecialchars($dashboardData['user']['prenom'] ?? 'Utilisateur') ?>!</p>
+            </div>
+            <div class="col-auto">
+                <a href="<?= ROOT_URL ?>/index.php" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i> Retour
+                </a>
             </div>
         </div>
 
@@ -65,7 +59,7 @@ include_once __DIR__ . '/../../templates/header.php';
                             </div>
                         </div>
                         <div class="mt-3">
-                            <a href="<?= WEBCLIENT_URL ?>/evenements.php" class="btn btn-sm btn-outline-success">Explorer les événements</a>
+                            <a href="<?= WEBCLIENT_URL ?>/modules/employees/events.php" class="btn btn-sm btn-outline-success">Explorer les événements</a>
                         </div>
                     </div>
                 </div>
@@ -156,7 +150,7 @@ include_once __DIR__ . '/../../templates/header.php';
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0">Événements à venir</h5>
-                        <a href="<?= WEBCLIENT_URL ?>/evenements.php" class="btn btn-sm btn-outline-primary">Tous les événements</a>
+                        <a href="<?= WEBCLIENT_URL ?>/modules/employees/events.php" class="btn btn-sm btn-outline-primary">Tous les événements</a>
                     </div>
                     <div class="card-body">
                         <?php if (empty($dashboardData['upcoming_events'])) : ?>
@@ -232,7 +226,7 @@ include_once __DIR__ . '/../../templates/header.php';
                     <div class="card-body">
                         <div class="row g-3">
                             <div class="col-sm-6 col-md-3 mb-2 mb-md-0">
-                                <a href="<?= WEBCLIENT_URL ?>/catalogue.php" class="btn btn-primary d-block py-3">
+                                <a href="<?= WEBCLIENT_URL ?>/modules/employees/services.php" class="btn btn-primary d-block py-3">
                                     <i class="fas fa-search me-2"></i>Catalogue Services
                                 </a>
                             </div>
@@ -247,7 +241,7 @@ include_once __DIR__ . '/../../templates/header.php';
                                 </a>
                             </div>
                             <div class="col-sm-6 col-md-3 mb-2 mb-md-0">
-                                <a href="<?= WEBCLIENT_URL ?>/communautes.php" class="btn btn-info d-block py-3">
+                                <a href="<?= WEBCLIENT_URL ?>/modules/employees/communities.php" class="btn btn-info d-block py-3">
                                     <i class="fas fa-comments me-2"></i>Communautés
                                 </a>
                             </div>

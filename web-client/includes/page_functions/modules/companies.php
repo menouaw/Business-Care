@@ -1,6 +1,5 @@
 <?php
 
-// --- Nouvelle fonction de validation ---
 function validateBirthDate($dateNaissanceInput, &$errors)
 {
     if (!empty($dateNaissanceInput)) {

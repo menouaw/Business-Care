@@ -3,20 +3,14 @@ require_once __DIR__ . '/../../includes/init.php';
 
 $pageTitle = "Nous Contacter - Business Care";
 
-// Traitement potentiel du formulaire (à implémenter dans un script séparé ou ici)
 $formMessage = '';
 $formMessageType = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // TODO: Implémenter la logique d'envoi de l'email ou d'enregistrement du message
     $formMessage = "Votre message a bien été envoyé. Nous vous répondrons bientôt.";
     $formMessageType = 'success';
 
-    // Pour un meilleur traitement, nous allons recuperer les 
-    //données $_POST['name'], $_POST['email'], etc.
-    // apres avoir validé et utilisé avce une fonction mail() ou une librairie comme PHPMailer.
 }
 
-// Inclure l'en-tête
 include_once __DIR__ . '/../../templates/header.php';
 ?>
 
@@ -60,15 +54,7 @@ include_once __DIR__ . '/../../templates/header.php';
                         Lundi - Vendredi : 9h00 - 18h00
                     </p>
 
-                    <!-- Optionnel: Ajouter d'autres adresses (Troyes, Nice...) si pertinent -->
-                    <!-- 
-                    <h5 class="mt-4">Bureau de Troyes</h5>
-                    <p class="mb-1"><i class="fas fa-location-dot me-2 text-muted"></i>13 rue Antoine Parmentier, Troyes</p>
-                    <h5 class="mt-4">Bureau de Nice</h5>
-                    <p class="mb-1"><i class="fas fa-location-dot me-2 text-muted"></i>8 rue Beaumont, Nice</p>
-                     -->
 
-                    <!-- Optionnel: Carte Google Maps -->
                     <div class="mt-4">
                         <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2624.816000156017!2d2.34300861567458!3d48.86169197928779!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47e66e1e11a5a0f7%3A0x4a5c3b8f3b6b4e8!2s110%20Rue%20de%20Rivoli%2C%2075001%20Paris!5e0!3m2!1sfr!2sfr!4v1678886543210!5m2!1sfr!2sfr" width="100%" height="250" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
                     </div>
@@ -116,6 +102,5 @@ include_once __DIR__ . '/../../templates/header.php';
 </main>
 
 <?php
-// Inclure le pied de page
 include_once __DIR__ . '/../../templates/footer.php';
 ?>

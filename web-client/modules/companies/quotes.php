@@ -50,7 +50,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         $submittedData = $formData;
     } else {
-        // Si pas d'erreurs, continuer le traitement
         $formData['entreprise_id'] = $entrepriseId;
         $result = requestCompanyQuote($formData);
 
@@ -148,6 +147,5 @@ include_once __DIR__ . '/../../templates/header.php';
 </main>
 
 <?php
-// Inclure le pied de page
 include_once __DIR__ . '/../../templates/footer.php';
 ?>

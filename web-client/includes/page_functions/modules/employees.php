@@ -1,22 +1,8 @@
 <?php
 
-/**
- * fonctions pour la gestion des salariés
- *
- * ce fichier contient les fonctions nécessaires pour gérer les salariés des entreprises clientes
- */
 
 require_once __DIR__ . '/../../../includes/init.php';
 
-/**
- * récupère la liste des salariés avec pagination et recherche
- * 
- * @param int|null $company_id identifiant de l'entreprise (null pour tous)
- * @param int $page numéro de page
- * @param int $limit nombre d'éléments par page
- * @param string $search terme de recherche
- * @return array liste des salariés et informations de pagination
- */
 function getEmployeesList($company_id = null, $page = 1, $limit = 5, $search = '')
 {
     $company_id = sanitizeInput($company_id);
@@ -36,7 +22,7 @@ function getEmployeesList($company_id = null, $page = 1, $limit = 5, $search = '
               WHERE p.role_id = :role_id";
     $countQuery = "SELECT COUNT(p.id) as total FROM personnes p WHERE p.role_id = :role_id";
     $params = [':role_id' => ROLE_SALARIE];
-    $countParams = [':role_id' => ROLE_SALARIE]; // Params séparés pour le count
+    $countParams = [':role_id' => ROLE_SALARIE];
 
     if ($company_id) {
         $query .= " AND p.entreprise_id = :company_id";
@@ -102,12 +88,6 @@ function getEmployeesList($company_id = null, $page = 1, $limit = 5, $search = '
     ];
 }
 
-/**
- * récupère les détails d'un salarié
- * 
- * @param int $employee_id identifiant du salarié
- * @return array|false détails du salarié ou false si non trouvé
- */
 function getEmployeeDetails($employee_id)
 {
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
@@ -144,15 +124,6 @@ function getEmployeeDetails($employee_id)
     return $employee;
 }
 
-/**
- * met à jour le profil d'un salarié
- * NOTE: Cette fonction met à jour les données. La validation et le traitement de la requête
- * devraient être dans une fonction handleUpdateEmployeeProfile().
- * 
- * @param int $employee_id identifiant du salarié
- * @param array $profile_data données du profil à mettre à jour
- * @return int|false nombre de lignes affectées ou false en cas d'erreur
- */
 function updateEmployeeProfile($employee_id, $profile_data)
 {
 
@@ -170,7 +141,6 @@ function updateEmployeeProfile($employee_id, $profile_data)
         'date_naissance',
         'genre',
         'photo_url'
-        // 'mot_de_passe' devrait être géré séparément via une fonction dédiée
     ];
 
     $filteredData = array_intersect_key($profile_data, array_flip($allowedFields));
@@ -210,13 +180,7 @@ function updateEmployeeProfile($employee_id, $profile_data)
     }
 }
 
-/**
- * récupère les services disponibles pour un salarié
- * (vérifie si l'entreprise a un contrat actif)
- * 
- * @param int $employee_id identifiant du salarié
- * @return array liste des services disponibles
- */
+
 function getEmployeeAvailableServices($employee_id)
 {
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
@@ -257,13 +221,6 @@ function getEmployeeAvailableServices($employee_id)
     return $services;
 }
 
-/**
- * récupère les réservations d'un salarié
- * 
- * @param int $employee_id identifiant du salarié
- * @param string $status filtre par statut (ex: 'all', 'planifie', 'termine')
- * @return array liste des réservations
- */
 function getEmployeeReservations($employee_id, $status = 'all')
 {
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
@@ -298,13 +255,7 @@ function getEmployeeReservations($employee_id, $status = 'all')
     return $reservations;
 }
 
-/**
- * récupère les rendez-vous médicaux (type 'consultation') d'un salarié
- * 
- * @param int $employee_id identifiant du salarié
- * @param string $filter filtre par statut ('upcoming', 'past', 'all')
- * @return array liste des rendez-vous médicaux
- */
+
 function getEmployeeAppointments($employee_id, $filter = 'upcoming')
 {
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
@@ -318,18 +269,19 @@ function getEmployeeAppointments($employee_id, $filter = 'upcoming')
               FROM " . TABLE_APPOINTMENTS . " r
               JOIN " . TABLE_PRESTATIONS . " p ON r.prestation_id = p.id
               LEFT JOIN " . TABLE_USERS . " prat ON r.praticien_id = prat.id
-              WHERE r.personne_id = :employee_id AND p.type = :prestation_type";
+              WHERE r.personne_id = :employee_id";
     $params = [
         ':employee_id' => $employee_id,
-        ':prestation_type' => 'consultation'
     ];
 
     $orderByDirection = 'DESC';
     if ($filter === 'upcoming') {
-        $query .= " AND r.date_rdv >= CURDATE() AND r.statut NOT IN ('annule', 'termine')";
+        $query .= " AND r.date_rdv >= CURDATE() AND r.statut NOT IN ('annule', 'termine', 'no_show')";
         $orderByDirection = 'ASC';
     } else if ($filter === 'past') {
-        $query .= " AND (r.date_rdv < CURDATE() OR r.statut IN ('annule', 'termine', 'no_show'))";
+        $query .= " AND (r.date_rdv < CURDATE() OR r.statut IN ('termine', 'no_show')) AND r.statut != 'annule'";
+    } else if ($filter === 'annule') {
+        $query .= " AND r.statut = 'annule'";
     }
 
     $query .= " ORDER BY r.date_rdv $orderByDirection";
@@ -345,14 +297,7 @@ function getEmployeeAppointments($employee_id, $filter = 'upcoming')
     return $appointments;
 }
 
-/**
- * récupère l'historique d'activités d'un salarié
- * 
- * @param int $employee_id identifiant du salarié
- * @param int $page numéro de page
- * @param int $limit nombre d'éléments par page
- * @return array historique d'activités et informations de pagination
- */
+
 function getEmployeeActivityHistory($employee_id, $page = 1, $limit = 10)
 {
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
@@ -453,9 +398,7 @@ function getActivityIcon($action)
     ];
 
     if (isset($iconMap[$action])) return $iconMap[$action];
-    // Match key action if specific action not found
     if (isset($iconMap[$keyAction])) return $iconMap[$keyAction];
-    // Match prefixes for broader categories
     if (strpos($action, 'reservation:') === 0) return 'fas fa-calendar-alt text-info';
     if (strpos($action, 'don:') === 0) return 'fas fa-gift text-info';
     if (strpos($action, 'paiement:') === 0) return 'fas fa-credit-card text-success';
@@ -463,21 +406,13 @@ function getActivityIcon($action)
     return $iconMap['default'];
 }
 
-/**
- * récupère les communautés accessibles à un salarié
- * 
- * @param int $employee_id identifiant du salarié (peut être utilisé pour vérifier les adhésions futures)
- * @return array liste des communautés
- */
+
 function getEmployeeCommunities($employee_id)
 {
-    // Validation de l'ID (optionnel pour l'instant car on retourne toutes les communautés)
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
-    // if (!$employee_id) return []; // Décommenter si on filtre par salarié
 
-    // Récupération des communautés
     try {
-        $communities = fetchAll(TABLE_COMMUNAUTES, '1=1', 'type, nom'); // Ajouter `actif = 1` si applicable
+        $communities = fetchAll(TABLE_COMMUNAUTES, '1=1', 'type, nom');
         return $communities;
     } catch (Exception $e) {
         logSystemActivity('error', "Erreur récupération communautés: " . $e->getMessage());
@@ -486,59 +421,46 @@ function getEmployeeCommunities($employee_id)
     }
 }
 
-/**
- * gère les dons d'un salarié (fonction de traitement des données)
- * La validation et la gestion du formulaire devraient être dans handleDonationRequest()
- * 
- * @param int $employee_id identifiant du salarié
- * @param array $donation_data données du don ('type', 'montant', 'description')
- * @return int|false ID du don créé ou false en cas d'erreur
- */
 function manageEmployeeDonations($employee_id, $donation_data)
 {
-    // Validation ID
     $employee_id = filter_var($employee_id, FILTER_VALIDATE_INT);
     if (!$employee_id) {
         error_log("manageEmployeeDonations: ID salarié invalide.");
         return false;
     }
 
-    // Assurer que les clés existent pour éviter les erreurs undefined index
     $donation_data['type'] = $donation_data['type'] ?? null;
     $donation_data['montant'] = $donation_data['montant'] ?? null;
     $donation_data['description'] = $donation_data['description'] ?? null;
 
-    // Validation du type de don
-    if (!in_array($donation_data['type'], ['financier', 'materiel'])) {
+    if (!in_array($donation_data['type'], DONATION_TYPES)) {
         flashMessage("Type de don invalide.", "warning");
         return false;
     }
 
-    // Validation basée sur le type
-    if ($donation_data['type'] == 'financier') {
+    if ($donation_data['type'] == DONATION_TYPES[0]) {
         $montant = filter_var($donation_data['montant'], FILTER_VALIDATE_FLOAT);
         if ($montant === false || $montant <= 0) {
             flashMessage("Le montant du don financier doit être un nombre positif.", "warning");
             return false;
         }
-        $donation_data['montant'] = $montant; // Utiliser le montant validé
+        $donation_data['montant'] = $montant;
         if (!empty($donation_data['description'])) {
             flashMessage("La description n'est pas nécessaire pour un don financier.", "info");
-            $donation_data['description'] = null; // Optionnel: ignorer la description
+            $donation_data['description'] = null;
         }
-    } elseif ($donation_data['type'] == 'materiel') {
+    } elseif ($donation_data['type'] == DONATION_TYPES[1]) {
         if (empty(trim($donation_data['description']))) {
             flashMessage("La description est obligatoire pour un don matériel.", "warning");
             return false;
         }
         if (!empty($donation_data['montant'])) {
             flashMessage("Le montant n'est pas applicable pour un don matériel.", "info");
-            $donation_data['montant'] = null; // Optionnel: ignorer le montant
+            $donation_data['montant'] = null;
         }
     }
 
     try {
-        // Vérifier que le salarié existe et est actif
         $employee = fetchOne(TABLE_USERS, "id = :id AND role_id = :role_id AND statut = :status", [
             ':id' => $employee_id,
             ':role_id' => ROLE_SALARIE,
@@ -549,20 +471,17 @@ function manageEmployeeDonations($employee_id, $donation_data)
             return false;
         }
 
-        // Préparation des données pour insertion dans la table DONS
         $donData = [
             'personne_id' => $employee_id,
-            'montant' => $donation_data['type'] == 'financier' ? $donation_data['montant'] : null,
+            'montant' => $donation_data['type'] == DONATION_TYPES[0] ? $donation_data['montant'] : null,
             'type' => $donation_data['type'],
-            'description' => $donation_data['type'] == 'materiel' ? trim($donation_data['description']) : null,
-            'date_don' => date('Y-m-d'), // Utiliser la date actuelle
-            'statut' => 'en_attente' // Statut initial
+            'description' => $donation_data['type'] == DONATION_TYPES[1] ? trim($donation_data['description']) : null,
+            'date_don' => date('Y-m-d'),
+            'statut' => DEFAULT_DONATION_STATUS
         ];
 
-        // Début de transaction (important si on modifie plusieurs tables)
         beginTransaction();
 
-        // Insertion du don
         $donationId = insertRow(TABLE_DONATIONS, $donData);
 
         if (!$donationId) {
@@ -572,19 +491,12 @@ function manageEmployeeDonations($employee_id, $donation_data)
             return false;
         }
 
-        // Si c'est un don financier, on pourrait déclencher un processus de paiement ici ou créer une facture/transaction
-        // Pour l'instant, on ne crée pas d'entrée dans une table 'transactions' inexistante
-
-        // Validation de la transaction
         commitTransaction();
 
-        // Journalisation
         logBusinessOperation($employee_id, 'don_creation', "Don #{$donationId} créé, type: {$donation_data['type']}");
 
-        // Retourner l'ID du don créé
         return $donationId;
     } catch (Exception $e) {
-        // Assurer l'annulation de la transaction en cas d'erreur
         if (getDbConnection()->inTransaction()) {
             rollbackTransaction();
         }
@@ -594,48 +506,33 @@ function manageEmployeeDonations($employee_id, $donation_data)
     }
 }
 
-/**
- * récupère les événements et défis disponibles pour un salarié
- * 
- * @param int $employee_id identifiant du salarié (peut être utilisé pour filtrage futur)
- * @param string $event_type filtre par type d'événement (ex: 'all', 'conference', 'defi_sportif')
- * @return array liste des événements
- */
 function getEmployeeEvents($employee_id, $event_type = 'all')
 {
-    // Validation de l'ID (optionnel pour l'instant)
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
-    // if (!$employee_id) return [];
 
     $event_type = sanitizeInput($event_type);
 
-    // Récupérer les types d'événements valides depuis la définition de la table si possible
-    // Pour l'instant, on se base sur ceux du sujet
-    $validEventTypes = ['conference', 'webinar', 'atelier', 'defi_sportif', 'autre'];
+    $validEventTypes = EVENT_TYPES;
 
-    // Construction de la requête
-    $query = "SELECT id, titre, description, date_debut, date_fin, lieu, type, 
-              capacite_max, niveau_difficulte 
-              FROM evenements 
-              WHERE date_debut >= CURDATE()"; // Afficher uniquement les événements futurs
+    $query = "SELECT id, titre, description, date_debut, date_fin, lieu, type,
+              capacite_max, niveau_difficulte
+              FROM evenements
+              WHERE date_debut >= CURDATE()";
     $params = [];
 
-    // Filtre par type si différent de 'all' et valide
     if ($event_type !== 'all' && in_array($event_type, $validEventTypes)) {
         $query .= " AND type = :event_type";
         $params[':event_type'] = $event_type;
     }
 
-    $query .= " ORDER BY date_debut ASC, titre ASC"; // Tri par date puis par titre
+    $query .= " ORDER BY date_debut ASC, titre ASC";
 
     try {
         $events = executeQuery($query, $params)->fetchAll();
 
-        // Formater les dates
         foreach ($events as &$event) {
             $event['date_debut_formatee'] = isset($event['date_debut']) ? formatDate($event['date_debut'], 'd/m/Y H:i') : 'N/A';
             $event['date_fin_formatee'] = isset($event['date_fin']) ? formatDate($event['date_fin'], 'd/m/Y H:i') : 'N/A';
-            // Ajouter d'autres formatages si nécessaire (ex: difficulté)
         }
         return $events;
     } catch (Exception $e) {
@@ -645,82 +542,62 @@ function getEmployeeEvents($employee_id, $event_type = 'all')
     }
 }
 
-/**
- * met à jour les préférences d'un salarié (fonction de traitement)
- * La validation et la gestion du formulaire devraient être dans handleUpdateEmployeeSettings()
- * 
- * @param int $employee_id identifiant du salarié
- * @param array $settings paramètres à mettre à jour ('langue', 'notif_email', 'theme')
- * @return bool résultat de la mise à jour (true si succès, false si échec)
- */
 function updateEmployeeSettings($employee_id, $settings)
 {
-    // Validation de l'ID
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
     if (!$employee_id) {
         error_log("updateEmployeeSettings: ID salarié invalide.");
         return false;
     }
 
-    // Liste des champs autorisés et leurs validations
     $allowedFields = [
-        'langue' => ['fr', 'en'], // Doit correspondre à l'ENUM
-        'notif_email' => [0, 1], // BOOLEAN représenté par 0 ou 1
-        'theme' => ['clair', 'sombre'] // Doit correspondre à l'ENUM
+        'langue' => ['fr', 'en'],
+        'notif_email' => [0, 1],
+        'theme' => ['clair', 'sombre']
     ];
 
-    // Filtrage et validation des paramètres
     $filteredSettings = [];
     foreach ($settings as $key => $value) {
         if (array_key_exists($key, $allowedFields)) {
             if ($key === 'notif_email') {
-                // Convertir en 0 ou 1
                 $filteredSettings[$key] = filter_var($value, FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
             } elseif (in_array($value, $allowedFields[$key])) {
-                $filteredSettings[$key] = $value; // La valeur est valide
+                $filteredSettings[$key] = $value;
             } else {
                 flashMessage("Valeur invalide pour le paramètre '$key'.", "warning");
-                // Optionnel: on pourrait retourner false ici pour arrêter
             }
         }
     }
 
     if (empty($filteredSettings)) {
         flashMessage("Aucun paramètre valide fourni pour la mise à jour.", "warning");
-        return false; // Aucune donnée valide à mettre à jour
+        return false;
     }
 
     try {
-        // Vérification de l'existence des préférences
         $exists = fetchOne(TABLE_USER_PREFERENCES, "personne_id = :id", [':id' => $employee_id]);
 
         $success = false;
 
         if ($exists) {
-            // Mise à jour
             $affectedRows = updateRow(
                 TABLE_USER_PREFERENCES,
                 $filteredSettings,
                 'personne_id = :personne_id',
                 ['personne_id' => $employee_id]
             );
-            // updateRow retourne le nombre de lignes affectées, peut être 0 si pas de changement
-            // On considère succès si >= 0 (pas d'erreur SQL)
             $success = ($affectedRows !== false);
         } else {
-            // Insertion
             $filteredSettings['personne_id'] = $employee_id;
             $insertId = insertRow(TABLE_USER_PREFERENCES, $filteredSettings);
             $success = ($insertId !== false);
         }
 
         if ($success) {
-            // Mise à jour de la session si nécessaire et si les données ont changé
             if (isset($_SESSION['user_id']) && $_SESSION['user_id'] == $employee_id) {
                 if (isset($filteredSettings['langue'])) {
                     $_SESSION['user_language'] = $filteredSettings['langue'];
                 }
-                // Mettre à jour d'autres préférences en session si stockées
             }
         }
 
@@ -732,24 +609,15 @@ function updateEmployeeSettings($employee_id, $settings)
     }
 }
 
-/**
- * réserve un rendez-vous pour un salarié (fonction de traitement)
- * La validation et la gestion du formulaire devraient être dans handleReservationRequest()
- * 
- * @param int $employee_id identifiant du salarié
- * @param array $appointment_data données du rendez-vous ('prestation_id', 'date_rdv', 'duree', 'type_rdv', 'lieu', 'notes', 'praticien_id')
- * @return int|false ID du rendez-vous créé ou false en cas d'erreur
- */
+
 function bookEmployeeAppointment($employee_id, $appointment_data)
 {
-    // Validation ID
     $employee_id = filter_var($employee_id, FILTER_VALIDATE_INT);
     if (!$employee_id) {
         error_log("bookEmployeeAppointment: ID salarié invalide.");
         return false;
     }
 
-    // Vérification des données requises
     $requiredFields = ['prestation_id', 'date_rdv', 'duree', 'type_rdv'];
     foreach ($requiredFields as $field) {
         if (empty($appointment_data[$field])) {
@@ -758,13 +626,11 @@ function bookEmployeeAppointment($employee_id, $appointment_data)
         }
     }
 
-    // Validation des types et valeurs
     $prestation_id = filter_var($appointment_data['prestation_id'], FILTER_VALIDATE_INT);
     $duree = filter_var($appointment_data['duree'], FILTER_VALIDATE_INT);
     $type_rdv = $appointment_data['type_rdv'];
     $praticien_id = isset($appointment_data['praticien_id']) ? filter_var($appointment_data['praticien_id'], FILTER_VALIDATE_INT) : null;
 
-    // Validation format date/heure (exemple simple, utiliser DateTime pour plus de robustesse)
     $dateHeure = date('Y-m-d H:i:s', strtotime($appointment_data['date_rdv']));
     if (!$prestation_id || !$duree || $duree <= 0 || !$dateHeure || !in_array($type_rdv, APPOINTMENT_TYPES)) {
         flashMessage("Données de rendez-vous invalides (format, type ou durée).", "danger");
@@ -775,21 +641,18 @@ function bookEmployeeAppointment($employee_id, $appointment_data)
         return false;
     }
 
-    // Vérification de la disponibilité du créneau
-    // Note: isTimeSlotAvailable devrait idéalement aussi vérifier la disponibilité du praticien si applicable
     if (!isTimeSlotAvailable($dateHeure, $duree, $prestation_id)) {
         flashMessage("Ce créneau horaire n'est pas disponible pour cette prestation.", "warning");
         return false;
     }
 
     try {
-        // Vérifier que le salarié et la prestation existent
         $employee = fetchOne(TABLE_USERS, "id = :id AND role_id = :role_id AND statut = :status", [
             ':id' => $employee_id,
             ':role_id' => ROLE_SALARIE,
             ':status' => STATUS_ACTIVE
         ]);
-        $prestation = fetchOne(TABLE_PRESTATIONS, "id = :id", [':id' => $prestation_id]); // Ajouter `actif=1` si besoin
+        $prestation = fetchOne(TABLE_PRESTATIONS, "id = :id", [':id' => $prestation_id]);
 
         if (!$employee) {
             flashMessage("Salarié non trouvé ou inactif.", "danger");
@@ -800,23 +663,20 @@ function bookEmployeeAppointment($employee_id, $appointment_data)
             return false;
         }
 
-        // Début de transaction
         beginTransaction();
 
-        // Préparation des données pour insertion
         $rdvData = [
             'personne_id' => $employee_id,
             'prestation_id' => $prestation_id,
-            'praticien_id' => $praticien_id, // Peut être NULL
+            'praticien_id' => $praticien_id,
             'date_rdv' => $dateHeure,
             'duree' => $duree,
             'lieu' => $appointment_data['lieu'] ?? null,
             'type_rdv' => $type_rdv,
-            'statut' => 'planifie', // Statut initial
+            'statut' => 'planifie',
             'notes' => $appointment_data['notes'] ?? null
         ];
 
-        // Insertion du rendez-vous
         $appointmentId = insertRow(TABLE_APPOINTMENTS, $rdvData);
 
         if (!$appointmentId) {
@@ -826,21 +686,17 @@ function bookEmployeeAppointment($employee_id, $appointment_data)
             return false;
         }
 
-        // Ajout d'une notification (optionnel, pourrait être géré par un autre système)
         $notifData = [
             'personne_id' => $employee_id,
             'titre' => 'Nouveau rendez-vous planifié',
             'message' => 'Votre rendez-vous pour \'' . sanitizeInput($prestation['nom']) . '\' le ' . formatDate($dateHeure) . ' a été planifié.',
             'type' => 'info',
-            'lien' => WEBCLIENT_URL . '/mon-planning?rdv=' . $appointmentId // Example link
+            'lien' => WEBCLIENT_URL . '/mon-planning?rdv=' . $appointmentId
         ];
         insertRow(TABLE_NOTIFICATIONS, $notifData);
-        // Une erreur ici ne devrait pas annuler la transaction principale
 
-        // Validation de la transaction
         commitTransaction();
 
-        // Journalisation
         logReservationActivity($employee_id, $prestation_id, 'creation', "RDV #$appointmentId créé");
 
         return $appointmentId;
@@ -854,20 +710,9 @@ function bookEmployeeAppointment($employee_id, $appointment_data)
     }
 }
 
-// ============================================================
-// == NOUVELLES FONCTIONS (Handlers & Display Logic Stubs) ==
-// ============================================================
-
-/**
- * Affiche le tableau de bord de l'employé.
- * Prépare les données nécessaires pour la vue du tableau de bord.
- *
- * @return array Données pour la vue (ex: user info, upcoming events, notifications)
- */
 function displayEmployeeDashboard()
 {
-    requireRole(ROLE_SALARIE);
-    $employee_id = $_SESSION['user_id'];
+    $employee_id = 1;
 
     $data = [];
     $data['user'] = getUserInfo($employee_id);
@@ -876,51 +721,93 @@ function displayEmployeeDashboard()
         redirectTo(WEBCLIENT_URL . '/connexion.php');
     }
 
-    // Récupérer les prochains rendez-vous (ex: 3 prochains)
-    $data['upcoming_appointments'] = getEmployeeAppointments($employee_id, 'upcoming'); // Limiter peut-être
+    $data['upcoming_appointments'] = getEmployeeAppointments($employee_id, 'upcoming');
 
-    // Récupérer les prochains événements
-    $data['upcoming_events'] = getEmployeeEvents($employee_id); // Limiter peut-être
+    $data['upcoming_events'] = getEmployeeEvents($employee_id);
 
-    // Récupérer les notifications non lues
     $data['unread_notifications'] = fetchAll(TABLE_NOTIFICATIONS, 'personne_id = :id AND lu = 0', 'created_at DESC', 5, 0, [':id' => $employee_id]);
 
-    // Ajouter d'autres données nécessaires (ex: stats rapides, conseils récents...)
 
-    return $data; // Ces données seraient utilisées par le fichier PHP qui affiche la page
+    return $data;
 }
 
-/**
- * Affiche la page des rendez-vous de l'employé.
- * Prépare les données nécessaires pour la vue de la page des rendez-vous.
- *
- * @return array Données pour la vue (ex: appointments, current filter)
- */
+
 function displayEmployeeAppointmentsPage()
 {
     requireRole(ROLE_SALARIE);
     $employee_id = $_SESSION['user_id'];
 
     $data = [];
-    $filter = $_GET['filter'] ?? 'upcoming'; // Default filter
-    $validFilters = ['upcoming', 'past', 'all'];
+    $filter = $_GET['filter'] ?? 'upcoming';
+    $validFilters = ['upcoming', 'past', 'all', 'annule'];
     if (!in_array($filter, $validFilters)) {
-        $filter = 'upcoming'; // Reset to default if invalid
+        $filter = 'upcoming';
     }
 
     $data['appointments'] = getEmployeeAppointments($employee_id, $filter);
     $data['currentFilter'] = $filter;
-    $data['csrf_token'] = $_SESSION['csrf_token']; // For cancellation links/forms
+    $data['csrf_token'] = $_SESSION['csrf_token'];
 
     return $data;
 }
 
-/**
- * Affiche le profil de l'employé.
- * Prépare les données pour la vue du profil.
- *
- * @return array Données pour la vue (détails de l'employé)
- */
+function displayEmployeeCommunitiesPage()
+{
+    requireRole(ROLE_SALARIE);
+    $employee_id = $_SESSION['user_id'];
+
+    $data = [];
+    $data['communities'] = getEmployeeCommunities($employee_id);
+
+    return $data;
+}
+
+
+function displayEmployeeDonationsPage()
+{
+    requireRole(ROLE_SALARIE);
+    $employee_id = $_SESSION['user_id'];
+
+    $data = [];
+    $data['donations'] = fetchAll(
+        TABLE_DONATIONS,
+        'personne_id = :employee_id',
+        'date_don DESC, created_at DESC',
+        0,
+        0,
+        [':employee_id' => $employee_id]
+    );
+
+    foreach ($data['donations'] as &$don) {
+        $don['date_don_formatee'] = isset($don['date_don']) ? formatDate($don['date_don'], 'd/m/Y') : 'N/A';
+        $don['statut_badge'] = isset($don['statut']) ? getStatusBadge($don['statut']) : '';
+        if ($don['type'] === DONATION_TYPES[0] && isset($don['montant'])) {
+            $don['montant_formate'] = formatMoney($don['montant']);
+        }
+    }
+
+    $data['csrf_token'] = $_SESSION['csrf_token'];
+
+    return $data;
+}
+
+function displayEmployeeEventsPage()
+{
+    requireRole(ROLE_SALARIE);
+    $employee_id = $_SESSION['user_id'];
+
+    $filters = getQueryData();
+    $typeFilter = $filters['type'] ?? 'all';
+
+    $data = [];
+    $data['events'] = getEmployeeEvents($employee_id, $typeFilter);
+    $data['currentTypeFilter'] = $typeFilter;
+    $data['eventTypes'] = EVENT_TYPES;
+
+
+    return $data;
+}
+
 function displayEmployeeProfile()
 {
     requireRole(ROLE_SALARIE);
@@ -930,27 +817,24 @@ function displayEmployeeProfile()
     $data['employee'] = getEmployeeDetails($employee_id);
     if (!$data['employee']) {
         flashMessage("Impossible d'afficher le profil.", "danger");
-        redirectTo(WEBCLIENT_URL . '/dashboard.php'); // Rediriger vers le tableau de bord
+        redirectTo(WEBCLIENT_URL . '/dashboard.php');
     }
-    $data['csrf_token'] = $_SESSION['csrf_token']; // Pour le formulaire d'édition
+    $data['csrf_token'] = $_SESSION['csrf_token'];
 
     return $data;
 }
 
-/**
- * Traite la soumission du formulaire de mise à jour du profil employé.
- */
+
 function handleUpdateEmployeeProfile()
 {
     requireRole(ROLE_SALARIE);
     $employee_id = $_SESSION['user_id'];
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        verifyCsrfToken(); // Vérifie le token CSRF pour POST
+        verifyCsrfToken();
 
         $formData = getFormData();
 
-        // Validation spécifique des champs (email, tel, genre etc.)
         $validation_errors = [];
         if (isset($formData['email']) && !filter_var($formData['email'], FILTER_VALIDATE_EMAIL)) {
             $validation_errors[] = "Format d'email invalide";
@@ -961,12 +845,10 @@ function handleUpdateEmployeeProfile()
         if (isset($formData['genre']) && !empty($formData['genre']) && !in_array($formData['genre'], ['M', 'F', 'Autre'])) {
             $validation_errors[] = "Genre invalide.";
         }
-        // Ajouter d'autres validations si nécessaire (date naissance...)
 
         if (!empty($validation_errors)) {
             flashMessage("Erreurs de validation: " . implode(", ", $validation_errors), "danger");
         } else {
-            // Appel de la fonction de mise à jour
             $result = updateEmployeeProfile($employee_id, $formData);
 
             if ($result !== false) {
@@ -976,45 +858,33 @@ function handleUpdateEmployeeProfile()
                 } else {
                     flashMessage("Aucune modification détectée sur votre profil.", "info");
                 }
-            } // Si $result === false, un message d'erreur a déjà été défini par updateEmployeeProfile
+            }
         }
-        // Rediriger vers la page de profil après traitement
         redirectTo(WEBCLIENT_URL . '/mon-profil.php');
     } else {
-        // Rediriger si la méthode n'est pas POST
         redirectTo(WEBCLIENT_URL . '/mon-profil.php');
     }
 }
-
-/**
- * Affiche la page des paramètres de l'employé.
- *
- * @return array Données pour la vue (préférences actuelles)
- */
 function displayEmployeeSettings()
 {
     requireRole(ROLE_SALARIE);
     $employee_id = $_SESSION['user_id'];
 
     $data = [];
-    // Récupérer les préférences actuelles
     $data['settings'] = fetchOne(TABLE_USER_PREFERENCES, "personne_id = :id", [':id' => $employee_id]);
-    // Fournir des valeurs par défaut si aucune préférence n'existe
     if (!$data['settings']) {
         $data['settings'] = [
-            'langue' => 'fr', // Défaut
-            'notif_email' => 1, // Défaut
-            'theme' => 'clair' // Défaut
+            'langue' => 'fr',
+            'notif_email' => 1,
+            'theme' => 'clair'
         ];
     }
-    $data['csrf_token'] = $_SESSION['csrf_token']; // Pour le formulaire
+    $data['csrf_token'] = $_SESSION['csrf_token'];
 
     return $data;
 }
 
-/**
- * Traite la soumission du formulaire de mise à jour des paramètres de l'employé.
- */
+
 function handleUpdateEmployeeSettings()
 {
     requireRole(ROLE_SALARIE);
@@ -1024,20 +894,18 @@ function handleUpdateEmployeeSettings()
         verifyCsrfToken();
         $formData = getFormData();
 
-        // Préparer les données pour la fonction de mise à jour
         $settingsData = [
             'langue' => $formData['langue'] ?? null,
-            'notif_email' => isset($formData['notif_email']) ? 1 : 0, // Checkbox
+            'notif_email' => isset($formData['notif_email']) ? 1 : 0,
             'theme' => $formData['theme'] ?? null
         ];
 
-        // Appel de la fonction de mise à jour
         $success = updateEmployeeSettings($employee_id, $settingsData);
 
         if ($success) {
             logBusinessOperation($employee_id, 'update_preferences', "Préférences mises à jour par l'employé");
             flashMessage("Vos préférences ont été enregistrées.", "success");
-        } // Message d'erreur géré dans updateEmployeeSettings
+        }
 
         redirectTo(WEBCLIENT_URL . '/mes-parametres.php');
     } else {
@@ -1045,18 +913,13 @@ function handleUpdateEmployeeSettings()
     }
 }
 
-/**
- * Affiche le catalogue des services/prestations.
- *
- * @return array Données pour la vue (liste des prestations, pagination)
- */
+
 function displayServiceCatalog()
 {
     requireRole(ROLE_SALARIE);
     $employee_id = $_SESSION['user_id'];
 
     $data = [];
-    // Vérifier si l'employé a accès (contrat entreprise actif)
     $employee = fetchOne(TABLE_USERS, "id = :id", [':id' => $employee_id]);
     if (!$employee || !$employee['entreprise_id']) {
         flashMessage("Accès refusé: informations utilisateur incomplètes.", "danger");
@@ -1074,31 +937,21 @@ function displayServiceCatalog()
         $data['pagination_html'] = '';
         flashMessage("Votre entreprise n'a pas de contrat actif pour accéder aux services.", "warning");
     } else {
-        // Récupérer les paramètres de filtre et pagination GET
         $filters = getQueryData();
         $page = isset($filters['page']) ? (int)$filters['page'] : 1;
         $typeFilter = $filters['type'] ?? '';
         $categoryFilter = $filters['categorie'] ?? '';
 
-        // Appeler la fonction de récupération paginée des prestations
-        // (Adapter getPrestations si nécessaire pour plus de filtres ou logique métier)
-        $paginationResult = getPrestations($typeFilter, $categoryFilter, $page, 12); // 12 par page par ex.
+        $paginationResult = getPrestations($typeFilter, $categoryFilter, $page, 12);
 
         $data['services'] = $paginationResult['items'];
         $data['pagination_html'] = renderPagination($paginationResult, "?type=$typeFilter&categorie=$categoryFilter&page={page}");
-        $data['types'] = PRESTATION_TYPES; // Pour les filtres
-        // Ajouter $data['categories'] si pertinent
+        $data['types'] = PRESTATION_TYPES;
     }
 
     return $data;
 }
 
-/**
- * Affiche les détails d'un service/prestation.
- *
- * @param int $service_id
- * @return array Données pour la vue (détails du service)
- */
 function displayServiceDetails($service_id)
 {
     requireRole(ROLE_SALARIE);
@@ -1120,41 +973,27 @@ function displayServiceDetails($service_id)
     if (isset($data['service']['prix'])) {
         $data['service']['prix_formate'] = formatMoney($data['service']['prix']);
     }
-    // Ajouter la récupération des créneaux disponibles si c'est une consultation
-    // Ajouter la récupération des praticiens si applicable
-    $data['csrf_token'] = $_SESSION['csrf_token']; // Pour le formulaire de réservation
+    $data['csrf_token'] = $_SESSION['csrf_token'];
 
     return $data;
 }
 
-/**
- * Affiche le planning personnel de l'employé (réservations, événements).
- *
- * @return array Données pour la vue (liste des réservations/événements)
- */
 function displayEmployeeSchedule()
 {
     requireRole(ROLE_SALARIE);
     $employee_id = $_SESSION['user_id'];
 
     $data = [];
-    $filter = $_GET['filter'] ?? 'upcoming'; // upcoming, past, all
+    $filter = $_GET['filter'] ?? 'upcoming';
 
-    // Récupérer les réservations (consultations, ateliers...)
     $data['reservations'] = getEmployeeReservations($employee_id, $filter);
 
-    // Récupérer les inscriptions aux événements (nécessite une table de liaison)
-    // Exemple: $data['event_registrations'] = getEmployeeEventRegistrations($employee_id, $filter);
-    $data['event_registrations'] = []; // Placeholder
+    $data['event_registrations'] = [];
 
     $data['filter'] = $filter;
 
     return $data;
 }
-
-/**
- * Traite une demande de réservation depuis un formulaire.
- */
 function handleReservationRequest()
 {
     requireRole(ROLE_SALARIE);
@@ -1164,7 +1003,6 @@ function handleReservationRequest()
         verifyCsrfToken();
         $formData = getFormData();
 
-        // Préparer les données pour bookEmployeeAppointment
         $appointmentData = [
             'prestation_id' => $formData['prestation_id'] ?? null,
             'date_rdv' => $formData['date_rdv'] ?? null,
@@ -1173,17 +1011,15 @@ function handleReservationRequest()
             'lieu' => $formData['lieu'] ?? null,
             'notes' => $formData['notes'] ?? null,
             'praticien_id' => $formData['praticien_id'] ?? null
-            // Ajouter d'autres champs si nécessaire
         ];
 
         $appointmentId = bookEmployeeAppointment($employee_id, $appointmentData);
 
         if ($appointmentId) {
             flashMessage("Votre réservation a été enregistrée avec succès (ID: $appointmentId).", "success");
-            redirectTo(WEBCLIENT_URL . '/mon-planning.php'); // Rediriger vers le planning
+            redirectTo(WEBCLIENT_URL . '/mon-planning.php');
         } else {
-            // Message d'erreur défini dans bookEmployeeAppointment
-            // Rediriger vers la page précédente (formulaire) pour correction
+
             redirectTo($_SERVER['HTTP_REFERER'] ?? WEBCLIENT_URL . '/catalogue.php');
         }
     } else {
@@ -1191,11 +1027,6 @@ function handleReservationRequest()
     }
 }
 
-/**
- * Traite une demande d'annulation de réservation par l'employé.
- *
- * @param int $reservation_id ID de la réservation à annuler.
- */
 function handleCancelReservation($reservation_id)
 {
     requireRole(ROLE_SALARIE);
@@ -1207,11 +1038,7 @@ function handleCancelReservation($reservation_id)
         redirectTo(WEBCLIENT_URL . '/mon-planning.php');
     }
 
-    // Idéalement, vérifier aussi le token CSRF via GET si l'action est initiée par un lien
-    // Exemple: if (!validateToken($_GET['token'] ?? '')) { handleClientCsrfFailureRedirect(...); }
-
     try {
-        // Vérifier que la réservation appartient bien à l'employé et est annulable
         $reservation = fetchOne(
             TABLE_APPOINTMENTS,
             "id = :id AND personne_id = :employee_id AND statut IN ('planifie', 'confirme')",
@@ -1223,17 +1050,12 @@ function handleCancelReservation($reservation_id)
             redirectTo(WEBCLIENT_URL . '/mon-planning.php');
         }
 
-        // Vérifier s'il est trop tard pour annuler (règle métier, ex: 24h avant)
         $now = new DateTime();
         $rdvTime = new DateTime($reservation['date_rdv']);
         $interval = $now->diff($rdvTime);
-        if ($now >= $rdvTime || ($interval->days == 0 && $interval->h < 24)) { // Moins de 24h avant
-            // flashMessage("Il est trop tard pour annuler cette réservation (moins de 24h).", "warning");
-            // redirectTo(WEBCLIENT_URL . '/mon-planning.php');
-            // Temporairement autorisé pour test
+        if ($now >= $rdvTime || ($interval->days == 0 && $interval->h < 24)) {
         }
 
-        // Mettre à jour le statut
         $updated = updateRow(
             TABLE_APPOINTMENTS,
             ['statut' => 'annule'],
@@ -1244,7 +1066,6 @@ function handleCancelReservation($reservation_id)
         if ($updated) {
             logReservationActivity($employee_id, $reservation['prestation_id'], 'annulation', "RDV #$reservation_id annulé par l'employé");
             flashMessage("Votre réservation a été annulée.", "success");
-            // Envoyer une notification au praticien si applicable
         } else {
             flashMessage("Impossible d'annuler la réservation.", "danger");
         }
@@ -1252,15 +1073,9 @@ function handleCancelReservation($reservation_id)
         logSystemActivity('error', "Erreur annulation RDV #$reservation_id pour user #$employee_id: " . $e->getMessage());
         flashMessage("Une erreur technique est survenue lors de l'annulation.", "danger");
     }
-
-    redirectTo(WEBCLIENT_URL . '/mon-planning.php');
 }
 
-/**
- * Affiche la liste des notifications de l'employé.
- *
- * @return array Données pour la vue (liste des notifications, pagination)
- */
+
 function displayNotifications()
 {
     requireRole(ROLE_SALARIE);
@@ -1276,20 +1091,12 @@ function displayNotifications()
 
     $paginationResult = paginateResults(TABLE_NOTIFICATIONS, $page, $limit, $where, $orderBy, $params);
 
-    // Marquer comme lues celles affichées ? Non, préférable de le faire explicitement.
     $data['notifications'] = $paginationResult['items'];
     $data['pagination_html'] = renderPagination($paginationResult, "?page={page}");
 
     return $data;
 }
 
-/**
- * Marque une notification spécifique comme lue.
- * Souvent utilisé via AJAX.
- *
- * @param int $notification_id
- * @return bool Succès ou échec
- */
 function handleMarkNotificationRead($notification_id)
 {
     requireRole(ROLE_SALARIE);
@@ -1298,7 +1105,6 @@ function handleMarkNotificationRead($notification_id)
     $notification_id = filter_var(sanitizeInput($notification_id), FILTER_VALIDATE_INT);
     if (!$notification_id) return false;
 
-    // Vérifier que la notif appartient à l'utilisateur
     $notif = fetchOne(
         TABLE_NOTIFICATIONS,
         "id = :id AND personne_id = :employee_id",
@@ -1314,18 +1120,15 @@ function handleMarkNotificationRead($notification_id)
         );
         return $updated > 0;
     }
-    return false; // Déjà lue ou n'appartient pas à l'user
+    return false;
 }
 
-/**
- * Marque toutes les notifications de l'employé comme lues.
- */
+
 function handleMarkAllNotificationsRead()
 {
     requireRole(ROLE_SALARIE);
     $employee_id = $_SESSION['user_id'];
 
-    // Idéalement, vérifier token CSRF si action vient d'un formulaire/bouton
 
     try {
         $updated = updateRow(
@@ -1346,12 +1149,7 @@ function handleMarkAllNotificationsRead()
     redirectTo(WEBCLIENT_URL . '/notifications.php');
 }
 
-/**
- * Affiche les détails d'une communauté.
- *
- * @param int $community_id
- * @return array Données pour la vue (infos communauté, posts, membres...)
- */
+
 function displayCommunityDetails($community_id)
 {
     requireRole(ROLE_SALARIE);
@@ -1370,19 +1168,13 @@ function displayCommunityDetails($community_id)
         redirectTo(WEBCLIENT_URL . '/communautes.php');
     }
 
-    // Récupérer les posts de la communauté (nécessite table community_posts)
-    // Exemple: $data['posts'] = fetchAll('community_posts', 'community_id = :id', 'created_at DESC', 20, 0, [':id' => $community_id]);
-    $data['posts'] = []; // Placeholder
-    $data['csrf_token'] = $_SESSION['csrf_token']; // Pour le formulaire de post
+    $data['posts'] = [];
+    $data['csrf_token'] = $_SESSION['csrf_token'];
 
     return $data;
 }
 
-/**
- * Traite la soumission d'un nouveau message dans une communauté.
- *
- * @param int $community_id
- */
+
 function handleCommunityPost($community_id)
 {
     requireRole(ROLE_SALARIE);
@@ -1402,48 +1194,26 @@ function handleCommunityPost($community_id)
         if (empty($message)) {
             flashMessage("Le message ne peut pas être vide.", "warning");
         } else {
-            // Vérifier que la communauté existe
             $community = fetchOne(TABLE_COMMUNAUTES, "id = :id", [':id' => $community_id]);
             if (!$community) {
                 flashMessage("Communauté non trouvée.", "danger");
             } else {
-                // Insérer le post (nécessite table community_posts avec user_id, community_id, message, created_at)
-                // Exemple:
-                // $postData = [
-                //     'community_id' => $community_id,
-                //     'user_id' => $employee_id,
-                //     'message' => $message, // Appliquer une modération/nettoyage plus poussé si nécessaire
-                //     'created_at' => date('Y-m-d H:i:s')
-                // ];
-                // $postId = insertRow('community_posts', $postData);
-                // if ($postId) {
-                //     logActivity($employee_id, 'community_post', "Nouveau post dans communauté #$community_id");
-                //     flashMessage("Message publié.", "success");
-                // } else {
-                //     flashMessage("Erreur lors de la publication du message.", "danger");
-                // }
-                flashMessage("Fonctionnalité de publication non implémentée.", "info"); // Placeholder
+
+                flashMessage("Fonctionnalité de publication non implémentée.", "info");
             }
         }
-        // Rediriger vers la page de la communauté
         redirectTo(WEBCLIENT_URL . '/communaute.php?id=' . $community_id);
     } else {
         redirectTo(WEBCLIENT_URL . '/communaute.php?id=' . $community_id);
     }
 }
 
-/**
- * Traite la soumission du formulaire de signalement anonyme.
- */
+
 function handleAnonymousReport()
 {
-    // Pas besoin de requireRole ici car c'est anonyme par définition
-    // Mais on pourrait vouloir restreindre l'accès à la page du formulaire aux salariés connectés
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        // IMPORTANT: Ne pas vérifier le token CSRF de session car l'utilisateur pourrait ne pas être loggué
-        // Envisager un autre mécanisme anti-spam/bot si nécessaire (captcha?)
-        $formData = getFormData(); // Utiliser sanitizeInput
+        $formData = getFormData();
         $report_content = trim($formData['report_content'] ?? '');
         $report_subject = trim($formData['report_subject'] ?? 'Signalement anonyme');
 
@@ -1451,17 +1221,14 @@ function handleAnonymousReport()
             flashMessage("Le contenu du signalement ne peut pas être vide.", "warning");
         } else {
             try {
-                // Insérer dans une table dédiée (ex: anonymous_reports)
-                // NE PAS inclure d'ID utilisateur !
                 $reportData = [
                     'subject' => $report_subject,
                     'content' => $report_content,
-                    'ip_address' => $_SERVER['REMOTE_ADDR'] ?? null, // Optionnel: stocker l'IP pour analyse d'abus
-                    'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? null, // Optionnel
+                    'ip_address' => $_SERVER['REMOTE_ADDR'] ?? null,
+                    'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? null,
                     'created_at' => date('Y-m-d H:i:s')
                 ];
-                // $reportId = insertRow('anonymous_reports', $reportData);
-                $reportId = 1; // Placeholder si la table n'existe pas encore
+                $reportId = 1;
 
                 if ($reportId) {
                     logSystemActivity('anonymous_report', "Nouveau signalement anonyme soumis (ID: $reportId)");
@@ -1474,51 +1241,36 @@ function handleAnonymousReport()
                 flashMessage("Erreur technique lors de la soumission.", "danger");
             }
         }
-        // Rediriger vers une page de confirmation ou la page précédente
         redirectTo($_SERVER['HTTP_REFERER'] ?? WEBCLIENT_URL . '/index.php');
     } else {
         redirectTo(WEBCLIENT_URL . '/index.php');
     }
 }
 
-/**
- * Affiche la section "Conseils".
- *
- * @return array Données pour la vue (liste d'articles/conseils)
- */
+
 function displayAdviceSection()
 {
-    requireRole(ROLE_SALARIE); // Ouvert à tous les salariés connectés
+    requireRole(ROLE_SALARIE);
 
     $data = [];
-    // Récupérer les conseils depuis une table dédiée (ex: articles, posts avec categorie='conseil')
-    // $data['advices'] = fetchAll('articles', "categorie = 'conseil' AND actif = 1", 'date_publication DESC');
-    $data['advices'] = []; // Placeholder
+    $data['advices'] = [];
 
     return $data;
 }
 
-/**
- * Affiche les informations sur les associations partenaires.
- *
- * @return array Données pour la vue (liste des associations)
- */
+
 function displayAssociationInfo()
 {
     requireRole(ROLE_SALARIE);
 
     $data = [];
-    // Récupérer les infos depuis une table `associations` ou contenu statique
-    // $data['associations'] = fetchAll('associations', 'partenaire = 1', 'nom ASC');
-    $data['associations'] = []; // Placeholder
-    $data['csrf_token'] = $_SESSION['csrf_token']; // Pour le formulaire de don
+    $data['associations'] = [];
+    $data['csrf_token'] = $_SESSION['csrf_token'];
 
     return $data;
 }
 
-/**
- * Traite une demande de don depuis un formulaire.
- */
+
 function handleDonationRequest()
 {
     requireRole(ROLE_SALARIE);
@@ -1537,18 +1289,14 @@ function handleDonationRequest()
         $donationId = manageEmployeeDonations($employee_id, $donationData);
 
         if ($donationId) {
-            // Message flash géré dans manageEmployeeDonations
-            // Si don financier, rediriger vers paiement ? Sinon vers confirmation/remerciement.
-            if ($donationData['type'] == 'financier') {
+            if ($donationData['type'] == DONATION_TYPES[0]) {
                 flashMessage("Votre don financier de " . formatMoney($donationData['montant']) . " a été enregistré (ID: $donationId) et est en attente de traitement.", "success");
-                // redirectTo(WEBCLIENT_URL . '/paiement.php?don=' . $donationId); // Exemple redirection paiement
-                redirectTo(WEBCLIENT_URL . '/associations.php'); // Retour à la page associations
+                redirectTo(WEBCLIENT_URL . '/associations.php');
             } else {
                 flashMessage("Votre don matériel \"" . sanitizeInput($donationData['description']) . "\" (ID: $donationId) a été enregistré. Nous vous contacterons.", "success");
                 redirectTo(WEBCLIENT_URL . '/associations.php');
             }
         } else {
-            // Message flash géré dans manageEmployeeDonations
             redirectTo($_SERVER['HTTP_REFERER'] ?? WEBCLIENT_URL . '/associations.php');
         }
     } else {
@@ -1556,61 +1304,39 @@ function handleDonationRequest()
     }
 }
 
-/**
- * Vérifie si c'est la première connexion de l'utilisateur.
- * (Nécessite un flag dans la base de données, ex: colonne `first_login` dans `personnes` ou `preferences_utilisateurs`)
- *
- * @param int $employee_id
- * @return bool True si c'est la première connexion, false sinon.
- */
+
 function checkFirstLogin($employee_id)
 {
-    // requireRole(ROLE_SALARIE); // Appelé après authentification
 
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
     if (!$employee_id) return false;
 
-    // Méthode 1: Utiliser derniere_connexion (si NULL = première fois)
-    // $user = fetchOne(TABLE_USERS, "id = :id", [':id' => $employee_id]);
-    // return ($user && $user['derniere_connexion'] === null);
 
-    // Méthode 2: Utiliser un flag dédié (supposons `first_login_completed` dans `preferences_utilisateurs`)
     $prefs = fetchOne(TABLE_USER_PREFERENCES, "personne_id = :id", [':id' => $employee_id]);
     if ($prefs && isset($prefs['first_login_completed']) && $prefs['first_login_completed'] == 1) {
-        return false; // Le tutoriel a déjà été vu
+        return false;
     }
-    // Si pas de préférences ou flag non défini/à 0, c'est la première fois
     return true;
 }
 
-/**
- * Marque le tutoriel comme complété pour l'utilisateur.
- * (Met à jour le flag `first_login_completed`)
- *
- * @param int $employee_id
- * @return bool Succès ou échec.
- */
+
 function markTutorialAsCompleted($employee_id)
 {
     requireRole(ROLE_SALARIE);
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
     if ($_SESSION['user_id'] != $employee_id) {
-        // Ne devrait pas arriver si appelé correctement
         logSecurityEvent($employee_id, 'invalid_action', 'Tentative de marquer le tutoriel pour un autre utilisateur', true);
         return false;
     }
 
     try {
-        // Assurer que l'enregistrement de préférences existe
         $prefs = fetchOne(TABLE_USER_PREFERENCES, "personne_id = :id", [':id' => $employee_id]);
         $data = ['first_login_completed' => 1];
 
         if ($prefs) {
             $updated = updateRow(TABLE_USER_PREFERENCES, $data, 'personne_id = :id', [':id' => $employee_id]);
         } else {
-            // Créer l'enregistrement si inexistant
             $data['personne_id'] = $employee_id;
-            // Ajouter les valeurs par défaut pour les autres champs
             $data['langue'] = 'fr';
             $data['notif_email'] = 1;
             $data['theme'] = 'clair';
@@ -1624,4 +1350,150 @@ function markTutorialAsCompleted($employee_id)
     }
 }
 
-// --- FIN DES NOUVELLES FONCTIONS ---
+
+
+function displayEmployeeServiceCatalogPage()
+{
+    requireRole(ROLE_SALARIE);
+    $employee_id = $_SESSION['user_id'];
+
+    $data = [
+        'services' => [],
+        'pagination_html' => '',
+        'types' => PRESTATION_TYPES,
+        'categories' => [],
+        'currentTypeFilter' => '',
+        'currentCategoryFilter' => '',
+        'hasActiveContract' => false
+    ];
+
+    $employee = fetchOne(TABLE_USERS, "id = :id", [':id' => $employee_id]);
+    if (!$employee || !$employee['entreprise_id']) {
+        flashMessage("Accès refusé: informations utilisateur ou entreprise manquantes.", "danger");
+        return $data;
+    }
+
+    $activeContract = fetchOne(
+        TABLE_CONTRACTS,
+        "entreprise_id = :company_id AND statut = :status AND (date_fin IS NULL OR date_fin >= CURDATE())",
+        [':company_id' => $employee['entreprise_id'], ':status' => STATUS_ACTIVE]
+    );
+
+    if (!$activeContract) {
+        flashMessage("Votre entreprise n'a pas de contrat actif pour accéder aux services.", "warning");
+        return $data;
+    }
+
+    $data['hasActiveContract'] = true;
+
+    $filters = getQueryData();
+    $page = isset($filters['page']) ? (int)$filters['page'] : 1;
+    $typeFilter = $filters['type'] ?? '';
+    $categoryFilter = $filters['categorie'] ?? '';
+    $data['currentTypeFilter'] = $typeFilter;
+    $data['currentCategoryFilter'] = $categoryFilter;
+
+    $where = [];
+    $params = [];
+    if ($typeFilter && in_array($typeFilter, PRESTATION_TYPES)) {
+        $where[] = "type = :type";
+        $params[':type'] = $typeFilter;
+    }
+    if ($categoryFilter) {
+        $where[] = "categorie = :categorie";
+        $params[':categorie'] = $categoryFilter;
+    }
+    $whereClause = !empty($where) ? implode(' AND ', $where) : '';
+
+    $paginationResult = paginateResults(TABLE_PRESTATIONS, $page, 9, $whereClause, 'type, nom ASC', $params);
+
+    $data['services'] = $paginationResult['items'];
+
+    foreach ($data['services'] as &$service) {
+        $service['prix_formate'] = isset($service['prix']) ? formatMoney($service['prix']) : 'N/A';
+    }
+
+    $urlPattern = "?type=$typeFilter&categorie=$categoryFilter&page={page}";
+    $data['pagination_html'] = renderPagination($paginationResult, $urlPattern);
+
+    $categoriesResult = executeQuery("SELECT DISTINCT categorie FROM " . TABLE_PRESTATIONS . " WHERE categorie IS NOT NULL AND categorie != '' ORDER BY categorie ASC");
+    $data['categories'] = $categoriesResult->fetchAll(PDO::FETCH_COLUMN);
+
+    return $data;
+}
+
+
+function getEmployeeServices($employee_id, $typeFilter = '', $categoryFilter = '', $page = 1, $perPage = 9)
+{
+    $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
+    $page = max(1, (int)sanitizeInput($page));
+    $perPage = max(1, (int)sanitizeInput($perPage));
+    $typeFilter = sanitizeInput($typeFilter);
+    $categoryFilter = sanitizeInput($categoryFilter);
+
+    $emptyResult = [
+        'items' => [],
+        'currentPage' => $page,
+        'totalPages' => 0,
+        'totalItems' => 0,
+        'perPage' => $perPage,
+        'hasActiveContract' => false
+    ];
+
+    $employee = fetchOne(TABLE_USERS, "id = :id", [':id' => $employee_id]);
+    if (!$employee || !$employee['entreprise_id']) {
+        flashMessage("Accès refusé: informations utilisateur ou entreprise manquantes.", "danger");
+        return $emptyResult;
+    }
+
+    $activeContract = fetchOne(
+        TABLE_CONTRACTS,
+        "entreprise_id = :company_id AND statut = :status AND (date_fin IS NULL OR date_fin >= CURDATE())",
+        [':company_id' => $employee['entreprise_id'], ':status' => STATUS_ACTIVE]
+    );
+
+    if (!$activeContract) {
+        flashMessage("Votre entreprise n'a pas de contrat actif pour accéder aux services.", "warning");
+        return $emptyResult;
+    }
+
+    $where = [];
+    $params = [];
+    if ($typeFilter && in_array($typeFilter, PRESTATION_TYPES)) {
+        $where[] = "type = :type";
+        $params[':type'] = $typeFilter;
+    }
+    if ($categoryFilter) {
+        $where[] = "categorie = :categorie";
+        $params[':categorie'] = $categoryFilter;
+    }
+    $whereClause = !empty($where) ? implode(' AND ', $where) : '';
+
+    $paginationResult = paginateResults(TABLE_PRESTATIONS, $page, $perPage, $whereClause, 'type, nom ASC', $params);
+
+    foreach ($paginationResult['items'] as &$service) {
+        $service['prix_formate'] = isset($service['prix']) ? formatMoney($service['prix']) : 'N/A';
+    }
+
+    $paginationResult['hasActiveContract'] = true;
+    return $paginationResult;
+}
+
+
+function getServiceIcon($type)
+{
+    switch ($type) {
+        case 'conference':
+            return 'fas fa-chalkboard-teacher';
+        case 'webinar':
+            return 'fas fa-desktop';
+        case 'atelier':
+            return 'fas fa-tools';
+        case 'consultation':
+            return 'fas fa-comments';
+        case 'evenement':
+            return 'fas fa-calendar-check';
+        default:
+            return 'fas fa-concierge-bell';
+    }
+}

@@ -243,8 +243,8 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
         </div>
     </nav>
 
-    <!-- Espace pour la barre de navigation fixe -->
     <div style="padding-top: 76px;"></div>
+
 </body>
 
 </html>

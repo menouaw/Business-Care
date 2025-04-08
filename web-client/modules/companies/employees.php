@@ -15,7 +15,6 @@ if (($action === 'modify' || $action === 'view') && isset($_GET['id'])) {
     $employeeId = filter_var($_GET['id'], FILTER_VALIDATE_INT);
 }
 
-//pour les erreurs et les messages de succès
 $errors = [];
 $submittedData = [];
 $employeeToEdit = null;
@@ -30,7 +29,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (empty($submittedData['prenom'])) $errors[] = "Le prénom est obligatoire.";
         if (empty($submittedData['email']) || !filter_var($submittedData['email'], FILTER_VALIDATE_EMAIL)) $errors[] = "Une adresse email valide est obligatoire.";
 
-        // Appel de la fonction de validation centralisée
         validateBirthDate($submittedData['date_naissance'] ?? null, $errors);
 
         if (empty($errors)) {
@@ -66,7 +64,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (empty($submittedData['prenom'])) $errors[] = "Le prénom est obligatoire.";
         if (empty($submittedData['email']) || !filter_var($submittedData['email'], FILTER_VALIDATE_EMAIL)) $errors[] = "Une adresse email valide est obligatoire.";
 
-        // Appel de la fonction de validation centralisée
         validateBirthDate($submittedData['date_naissance'] ?? null, $errors);
 
         if (empty($errors)) {

@@ -158,9 +158,13 @@ function getFlashMessages()
  */
 function displayFlashMessages()
 {
-    // Restaurer le code original pour afficher les messages
-    $flashMessages = getFlashMessages(); // Utilise la nouvelle fonction
-    if (empty($flashMessages)) return '';
+    $flashMessages = $_SESSION['flash_messages'] ?? [];
+    if (empty($flashMessages)) {
+        return '';
+    }
+
+    // Effacer la variable de session MAINTENANT
+    unset($_SESSION['flash_messages']);
 
     $output = '';
     foreach ($flashMessages as $flashMessage) {
@@ -243,24 +247,15 @@ function getStatusBadge($status)
     return '<span class="badge bg-' . $class . '">' . ucfirst($status) . '</span>';
 }
 
-/**
- * Récupère et pagine les résultats d'une requête sur une table
- *
- * @param string $table Nom de la table à interroger
- * @param int $page Numéro de la page courante
- * @param int $perPage Nombre d'éléments à afficher par page
- * @param string $where Clause WHERE pour filtrer les résultats
- * @param string $orderBy Clause ORDER BY pour trier les résultats
- * @return array Tableau associatif contenant les éléments paginés et les métadonnées
- */
-function paginateResults($table, $page, $perPage = 10, $where = '', $orderBy = '')
+
+function paginateResults($table, $page, $perPage = DEFAULT_ITEMS_PER_PAGE, $where = '', $orderBy = '', $params = [])
 {
-    $totalItems = countTableRows($table, $where);
+    $totalItems = countTableRows($table, $where, $params);
     $totalPages = ceil($totalItems / $perPage);
     $page = max(1, min($page, $totalPages > 0 ? $totalPages : 1));
     $offset = ($page - 1) * $perPage;
 
-    $items = fetchAll($table, $where, $orderBy, $perPage, $offset);
+    $items = fetchAll($table, $where, $orderBy, $perPage, $offset, $params);
 
     return [
         'items' => $items,
@@ -271,13 +266,7 @@ function paginateResults($table, $page, $perPage = 10, $where = '', $orderBy = '
     ];
 }
 
-/**
- * Génère et renvoie une interface de pagination au format Bootstrap
- *
- * @param array $pagination Tableau associatif issu de paginateResults()
- * @param string $urlPattern Motif d'URL incluant le placeholder "{page}"
- * @return string Le code HTML de l'interface de pagination
- */
+
 function renderPagination($pagination, $urlPattern)
 {
     if ($pagination['totalPages'] <= 1) return '';
@@ -354,20 +343,24 @@ function isTimeSlotAvailable($dateHeure, $duree, $prestationId)
     $finRdv = date('Y-m-d H:i:s', strtotime($dateHeure) + ($duree * 60));
 
     $sql = "SELECT COUNT(id) FROM rendez_vous 
-            WHERE prestation_id = :prestation_id
+            WHERE prestation_id = ?
             AND statut NOT IN ('annule', 'termine')
             AND (
-                (date_rdv <= :debut AND DATE_ADD(date_rdv, INTERVAL duree MINUTE) > :debut)
+                (date_rdv <= ? AND DATE_ADD(date_rdv, INTERVAL duree MINUTE) > ?)
                 OR
-                (date_rdv < :fin AND DATE_ADD(date_rdv, INTERVAL duree MINUTE) >= :fin)
+                (date_rdv < ? AND DATE_ADD(date_rdv, INTERVAL duree MINUTE) >= ?)
                 OR
-                (date_rdv >= :debut AND DATE_ADD(date_rdv, INTERVAL duree MINUTE) <= :fin)
+                (date_rdv >= ? AND DATE_ADD(date_rdv, INTERVAL duree MINUTE) <= ?)
             )";
 
     $params = [
-        'prestation_id' => $prestationId,
-        'debut' => $dateHeure,
-        'fin' => $finRdv
+        $prestationId,
+        $dateHeure,
+        $dateHeure,
+        $finRdv,
+        $finRdv,
+        $dateHeure,
+        $finRdv
     ];
 
     $stmt = executeQuery($sql, $params);

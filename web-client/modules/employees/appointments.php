@@ -1,45 +1,72 @@
 <?php
 
-/**
- * Page Mes Rendez-vous - Espace Salarié
- *
- * Affiche la liste des rendez-vous médicaux (consultations) du salarié connecté.
- */
 
-// Inclure les fonctions spécifiques au module salariés
 require_once __DIR__ . '/../../includes/page_functions/modules/employees.php';
 
-// Appeler la fonction pour récupérer les données de la page des rendez-vous
-// requireRole() est déjà appelé à l'intérieur de displayEmployeeAppointmentsPage()
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $message = '';
+    $messageType = 'danger';
+    $redirect = true;
+    if (!isset($_POST['csrf_token']) || !validateToken($_POST['csrf_token'])) {
+        $userIdForLog = $_SESSION['user_id'] ?? null;
+        logSecurityEvent($userIdForLog, 'csrf_failure', "[SECURITY FAILURE] Tentative d'annulation via POST avec jeton invalide sur appointments.php");
+    } else {
+        $reservation_id = isset($_POST['reservation_id']) ? filter_var($_POST['reservation_id'], FILTER_VALIDATE_INT) : false;
+        if (!$reservation_id) {
+            $message = "ID de réservation invalide pour l'annulation.";
+        } else {
+
+            handleCancelReservation($reservation_id);
+        }
+    }
+
+    if (!empty($message)) {
+        flashMessage($message, $messageType);
+    }
+
+
+    $currentFilterForRedirect = isset($_GET['filter']) ? sanitizeInput($_GET['filter']) : 'upcoming';
+    redirectTo(WEBCLIENT_URL . '/modules/employees/appointments.php?filter=' . $currentFilterForRedirect);
+    exit;
+}
+
 $pageData = displayEmployeeAppointmentsPage();
 $appointments = $pageData['appointments'] ?? [];
 $currentFilter = $pageData['currentFilter'] ?? 'upcoming';
-$csrfToken = $pageData['csrf_token'] ?? ''; // CSRF Token for cancellation forms
+$csrfToken = $pageData['csrf_token'] ?? '';
 
-// Définir le titre de la page
 $pageTitle = "Mes Rendez-vous - Espace Salarié";
 
-// Inclure l'en-tête
 include_once __DIR__ . '/../../templates/header.php';
 ?>
 
 <main class="employee-appointments-page py-4">
     <div class="container">
-        <div class="row mb-4">
+        <div class="row mb-4 align-items-center">
             <div class="col">
-                <h1 class="h2">Mes Rendez-vous</h1>
-                <p class="text-muted">Consultez l'historique et les détails de vos consultations.</p>
+                <h1 class="h2 mb-0">Mon Planning</h1>
+                <p class="text-muted mb-0">Consultez l'historique et les détails de vos réservations (consultations, ateliers, etc.).</p>
+            </div>
+            <div class="col-auto">
+                <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i> Retour
+                </a>
             </div>
         </div>
 
-        <!-- Filtres -->
+        <?php echo displayFlashMessages(); ?>
+
         <div class="row mb-4">
             <div class="col">
                 <div class="btn-group" role="group" aria-label="Filtrer les rendez-vous">
                     <a href="?filter=upcoming" class="btn <?= $currentFilter === 'upcoming' ? 'btn-primary' : 'btn-outline-primary' ?>">À venir</a>
                     <a href="?filter=past" class="btn <?= $currentFilter === 'past' ? 'btn-secondary' : 'btn-outline-secondary' ?>">Passés</a>
+                    <a href="?filter=annule" class="btn <?= $currentFilter === 'annule' ? 'btn-danger' : 'btn-outline-danger' ?>">Annulés</a>
                     <a href="?filter=all" class="btn <?= $currentFilter === 'all' ? 'btn-info' : 'btn-outline-info' ?>">Tous</a>
                 </div>
+            </div>
+            <div class="col text-end">
+                <a href="<?= WEBCLIENT_URL ?>/modules/employees/services.php" class="btn btn-sm btn-outline-success"><i class="fas fa-book-open me-1"></i> Voir le catalogue</a>
             </div>
         </div>
 
@@ -51,6 +78,9 @@ include_once __DIR__ . '/../../templates/header.php';
                     switch ($currentFilter) {
                         case 'past':
                             echo 'Rendez-vous Passés';
+                            break;
+                        case 'annule':
+                            echo 'Rendez-vous Annulés';
                             break;
                         case 'all':
                             echo 'Tous les Rendez-vous';
@@ -71,6 +101,9 @@ include_once __DIR__ . '/../../templates/header.php';
                             case 'past':
                                 echo 'Aucun rendez-vous passé trouvé.';
                                 break;
+                            case 'annule':
+                                echo 'Aucun rendez-vous annulé trouvé.';
+                                break;
                             case 'all':
                                 echo 'Aucun rendez-vous trouvé.';
                                 break;
@@ -81,10 +114,11 @@ include_once __DIR__ . '/../../templates/header.php';
                         }
                         ?>
                         <br>
-                        <a href="<?= WEBCLIENT_URL ?>/catalogue.php" class="btn btn-sm btn-primary mt-3">Voir le catalogue des prestations</a>
+                        <!-- REMOVED Button from here -->
+                        <!-- <a href="<?= WEBCLIENT_URL ?>/modules/employees/services.php" class="btn btn-sm btn-primary mt-3">Voir le catalogue des prestations</a> -->
                     </p>
                 <?php else : ?>
-                    <div class="list-group list-group-flush">
+                    <div class="list-group ">
                         <?php foreach ($appointments as $rdv) : ?>
                             <div class="list-group-item border-0 px-0 py-3">
                                 <div class="row align-items-center">
@@ -107,9 +141,9 @@ include_once __DIR__ . '/../../templates/header.php';
                                         <?= $rdv['statut_badge'] ?? '' ?>
                                     </div>
                                     <div class="col-md-3 col-lg-3 text-md-end">
-                                        <?php if (in_array($rdv['statut'], ['planifie', 'confirme'])) : ?>
+                                        <?php if (in_array($rdv['statut'], APPOINTMENT_CANCELABLE_STATUSES)) : ?>
                                             <!-- Formulaire pour l'annulation -->
-                                            <form action="<?= WEBCLIENT_URL ?>/actions/cancel_appointment.php" method="POST" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir annuler ce rendez-vous ?');">
+                                            <form action="<?= WEBCLIENT_URL ?>/modules/employees/appointments.php" method="POST" class="d-inline">
                                                 <input type="hidden" name="reservation_id" value="<?= $rdv['id'] ?>">
                                                 <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
                                                 <button type="submit" class="btn btn-sm btn-outline-danger">
@@ -122,8 +156,8 @@ include_once __DIR__ . '/../../templates/header.php';
                                                 <i class="fas fa-star me-1"></i> Évaluer
                                             </a>
                                         <?php endif; ?>
-                                        <!-- Vous pouvez ajouter un bouton "Détails" si nécessaire -->
-                                        <!-- <a href="#" class="btn btn-sm btn-outline-info ms-1"><i class="fas fa-info-circle"></i></a> -->
+
+
                                     </div>
                                 </div>
                             </div>
@@ -131,13 +165,10 @@ include_once __DIR__ . '/../../templates/header.php';
                     </div>
                 <?php endif; ?>
             </div>
-            <!-- Ajouter la pagination si nécessaire -->
-            <!-- <div class="card-footer bg-white"> ... Pagination ... </div> -->
         </div>
     </div>
 </main>
 
 <?php
-// Inclure le pied de page
 include_once __DIR__ . '/../../templates/footer.php';
 ?>

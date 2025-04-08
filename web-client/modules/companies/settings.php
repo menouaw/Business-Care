@@ -17,7 +17,7 @@ if (!$companyDetails) {
 $currentUser = getUserById($userId);
 if (!$currentUser) {
     flashMessage("Impossible de récupérer les informations de l'utilisateur.", 'danger');
-    redirectTo('index.php'); // Ou une page d'erreur
+    redirectTo('index.php'); 
 }
 
 $profileErrors = [];
@@ -31,10 +31,10 @@ $profileSubmittedData = [
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!verifyCsrfToken()) {
         flashMessage('Erreur de sécurité (jeton CSRF invalide).', 'danger');
-        redirectTo('settings.php'); // Recharger la page pour obtenir un nouveau token
+        redirectTo('settings.php');
     }
 
-    if (isset($_POST['update_profile'])) { // Identifier le formulaire soumis
+    if (isset($_POST['update_profile'])) { 
         $profileSubmittedData = sanitizeInput($_POST);
 
         // Validation
@@ -49,7 +49,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if (empty($profileErrors)) {
-            // Préparer les données pour la mise à jour
             $updateData = [
                 'nom' => $profileSubmittedData['nom'],
                 'prenom' => $profileSubmittedData['prenom'],
@@ -71,7 +70,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (isset($_POST['change_password'])) { // Identifier le formulaire soumis
         $passwordData = sanitizeInput($_POST);
 
-        // Validation
         if (empty($passwordData['current_password'])) {
             $passwordErrors[] = "Le mot de passe actuel est obligatoire.";
         }
@@ -193,7 +191,6 @@ include_once __DIR__ . '/../../templates/header.php';
             </div>
         </div>
 
-        <!-- Section Changer Mot de Passe -->
         <div class="col-lg-6">
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white">
@@ -237,8 +234,7 @@ include_once __DIR__ . '/../../templates/header.php';
                 </div>
                 <div class="card-body">
                     <p class="text-muted">Section à venir pour les préférences de notification, etc.</p>
-                    <?php // TODO: Ajouter formulaire pour les préférences 
-                    ?>
+                    
                 </div>
             </div>
         </div>

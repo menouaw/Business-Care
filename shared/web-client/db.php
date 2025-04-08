@@ -1,15 +1,7 @@
 <?php
 require_once 'config.php';
 
-/**
- * Fournit une instance PDO pour la connexion à la base de données.
- *
- * Établit la connexion en utilisant les constantes de configuration (DB_HOST, DB_NAME, DB_CHARSET, DB_USER, DB_PASS)
- * et conserve cette instance pour éviter des reconnections multiples. En cas d'échec de connexion, le script s'interrompt
- * en affichant un message d'erreur préfixé par "[FAILURE]".
- *
- * @return PDO Connexion PDO active.
- */
+
 function getDbConnection()
 {
     static $pdo = null;
@@ -29,13 +21,7 @@ function getDbConnection()
     return $pdo;
 }
 
-/**
- * Valide le nom d'une table pour éviter les injections SQL
- * 
- * @param string $table Nom de table à valider
- * @return string Nom de table validé
- * @throws Exception Si le nom de table est invalide
- */
+
 function validateTableName($table)
 {
     if (!preg_match('/^[a-zA-Z0-9_]+$/', $table)) {
@@ -44,15 +30,7 @@ function validateTableName($table)
     return $table;
 }
 
-/**
- * Exécute une requête SQL préparée via PDO et retourne le résultat.
- *
- * La requête SQL fournie est préparée et exécutée en y liant les paramètres spécifiés. En cas d'échec lors de la préparation ou de l'exécution, le script est immédiatement interrompu avec un message d'erreur préfixé par "[FAILURE]".
- *
- * @param string $sql La requête SQL à exécuter.
- * @param array $params Les valeurs à lier aux paramètres de la requête.
- * @return PDOStatement Objet PDOStatement contenant le résultat de la requête.
- */
+
 function executeQuery($sql, $params = [])
 {
     try {
@@ -61,35 +39,24 @@ function executeQuery($sql, $params = [])
         $stmt->execute($params);
         return $stmt;
     } catch (PDOException $e) {
-        // Log détaillé de l'erreur
         $errorInfo = isset($stmt) ? $stmt->errorInfo() : $pdo->errorInfo();
         $logMessage = sprintf(
             "[FAILURE] Impossible d'executer la requete.\nSQL: %s\nParams: %s\nError: %s\nPDO Error Info: %s",
             $sql,
-            print_r($params, true), // Utiliser print_r pour afficher les tableaux correctement
+            print_r($params, true),
             $e->getMessage(),
             print_r($errorInfo, true)
         );
-        error_log($logMessage); // Envoyer au log d'erreurs PHP
-
-        // Message simplifié pour l'utilisateur final
+        error_log($logMessage);
         die("[FAILURE] Impossible d'executer la requete. Veuillez consulter les logs du serveur pour plus de détails. Message: " . $e->getMessage());
     }
 }
 
-/**
- * Compte le nombre d'enregistrements d'une table, avec une clause WHERE optionnelle
- *
- * @param string $table Nom de la table
- * @param string $where Clause SQL optionnelle pour filtrer les enregistrements
- * @return int Nombre d'enregistrements répondant aux critères
- */
-function countTableRows($table, $where = '')
+function countTableRows($table, $where = '', $params = [])
 {
     $table = validateTableName($table);
 
     $sql = "SELECT COUNT(*) FROM $table";
-    $params = [];
     if ($where) {
         $sql .= " WHERE $where";
     }
@@ -98,17 +65,6 @@ function countTableRows($table, $where = '')
     return $stmt->fetchColumn();
 }
 
-/**
- * Récupère l'ensemble des enregistrements d'une table en appliquant des filtres optionnels
- *
- * @param string $table Nom de la table cible
- * @param string $where 
- * @param string $orderBy 
- * @param int $limit 
- * @param int $offset 
- * @param array $params Paramètres pour la clause WHERE
- * @return array 
- */
 function fetchAll($table, $where = '', $orderBy = '', $limit = 0, $offset = 0, $params = [])
 {
     $table = validateTableName($table);
@@ -139,15 +95,6 @@ function fetchAll($table, $where = '', $orderBy = '', $limit = 0, $offset = 0, $
     return $stmt->fetchAll();
 }
 
-/**
- * Récupère le premier enregistrement d'une table selon une condition donnée
- *
- * @param string $table Nom de la table concernée
- * @param string $where Condition SQL pour filtrer les enregistrements
- * @param array $params (Optionnel) Tableau associatif des paramètres à lier à la clause WHERE.
- * @param string $orderBy (Optionnel) Clause SQL pour ordonner les résultats.
- * @return array|false Tableau associatif représentant l'enregistrement trouvé ou false si aucun enregistrement ne correspond.
- */
 function fetchOne($table, $where, $params = [], $orderBy = '')
 {
     $table = validateTableName($table);
@@ -192,15 +139,7 @@ function insertRow($table, $data)
     return $stmt->rowCount() > 0 ? getDbConnection()->lastInsertId() : false;
 }
 
-/**
- * Met à jour des lignes dans une table
- * 
- * @param string $table Nom de la table
- * @param array $data Données à mettre à jour sous forme de tableau associatif
- * @param string $where Clause WHERE pour cibler les lignes à mettre à jour
- * @param array $whereParams Paramètres pour la clause WHERE
- * @return int Nombre de lignes affectées
- */
+
 function updateRow($table, $data, $where, $whereParams = [])
 {
     $table = validateTableName($table);
@@ -237,14 +176,7 @@ function updateRow($table, $data, $where, $whereParams = [])
     }
 }
 
-/**
- * Supprime des lignes de la table spécifiée
- *
- * @param string $table Nom de la table depuis laquelle supprimer les lignes
- * @param string $where Clause WHERE déterminant les critères de suppression
- * @param array $params Valeurs associées à la clause WHERE
- * @return int Le nombre de lignes supprimées
- */
+
 function deleteRow($table, $where, $params = [])
 {
     $table = validateTableName($table);
@@ -265,21 +197,12 @@ function beginTransaction()
     getDbConnection()->beginTransaction();
 }
 
-/**
- * Valide une transaction SQL en cours
- * 
- * @return void
- */
+
 function commitTransaction()
 {
     getDbConnection()->commit();
 }
 
-/**
- * Annule une transaction SQL en cours
- * 
- * @return void
- */
 function rollbackTransaction()
 {
     getDbConnection()->rollBack();
