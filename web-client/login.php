@@ -8,9 +8,7 @@
 require_once __DIR__ . '/includes/init.php';
 require_once __DIR__ . '/includes/page_functions/login.php';
 
-// Si l'utilisateur est déjà connecté, rediriger vers la page d'accueil
 if (isAuthenticated()) {
-    // Rediriger vers la page correspondant au rôle de l'utilisateur
     if (isEntrepriseUser()) {
         redirectTo(WEBCLIENT_URL . '/modules/companies/index.php');
     } elseif (isSalarieUser()) {
