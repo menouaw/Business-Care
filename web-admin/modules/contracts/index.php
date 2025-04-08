@@ -3,22 +3,21 @@ require_once '../../includes/page_functions/modules/contracts.php';
 
 requireRole(ROLE_ADMIN);
 
-$filterData = getQueryData(['page' => 1, 'search' => '', 'statut' => '', 'type_contrat' => '', 'action' => '', 'id' => 0]);
+$filterData = getQueryData(['page' => 1, 'search' => '', 'statut' => '', 'service_id' => 0, 'action' => '', 'id' => 0]);
 $page = $filterData['page'];
 $search = $filterData['search'];
 $statut = $filterData['statut'];
-$typeContrat = $filterData['type_contrat'];
+$serviceId = $filterData['service_id'];
 $action = $filterData['action'];
 $id = $filterData['id'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = [
         'entreprise_id' => $_POST['entreprise_id'] ?? '',
+        'service_id' => $_POST['service_id'] ?? '',
         'date_debut' => $_POST['date_debut'] ?? '',
         'date_fin' => $_POST['date_fin'] ?? null,
-        'montant_mensuel' => $_POST['montant_mensuel'] ?? null,
         'nombre_salaries' => $_POST['nombre_salaries'] ?? null,
-        'type_contrat' => $_POST['type_contrat'] ?? '',
         'statut' => $_POST['statut'] ?? 'actif',
         'conditions_particulieres' => $_POST['conditions_particulieres'] ?? null
     ];
@@ -49,14 +48,15 @@ if (($action === 'edit' || $action === 'view') && $id > 0) {
     }
 }
 
-$result = contractsGetList($page, 10, $search, $statut, $typeContrat);
+$result = contractsGetList($page, 10, $search, $statut, $serviceId);
 $contracts = $result['contracts'];
 $totalPages = $result['totalPages'];
 $totalContracts = $result['totalItems'];
 $page = $result['currentPage'];
-$itemsPerPage = $result['itemsPerPage']; 
+$itemsPerPage = $result['perPage'];
 
 $entreprises = contractsGetEntreprises();
+$services = contractsGetServices();
 
 $pageTitle = "Gestion des contrats ({$totalContracts})"; 
 include_once '../../templates/header.php';
@@ -109,14 +109,13 @@ include_once '../../templates/header.php';
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label for="type_contrat" class="form-label">Type de contrat*</label>
-                            <select class="form-select" id="type_contrat" name="type_contrat" required>
-                                <option value="">Selectionnez un type...</option>
+                            <label for="service_id" class="form-label">Service (Type de contrat)*</label>
+                            <select class="form-select" id="service_id" name="service_id" required>
+                                <option value="">Selectionnez un service...</option>
                                 <?php
-                                $types = ['standard', 'premium', 'entreprise'];
-                                foreach ($types as $t) {
-                                    $selected = (isset($contract['type_contrat']) && $contract['type_contrat'] === $t) ? 'selected' : '';
-                                    echo "<option value=\"$t\" $selected>" . ucfirst($t) . "</option>";
+                                foreach ($services as $s) {
+                                    $selected = (isset($contract['service_id']) && $contract['service_id'] == $s['id']) ? 'selected' : '';
+                                    echo "<option value=\"{$s['id']}\" $selected>" . htmlspecialchars($s['nom']) . "</option>";
                                 }
                                 ?>
                             </select>
@@ -135,10 +134,6 @@ include_once '../../templates/header.php';
                     </div>
                     
                     <div class="row mb-3">
-                        <div class="col-md-4">
-                            <label for="montant_mensuel" class="form-label">Montant mensuel (€)</label>
-                            <input type="number" step="0.01" min="0" class="form-control" id="montant_mensuel" name="montant_mensuel" value="<?php echo isset($contract['montant_mensuel']) ? htmlspecialchars($contract['montant_mensuel']) : ''; ?>">
-                        </div>
                         <div class="col-md-4">
                             <label for="nombre_salaries" class="form-label">Nombre de salaries</label>
                             <input type="number" min="1" class="form-control" id="nombre_salaries" name="nombre_salaries" value="<?php echo isset($contract['nombre_salaries']) ? htmlspecialchars($contract['nombre_salaries']) : ''; ?>">
@@ -191,12 +186,11 @@ include_once '../../templates/header.php';
                 <div class="row">
                     <div class="col-md-6">
                         <p><strong>Entreprise:</strong> <a href="<?php echo WEBADMIN_URL; ?>/modules/companies/view.php?id=<?php echo $contract['entreprise_id']; ?>"><?php echo htmlspecialchars($contract['nom_entreprise']); ?></a></p>
-                        <p><strong>Type de contrat:</strong> <?php echo htmlspecialchars(ucfirst($contract['type_contrat'])); ?></p>
+                        <p><strong>Service:</strong> <?php echo htmlspecialchars(ucfirst($contract['nom_service'])); ?></p>
                         <p><strong>Date de debut:</strong> <?php echo date('d/m/Y', strtotime($contract['date_debut'])); ?></p>
                         <p><strong>Date de fin:</strong> <?php echo $contract['date_fin'] ? date('d/m/Y', strtotime($contract['date_fin'])) : 'Indeterminee'; ?></p>
                     </div>
                     <div class="col-md-6">
-                        <p><strong>Montant mensuel:</strong> <?php echo $contract['montant_mensuel'] ? number_format($contract['montant_mensuel'], 2, ',', ' ') . ' €' : 'Non specifie'; ?></p>
                         <p><strong>Nombre de salaries:</strong> <?php echo $contract['nombre_salaries'] ?: 'Non specifie'; ?></p>
                         <p><strong>Statut:</strong> <?php echo getStatusBadge($contract['statut']); ?></p>
                         <p><strong>Date de creation:</strong> <?php echo date('d/m/Y', strtotime($contract['created_at'])); ?></p>
@@ -224,27 +218,11 @@ include_once '../../templates/header.php';
                                     $dateDebut = new DateTime($contract['date_debut']);
                                     $dateFin = $contract['date_fin'] ? new DateTime($contract['date_fin']) : new DateTime();
                                     $duree = $dateDebut->diff($dateFin);
-                                    
-                                    $montantTotal = 0;
-                                    if ($contract['montant_mensuel']) {
-                                        $mois = ($duree->y * 12) + $duree->m;
-                                        $montantTotal = $mois * $contract['montant_mensuel'];
-                                    }
                                     ?>
                                     <div class="col-md-4 text-center">
                                         <h6>Duree</h6>
-                                        <p class="h4"><?php echo $duree->y > 0 ? $duree->y . ' an(s) ' : ''; ?><?php echo $duree->m > 0 ? $duree->m . ' mois' : ''; ?></p>
+                                        <p class="h4"><?php echo $duree->y > 0 ? $duree->y . ' an(s) ' : ''; ?><?php echo $duree->m > 0 ? $duree->m . ' mois' : ($duree->y == 0 ? $duree->d . ' jour(s)' : ''); ?></p>
                                     </div>
-                                    <?php if ($contract['montant_mensuel']): ?>
-                                        <div class="col-md-4 text-center">
-                                            <h6>Montant mensuel</h6>
-                                            <p class="h4"><?php echo number_format($contract['montant_mensuel'], 2, ',', ' '); ?> €</p>
-                                        </div>
-                                        <div class="col-md-4 text-center">
-                                            <h6>Montant total</h6>
-                                            <p class="h4"><?php echo number_format($montantTotal, 2, ',', ' '); ?> €</p>
-                                        </div>
-                                    <?php endif; ?>
                                 </div>
                             </div>
                         </div>
@@ -261,14 +239,13 @@ include_once '../../templates/header.php';
                         <input type="text" class="form-control form-control-sm" id="search" name="search" placeholder="Rechercher..." value="<?php echo htmlspecialchars($search); ?>">
                     </div>
                     <div class="col-md-3">
-                        <label for="type_contrat" class="visually-hidden">Type de contrat</label>
-                        <select class="form-select form-select-sm" id="type_contrat" name="type_contrat">
-                            <option value="">Tous les types</option>
+                        <label for="service_id" class="visually-hidden">Service</label>
+                        <select class="form-select form-select-sm" id="service_id" name="service_id">
+                            <option value="0">Tous les services</option>
                             <?php
-                            $typesContratList = ['standard', 'premium', 'entreprise'];
-                            foreach ($typesContratList as $t) {
-                                $selected = ($typeContrat === $t) ? 'selected' : '';
-                                echo "<option value=\"$t\" $selected>" . ucfirst($t) . "</option>";
+                            foreach ($services as $s) {
+                                $selected = ($serviceId == $s['id']) ? 'selected' : '';
+                                echo "<option value=\"{$s['id']}\" $selected>" . htmlspecialchars($s['nom']) . "</option>";
                             }
                             ?>
                         </select>
@@ -303,10 +280,9 @@ include_once '../../templates/header.php';
                         <thead>
                             <tr>
                                 <th>Entreprise</th>
-                                <th>Type</th>
+                                <th>Service</th>
                                 <th>Date de debut</th>
                                 <th>Date de fin</th>
-                                <th>Montant mensuel</th>
                                 <th>Statut</th>
                                 <th>Actions</th>
                             </tr>
@@ -315,10 +291,9 @@ include_once '../../templates/header.php';
                             <?php foreach ($contracts as $contract): ?>
                                 <tr>
                                     <td><a href="<?php echo WEBADMIN_URL; ?>/modules/companies/view.php?id=<?php echo $contract['entreprise_id']; ?>"><?php echo htmlspecialchars($contract['nom_entreprise']); ?></a></td>
-                                    <td><?php echo htmlspecialchars(ucfirst($contract['type_contrat'])); ?></td>
+                                    <td><?php echo htmlspecialchars(ucfirst($contract['nom_service'])); ?></td>
                                     <td><?php echo date('d/m/Y', strtotime($contract['date_debut'])); ?></td>
                                     <td><?php echo $contract['date_fin'] ? date('d/m/Y', strtotime($contract['date_fin'])) : '-'; ?></td>
-                                    <td><?php echo $contract['montant_mensuel'] ? number_format($contract['montant_mensuel'], 2, ',', ' ') . ' €' : '-'; ?></td>
                                     <td><?php echo getStatusBadge($contract['statut']); ?></td>
                                     <td class="table-actions">
                                         <a href="<?php echo WEBADMIN_URL; ?>/modules/contracts/view.php?id=<?php echo $contract['id']; ?>" class="btn btn-sm btn-info" data-bs-toggle="tooltip" title="Voir">
@@ -346,14 +321,14 @@ include_once '../../templates/header.php';
                         'totalItems' => $totalContracts,
                         'itemsPerPage' => $itemsPerPage
                     ];
-                    $urlPattern = WEBADMIN_URL . '/modules/contracts/index.php?search=' . urlencode($search) . '&statut=' . urlencode($statut) . '&type_contrat=' . urlencode($typeContrat) . '&page={page}';
+                    $urlPattern = WEBADMIN_URL . '/modules/contracts/index.php?search=' . urlencode($search) . '&statut=' . urlencode($statut) . '&service_id=' . urlencode($serviceId) . '&page={page}';
                     ?>
                     <div class="d-flex justify-content-center">
                         <?php echo renderPagination($paginationInfo, $urlPattern); ?>
                     </div>
                 <?php else: ?>
                     <?php
-                    $isFiltering = !empty($search) || !empty($statut) || !empty($typeContrat);
+                    $isFiltering = !empty($search) || !empty($statut) || !empty($serviceId);
                     $message = $isFiltering 
                         ? "Aucun contrat trouvé correspondant à vos critères de recherche."
                         : "Aucun contrat trouvé. <a href=\"" . WEBADMIN_URL . "/modules/contracts/add.php\" class=\"alert-link\">Ajouter un contrat</a>";

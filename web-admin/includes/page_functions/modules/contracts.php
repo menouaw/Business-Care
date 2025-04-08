@@ -8,7 +8,7 @@ require_once __DIR__ . '/../../init.php';
  * @param int $perPage Nombre d'elements par page (defaut via constante)
  * @param string $search Terme de recherche
  * @param string $statut Filtre par statut
- * @param int $serviceId Filtre par service (nouveau)
+ * @param int $serviceId Filtre par service 
  * @return array Donnees de pagination et liste des contrats
  */
 function contractsGetList($page = 1, $perPage = DEFAULT_ITEMS_PER_PAGE, $search = '', $statut = '', $serviceId = 0) {
