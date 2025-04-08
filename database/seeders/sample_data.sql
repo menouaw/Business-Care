@@ -103,3 +103,8 @@ INSERT INTO services (nom, description, actif, ordre) VALUES
 ('Starter Pack', 'Pour les petites équipes (jusqu\'à 30 salariés)', TRUE, 10),
 ('Basic Pack', 'Solution équilibrée (jusqu\'à 250 salariés)', TRUE, 20),
 ('Premium Pack', 'Offre complète pour grandes entreprises (251+ salariés)', TRUE, 30);
+
+INSERT INTO associations (nom) VALUES
+('Restos du Coeur'),
+('Fondation Abbé Pierre'),
+('Secours Populaire Français');

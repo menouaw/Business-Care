@@ -100,7 +100,7 @@ include_once __DIR__ . '/../../templates/header.php';
                             </div>
                         </div>
                         <div class="mt-3">
-                            <a href="<?= WEBCLIENT_URL ?>/associations.php" class="btn btn-sm btn-outline-info">Voir les associations</a>
+                            <a href="<?= WEBCLIENT_URL ?>/modules/employees/donations.php" class="btn btn-sm btn-outline-info">Faire un don</a>
                         </div>
                     </div>
                 </div>

@@ -429,6 +429,21 @@ function manageEmployeeDonations($employee_id, $donation_data)
         return false;
     }
 
+    $association_id = isset($donation_data['association_id']) ? filter_var($donation_data['association_id'], FILTER_VALIDATE_INT) : null;
+    if ($association_id === null) {
+        flashMessage("Veuillez sélectionner une association.", "warning");
+        return false;
+    }
+
+    if ($association_id) {
+        if (!defined('TABLE_ASSOCIATIONS')) define('TABLE_ASSOCIATIONS', 'associations');
+        $association_exists = fetchOne(TABLE_ASSOCIATIONS, "id = :id", [':id' => $association_id]);
+        if (!$association_exists) {
+            flashMessage("L'association sélectionnée est invalide.", "danger");
+            return false;
+        }
+    }
+
     $donation_data['type'] = $donation_data['type'] ?? null;
     $donation_data['montant'] = $donation_data['montant'] ?? null;
     $donation_data['description'] = $donation_data['description'] ?? null;
@@ -445,19 +460,13 @@ function manageEmployeeDonations($employee_id, $donation_data)
             return false;
         }
         $donation_data['montant'] = $montant;
-        if (!empty($donation_data['description'])) {
-            flashMessage("La description n'est pas nécessaire pour un don financier.", "info");
-            $donation_data['description'] = null;
-        }
+        $donation_data['description'] = null;
     } elseif ($donation_data['type'] == DONATION_TYPES[1]) {
         if (empty(trim($donation_data['description']))) {
             flashMessage("La description est obligatoire pour un don matériel.", "warning");
             return false;
         }
-        if (!empty($donation_data['montant'])) {
-            flashMessage("Le montant n'est pas applicable pour un don matériel.", "info");
-            $donation_data['montant'] = null;
-        }
+        $donation_data['montant'] = null;
     }
 
     try {
@@ -473,6 +482,7 @@ function manageEmployeeDonations($employee_id, $donation_data)
 
         $donData = [
             'personne_id' => $employee_id,
+            'association_id' => $association_id,
             'montant' => $donation_data['type'] == DONATION_TYPES[0] ? $donation_data['montant'] : null,
             'type' => $donation_data['type'],
             'description' => $donation_data['type'] == DONATION_TYPES[1] ? trim($donation_data['description']) : null,
@@ -493,7 +503,11 @@ function manageEmployeeDonations($employee_id, $donation_data)
 
         commitTransaction();
 
-        logBusinessOperation($employee_id, 'don_creation', "Don #{$donationId} créé, type: {$donation_data['type']}");
+        $assoc_name = 'Inconnue';
+        if (isset($association_exists) && $association_exists) {
+            $assoc_name = $association_exists['nom'];
+        }
+        logBusinessOperation($employee_id, 'don_creation', "Don #{$donationId} créé, type: {$donation_data['type']} pour association: {$assoc_name}");
 
         return $donationId;
     } catch (Exception $e) {
@@ -769,14 +783,13 @@ function displayEmployeeDonationsPage()
     $employee_id = $_SESSION['user_id'];
 
     $data = [];
-    $data['donations'] = fetchAll(
-        TABLE_DONATIONS,
-        'personne_id = :employee_id',
-        'date_don DESC, created_at DESC',
-        0,
-        0,
-        [':employee_id' => $employee_id]
-    );
+    $query = "SELECT d.*, a.nom as association_nom
+              FROM " . TABLE_DONATIONS . " d
+              LEFT JOIN associations a ON d.association_id = a.id
+              WHERE d.personne_id = :employee_id
+              ORDER BY d.date_don DESC, d.created_at DESC";
+
+    $data['donations'] = executeQuery($query, [':employee_id' => $employee_id])->fetchAll();
 
     foreach ($data['donations'] as &$don) {
         $don['date_don_formatee'] = isset($don['date_don']) ? formatDate($don['date_don'], 'd/m/Y') : 'N/A';
@@ -784,7 +797,10 @@ function displayEmployeeDonationsPage()
         if ($don['type'] === DONATION_TYPES[0] && isset($don['montant'])) {
             $don['montant_formate'] = formatMoney($don['montant']);
         }
+        $don['association_nom'] = $don['association_nom'] ?? 'Non spécifiée';
     }
+
+    $data['associations'] = getActiveAssociations();
 
     $data['csrf_token'] = $_SESSION['csrf_token'];
 
@@ -1583,24 +1599,22 @@ function displayCommunityDetailsPageData($community_id)
     if (!$data['community']) {
         flashMessage("Communauté non trouvée.", "warning");
         redirectTo(WEBCLIENT_URL . '/modules/employees/communities.php');
-        return $data; // Return empty data before redirect exit
+        return $data;
     }
 
-    // Fetch actual community posts/messages from the database
     $query = "SELECT cm.*, p.prenom, p.nom 
               FROM communaute_messages cm
               JOIN personnes p ON cm.personne_id = p.id
               WHERE cm.communaute_id = :community_id
-              ORDER BY cm.created_at ASC"; // Display oldest first
+              ORDER BY cm.created_at ASC";
     try {
         $stmt = executeQuery($query, [':community_id' => $community_id]);
         $posts = $stmt->fetchAll();
 
-        // Format data for display
         foreach ($posts as &$post) {
             $post['auteur_nom'] = trim(($post['prenom'] ?? '') . ' ' . ($post['nom'] ?? 'Inconnu'));
             if ($post['personne_id'] === $employee_id) {
-                $post['auteur_nom'] = 'Vous'; // Display 'Vous' for the current user
+                $post['auteur_nom'] = 'Vous'; 
             }
             $post['created_at_formatted'] = isset($post['created_at']) ? formatDate($post['created_at'], 'd/m/Y H:i') : 'Date inconnue';
         }
@@ -1608,7 +1622,6 @@ function displayCommunityDetailsPageData($community_id)
     } catch (Exception $e) {
         logSystemActivity('error', "Erreur lors de la récupération des messages pour la communauté ID: $community_id: " . $e->getMessage());
         flashMessage("Erreur lors du chargement des messages.", "danger");
-        // Keep posts array empty in case of error
     }
 
     return $data;
@@ -1647,5 +1660,18 @@ function handleNewCommunityPost($community_id, $employee_id, $message)
         logSystemActivity('error', "Exception lors de l'ajout du message pour la communauté ID: $community_id: " . $e->getMessage());
         flashMessage("Erreur technique lors de l'ajout de votre message.", "danger");
         return false;
+    }
+}
+
+function getActiveAssociations()
+{
+    try {
+        if (!defined('TABLE_ASSOCIATIONS')) {
+            define('TABLE_ASSOCIATIONS', 'associations');
+        }
+        return fetchAll(TABLE_ASSOCIATIONS, '1=1', 'nom ASC');
+    } catch (Exception $e) {
+        logSystemActivity('error', "Erreur récupération des associations: " . $e->getMessage());
+        return [];
     }
 }

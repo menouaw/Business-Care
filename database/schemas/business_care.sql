@@ -194,6 +194,7 @@ CREATE TABLE communautes (
 CREATE TABLE dons (
     id INT PRIMARY KEY AUTO_INCREMENT,
     personne_id INT NOT NULL,
+    association_id INT NULL DEFAULT NULL,
     montant DECIMAL(10,2),
     type ENUM('financier', 'materiel') NOT NULL,
     description TEXT,
@@ -202,6 +203,7 @@ CREATE TABLE dons (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (personne_id) REFERENCES personnes(id),
+    FOREIGN KEY (association_id) REFERENCES associations(id) ON DELETE SET NULL ON UPDATE CASCADE,
     INDEX idx_date (date_don),
     INDEX idx_type (type)
 );
@@ -288,4 +290,12 @@ CREATE TABLE communaute_messages (
     FOREIGN KEY (personne_id) REFERENCES personnes(id) ON DELETE CASCADE,
     INDEX idx_communaute_date (communaute_id, created_at)
 );
+
+CREATE TABLE associations (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nom VARCHAR(255) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
 */
