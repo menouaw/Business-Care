@@ -9,7 +9,7 @@ $action = $_POST['action'] ?? null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!isset($_POST['csrf_token']) || !validateToken($_POST['csrf_token'])) {
-        $employee_id_for_log = $_SESSION['user_id'] ?? null; // Get user ID for logging if available
+        $employee_id_for_log = $_SESSION['user_id'] ?? null;
         logSecurityEvent($employee_id_for_log, 'csrf_failure', '[SECURITY FAILURE] Tentative action settings avec jeton invalide ou manquant');
         flashMessage("Erreur de sécurité (jeton invalide).", "danger");
         redirectTo(WEBCLIENT_URL . '/modules/employees/settings.php');

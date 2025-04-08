@@ -163,6 +163,12 @@ include_once __DIR__ . '/../../templates/header.php';
                             </div>
                         <?php endforeach; ?>
                     </div>
+
+                    <div class="mt-4 d-flex justify-content-center">
+                        <?= $pageData['pagination_html'] ?? '' // Utiliser la clé définie dans displayEmployeeAppointmentsPage 
+                        ?>
+                    </div>
+
                 <?php endif; ?>
             </div>
         </div>

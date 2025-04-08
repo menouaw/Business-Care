@@ -28,12 +28,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (empty($errors)) {
-        $success = handleAnonymousReport($sujet, $description); 
+        $success = handleAnonymousReport($sujet, $description);
 
         if ($success) {
             logSystemActivity('anonymous_report_submitted', 'Nouveau signalement anonyme reçu.');
             flashMessage("Votre signalement a été transmis de manière anonyme. Merci pour votre vigilance.", "success");
-            $submittedData = []; 
+            $submittedData = [];
         } else {
             flashMessage("Une erreur technique est survenue lors de la transmission de votre signalement. Veuillez réessayer.", "danger");
         }
@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $csrfToken = generateToken();
-$_SESSION['csrf_token'] = $csrfToken; 
+$_SESSION['csrf_token'] = $csrfToken;
 
 $pageTitle = "Faire un Signalement Anonyme";
 include_once __DIR__ . '/../../templates/header.php';
@@ -56,7 +56,7 @@ include_once __DIR__ . '/../../templates/header.php';
                 <p class="text-muted">Signalez une situation critique de manière confidentielle et anonyme.</p>
             </div>
             <div class="col-auto">
-                <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                <a href="<?= WEBCLIENT_URL ?>/modules/employees/index.php" class="btn btn-outline-secondary">
                     <i class="fas fa-arrow-left me-1"></i> Retour
                 </a>
             </div>

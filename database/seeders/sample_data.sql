@@ -108,3 +108,12 @@ INSERT INTO associations (nom) VALUES
 ('Restos du Coeur'),
 ('Fondation Abbé Pierre'),
 ('Secours Populaire Français');
+
+/*
+INSERT INTO `conseils` (`titre`, `icone`, `resume`, `categorie`, `contenu`) VALUES
+('Gestion du Stress au Travail', 'fas fa-brain', 'Apprenez des techniques pour mieux gérer la pression et le stress quotidiens en milieu professionnel.', 'Stress', 'Le stress chronique peut avoir des effets négatifs sur votre santé et votre performance. Découvrez des méthodes de relaxation comme la respiration profonde et la méditation de pleine conscience. Apprenez à mieux organiser votre temps avec des listes de tâches et la priorisation. Améliorez votre communication pour exprimer vos besoins et refuser des demandes excessives. N\'oubliez pas de faire des pauses régulières.'),
+('Améliorer son Sommeil', 'fas fa-moon', 'Des conseils pratiques pour retrouver un sommeil réparateur et améliorer votre énergie.', 'Sommeil', 'Un bon sommeil est crucial. Établissez une routine de coucher régulière, même le week-end. Évitez les écrans (téléphone, tablette, ordinateur) au moins une heure avant de dormir. Créez un environnement sombre, calme et frais dans votre chambre. Limitez la caféine et l\'alcool, surtout en fin de journée. Si les problèmes persistent, consultez un professionnel.'),
+('Alimentation Équilibrée au Bureau', 'fas fa-apple-alt', 'Comment bien manger au travail pour maintenir votre énergie et votre concentration.', 'Nutrition', 'Manger sainement au bureau est possible ! Préparez vos déjeuners à l\'avance pour contrôler les ingrédients et les portions. Privilégiez les légumes, les protéines maigres et les grains entiers. Apportez des collations saines comme des fruits, des noix ou du yaourt. Hydratez-vous en buvant de l\'eau tout au long de la journée. Évitez les repas trop lourds qui peuvent entraîner une baisse d\'énergie l\'après-midi.'),
+('L\'Importance de l\'Activité Physique', 'fas fa-running', 'Intégrer l\'exercice dans votre routine, même avec un emploi du temps chargé.', 'Activité Physique', 'L\'activité physique est essentielle. Essayez de marcher ou de faire du vélo pour aller au travail si possible. Prenez les escaliers au lieu de l\'ascenseur. Faites de courtes pauses actives toutes les heures pour vous étirer ou marcher un peu. Planifiez des séances d\'exercice régulières, même courtes, dans votre semaine. Trouvez une activité que vous aimez pour rester motivé (danse, natation, randonnée, etc.).');
+
+*/

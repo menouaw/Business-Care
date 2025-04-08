@@ -3,11 +3,9 @@
 require_once __DIR__ . '/../../includes/init.php';
 require_once __DIR__ . '/../../includes/page_functions/modules/employees.php';
 
-// Enforce authentication and role right at the beginning for all access (GET and POST)
 requireRole(ROLE_SALARIE);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // requireRole(ROLE_SALARIE); // Already checked above
     $employee_id = $_SESSION['user_id'];
     $event_id = filter_input(INPUT_POST, 'event_id', FILTER_VALIDATE_INT);
     $csrf_token = $_POST['csrf_token'] ?? '';
@@ -150,6 +148,12 @@ include_once __DIR__ . '/../../templates/header.php';
                     </div>
                 <?php endforeach; ?>
             </div>
+
+            <div class="mt-4 d-flex justify-content-center">
+                <?= $pageData['pagination_html'] ?? ''
+                ?>
+            </div>
+
         <?php endif; ?>
 
     </div>

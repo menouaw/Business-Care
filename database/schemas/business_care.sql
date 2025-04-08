@@ -320,5 +320,15 @@ CREATE TABLE signalements (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     -- PAS DE colonne personne_id pour garantir l'anonymat
     INDEX idx_statut (statut)
+
+CREATE TABLE conseils (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    titre VARCHAR(255) NOT NULL,
+    icone VARCHAR(50),
+    resume TEXT,
+    categorie VARCHAR(100),
+    contenu LONGTEXT NOT NULL
+);
+
 );
 */

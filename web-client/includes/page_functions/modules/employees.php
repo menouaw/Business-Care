@@ -256,45 +256,91 @@ function getEmployeeReservations($employee_id, $status = 'all')
 }
 
 
-function getEmployeeAppointments($employee_id, $filter = 'upcoming')
+function getEmployeeAppointments($employee_id, $filter = 'upcoming', $page = 1, $limit = 10)
 {
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
-    if (!$employee_id) return [];
+    if (!$employee_id) return [
+        'items' => [],
+        'pagination_html' => '', // Retourner la structure même si ID invalide
+    ];
 
     $filter = sanitizeInput($filter);
+    $page = max(1, (int)$page);
+    $limit = max(5, (int)$limit); // Minimum 5 par page
+    $offset = ($page - 1) * $limit;
 
-    $query = "SELECT r.id, r.date_rdv, r.duree, r.lieu, r.type_rdv, r.statut,
-              p.nom as prestation_nom,
-              prat.nom as praticien_nom, prat.prenom as praticien_prenom
-              FROM " . TABLE_APPOINTMENTS . " r
-              JOIN " . TABLE_PRESTATIONS . " p ON r.prestation_id = p.id
-              LEFT JOIN " . TABLE_USERS . " prat ON r.praticien_id = prat.id
-              WHERE r.personne_id = :employee_id";
-    $params = [
-        ':employee_id' => $employee_id,
-    ];
+    $baseQuery = "FROM " . TABLE_APPOINTMENTS . " r
+                  JOIN " . TABLE_PRESTATIONS . " p ON r.prestation_id = p.id
+                  LEFT JOIN " . TABLE_USERS . " prat ON r.praticien_id = prat.id
+                  WHERE r.personne_id = :employee_id";
+
+    $countQuery = "SELECT COUNT(r.id) " . $baseQuery;
+    $dataQuery = "SELECT r.id, r.date_rdv, r.duree, r.lieu, r.type_rdv, r.statut,
+                         p.nom as prestation_nom,
+                         prat.nom as praticien_nom, prat.prenom as praticien_prenom " . $baseQuery;
+
+    $params = [':employee_id' => $employee_id];
+    $whereClause = '';
 
     $orderByDirection = 'DESC';
     if ($filter === 'upcoming') {
-        $query .= " AND r.date_rdv >= CURDATE() AND r.statut NOT IN ('annule', 'termine', 'no_show')";
+        $whereClause .= " AND r.date_rdv >= CURDATE() AND r.statut NOT IN ('annule', 'termine', 'no_show')";
         $orderByDirection = 'ASC';
     } else if ($filter === 'past') {
-        $query .= " AND (r.date_rdv < CURDATE() OR r.statut IN ('termine', 'no_show')) AND r.statut != 'annule'";
+        $whereClause .= " AND (r.date_rdv < CURDATE() OR r.statut IN ('termine', 'no_show')) AND r.statut != 'annule'";
     } else if ($filter === 'annule') {
-        $query .= " AND r.statut = 'annule'";
+        $whereClause .= " AND r.statut = 'annule'";
     }
 
-    $query .= " ORDER BY r.date_rdv $orderByDirection";
+    // Appliquer la clause WHERE aux deux requêtes
+    $countQuery .= $whereClause;
+    $dataQuery .= $whereClause;
 
-    $appointments = executeQuery($query, $params)->fetchAll();
+    // Trier et limiter la requête de données
+    $dataQuery .= " ORDER BY r.date_rdv $orderByDirection LIMIT :limit OFFSET :offset";
+    $dataParams = $params; // Copier les paramètres pour la requête de données
+    $dataParams[':limit'] = $limit;
+    $dataParams[':offset'] = $offset;
 
-    foreach ($appointments as &$appointment) {
-        $appointment['date_rdv_formatee'] = isset($appointment['date_rdv']) ? formatDate($appointment['date_rdv'], 'd/m/Y H:i') : 'N/A';
-        $appointment['statut_badge'] = isset($appointment['statut']) ? getStatusBadge($appointment['statut']) : '';
-        $appointment['praticien_complet'] = isset($appointment['praticien_nom']) ? trim($appointment['praticien_prenom'] . ' ' . $appointment['praticien_nom']) : 'Non assigné';
+    try {
+        // Compter le total
+        $totalStmt = executeQuery($countQuery, $params); // Utiliser les params sans limit/offset
+        $totalItems = (int)$totalStmt->fetchColumn();
+
+        // Récupérer les données paginées
+        $appointments = executeQuery($dataQuery, $dataParams)->fetchAll();
+
+        // Formater les données
+        foreach ($appointments as &$appointment) {
+            $appointment['date_rdv_formatee'] = isset($appointment['date_rdv']) ? formatDate($appointment['date_rdv'], 'd/m/Y H:i') : 'N/A';
+            $appointment['statut_badge'] = isset($appointment['statut']) ? getStatusBadge($appointment['statut']) : '';
+            $appointment['praticien_complet'] = isset($appointment['praticien_nom']) ? trim($appointment['praticien_prenom'] . ' ' . $appointment['praticien_nom']) : 'Non assigné';
+        }
+
+        // Préparer les données de pagination
+        $totalPages = ($limit > 0 && $totalItems > 0) ? ceil($totalItems / $limit) : 0;
+        $paginationData = [
+            'currentPage' => $page,
+            'totalPages' => $totalPages,
+            'totalItems' => $totalItems,
+            'perPage' => $limit
+        ];
+        $urlPattern = "?filter=$filter&page={page}";
+
+        return [
+            'items' => $appointments,
+            'pagination_html' => renderPagination($paginationData, $urlPattern),
+            // Optionnel: retourner les données brutes de pagination si nécessaire ailleurs
+            'pagination_data' => $paginationData
+        ];
+    } catch (Exception $e) {
+        logSystemActivity('error', "Erreur getEmployeeAppointments pour employé #$employee_id: " . $e->getMessage());
+        flashMessage("Erreur lors du chargement des rendez-vous.", "danger");
+        return [
+            'items' => [],
+            'pagination_html' => '',
+        ];
     }
-
-    return $appointments;
 }
 
 
@@ -520,59 +566,75 @@ function manageEmployeeDonations($employee_id, $donation_data)
     }
 }
 
-function getEmployeeEvents($employee_id, $event_type = 'all')
+function getEmployeeEvents($employee_id, $event_type = 'all', $page = 1, $limit = 9)
 {
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
     if (!$employee_id) {
         flashMessage("ID employé invalide pour récupérer les événements.", "danger");
-        return [];
+        return [
+            'items' => [],
+            'pagination_html' => '',
+        ];
     }
 
     $event_type = sanitizeInput($event_type);
     $validEventTypes = EVENT_TYPES;
+    $page = max(1, (int)$page);
+    $limit = max(3, (int)$limit); // Min 3 par page
+    $offset = ($page - 1) * $limit;
 
-    $query = "SELECT e.id, e.titre, e.description, e.date_debut, e.date_fin, e.lieu, e.type, 
-                     e.capacite_max, e.niveau_difficulte
-              FROM evenements e
-              WHERE e.date_debut >= CURDATE()";
+    $baseQuery = "FROM evenements e";
+    $whereClause = " WHERE e.date_debut >= CURDATE()";
     $params = [];
 
     if ($event_type !== 'all' && in_array($event_type, $validEventTypes)) {
-        $query .= " AND e.type = :event_type";
+        $whereClause .= " AND e.type = :event_type";
         $params[':event_type'] = $event_type;
     }
 
-    $query .= " ORDER BY e.date_debut ASC, e.titre ASC";
+    $countQuery = "SELECT COUNT(e.id) " . $baseQuery . $whereClause;
+    $dataQuery = "SELECT e.id, e.titre, e.description, e.date_debut, e.date_fin, e.lieu, e.type, 
+                     e.capacite_max, e.niveau_difficulte " . $baseQuery . $whereClause;
+
+    $dataQuery .= " ORDER BY e.date_debut ASC, e.titre ASC LIMIT :limit OFFSET :offset";
+    $dataParams = $params;
+    $dataParams[':limit'] = $limit;
+    $dataParams[':offset'] = $offset;
 
     try {
-        error_log("[DEBUG] getEmployeeEvents - Query: " . $query);
-        error_log("[DEBUG] getEmployeeEvents - Params: " . json_encode($params));
+        // Compter le total
+        $totalStmt = executeQuery($countQuery, $params);
+        $totalItems = (int)$totalStmt->fetchColumn();
 
-        $events = executeQuery($query, $params)->fetchAll();
+        // Récupérer les données paginées
+        $events = executeQuery($dataQuery, $dataParams)->fetchAll();
 
-        error_log("[DEBUG] getEmployeeEvents - Fetched events count: " . count($events));
+        // --- Debug logs (peuvent être retirés plus tard) ---
+        error_log("[DEBUG] getEmployeeEvents - CountQuery: " . $countQuery . " Params: " . json_encode($params));
+        error_log("[DEBUG] getEmployeeEvents - DataQuery: " . $dataQuery . " Params: " . json_encode($dataParams));
+        error_log("[DEBUG] getEmployeeEvents - Fetched events count: " . count($events) . " Total: " . $totalItems);
+        // --- Fin Debug --- 
 
-        $eventIds = array_map(function ($e) {
-            return $e['id'];
-        }, $events);
+        $eventIds = array_map(fn($e) => $e['id'], $events);
+        $inscriptionCounts = [];
+        $userRegistrations = [];
 
         if (!empty($eventIds)) {
-            $inscriptionCounts = [];
+            // Compter les inscriptions (optimisé)
+            $placeholders = implode(',', array_fill(0, count($eventIds), '?'));
             $sqlCounts = "SELECT evenement_id, COUNT(id) as count 
                           FROM evenement_inscriptions 
-                          WHERE evenement_id IN (" . implode(',', array_fill(0, count($eventIds), '?')) . ") 
-                          AND statut = 'inscrit' 
+                          WHERE evenement_id IN ($placeholders) AND statut = 'inscrit' 
                           GROUP BY evenement_id";
             $stmtCounts = executeQuery($sqlCounts, $eventIds);
             while ($row = $stmtCounts->fetch()) {
                 $inscriptionCounts[$row['evenement_id']] = $row['count'];
             }
 
-            $userRegistrations = [];
+            // Vérifier inscriptions user (optimisé)
             $sqlUserReg = "SELECT evenement_id 
                            FROM evenement_inscriptions 
-                           WHERE personne_id = ? AND statut = 'inscrit' 
-                           AND evenement_id IN (" . implode(',', array_fill(0, count($eventIds), '?')) . ")";
+                           WHERE personne_id = ? AND statut = 'inscrit' AND evenement_id IN ($placeholders)";
             $paramsUserReg = array_merge([$employee_id], $eventIds);
             $stmtUserReg = executeQuery($sqlUserReg, $paramsUserReg);
             while ($row = $stmtUserReg->fetch()) {
@@ -580,10 +642,10 @@ function getEmployeeEvents($employee_id, $event_type = 'all')
             }
         }
 
+        // Formater les données
         foreach ($events as &$event) {
             $event['date_debut_formatee'] = isset($event['date_debut']) ? formatDate($event['date_debut'], 'd/m/Y H:i') : 'N/A';
             $event['date_fin_formatee'] = isset($event['date_fin']) ? formatDate($event['date_fin'], 'd/m/Y H:i') : 'N/A';
-
             $registeredCount = $inscriptionCounts[$event['id']] ?? 0;
             if (isset($event['capacite_max']) && $event['capacite_max'] !== null) {
                 $event['places_restantes'] = max(0, $event['capacite_max'] - $registeredCount);
@@ -592,15 +654,34 @@ function getEmployeeEvents($employee_id, $event_type = 'all')
                 $event['places_restantes'] = null;
                 $event['est_complet'] = false;
             }
-
             $event['est_inscrit'] = isset($userRegistrations[$event['id']]);
         }
 
-        return $events;
+        // Préparer pagination
+        $totalPages = ($limit > 0 && $totalItems > 0) ? ceil($totalItems / $limit) : 0;
+        $paginationData = [
+            'currentPage' => $page,
+            'totalPages' => $totalPages,
+            'totalItems' => $totalItems,
+            'perPage' => $limit
+        ];
+        $urlParams = [];
+        if ($event_type !== 'all') {
+            $urlParams['type'] = $event_type;
+        }
+        $urlPattern = "?" . http_build_query($urlParams) . "&page={page}";
+
+        return [
+            'items' => $events,
+            'pagination_html' => renderPagination($paginationData, $urlPattern),
+        ];
     } catch (Exception $e) {
         logSystemActivity('error', "Erreur récupération événements pour employé #$employee_id: " . $e->getMessage());
         flashMessage("Impossible de charger la liste des événements.", "danger");
-        return [];
+        return [
+            'items' => [],
+            'pagination_html' => '',
+        ];
     }
 }
 
@@ -797,13 +878,20 @@ function displayEmployeeAppointmentsPage()
     $employee_id = $_SESSION['user_id'];
 
     $data = [];
-    $filter = $_GET['filter'] ?? 'upcoming';
+    $filters = getQueryData(); // Utiliser getQueryData pour récupérer tous les params GET
+    $filter = $filters['filter'] ?? 'upcoming';
+    $page = isset($filters['page']) ? (int)$filters['page'] : 1;
+
     $validFilters = ['upcoming', 'past', 'all', 'annule'];
     if (!in_array($filter, $validFilters)) {
         $filter = 'upcoming';
     }
 
-    $data['appointments'] = getEmployeeAppointments($employee_id, $filter);
+    // Appel de la fonction modifiée qui retourne la structure avec 'items' et 'pagination_html'
+    $paginationResult = getEmployeeAppointments($employee_id, $filter, $page, 10); // 10 par page
+
+    $data['appointments'] = $paginationResult['items'];
+    $data['pagination_html'] = $paginationResult['pagination_html'];
     $data['currentFilter'] = $filter;
     $data['csrf_token'] = $_SESSION['csrf_token'];
 
@@ -859,9 +947,14 @@ function displayEmployeeEventsPage()
 
     $filters = getQueryData();
     $typeFilter = $filters['type'] ?? 'all';
+    $page = isset($filters['page']) ? (int)$filters['page'] : 1;
 
     $data = [];
-    $data['events'] = getEmployeeEvents($employee_id, $typeFilter);
+    // Appel de la fonction modifiée
+    $paginationResult = getEmployeeEvents($employee_id, $typeFilter, $page, 9); // 9 par page
+
+    $data['events'] = $paginationResult['items'];
+    $data['pagination_html'] = $paginationResult['pagination_html'];
     $data['currentTypeFilter'] = $typeFilter;
     $data['eventTypes'] = EVENT_TYPES;
     $data['csrf_token'] = $_SESSION['csrf_token'];

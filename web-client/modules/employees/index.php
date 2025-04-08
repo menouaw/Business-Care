@@ -16,10 +16,49 @@ include_once __DIR__ . '/../../templates/header.php';
                 <h1 class="h2 mb-0">Tableau de bord</h1>
                 <p class="text-muted mb-0">Bienvenue dans votre espace salarié, <?= htmlspecialchars($dashboardData['user']['prenom'] ?? 'Utilisateur') ?>!</p>
             </div>
-            <div class="col-auto">
-                <a href="<?= ROOT_URL ?>/index.php" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-1"></i> Retour
-                </a>
+        </div>
+
+        <div class="row mt-4 mb-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white">
+                        <h5 class="card-title mb-0">Actions rapides</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-sm-6 col-md-3 mb-2 mb-md-0">
+                                <a href="<?= WEBCLIENT_URL ?>/modules/employees/services.php" class="btn btn-primary d-block py-3">
+                                    <i class="fas fa-search me-2"></i>Catalogue Services
+                                </a>
+                            </div>
+                            <div class="col-sm-6 col-md-3 mb-2 mb-md-0">
+                                <a href="<?= WEBCLIENT_URL ?>/modules/employees/signalement.php" class="btn btn-warning d-block py-3">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>Signaler Situation
+                                </a>
+                            </div>
+                            <div class="col-sm-6 col-md-3 mb-2 mb-md-0">
+                                <a href="<?= WEBCLIENT_URL ?>/modules/employees/counsel.php" class="btn btn-success d-block py-3">
+                                    <i class="fas fa-heart me-2"></i>Conseils Bien-être
+                                </a>
+                            </div>
+                            <div class="col-sm-6 col-md-3 mb-2 mb-md-0">
+                                <a href="<?= WEBCLIENT_URL ?>/modules/employees/communities.php" class="btn btn-info d-block py-3">
+                                    <i class="fas fa-comments me-2"></i>Communautés
+                                </a>
+                            </div>
+                            <div class="col-sm-6 col-md-3 mb-2 mb-md-0">
+                                <a href="<?= WEBCLIENT_URL ?>/modules/employees/chatbot.php" class="btn btn-dark d-block py-3">
+                                    <i class="fas fa-robot me-2"></i>Assistant Virtuel
+                                </a>
+                            </div>
+                            <div class="col-sm-6 col-md-3 mb-2 mb-md-0">
+                                <a href="<?= WEBCLIENT_URL ?>/modules/employees/settings.php" class="btn btn-secondary d-block py-3">
+                                    <i class="fas fa-cog me-2"></i>Mes Paramètres
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -157,7 +196,7 @@ include_once __DIR__ . '/../../templates/header.php';
                             <p class="text-center text-muted my-5">Aucun événement à venir</p>
                         <?php else : ?>
                             <div class="list-group list-group-flush">
-                                <?php foreach (array_slice($dashboardData['upcoming_events'], 0, 3) as $event) : // Limiter à 3 pour l'aperçu 
+                                <?php foreach (array_slice($dashboardData['upcoming_events'], 0, 3) as $event) :
                                 ?>
                                     <div class="list-group-item border-0 px-0">
                                         <div class="d-flex justify-content-between align-items-center">
@@ -211,46 +250,6 @@ include_once __DIR__ . '/../../templates/header.php';
                                 <?php endforeach; ?>
                             </ul>
                         <?php endif; ?>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Actions rapides -->
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white">
-                        <h5 class="card-title mb-0">Actions rapides</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row g-3">
-                            <div class="col-sm-6 col-md-3 mb-2 mb-md-0">
-                                <a href="<?= WEBCLIENT_URL ?>/modules/employees/services.php" class="btn btn-primary d-block py-3">
-                                    <i class="fas fa-search me-2"></i>Catalogue Services
-                                </a>
-                            </div>
-                            <div class="col-sm-6 col-md-3 mb-2 mb-md-0">
-                                <a href="<?= WEBCLIENT_URL ?>/modules/employees/signalement.php" class="btn btn-warning d-block py-3">
-                                    <i class="fas fa-exclamation-triangle me-2"></i>Signaler Situation
-                                </a>
-                            </div>
-                            <div class="col-sm-6 col-md-3 mb-2 mb-md-0">
-                                <a href="<?= WEBCLIENT_URL ?>/conseils.php" class="btn btn-success d-block py-3">
-                                    <i class="fas fa-heart me-2"></i>Conseils Bien-être
-                                </a>
-                            </div>
-                            <div class="col-sm-6 col-md-3 mb-2 mb-md-0">
-                                <a href="<?= WEBCLIENT_URL ?>/modules/employees/communities.php" class="btn btn-info d-block py-3">
-                                    <i class="fas fa-comments me-2"></i>Communautés
-                                </a>
-                            </div>
-                            <div class="col-sm-6 col-md-3 mb-2 mb-md-0">
-                                <a href="<?= WEBCLIENT_URL ?>/modules/employees/settings.php" class="btn btn-secondary d-block py-3">
-                                    <i class="fas fa-cog me-2"></i>Mes Paramètres
-                                </a>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
