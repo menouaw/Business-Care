@@ -62,7 +62,6 @@ include_once __DIR__ . '/../../templates/header.php';
             </div>
         </div>
 
-        <!-- Cartes d'information -->
         <div class="row g-4 mb-4">
             <div class="col-md-6 col-lg-3">
                 <div class="card border-0 shadow-sm h-100">
@@ -133,7 +132,6 @@ include_once __DIR__ . '/../../templates/header.php';
                             </div>
                             <div>
                                 <h6 class="card-subtitle text-muted mb-1">Associations</h6>
-                                <!-- Compter les dons pourrait nécessiter une autre query -->
                                 <h2 class="card-title mb-0">Soutenir</h2>
                                 <small class="text-muted">Faire un don</small>
                             </div>
@@ -147,7 +145,6 @@ include_once __DIR__ . '/../../templates/header.php';
         </div>
 
         <div class="row g-4">
-            <!-- Prochains rendez-vous -->
             <div class="col-lg-6">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
@@ -191,7 +188,6 @@ include_once __DIR__ . '/../../templates/header.php';
                 </div>
             </div>
 
-            <!-- Événements à venir -->
             <div class="col-lg-6">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
@@ -227,7 +223,6 @@ include_once __DIR__ . '/../../templates/header.php';
             </div>
         </div>
 
-        <!-- Activité Récente -->
         <div class="row mt-4">
             <div class="col-12">
                 <div class="card border-0 shadow-sm">
