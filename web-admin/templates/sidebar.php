@@ -1,5 +1,8 @@
 <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
     <div class="position-sticky pt-3 sidebar-sticky">
+        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+            <span>Global</span>
+        </h6>
         <ul class="nav flex-column">
             <li class="nav-item">
                 <a class="nav-link <?php echo basename($_SERVER['SCRIPT_NAME']) == 'index.php' ? 'active' : ''; ?>" href="<?php echo WEBADMIN_URL; ?>/">
@@ -37,6 +40,72 @@
                     Rendez-vous
                 </a>
             </li>
+        </ul>
+
+        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+            <span>Gestion</span>
+        </h6>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link <?php echo strpos($_SERVER['SCRIPT_NAME'], '/modules/billing/') !== false ? 'active' : ''; ?>" href="<?php echo WEBADMIN_URL; ?>/modules/billing/">
+                    <i class="fas fa-file-invoice-dollar me-2"></i>
+                    Facturation
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link <?php echo strpos($_SERVER['SCRIPT_NAME'], '/modules/providers/') !== false ? 'active' : ''; ?>" href="<?php echo WEBADMIN_URL; ?>/modules/providers/">
+                    <i class="fas fa-user-tie me-2"></i>
+                    Prestataires
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link <?php echo strpos($_SERVER['SCRIPT_NAME'], '/modules/quotes/') !== false ? 'active' : ''; ?>" href="<?php echo WEBADMIN_URL; ?>/modules/quotes/">
+                    <i class="fas fa-file-alt me-2"></i>
+                    Devis
+                </a>
+            </li>
+        </ul>
+
+        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+            <span>Organisation</span>
+        </h6>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link <?php echo strpos($_SERVER['SCRIPT_NAME'], '/modules/conferences/') !== false ? 'active' : ''; ?>" href="<?php echo WEBADMIN_URL; ?>/modules/conferences/">
+                    <i class="fas fa-chalkboard-teacher me-2"></i>
+                    Conférences
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link <?php echo strpos($_SERVER['SCRIPT_NAME'], '/modules/events/') !== false ? 'active' : ''; ?>" href="<?php echo WEBADMIN_URL; ?>/modules/events/">
+                    <i class="fas fa-calendar-alt me-2"></i>
+                    Evénements
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link <?php echo strpos($_SERVER['SCRIPT_NAME'], '/modules/webinars/') !== false ? 'active' : ''; ?>" href="<?php echo WEBADMIN_URL; ?>/modules/webinars/">
+                    <i class="fas fa-desktop me-2"></i>
+                    Webinars
+                </a>
+            </li>
+             <li class="nav-item">
+                <a class="nav-link <?php echo strpos($_SERVER['SCRIPT_NAME'], '/modules/challenges/') !== false ? 'active' : ''; ?>" href="<?php echo WEBADMIN_URL; ?>/modules/challenges/">
+                    <i class="fas fa-trophy me-2"></i>
+                    Défis Sportifs
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link <?php echo strpos($_SERVER['SCRIPT_NAME'], '/modules/newsletter/') !== false ? 'active' : ''; ?>" href="<?php echo WEBADMIN_URL; ?>/modules/newsletter/">
+                    <i class="fas fa-newspaper me-2"></i>
+                    Newsletter
+                </a>
+            </li>
+        </ul>
+
+        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+            <span>Analyse & Finance</span>
+        </h6>
+        <ul class="nav flex-column">
             <li class="nav-item">
                 <a class="nav-link <?php echo strpos($_SERVER['SCRIPT_NAME'], '/modules/financial/') !== false ? 'active' : ''; ?>" href="<?php echo WEBADMIN_URL; ?>/modules/financial/">
                     <i class="fas fa-money-bill-alt me-2"></i>
@@ -64,13 +133,13 @@
             <li class="nav-item">
                 <a class="nav-link <?php echo basename($_SERVER['SCRIPT_NAME']) == 'logs.php' ? 'active' : ''; ?>" href="<?php echo WEBADMIN_URL; ?>/logs.php">
                     <i class="fas fa-history me-2"></i>
-                    Journal d'activite
+                    Journal
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link <?php echo basename($_SERVER['SCRIPT_NAME']) == 'backup.php' ? 'active' : ''; ?>" href="<?php echo WEBADMIN_URL; ?>/backup.php">
                     <i class="fas fa-database me-2"></i>
-                    Sauvegarde & Restauration
+                    Sauvegarde
                 </a>
             </li>
         </ul>
