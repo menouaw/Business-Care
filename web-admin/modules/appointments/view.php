@@ -17,7 +17,7 @@ if (!$appointment) {
     redirectTo(WEBADMIN_URL . '/modules/appointments/index.php');
 }
 
-$pageTitle = "Details du rendez-vous";
+$pageTitle = "Informations du rendez-vous";
 include_once '../../templates/header.php';
 ?>
 

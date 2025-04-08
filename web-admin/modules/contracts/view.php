@@ -22,7 +22,7 @@ $activeUserCount = contractsGetActiveUserCountForCompany($contract['entreprise_i
 $dureeTexte = '-';
 $montantTotalEstimeFormatted = '-';
 
-$pageTitle = "Details du contrat";
+$pageTitle = "Informations du contrat";
 include_once '../../templates/header.php';
 ?>
 
