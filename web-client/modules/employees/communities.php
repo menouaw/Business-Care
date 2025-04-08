@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             case 'post_message':
                 if ($posted_community_id) {
                     $message_content = $_POST['message'] ?? null;
-                    handleNewCommunityPost($posted_community_id, $current_employee_id, $message_content);
+                    handleCommunityPost($posted_community_id, $current_employee_id, $message_content);
                 } else {
                     flashMessage("ID de communauté manquant pour poster un message.", "danger");
                 }

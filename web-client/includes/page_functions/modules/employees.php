@@ -261,12 +261,12 @@ function getEmployeeAppointments($employee_id, $filter = 'upcoming', $page = 1, 
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
     if (!$employee_id) return [
         'items' => [],
-        'pagination_html' => '', 
+        'pagination_html' => '',
     ];
 
     $filter = sanitizeInput($filter);
     $page = max(1, (int)$page);
-    $limit = max(5, (int)$limit); 
+    $limit = max(5, (int)$limit);
     $offset = ($page - 1) * $limit;
 
     $baseQuery = "FROM " . TABLE_APPOINTMENTS . " r
@@ -296,7 +296,7 @@ function getEmployeeAppointments($employee_id, $filter = 'upcoming', $page = 1, 
     $dataQuery .= $whereClause;
 
     $dataQuery .= " ORDER BY r.date_rdv $orderByDirection LIMIT :limit OFFSET :offset";
-    $dataParams = $params; 
+    $dataParams = $params;
     $dataParams[':limit'] = $limit;
     $dataParams[':offset'] = $offset;
 
@@ -868,6 +868,20 @@ function displayEmployeeCommunitiesPage()
     return $data;
 }
 
+function getActiveAssociations()
+{
+    try {
+        if (!defined('TABLE_ASSOCIATIONS')) {
+            define('TABLE_ASSOCIATIONS', 'associations');
+            error_log("[WARNING] TABLE_ASSOCIATIONS constant was not defined. Using default 'associations'.");
+        }
+        return fetchAll(TABLE_ASSOCIATIONS, '1=1', 'nom ASC', 0, 0, []);
+    } catch (Exception $e) {
+        logSystemActivity('error', "Erreur récupération des associations: " . $e->getMessage());
+        flashMessage("Impossible de charger la liste des associations.", "danger");
+        return [];
+    }
+}
 
 function displayEmployeeDonationsPage()
 {
@@ -1329,372 +1343,123 @@ function displayCommunityDetailsPageData($community_id)
     return $data;
 }
 
-function handleNewCommunityPost($community_id, $employee_id, $message)
+
+function handleCommunityPost($community_id)
 {
-    if (empty(trim($message))) {
-        flashMessage("Le message ne peut pas être vide.", "warning");
-        return false;
+    requireRole(ROLE_SALARIE);
+    $employee_id = $_SESSION['user_id'];
+
+    $community_id = filter_var(sanitizeInput($community_id), FILTER_VALIDATE_INT);
+    if (!$community_id) {
+        flashMessage("ID de communauté invalide.", "danger");
+        redirectTo(WEBCLIENT_URL . '/communautes.php');
     }
-    if (!filter_var($community_id, FILTER_VALIDATE_INT) || !filter_var($employee_id, FILTER_VALIDATE_INT)) {
-        flashMessage("ID invalide.", "danger");
-        return false;
-    }
 
-    $dataToInsert = [
-        'communaute_id' => $community_id,
-        'personne_id' => $employee_id,
-        'message' => $message,
-    ];
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        verifyCsrfToken();
+        $formData = getFormData();
+        $message = trim($formData['message'] ?? '');
 
-    try {
-        $insertedId = insertRow('communaute_messages', $dataToInsert);
-
-        if ($insertedId) {
-            logActivity($employee_id, 'community_post', "Nouveau message posté dans la communauté ID: $community_id (Msg ID: $insertedId)");
-            flashMessage("Votre message a été ajouté.", "success");
-            return true;
+        if (empty($message)) {
+            flashMessage("Le message ne peut pas être vide.", "warning");
         } else {
-            logSystemActivity('error', "Échec de l'insertion du message pour la communauté ID: $community_id par l'employé ID: $employee_id");
-            flashMessage("Erreur technique lors de l'ajout de votre message.", "danger");
-            return false;
+            $community = fetchOne(TABLE_COMMUNAUTES, "id = :id", [':id' => $community_id]);
+            if (!$community) {
+                flashMessage("Communauté non trouvée.", "danger");
+            } else {
+                $dataToInsert = [
+                    'communaute_id' => $community_id,
+                    'personne_id' => $employee_id,
+                    'message' => $message,
+                ];
+
+                try {
+                    $insertedId = insertRow('communaute_messages', $dataToInsert);
+
+                    if ($insertedId) {
+                        logActivity($employee_id, 'community_post', "Nouveau message posté dans la communauté ID: $community_id (Msg ID: $insertedId)");
+                        flashMessage("Votre message a été ajouté.", "success");
+                    } else {
+                        logSystemActivity('error', "Échec de l'insertion du message pour la communauté ID: $community_id par l'employé ID: $employee_id");
+                        flashMessage("Erreur technique lors de l'ajout de votre message.", "danger");
+                    }
+                } catch (Exception $e) {
+                    logSystemActivity('error', "Exception lors de l'ajout du message pour la communauté ID: $community_id: " . $e->getMessage());
+                    flashMessage("Erreur technique lors de l'ajout de votre message.", "danger");
+                }
+            }
         }
-    } catch (Exception $e) {
-        logSystemActivity('error', "Exception lors de l'ajout du message pour la communauté ID: $community_id: " . $e->getMessage());
-        flashMessage("Erreur technique lors de l'ajout de votre message.", "danger");
-        return false;
+        redirectTo(WEBCLIENT_URL . '/communaute.php?id=' . $community_id);
+    } else {
+        redirectTo(WEBCLIENT_URL . '/communaute.php?id=' . $community_id);
     }
 }
 
-function getActiveAssociations()
-{
-    try {
-        if (!defined('TABLE_ASSOCIATIONS')) {
-            define('TABLE_ASSOCIATIONS', 'associations');
-        }
-        return fetchAll(TABLE_ASSOCIATIONS, '1=1', 'nom ASC');
-    } catch (Exception $e) {
-        logSystemActivity('error', "Erreur récupération des associations: " . $e->getMessage());
-        return [];
-    }
-}
 
-function handleRegisterForEvent($employee_id, $event_id)
+function displayAdviceSection()
 {
     requireRole(ROLE_SALARIE);
 
-    $employee_id = filter_var($employee_id, FILTER_VALIDATE_INT);
-    $event_id = filter_var($event_id, FILTER_VALIDATE_INT);
-
-    if (!$employee_id || !$event_id) {
-        flashMessage("Informations invalides pour l'inscription.", "danger");
-        return false;
-    }
-
-    $event_params = [$event_id];
-    $event = fetchOne('evenements', 'id = ?', $event_params);
-
-    if (!$event) {
-        flashMessage("L'événement demandé n'existe pas.", "warning");
-        return false;
-    }
-
-    $eventStartDate = new DateTime($event['date_debut']);
-    $now = new DateTime();
-    if ($now >= $eventStartDate) {
-        flashMessage("Cet événement est déjà passé ou en cours, inscription impossible.", "warning");
-        return false;
-    }
-
-    $params_exist = [':pid' => $employee_id, ':eid' => $event_id, ':statut' => 'inscrit'];
-    $existingRegistration = fetchOne(
-        'evenement_inscriptions',
-        'personne_id = :pid AND evenement_id = :eid AND statut = :statut',
-        $params_exist
-    );
-    if ($existingRegistration) {
-        flashMessage("Vous êtes déjà inscrit à cet événement.", "info");
-        return true;
-    }
-
-    if (isset($event['capacite_max']) && $event['capacite_max'] !== null) {
-        $params_count = [':eid' => $event_id, ':statut' => 'inscrit'];
-        $registeredCount = countTableRows(
-            'evenement_inscriptions',
-            'evenement_id = :eid AND statut = :statut',
-            $params_count
-        );
-
-        if ($registeredCount >= $event['capacite_max']) {
-            flashMessage("Désolé, cet événement est complet.", "warning");
-            return false;
-        }
-    }
-
-    try {
-        beginTransaction();
-
-        $params_cancel = [':pid' => $employee_id, ':eid' => $event_id, ':statut' => 'annule'];
-        $cancelledRegistration = fetchOne(
-            'evenement_inscriptions',
-            'personne_id = :pid AND evenement_id = :eid AND statut = :statut',
-            $params_cancel
-        );
-
-        if ($cancelledRegistration) {
-            $updated = updateRow(
-                'evenement_inscriptions',
-                ['statut' => 'inscrit', 'updated_at' => date('Y-m-d H:i:s')],
-                'id = :id',
-                [':id' => $cancelledRegistration['id']]
-            );
-            $success = ($updated > 0);
-        } else {
-            $dataToInsert = [
-                'personne_id' => $employee_id,
-                'evenement_id' => $event_id,
-                'statut' => 'inscrit',
-            ];
-            $insertedId = insertRow('evenement_inscriptions', $dataToInsert);
-            $success = ($insertedId !== false);
-        }
-
-        if ($success) {
-            commitTransaction();
-            logActivity($employee_id, 'event_registration', "Inscription à l'événement ID: $event_id réussie.");
-            flashMessage("Inscription à l'événement réussie !", "success");
-            return true;
-        } else {
-            rollbackTransaction();
-            logSystemActivity('error', "Échec de l'inscription à l'événement ID: $event_id pour l'employé ID: $employee_id");
-            flashMessage("Erreur technique lors de l'inscription.", "danger");
-            return false;
-        }
-    } catch (Exception $e) {
-        if (getDbConnection()->inTransaction()) {
-            rollbackTransaction();
-        }
-        logSystemActivity('error', "Exception lors de l'inscription à l'événement ID: $event_id: " . $e->getMessage());
-        flashMessage("Erreur technique lors de l'inscription.", "danger");
-        return false;
-    }
+    $data = [];
+    $data['advices'] = [];
+    return $data;
 }
 
-function handleUnregisterFromEvent($employee_id, $event_id)
+
+function displayAssociationInfo()
 {
     requireRole(ROLE_SALARIE);
 
-    $employee_id = filter_var($employee_id, FILTER_VALIDATE_INT);
-    $event_id = filter_var($event_id, FILTER_VALIDATE_INT);
+    $data = [];
+    $data['associations'] = getActiveAssociations();
+    $data['csrf_token'] = $_SESSION['csrf_token'] ?? '';
 
-    if (!$employee_id || !$event_id) {
-        flashMessage("Informations invalides pour la désinscription.", "danger");
-        return false;
-    }
+    return $data;
+}
 
-    $event = fetchOne('evenements', 'id = ?', [$event_id]);
-    if (!$event) {
-        flashMessage("L'événement demandé n'existe pas.", "warning");
-        return false;
-    }
 
-    $eventStartDate = new DateTime($event['date_debut']);
-    $now = new DateTime();
-    if ($now >= $eventStartDate) {
-        flashMessage("Cet événement est déjà passé ou en cours, désinscription impossible.", "warning");
-        return false;
-    }
+function handleDonationRequest()
+{
+    requireRole(ROLE_SALARIE);
+    $employee_id = $_SESSION['user_id'];
 
-    $params_exist = [':pid' => $employee_id, ':eid' => $event_id, ':statut' => 'inscrit'];
-    $existingRegistration = fetchOne(
-        'evenement_inscriptions',
-        'personne_id = :pid AND evenement_id = :eid AND statut = :statut',
-        $params_exist
-    );
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        verifyCsrfToken();
+        $formData = getFormData();
 
-    if (!$existingRegistration) {
-        $params_cancelled = [':pid' => $employee_id, ':eid' => $event_id, ':statut' => 'annule'];
-        $cancelledRegistration = fetchOne(
-            'evenement_inscriptions',
-            'personne_id = :pid AND evenement_id = :eid AND statut = :statut',
-            $params_cancelled
-        );
-        if ($cancelledRegistration) {
-            flashMessage("Vous êtes déjà désinscrit de cet événement.", "info");
+        $donationData = [
+            'type' => $formData['type'] ?? null,
+            'montant' => $formData['montant'] ?? null,
+            'description' => $formData['description'] ?? null,
+            'association_id' => $formData['association_id'] ?? null
+        ];
+
+        $donationId = manageEmployeeDonations($employee_id, $donationData);
+
+        if ($donationId) {
+            if ($donationData['type'] == DONATION_TYPES[0]) {
+                flashMessage("Votre don financier de " . formatMoney($donationData['montant']) . " a été enregistré (ID: $donationId) et est en attente de traitement.", "success");
+            } else {
+                flashMessage("Votre don matériel \"" . sanitizeInput($donationData['description']) . "\" (ID: $donationId) a été enregistré. Nous vous contacterons.", "success");
+            }
+            redirectTo(WEBCLIENT_URL . '/modules/employees/donations.php');
         } else {
-            flashMessage("Vous n'étiez pas inscrit à cet événement.", "warning");
+            redirectTo($_SERVER['HTTP_REFERER'] ?? WEBCLIENT_URL . '/modules/employees/donations.php');
         }
-        return true;
-    }
-
-    try {
-        beginTransaction();
-
-        $updated = updateRow(
-            'evenement_inscriptions',
-            ['statut' => 'annule', 'updated_at' => date('Y-m-d H:i:s')],
-            'id = :id',
-            [':id' => $existingRegistration['id']]
-        );
-
-        if ($updated > 0) {
-            commitTransaction();
-            logActivity($employee_id, 'event_unregistration', "Désinscription de l'événement ID: $event_id réussie.");
-            flashMessage("Désinscription de l'événement réussie.", "success");
-            return true;
-        } else {
-            rollbackTransaction();
-            logSystemActivity('error', "Échec de la désinscription de l'événement ID: $event_id pour l'employé ID: $employee_id");
-            flashMessage("Erreur technique lors de la désinscription.", "danger");
-            return false;
-        }
-    } catch (Exception $e) {
-        if (getDbConnection()->inTransaction()) {
-            rollbackTransaction();
-        }
-        logSystemActivity('error', "Exception lors de la désinscription de l'événement ID: $event_id: " . $e->getMessage());
-        flashMessage("Erreur technique lors de la désinscription.", "danger");
-        return false;
+    } else {
+        redirectTo(WEBCLIENT_URL . '/modules/employees/donations.php');
     }
 }
 
 
-function getEventIcon($eventType)
+function checkFirstLogin($employee_id)
 {
-    $eventType = strtolower(trim($eventType));
+    $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
+    if (!$employee_id) return false;
 
-    $iconMap = [
-        'conference' => 'fas fa-chalkboard-teacher',
-        'webinar' => 'fas fa-desktop',
-        'atelier' => 'fas fa-tools',
-        'defi_sportif' => 'fas fa-running',
-        'consultation' => 'fas fa-user-md',
-        'autre' => 'fas fa-calendar-day',
-        'default' => 'fas fa-calendar-alt'
-    ];
-
-    return $iconMap[$eventType] ?? $iconMap['default'];
-}
-
-function handleChangePassword($employee_id, $current_password, $new_password, $confirm_password)
-{
-    if (!$employee_id) {
-        flashMessage("Impossible d'identifier l'utilisateur. Veuillez vous reconnecter.", "danger");
+    $prefs = fetchOne(TABLE_USER_PREFERENCES, "personne_id = :id", [':id' => $employee_id]);
+    if ($prefs && isset($prefs['first_login_completed']) && $prefs['first_login_completed'] == 1) {
         return false;
     }
-
-    if (!defined('MIN_PASSWORD_LENGTH')) {
-        define('MIN_PASSWORD_LENGTH', 8);
-        error_log("Warning: MIN_PASSWORD_LENGTH was not defined. Using default value 8.");
-    }
-
-
-    if (empty($current_password) || empty($new_password) || empty($confirm_password)) {
-        flashMessage("Tous les champs de mot de passe sont obligatoires.", "warning");
-        return false;
-    }
-
-    if ($new_password !== $confirm_password) {
-        flashMessage("Le nouveau mot de passe et sa confirmation ne correspondent pas.", "warning");
-        return false;
-    }
-
-    if (strlen($new_password) < MIN_PASSWORD_LENGTH) {
-        flashMessage("Le nouveau mot de passe doit comporter au moins " . MIN_PASSWORD_LENGTH . " caractères.", "warning");
-        return false;
-    }
-
-    try {
-        requireRole(ROLE_SALARIE);
-        if ($_SESSION['user_id'] != $employee_id) {
-            logSecurityEvent($employee_id, 'password_change_forbidden', "[SECURITY] Tentative de changement de mot de passe pour un autre utilisateur (demandeur: {$_SESSION['user_id']})");
-            flashMessage("Vous ne pouvez modifier que votre propre mot de passe.", "danger");
-            return false;
-        }
-
-
-        $user = fetchOne(TABLE_USERS, 'id = :id', '', [':id' => $employee_id]);
-
-        if (!$user) {
-            flashMessage("Utilisateur non trouvé.", "danger");
-            session_unset();
-            session_destroy();
-            return false;
-        }
-
-        if (!password_verify($current_password, $user['mot_de_passe'])) {
-            logSecurityEvent($employee_id, 'password_change_fail', "[SECURITY] Tentative de changement de mot de passe échouée (mot de passe actuel incorrect)");
-            flashMessage("Le mot de passe actuel est incorrect.", "danger");
-            return false;
-        }
-
-        $newPasswordHash = password_hash($new_password, PASSWORD_DEFAULT);
-
-        $updateData = ['mot_de_passe' => $newPasswordHash, 'updated_at' => date('Y-m-d H:i:s')];
-        $whereClause = 'id = :id';
-        $whereParams = [':id' => $employee_id];
-
-        error_log("[DEBUG] handleChangePassword - Calling updateRow with:");
-        error_log("[DEBUG] Table: " . TABLE_USERS);
-        error_log("[DEBUG] Data: " . json_encode($updateData));
-        error_log("[DEBUG] Where: " . $whereClause);
-        error_log("[DEBUG] Where Params: " . json_encode($whereParams));
-
-        $updated = updateRow(
-            TABLE_USERS,
-            $updateData,
-            $whereClause,
-            $whereParams
-        );
-
-        if ($updated > 0) {
-            logBusinessOperation($employee_id, 'password_change_success', "Mot de passe modifié avec succès par l'employé.");
-            deleteRow(TABLE_REMEMBER_ME, 'user_id = :user_id', [':user_id' => $employee_id]);
-            flashMessage("Votre mot de passe a été modifié avec succès.", "success");
-            return true;
-        } else {
-            logSystemActivity('error', "Échec de la mise à jour du mot de passe pour l'employé ID: $employee_id (DB update returned 0 rows)");
-            flashMessage("Erreur technique lors de la modification du mot de passe (code 1).", "danger");
-            return false;
-        }
-    } catch (Exception $e) {
-        logSystemActivity('error', "Exception lors du changement de mot de passe pour l'employé ID: $employee_id: " . $e->getMessage());
-        flashMessage("Erreur technique lors de la modification du mot de passe (code 2).", "danger");
-        return false;
-    }
-}
-
-function handleAnonymousReport($sujet, $description)
-{
-    $sujet = trim(sanitizeInput($sujet));
-    $description = trim(sanitizeInput($description));
-
-    if (mb_strlen($sujet) > 255) {
-        error_log("[WARNING] handleAnonymousReport: Sujet trop long.");
-        return false;
-    }
-
-    $dataToInsert = [
-        'sujet' => !empty($sujet) ? $sujet : null,
-        'description' => $description,
-        'statut' => 'nouveau'
-    ];
-
-    if (!defined('TABLE_SIGNALEMENTS')) {
-        define('TABLE_SIGNALEMENTS', 'signalements');
-    }
-
-    try {
-        $insertedId = insertRow(TABLE_SIGNALEMENTS, $dataToInsert);
-
-        if ($insertedId) {
-            logSystemActivity('anonymous_report_success', "Signalement anonyme ID: $insertedId enregistré avec succès.");
-            return true;
-        } else {
-            logSystemActivity('anonymous_report_failure', "Échec de l'insertion du signalement anonyme en BDD.");
-            return false;
-        }
-    } catch (Exception $e) {
-        logSystemActivity('anonymous_report_exception', "Exception lors de l'enregistrement du signalement anonyme: " . $e->getMessage());
-        return false;
-    }
+    return true;
 }

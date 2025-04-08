@@ -50,7 +50,7 @@ include_once __DIR__ . '/../../templates/header.php';
                 <p class="text-muted">Soutenez les associations partenaires par un don financier ou matériel.</p>
             </div>
             <div class="col-auto">
-                <a href="<?= WEBCLIENT_URL ?>/modules/employees/index.php" class="btn btn-outline-secondary">
+                <a href="javascript:history.back()" class="btn btn-outline-secondary">
                     <i class="fas fa-arrow-left me-1"></i> Retour
                 </a>
             </div>
@@ -73,13 +73,18 @@ include_once __DIR__ . '/../../templates/header.php';
                                 <label for="association-id" class="form-label">Association <span class="text-danger">*</span></label>
                                 <select class="form-select" id="association-id" name="association_id" required>
                                     <option value="" selected disabled>Choisir une association...</option>
-                                    <?php if (empty($associations)): ?>
+                                    <?php if (empty($associations)):
+                                    ?>
                                         <option value="" disabled>Aucune association disponible</option>
-                                    <?php else: ?>
-                                        <?php foreach ($associations as $assoc): ?>
+                                    <?php else:
+                                    ?>
+                                        <?php foreach ($associations as $assoc):
+                                        ?>
                                             <option value="<?= htmlspecialchars($assoc['id']) ?>"><?= htmlspecialchars($assoc['nom']) ?></option>
-                                        <?php endforeach; ?>
-                                    <?php endif; ?>
+                                        <?php endforeach;
+                                        ?>
+                                    <?php endif;
+                                    ?>
                                 </select>
                             </div>
 
@@ -87,19 +92,21 @@ include_once __DIR__ . '/../../templates/header.php';
                                 <label for="donation-type" class="form-label">Type de Don <span class="text-danger">*</span></label>
                                 <select class="form-select" id="donation-type" name="type" required>
                                     <option value="" selected disabled>Choisir...</option>
-                                    <?php foreach ($donationTypes as $dtype): ?>
+                                    <?php foreach ($donationTypes as $dtype):
+                                    ?>
                                         <option value="<?= htmlspecialchars($dtype) ?>"><?= htmlspecialchars(ucfirst($dtype)) ?></option>
-                                    <?php endforeach; ?>
+                                    <?php endforeach;
+                                    ?>
                                 </select>
                             </div>
 
-                            <div class="mb-3" id="donation-amount-group">
-                                <label for="donation-amount" class="form-label">Montant (€) <span class="text-danger">*</span> <small class="text-muted">(si don financier)</small></label>
+                            <div class="mb-3 d-none" id="donation-amount-group">
+                                <label for="donation-amount" class="form-label">Montant (€) <span class="text-danger">*</span></label>
                                 <input type="number" class="form-control" id="donation-amount" name="montant" min="1" step="0.01" placeholder="Ex: 50.00">
                             </div>
 
-                            <div class="mb-3" id="donation-description-group">
-                                <label for="donation-description" class="form-label">Description du matériel <span class="text-danger">*</span> <small class="text-muted">(si don matériel)</small></label>
+                            <div class="mb-3 d-none" id="donation-description-group">
+                                <label for="donation-description" class="form-label">Description du matériel <span class="text-danger">*</span></label>
                                 <textarea class="form-control" id="donation-description" name="description" rows="3" placeholder="Ex: Ordinateur portable Dell Latitude 7400"></textarea>
                                 <small class="form-text text-muted">Décrivez précisément le matériel.</small>
                             </div>
@@ -140,12 +147,10 @@ include_once __DIR__ . '/../../templates/header.php';
                                                 <td><?= htmlspecialchars($don['association_nom'] ?? 'N/A') ?></td>
                                                 <td><?= htmlspecialchars(ucfirst($don['type'] ?? '?')) ?></td>
                                                 <td>
-                                                    <?php if ($don['type'] === 'financier') :
-                                                    ?>
+                                                    <?php if ($don['type'] === 'financier') : ?>
                                                         <?= htmlspecialchars($don['montant_formate'] ?? 'N/A') ?>
                                                     <?php else : ?>
-                                                        <?= nl2br(htmlspecialchars($don['description'] ?? 'N/A'))
-                                                        ?>
+                                                        <?= nl2br(htmlspecialchars($don['description'] ?? 'N/A')) ?>
                                                     <?php endif; ?>
                                                 </td>
                                                 <td><?= $don['statut_badge'] ?? '' ?></td>
@@ -161,6 +166,42 @@ include_once __DIR__ . '/../../templates/header.php';
         </div>
     </div>
 </main>
+
+<!-- JavaScript for conditional form fields -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const donationTypeSelect = document.getElementById('donation-type');
+        const amountGroup = document.getElementById('donation-amount-group');
+        const amountInput = document.getElementById('donation-amount');
+        const descriptionGroup = document.getElementById('donation-description-group');
+        const descriptionTextarea = document.getElementById('donation-description');
+
+        function toggleFields() {
+            const selectedType = donationTypeSelect.value;
+
+            if (selectedType === 'financier') {
+                amountGroup.classList.remove('d-none');
+                amountInput.required = true;
+                descriptionGroup.classList.add('d-none');
+                descriptionTextarea.required = false;
+            } else if (selectedType === 'materiel') {
+                amountGroup.classList.add('d-none');
+                amountInput.required = false;
+                descriptionGroup.classList.remove('d-none');
+                descriptionTextarea.required = true;
+            } else {
+                amountGroup.classList.add('d-none');
+                amountInput.required = false;
+                descriptionGroup.classList.add('d-none');
+                descriptionTextarea.required = false;
+            }
+        }
+
+        toggleFields();
+
+        donationTypeSelect.addEventListener('change', toggleFields);
+    });
+</script>
 
 <?php
 include_once __DIR__ . '/../../templates/footer.php';
