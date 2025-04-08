@@ -41,6 +41,16 @@ define('TABLE_USER_PREFERENCES', 'preferences_utilisateurs');
 define('TABLE_LOGS', 'logs');
 define('TABLE_REMEMBER_ME', 'remember_me_tokens');
 
+// constantes pour les devis (quotes)
+define('QUOTE_STATUS_PENDING', 'en_attente');
+define('QUOTE_STATUS_ACCEPTED', 'accepte');
+define('QUOTE_STATUS_REFUSED', 'refuse');
+define('QUOTE_STATUS_EXPIRED', 'expire');
+define('QUOTE_STATUSES', [QUOTE_STATUS_PENDING, QUOTE_STATUS_ACCEPTED, QUOTE_STATUS_REFUSED, QUOTE_STATUS_EXPIRED]);
+
+// taux de tva standard
+define('TVA_RATE', 0.20); // 20%
+
 // duree de vie de la session en secondes (30 minutes)
 define('SESSION_LIFETIME', 1800);
 
