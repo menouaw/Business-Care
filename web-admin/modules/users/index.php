@@ -3,27 +3,20 @@ require_once '../../includes/page_functions/modules/users.php';
 
 requireRole(ROLE_ADMIN);
 
-$queryData = getQueryData(); 
-
-$page = isset($queryData['page']) ? (int)$queryData['page'] : 1;
-$search = $queryData['search'] ?? '';
-$role = isset($queryData['role']) ? (int)$queryData['role'] : 0;
-$statut = $queryData['statut'] ?? '';
+$queryData = getQueryData(['page' => 1, 'search' => '', 'role' => 0, 'statut' => '']); 
+$page = $queryData['page'];
+$search = $queryData['search'];
+$role = $queryData['role'];
+$statut = $queryData['statut'];
 
 $result = usersGetList($page, DEFAULT_ITEMS_PER_PAGE, $search, $role, 0, $statut);
 $roles = usersGetRoles();
 
 $users = $result['users'];
-$pagination = [
-    'currentPage' => $result['currentPage'],
-    'totalPages' => $result['totalPages'],
-    'totalItems' => $result['totalItems'],
-    'perPage' => $result['perPage']
-];
-
-// Construct URL pattern for pagination
-$queryParams = ['search' => $search, 'role' => $role, 'statut' => $statut, 'page' => '{page}'];
-$urlPattern = WEBADMIN_URL . '/modules/users/index.php?' . http_build_query(array_filter($queryParams));
+$totalPages = $result['totalPages'];
+$totalUsers = $result['totalItems'];
+$currentPage = $result['currentPage'];
+$itemsPerPage = $result['perPage'];
 
 $pageTitle = "Gestion des utilisateurs";
 include '../../templates/header.php';
@@ -37,7 +30,7 @@ include '../../templates/header.php';
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
             <?php echo displayFlashMessages(); ?>
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h2"><?php echo $pageTitle; ?> (<?php echo $pagination['totalItems']; ?>)</h1>
+                <h1 class="h2"><?php echo "Gestion des utilisateurs ({$totalUsers})"; ?></h1>
                 <div class="btn-toolbar mb-2 mb-md-0">
                     <a href="<?php echo WEBADMIN_URL; ?>/modules/users/add.php" class="btn btn-sm btn-primary">
                         <i class="fas fa-plus"></i> Ajouter un utilisateur
@@ -135,8 +128,17 @@ include '../../templates/header.php';
                         </table>
                     </div>
                     
+                    <?php
+                    $paginationInfo = [
+                        'currentPage' => $currentPage,
+                        'totalPages' => $totalPages,
+                        'totalItems' => $totalUsers,
+                        'itemsPerPage' => $itemsPerPage
+                    ];
+                    $urlPattern = WEBADMIN_URL . '/modules/users/index.php?search=' . urlencode($search) . '&role=' . urlencode($role) . '&statut=' . urlencode($statut) . '&page={page}';
+                    ?>
                     <div class="d-flex justify-content-center">
-                        <?php echo renderPagination($pagination, $urlPattern); ?>
+                        <?php echo renderPagination($paginationInfo, $urlPattern); ?>
                     </div>
                 </div>
             </div>

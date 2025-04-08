@@ -121,10 +121,9 @@ include '../../templates/header.php';
                             <table class="table table-striped table-hover mb-0 small">
                                 <thead>
                                     <tr>
-                                        <th>Type</th>
+                                        <th>Service</th>
                                         <th>Date debut</th>
                                         <th>Date fin</th>
-                                        <th>Montant mensuel</th>
                                         <th>Statut</th>
                                         <th>Actions</th>
                                     </tr>
@@ -132,10 +131,9 @@ include '../../templates/header.php';
                                 <tbody>
                                     <?php foreach ($contracts as $contract): ?>
                                         <tr>
-                                            <td><?php echo htmlspecialchars($contract['type_contrat']); ?></td>
+                                            <td><?php echo htmlspecialchars($contract['nom_service'] ?? 'Inconnu'); ?></td>
                                             <td><?php echo formatDate($contract['date_debut'], 'd/m/Y'); ?></td>
                                             <td><?php echo $contract['date_fin'] ? formatDate($contract['date_fin'], 'd/m/Y') : '-'; ?></td>
-                                            <td><?php echo formatMoney((float)$contract['montant_mensuel'], '€'); ?></td>
                                             <td><?php echo getStatusBadge($contract['statut']); ?></td>
                                             <td>
                                                 <a href="<?php echo WEBADMIN_URL; ?>/modules/contracts/view.php?id=<?php echo $contract['id']; ?>" 

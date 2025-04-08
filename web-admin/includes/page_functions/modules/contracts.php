@@ -8,16 +8,16 @@ require_once __DIR__ . '/../../init.php';
  * @param int $perPage Nombre d'elements par page (defaut via constante)
  * @param string $search Terme de recherche
  * @param string $statut Filtre par statut
- * @param string $typeContrat Filtre par type de contrat
+ * @param int $serviceId Filtre par service 
  * @return array Donnees de pagination et liste des contrats
  */
-function contractsGetList($page = 1, $perPage = DEFAULT_ITEMS_PER_PAGE, $search = '', $statut = '', $typeContrat = '') {
+function contractsGetList($page = 1, $perPage = DEFAULT_ITEMS_PER_PAGE, $search = '', $statut = '', $serviceId = 0) {
     $params = [];
     $conditions = [];
 
-    if ($typeContrat) {
-        $conditions[] = "c.type_contrat = ?";
-        $params[] = $typeContrat;
+    if ($serviceId > 0) {
+        $conditions[] = "c.service_id = ?";
+        $params[] = (int)$serviceId;
     }
 
     if ($statut) {
@@ -26,7 +26,7 @@ function contractsGetList($page = 1, $perPage = DEFAULT_ITEMS_PER_PAGE, $search 
     }
 
     if ($search) {
-        $conditions[] = "(e.nom LIKE ? OR c.type_contrat LIKE ?)";
+        $conditions[] = "(e.nom LIKE ? OR s.nom LIKE ?)";
         $params[] = "%{$search}%";
         $params[] = "%{$search}%";
     }
@@ -36,7 +36,11 @@ function contractsGetList($page = 1, $perPage = DEFAULT_ITEMS_PER_PAGE, $search 
     $offset = ($page - 1) * $perPage;
 
     $pdo = getDbConnection();
-    $countSql = "SELECT COUNT(c.id) FROM " . TABLE_CONTRACTS . " c LEFT JOIN " . TABLE_COMPANIES . " e ON c.entreprise_id = e.id $whereSql";
+    $countSql = "SELECT COUNT(c.id) 
+                 FROM " . TABLE_CONTRACTS . " c 
+                 LEFT JOIN " . TABLE_COMPANIES . " e ON c.entreprise_id = e.id 
+                 LEFT JOIN " . TABLE_SERVICES . " s ON c.service_id = s.id 
+                 $whereSql";
 
     $countStmt = $pdo->prepare($countSql);
     $countStmt->execute($params);
@@ -45,9 +49,10 @@ function contractsGetList($page = 1, $perPage = DEFAULT_ITEMS_PER_PAGE, $search 
     $page = max(1, min($page, $totalPages)); 
     $offset = ($page - 1) * $perPage;
 
-    $sql = "SELECT c.*, e.nom as nom_entreprise 
+    $sql = "SELECT c.*, e.nom as nom_entreprise, s.nom as nom_service 
             FROM " . TABLE_CONTRACTS . " c 
             LEFT JOIN " . TABLE_COMPANIES . " e ON c.entreprise_id = e.id
+            LEFT JOIN " . TABLE_SERVICES . " s ON c.service_id = s.id
             {$whereSql}
             ORDER BY c.date_debut DESC LIMIT ?, ?";
     $paramsWithPagination = array_merge($params, [$offset, $perPage]);
@@ -70,9 +75,10 @@ function contractsGetList($page = 1, $perPage = DEFAULT_ITEMS_PER_PAGE, $search 
  * @return array|false Donnees du contrat ou false si non trouve
  */
 function contractsGetDetails($id) {
-    $sql = "SELECT c.*, e.nom as nom_entreprise 
+    $sql = "SELECT c.*, e.nom as nom_entreprise, s.nom as nom_service
             FROM " . TABLE_CONTRACTS . " c 
             LEFT JOIN " . TABLE_COMPANIES . " e ON c.entreprise_id = e.id 
+            LEFT JOIN " . TABLE_SERVICES . " s ON c.service_id = s.id
             WHERE c.id = ? LIMIT 1";
     return executeQuery($sql, [$id])->fetch();
 }
@@ -84,6 +90,15 @@ function contractsGetDetails($id) {
  */
 function contractsGetEntreprises() {
     return fetchAll(TABLE_COMPANIES, '', 'nom ASC'); 
+}
+
+/**
+ * Recupere la liste des services pour le formulaire
+ * 
+ * @return array Liste des services (id, nom)
+ */
+function contractsGetServices() {
+    return fetchAll(TABLE_SERVICES, 'actif = 1', 'ordre ASC'); 
 }
 
 /**
@@ -106,21 +121,22 @@ function contractsSave($data, $id = 0) {
             $errors[] = "L'entreprise sélectionnée n'existe pas";
         }
     }
+
+    if (empty($data['service_id'])) {
+        $errors[] = "Le service (type de contrat) est obligatoire";
+    } else {
+        $serviceExists = fetchOne(TABLE_SERVICES, 'id = ? AND actif = 1', '', [(int)$data['service_id']]);
+        if (!$serviceExists) {
+            $errors[] = "Le service sélectionné n'existe pas ou n'est pas actif";
+        }
+    }
     
     if (empty($data['date_debut'])) {
         $errors[] = "La date de debut est obligatoire";
     }
     
-    if (empty($data['type_contrat'])) {
-        $errors[] = "Le type de contrat est obligatoire";
-    }
-    
     if (!empty($data['date_fin']) && $data['date_fin'] < $data['date_debut']) {
         $errors[] = "La date de fin ne peut pas être antérieure à la date de début";
-    }
-    
-    if (!in_array($data['type_contrat'], CONTRACT_TYPES)) {
-        $errors[] = "Le type de contrat sélectionné n'est pas valide.";
     }
     
     $status = $data['statut'] ?? DEFAULT_CONTRACT_STATUS;
@@ -134,11 +150,10 @@ function contractsSave($data, $id = 0) {
     
     $dbData = [
         'entreprise_id' => (int)$data['entreprise_id'],
+        'service_id' => (int)$data['service_id'],
         'date_debut' => $data['date_debut'],
         'date_fin' => !empty($data['date_fin']) ? $data['date_fin'] : null,
-        'montant_mensuel' => !empty($data['montant_mensuel']) ? (float)$data['montant_mensuel'] : null,
         'nombre_salaries' => !empty($data['nombre_salaries']) ? (int)$data['nombre_salaries'] : null,
-        'type_contrat' => $data['type_contrat'],
         'statut' => $status,
         'conditions_particulieres' => $data['conditions_particulieres'] ?? null
     ];
@@ -151,7 +166,7 @@ function contractsSave($data, $id = 0) {
             
             if ($affectedRows !== false) {
                 logBusinessOperation($_SESSION['user_id'], 'contract_update', 
-                    "[SUCCESS] Mise à jour contrat ID: $id, entreprise ID: {$dbData['entreprise_id']}, type: {$dbData['type_contrat']}");
+                    "[SUCCESS] Mise à jour contrat ID: $id, entreprise ID: {$dbData['entreprise_id']}, service ID: {$dbData['service_id']}");
                 $message = "Le contrat a ete mis a jour avec succes";
                 commitTransaction();
                 return ['success' => true, 'message' => $message];
@@ -164,7 +179,7 @@ function contractsSave($data, $id = 0) {
             
             if ($newId) {
                 logBusinessOperation($_SESSION['user_id'], 'contract_create', 
-                    "[SUCCESS] Création contrat ID: $newId, entreprise ID: {$dbData['entreprise_id']}, type: {$dbData['type_contrat']}");
+                    "[SUCCESS] Création contrat ID: $newId, entreprise ID: {$dbData['entreprise_id']}, service ID: {$dbData['service_id']}");
                 $message = "Le contrat a ete cree avec succes";
                 commitTransaction();
                 return ['success' => true, 'message' => $message, 'newId' => $newId];

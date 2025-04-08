@@ -67,7 +67,10 @@ function companiesGetDetails($id) {
         return false;
     }
     
-    $sqlContracts = "SELECT c.* FROM " . TABLE_CONTRACTS . " c WHERE c.entreprise_id = ? ORDER BY c.date_debut DESC";
+    $sqlContracts = "SELECT c.*, s.nom as nom_service 
+                     FROM " . TABLE_CONTRACTS . " c 
+                     LEFT JOIN " . TABLE_SERVICES . " s ON c.service_id = s.id
+                     WHERE c.entreprise_id = ? ORDER BY c.date_debut DESC";
     $company['contracts'] = executeQuery($sqlContracts, [$id])->fetchAll();
     
     $sqlUsers = "SELECT p.*, r.nom as role_name FROM " . TABLE_USERS . " p LEFT JOIN " . TABLE_ROLES . " r ON p.role_id = r.id WHERE p.entreprise_id = ? ORDER BY p.nom, p.prenom";

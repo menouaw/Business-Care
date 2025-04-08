@@ -19,6 +19,8 @@ if (!$contract) {
 
 $activeUserCount = contractsGetActiveUserCountForCompany($contract['entreprise_id']);
 
+$serviceDetails = fetchOne(TABLE_SERVICES, 'id = ?', '', [$contract['service_id']]);
+
 $dureeTexte = '-';
 $montantTotalEstimeFormatted = '-';
 
@@ -54,12 +56,11 @@ include_once '../../templates/header.php';
                     <div class="row">
                         <div class="col-md-6">
                             <p><strong>Entreprise:</strong> <a href="<?php echo WEBADMIN_URL; ?>/modules/companies/view.php?id=<?php echo $contract['entreprise_id']; ?>" data-bs-toggle="tooltip" title="Voir l'entreprise <?php echo htmlspecialchars($contract['nom_entreprise']); ?>"><?php echo htmlspecialchars($contract['nom_entreprise']); ?></a></p>
-                            <p><strong>Type de contrat:</strong> <?php echo htmlspecialchars(ucfirst($contract['type_contrat'])); ?></p>
+                            <p><strong>Service:</strong> <?php echo htmlspecialchars(ucfirst($contract['nom_service'])); ?></p>
                             <p><strong>Date de debut:</strong> <?php echo formatDate($contract['date_debut']); ?></p>
                             <p><strong>Date de fin:</strong> <?php echo $contract['date_fin'] ? formatDate($contract['date_fin']) : 'Indeterminee'; ?></p>
                         </div>
                         <div class="col-md-6">
-                            <p><strong>Montant mensuel:</strong> <?php echo $contract['montant_mensuel'] ? formatCurrency($contract['montant_mensuel']) : 'Non specifie'; ?></p>
                             <p><strong>Nombre de salariés actifs:</strong> <?php echo $activeUserCount; ?> (Contrat: <?php echo $contract['nombre_salaries'] ?: 'N/S'; ?>)</p>
                             <p><strong>Statut:</strong> <?php echo getStatusBadge($contract['statut']); ?></p>
                             <p><strong>Date de creation:</strong> <?php echo formatDate($contract['created_at']); ?></p>
@@ -97,19 +98,6 @@ include_once '../../templates/header.php';
 
                                 $duree = $dateDebut->diff($dateFinCalcul);
                                 $dureeTexte = formatDuration($duree);
-
-                                if (isset($contract['montant_mensuel']) && is_numeric($contract['montant_mensuel']) && $contract['montant_mensuel'] > 0) {
-                                    $totalMonths = ($duree->y * 12) + $duree->m;
-
-                                    if ($totalMonths == 0 && $dateDebut <= $dateFinCalcul) {
-                                        $totalMonths = 1;
-                                    } elseif ($duree->d > 0) {
-                                        $totalMonths++;
-                                    }
-
-                                    $montantTotalEstime = $totalMonths * (float)$contract['montant_mensuel'];
-                                    $montantTotalEstimeFormatted = formatCurrency($montantTotalEstime);
-                                }
                             } else {
                                 if (!$isValidStartDate) logSystemActivity('warning', 'Date de début invalide pour contrat ID: ' . ($contract['id'] ?? 'N/A'));
                                 if (!$isValidEndDate && !empty($contract['date_fin'])) logSystemActivity('warning', 'Date de fin invalide pour contrat ID: ' . ($contract['id'] ?? 'N/A'));
@@ -120,14 +108,19 @@ include_once '../../templates/header.php';
                             <h6>Duree <?php echo ($contract['date_fin'] ? 'totale' : 'actuelle'); ?></h6>
                             <p class="h4"><?php echo $dureeTexte; ?></p>
                         </div>
-                        <?php if ($contract['montant_mensuel']): ?>
+                        <?php 
+                        if ($serviceDetails && isset($serviceDetails['tarif_annuel_par_salarie'])):
+                            $tarifAnnuelSalarie = (float)$serviceDetails['tarif_annuel_par_salarie'];
+                            $nombreSalariesContrat = (int)($contract['nombre_salaries'] ?? 0);
+                            $coutAnnuelEstime = $nombreSalariesContrat > 0 ? $tarifAnnuelSalarie * $nombreSalariesContrat : 0;
+                        ?>
                             <div class="col-md-4 text-center">
-                                <h6>Montant mensuel</h6>
-                                <p class="h4"><?php echo formatCurrency($contract['montant_mensuel']); ?></p>
+                                <h6>Tarif Annuel / Salarié</h6>
+                                <p class="h4"><?php echo formatCurrency($tarifAnnuelSalarie); ?></p>
                             </div>
                             <div class="col-md-4 text-center">
-                                <h6>Montant total <?php echo ($contract['date_fin'] ? 'facture' : 'estime'); ?></h6>
-                                <p class="h4"><?php echo $montantTotalEstimeFormatted; ?></p>
+                                <h6>Coût Annuel Estimé (base)</h6>
+                                <p class="h4"><?php echo $coutAnnuelEstime > 0 ? formatCurrency($coutAnnuelEstime) : 'N/A'; ?></p>
                             </div>
                         <?php endif; ?>
                     </div>
