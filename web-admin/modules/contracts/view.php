@@ -19,6 +19,8 @@ if (!$contract) {
 
 $activeUserCount = contractsGetActiveUserCountForCompany($contract['entreprise_id']);
 
+$serviceDetails = fetchOne(TABLE_SERVICES, 'id = ?', '', [$contract['service_id']]);
+
 $dureeTexte = '-';
 $montantTotalEstimeFormatted = '-';
 
@@ -106,6 +108,21 @@ include_once '../../templates/header.php';
                             <h6>Duree <?php echo ($contract['date_fin'] ? 'totale' : 'actuelle'); ?></h6>
                             <p class="h4"><?php echo $dureeTexte; ?></p>
                         </div>
+                        <?php 
+                        if ($serviceDetails && isset($serviceDetails['tarif_annuel_par_salarie'])):
+                            $tarifAnnuelSalarie = (float)$serviceDetails['tarif_annuel_par_salarie'];
+                            $nombreSalariesContrat = (int)($contract['nombre_salaries'] ?? 0);
+                            $coutAnnuelEstime = $nombreSalariesContrat > 0 ? $tarifAnnuelSalarie * $nombreSalariesContrat : 0;
+                        ?>
+                            <div class="col-md-4 text-center">
+                                <h6>Tarif Annuel / Salarié</h6>
+                                <p class="h4"><?php echo formatCurrency($tarifAnnuelSalarie); ?></p>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <h6>Coût Annuel Estimé (base)</h6>
+                                <p class="h4"><?php echo $coutAnnuelEstime > 0 ? formatCurrency($coutAnnuelEstime) : 'N/A'; ?></p>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
