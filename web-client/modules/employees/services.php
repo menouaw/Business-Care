@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $dummy_appointment_data = [
                     'prestation_id' => $prestation_id,
-                    'date_rdv'      => date('Y-m-d H:i:s', strtotime('+1 day')), // Placeholder date
+                    'date_rdv'      => date('Y-m-d H:i:s', strtotime('+1 day')), 
                     'duree'         => 60,
                     'type_rdv'      => 'visio',
                     'notes'         => 'Réservation rapide depuis catalogue.'
@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 
-$pageData = displayEmployeeServiceCatalogPage();
+$pageData = displayServiceCatalog();
 $services = $pageData['services'] ?? [];
 $paginationHtml = $pageData['pagination_html'] ?? '';
 $types = $pageData['types'] ?? [];
@@ -63,6 +63,25 @@ $pageTitle = "Catalogue des Services - Espace Salarié";
 include_once __DIR__ . '/../../templates/header.php';
 
 $csrfToken = $_SESSION['csrf_token'] ?? '';
+
+function getServiceIcon($type)
+{
+    switch (strtolower($type)) {
+        case 'conference':
+            return 'fas fa-chalkboard-teacher';
+        case 'webinar':
+            return 'fas fa-desktop';
+        case 'atelier':
+            return 'fas fa-tools';
+        case 'consultation':
+            return 'fas fa-user-md';
+        case 'evenement':
+            return 'fas fa-calendar-alt';
+        case 'autre':
+        default:
+            return 'fas fa-concierge-bell'; 
+    }
+}
 
 ?>
 

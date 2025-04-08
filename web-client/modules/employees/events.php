@@ -1,7 +1,36 @@
 <?php
 
-
+require_once __DIR__ . '/../../includes/init.php';
 require_once __DIR__ . '/../../includes/page_functions/modules/employees.php';
+
+// Enforce authentication and role right at the beginning for all access (GET and POST)
+requireRole(ROLE_SALARIE);
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // requireRole(ROLE_SALARIE); // Already checked above
+    $employee_id = $_SESSION['user_id'];
+    $event_id = filter_input(INPUT_POST, 'event_id', FILTER_VALIDATE_INT);
+    $csrf_token = $_POST['csrf_token'] ?? '';
+    $action = $_POST['action'] ?? '';
+
+    if (!validateToken($csrf_token)) {
+        logSecurityEvent($employee_id, 'csrf_failure', "[SECURITY FAILURE] Tentative POST événement avec jeton invalide");
+    } elseif ($event_id) {
+        if ($action === 'register_event') {
+            handleRegisterForEvent($employee_id, $event_id);
+        } elseif ($action === 'unregister_event') {
+            handleUnregisterFromEvent($employee_id, $event_id);
+        } else {
+            flashMessage("Action invalide.", "danger");
+        }
+    } else {
+        flashMessage("ID d'événement invalide.", "danger");
+    }
+
+
+    redirectTo(WEBCLIENT_URL . '/modules/employees/events.php');
+    exit;
+}
 
 
 $pageData = displayEmployeeEventsPage();
@@ -13,22 +42,6 @@ $pageTitle = "Événements - Espace Salarié";
 
 include_once __DIR__ . '/../../templates/header.php';
 
-function getEventIcon($type)
-{
-    switch ($type) {
-        case 'conference':
-            return 'fas fa-chalkboard-teacher';
-        case 'webinar':
-            return 'fas fa-desktop';
-        case 'atelier':
-            return 'fas fa-tools';
-        case 'defi_sportif':
-            return 'fas fa-running';
-        default:
-            return 'fas fa-calendar-alt';
-    }
-}
-
 ?>
 
 <main class="employee-events-page py-4">
@@ -38,8 +51,17 @@ function getEventIcon($type)
                 <h1 class="h2">Événements</h1>
                 <p class="text-muted">Découvrez et participez aux prochains événements organisés.</p>
             </div>
+            <div class="col-md-6 text-md-end mb-2 mb-md-0">
+                <a href="<?= WEBCLIENT_URL ?>/modules/employees/index.php" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i> Retour
+                </a>
+            </div>
+        </div>
+
+        <?php echo displayFlashMessages(); ?>
+
+        <div class="row mb-4">
             <div class="col-md-6 text-md-end">
-                <!-- Filtre par type -->
                 <form action="" method="GET" class="d-inline-block">
                     <div class="input-group">
                         <label class="input-group-text" for="eventTypeFilter">Filtrer par type</label>
@@ -89,9 +111,38 @@ function getEventIcon($type)
                                 </p>
                                 <p class="card-text text-muted flex-grow-1"><?= nl2br(htmlspecialchars(substr($event['description'] ?? 'Pas de description.', 0, 150))) . (strlen($event['description'] ?? '') > 150 ? '...' : '') ?></p>
                                 <div class="mt-auto d-flex justify-content-between align-items-center">
-                                    <a href="<?= WEBCLIENT_URL ?>/modules/employees/event_details.php?id=<?= $event['id'] ?>" class="btn btn-sm btn-outline-success">Voir les détails</a>
-                                    <?php if (!empty($event['capacite_max'])) : ?>
-                                        <small class="text-muted"><i class="fas fa-users me-1"></i> <?= htmlspecialchars($event['capacite_max']) ?> places</small>
+                                    <div>
+                                        <?php if ($event['est_inscrit']) : ?>
+                                            <form action="<?= WEBCLIENT_URL ?>/modules/employees/events.php" method="POST" class="d-inline">
+                                                <input type="hidden" name="action" value="unregister_event">
+                                                <input type="hidden" name="event_id" value="<?= $event['id'] ?>">
+                                                <input type="hidden" name="csrf_token" value="<?= $pageData['csrf_token'] ?? '' ?>">
+                                                <button type="submit" class="btn btn-sm btn-outline-warning">
+                                                    <i class="fas fa-calendar-times me-1"></i> Se désinscrire
+                                                </button>
+                                            </form>
+                                        <?php elseif ($event['est_complet']) : ?>
+                                            <button class="btn btn-sm btn-warning" disabled>Complet</button>
+                                        <?php else : ?>
+                                            <form action="<?= WEBCLIENT_URL ?>/modules/employees/events.php" method="POST" class="d-inline">
+                                                <input type="hidden" name="action" value="register_event">
+                                                <input type="hidden" name="event_id" value="<?= $event['id'] ?>">
+                                                <input type="hidden" name="csrf_token" value="<?= $pageData['csrf_token'] ?? '' ?>">
+                                                <button type="submit" class="btn btn-sm btn-success">
+                                                    <i class="fas fa-calendar-plus me-1"></i> Participer
+                                                </button>
+                                            </form>
+                                        <?php endif; ?>
+                                    </div>
+
+                                    <?php if (isset($event['places_restantes']) && $event['places_restantes'] !== null) : ?>
+                                        <small class="text-muted">
+                                            <i class="fas fa-users me-1"></i>
+                                            <?= htmlspecialchars($event['places_restantes']) ?> place<?= $event['places_restantes'] > 1 ? 's' : '' ?> restante<?= $event['places_restantes'] > 1 ? 's' : '' ?>
+                                        </small>
+                                    <?php elseif (isset($event['capacite_max']) && $event['capacite_max'] !== null):
+                                    ?>
+                                        <small class="text-muted"><i class="fas fa-users me-1"></i> <?= htmlspecialchars($event['capacite_max']) ?> places max</small>
                                     <?php endif; ?>
                                 </div>
                             </div>
@@ -105,6 +156,5 @@ function getEventIcon($type)
 </main>
 
 <?php
-// Inclure le pied de page
 include_once __DIR__ . '/../../templates/footer.php';
 ?>

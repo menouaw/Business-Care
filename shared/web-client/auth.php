@@ -286,12 +286,7 @@ function createRememberMeToken($userId)
     return $token;
 }
 
-/**
- * Valide un jeton "Se souvenir de moi" et réauthentifie l'utilisateur
- * 
- * @param string $token Jeton à valider
- * @return bool Indique si le jeton est valide et l'authentification réussie
- */
+
 function validateRememberMeToken($token)
 {
     $result = fetchOne('remember_me_tokens', "token = '$token' AND expires_at > NOW()");

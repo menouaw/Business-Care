@@ -89,7 +89,6 @@ function generatePageTitle($title = '')
  */
 function redirectTo($url)
 {
-    // S'assurer que toutes les données de session sont écrites avant de rediriger
     session_write_close();
 
     header('Location: ' . $url);
@@ -126,36 +125,25 @@ function getQueryData()
 function flashMessage($message, $type = 'success')
 {
     if (!isset($_SESSION['flash_messages'])) {
-        $_SESSION['flash_messages'] = []; // Initialise comme tableau s'il n'existe pas
+        $_SESSION['flash_messages'] = []; 
     }
-    // Ajoute le nouveau message au tableau
     $_SESSION['flash_messages'][] = [
         'message' => $message,
         'type' => $type
     ];
 }
 
-/**
- * Récupère TOUS les messages flash enregistrés en session et les supprime
- * 
- * @return array Tableau des messages flash ou tableau vide si aucun message
- */
+
 function getFlashMessages()
-{ // Renommée en getFlashMessages (pluriel)
-    $messages = $_SESSION['flash_messages'] ?? []; // Récupère le tableau ou un tableau vide
+{ 
+    $messages = $_SESSION['flash_messages'] ?? [];
     if (!empty($messages)) {
-        unset($_SESSION['flash_messages']); // Supprime la clé de session
+        unset($_SESSION['flash_messages']); 
     }
     return $messages;
 }
 
-/**
- * Affiche les messages flash sous forme d'alertes Bootstrap
- * NOTE: Cette fonction est maintenant redondante si header.php affiche déjà les messages.
- *       Elle est conservée pour compatibilité potentielle mais ne devrait plus être appelée directement.
- * 
- * @return string HTML des alertes ou chaîne vide si aucun message
- */
+
 function displayFlashMessages()
 {
     $flashMessages = $_SESSION['flash_messages'] ?? [];
@@ -163,7 +151,6 @@ function displayFlashMessages()
         return '';
     }
 
-    // Effacer la variable de session MAINTENANT
     unset($_SESSION['flash_messages']);
 
     $output = '';
@@ -182,7 +169,7 @@ function displayFlashMessages()
         $alertClass = $alertTypes[$type] ?? 'alert-info';
 
         $output .= '<div class="alert ' . $alertClass . ' alert-dismissible fade show" role="alert">'
-            . htmlspecialchars($message) // Sécurité: échapper le message ici
+            . htmlspecialchars($message) 
             . '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>'
             . '</div>';
     }
@@ -273,12 +260,10 @@ function renderPagination($pagination, $urlPattern)
 
     $html = '<nav aria-label="Page navigation"><ul class="pagination">';
 
-    // Bouton précédent
     $prevDisabled = $pagination['currentPage'] <= 1 ? ' disabled' : '';
     $prevUrl = str_replace('{page}', $pagination['currentPage'] - 1, $urlPattern);
     $html .= '<li class="page-item' . $prevDisabled . '"><a class="page-link" href="' . $prevUrl . '">Précédent</a></li>';
 
-    // Numéros de page
     $startPage = max(1, $pagination['currentPage'] - 2);
     $endPage = min($pagination['totalPages'], $pagination['currentPage'] + 2);
 
@@ -288,7 +273,6 @@ function renderPagination($pagination, $urlPattern)
         $html .= '<li class="page-item' . $active . '"><a class="page-link" href="' . $url . '">' . $i . '</a></li>';
     }
 
-    // Bouton suivant
     $nextDisabled = $pagination['currentPage'] >= $pagination['totalPages'] ? ' disabled' : '';
     $nextUrl = str_replace('{page}', $pagination['currentPage'] + 1, $urlPattern);
     $html .= '<li class="page-item' . $nextDisabled . '"><a class="page-link" href="' . $nextUrl . '">Suivant</a></li>';
@@ -298,18 +282,7 @@ function renderPagination($pagination, $urlPattern)
     return $html;
 }
 
-/**
- * Récupère et pagine les prestations disponibles.
- *
- * Cette fonction interroge la table "prestations" en appliquant des filtres optionnels sur le type et la catégorie,
- * puis retourne les résultats paginés triés par ordre alphabétique sur le nom.
- *
- * @param string $type Filtre optionnel pour le type de prestation.
- * @param string $categorie Filtre optionnel pour la catégorie de prestation.
- * @param int $page Numéro de la page à récupérer.
- * @param int $perPage Nombre d'éléments par page, par défaut défini par la constante DEFAUT_ITEMS_PER_PAGE.
- * @return array Tableau contenant les prestations paginées ainsi que les informations de pagination.
- */
+
 function getPrestations($type = '', $categorie = '', $page = 1, $perPage = DEFAULT_ITEMS_PER_PAGE)
 {
     $where = [];
@@ -330,14 +303,7 @@ function getPrestations($type = '', $categorie = '', $page = 1, $perPage = DEFAU
     return paginateResults('prestations', $page, $perPage, $whereClause, 'nom ASC');
 }
 
-/**
- * Vérifie si une date et heure sont disponibles pour une réservation
- * 
- * @param string $dateHeure Date et heure au format 'Y-m-d H:i:s'
- * @param int $duree Durée en minutes
- * @param int $prestationId ID de la prestation
- * @return bool True si disponible, false sinon
- */
+
 function isTimeSlotAvailable($dateHeure, $duree, $prestationId)
 {
     $finRdv = date('Y-m-d H:i:s', strtotime($dateHeure) + ($duree * 60));

@@ -50,7 +50,7 @@ include_once __DIR__ . '/../../templates/header.php';
                 <p class="text-muted">Soutenez les associations partenaires par un don financier ou matériel.</p>
             </div>
             <div class="col-auto">
-                <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                <a href="<?= WEBCLIENT_URL ?>/modules/employees/index.php" class="btn btn-outline-secondary">
                     <i class="fas fa-arrow-left me-1"></i> Retour
                 </a>
             </div>

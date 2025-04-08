@@ -170,7 +170,7 @@ include_once __DIR__ . '/../../templates/header.php';
                                                     <i class="fas fa-map-marker-alt me-1"></i> <?= htmlspecialchars($event['lieu'] ?? 'Lieu à confirmer') ?>
                                                 </p>
                                             </div>
-                                            <a href="<?= WEBCLIENT_URL ?>/evenement-details.php?id=<?= $event['id'] ?>" class="btn btn-sm btn-outline-success">Voir détails</a>
+                                            <a href="<?= WEBCLIENT_URL ?>/events.php?id=<?= $event['id'] ?>" class="btn btn-sm btn-outline-success">Voir détails</a>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
@@ -191,7 +191,7 @@ include_once __DIR__ . '/../../templates/header.php';
                     </div>
                     <div class="card-body">
                         <?php
-                        $activites = $dashboardData['recent_activity']['activities'] ?? []; // Récupérer depuis $dashboardData 
+                        $activites = $dashboardData['recent_activity']['activities'] ?? []; 
                         ?>
                         <?php if (empty($activites)): ?>
                             <p class="text-center text-muted">Aucune activité récente enregistrée.</p>
@@ -259,6 +259,5 @@ include_once __DIR__ . '/../../templates/header.php';
 </main>
 
 <?php
-// Inclure le pied de page
 include_once __DIR__ . '/../../templates/footer.php';
 ?>

@@ -38,13 +38,15 @@ function executeQuery($sql, $params = [])
         $stmt = $pdo->prepare($sql);
         if (!is_array($params)) {
             error_log("Warning: executeQuery called with non-array params. SQL: " . $sql);
-            $params = [];
+            $params = []; 
         }
+
         $stmt->execute($params);
+
         return $stmt;
     } catch (PDOException $e) {
         error_log("PDOException in executeQuery: " . $e->getMessage() . " | SQL: " . $sql . " | Params: " . json_encode($params));
-        throw $e;
+        throw $e; 
     }
 }
 
@@ -109,21 +111,13 @@ function fetchOne($table, $where, $params = [], $orderBy = '')
     }
     $sql .= " LIMIT 1";
 
-    // --- Debugging Log ---
     error_log("[DEBUG] fetchOne called for table: $table | WHERE: $where | Params: " . json_encode($params) . " | SQL: $sql");
-    // --- End Debugging Log ---
 
     $stmt = executeQuery($sql, $params);
     return $stmt->fetch();
 }
 
-/**
- * Insère une nouvelle ligne dans la table spécifiée
- *
- * @param string $table Nom de la table dans laquelle insérer la nouvelle ligne
- * @param array $data Tableau associatif des colonnes et valeurs à insérer
- * @return int|false Identifiant de la ligne insérée ou false si l'insertion échoue
- */
+
 function insertRow($table, $data)
 {
     $table = validateTableName($table);

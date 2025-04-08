@@ -179,6 +179,7 @@ CREATE TABLE evenements (
     INDEX idx_type (type)
 );
 
+
 CREATE TABLE communautes (
     id INT PRIMARY KEY AUTO_INCREMENT,
     nom VARCHAR(255) NOT NULL,
@@ -295,6 +296,19 @@ CREATE TABLE associations (
     id INT PRIMARY KEY AUTO_INCREMENT,
     nom VARCHAR(255) NOT NULL UNIQUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE evenement_inscriptions (
+    id INT PRIMARY KEY AUTO_INCREMENT,s
+    personne_id INT NOT NULL,
+    evenement_id INT NOT NULL,
+    statut ENUM('inscrit', 'annule') DEFAULT 'inscrit',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (personne_id) REFERENCES personnes(id) ON DELETE CASCADE,
+    FOREIGN KEY (evenement_id) REFERENCES evenements(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_inscription (personne_id, evenement_id), -- Empêche un utilisateur de s'inscrire deux fois au même événement
+    INDEX idx_statut (statut)
 );
 
 
