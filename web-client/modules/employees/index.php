@@ -191,7 +191,7 @@ include_once __DIR__ . '/../../templates/header.php';
                     </div>
                     <div class="card-body">
                         <?php
-                        $activites = $dashboardData['recent_activity']['activities'] ?? []; 
+                        $activites = $dashboardData['recent_activity']['activities'] ?? [];
                         ?>
                         <?php if (empty($activites)): ?>
                             <p class="text-center text-muted">Aucune activité récente enregistrée.</p>
@@ -231,7 +231,7 @@ include_once __DIR__ . '/../../templates/header.php';
                                 </a>
                             </div>
                             <div class="col-sm-6 col-md-3 mb-2 mb-md-0">
-                                <a href="<?= WEBCLIENT_URL ?>/signaler-situation.php" class="btn btn-warning d-block py-3">
+                                <a href="<?= WEBCLIENT_URL ?>/modules/employees/signalement.php" class="btn btn-warning d-block py-3">
                                     <i class="fas fa-exclamation-triangle me-2"></i>Signaler Situation
                                 </a>
                             </div>

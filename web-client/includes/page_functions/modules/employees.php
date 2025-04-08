@@ -1537,7 +1537,7 @@ function handleChangePassword($employee_id, $current_password, $new_password, $c
     }
 
     if (!defined('MIN_PASSWORD_LENGTH')) {
-        define('MIN_PASSWORD_LENGTH', 8); 
+        define('MIN_PASSWORD_LENGTH', 8);
         error_log("Warning: MIN_PASSWORD_LENGTH was not defined. Using default value 8.");
     }
 
@@ -1570,7 +1570,7 @@ function handleChangePassword($employee_id, $current_password, $new_password, $c
 
         if (!$user) {
             flashMessage("Utilisateur non trouvé.", "danger");
-            session_unset(); 
+            session_unset();
             session_destroy();
             return false;
         }
@@ -1594,7 +1594,7 @@ function handleChangePassword($employee_id, $current_password, $new_password, $c
         error_log("[DEBUG] Where Params: " . json_encode($whereParams));
 
         $updated = updateRow(
-            TABLE_USERS, 
+            TABLE_USERS,
             $updateData,
             $whereClause,
             $whereParams
@@ -1613,6 +1613,43 @@ function handleChangePassword($employee_id, $current_password, $new_password, $c
     } catch (Exception $e) {
         logSystemActivity('error', "Exception lors du changement de mot de passe pour l'employé ID: $employee_id: " . $e->getMessage());
         flashMessage("Erreur technique lors de la modification du mot de passe (code 2).", "danger");
+        return false;
+    }
+}
+
+function handleAnonymousReport($sujet, $description)
+{
+    $sujet = trim(sanitizeInput($sujet));
+    $description = trim(sanitizeInput($description));
+
+    if (mb_strlen($sujet) > 255) { // Double vérification de la longueur
+        error_log("[WARNING] handleAnonymousReport: Sujet trop long.");
+        return false; // Ou gérer l'erreur différemment
+    }
+
+    $dataToInsert = [
+        'sujet' => !empty($sujet) ? $sujet : null,
+        'description' => $description,
+        'statut' => 'nouveau' // Statut initial
+    ];
+
+    if (!defined('TABLE_SIGNALEMENTS')) {
+        define('TABLE_SIGNALEMENTS', 'signalements');
+    }
+
+    try {
+        $insertedId = insertRow(TABLE_SIGNALEMENTS, $dataToInsert);
+
+        if ($insertedId) {
+            // Log système générique (pas de log utilisateur)
+            logSystemActivity('anonymous_report_success', "Signalement anonyme ID: $insertedId enregistré avec succès.");
+            return true;
+        } else {
+            logSystemActivity('anonymous_report_failure', "Échec de l'insertion du signalement anonyme en BDD.");
+            return false;
+        }
+    } catch (Exception $e) {
+        logSystemActivity('anonymous_report_exception', "Exception lors de l'enregistrement du signalement anonyme: " . $e->getMessage());
         return false;
     }
 }

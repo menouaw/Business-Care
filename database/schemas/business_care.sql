@@ -311,5 +311,14 @@ CREATE TABLE evenement_inscriptions (
     INDEX idx_statut (statut)
 );
 
-
+CREATE TABLE signalements (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    sujet VARCHAR(255) NULL, -- Sujet optionnel
+    description TEXT NOT NULL, -- Description obligatoire
+    statut ENUM('nouveau', 'en_cours', 'resolu', 'clos') DEFAULT 'nouveau', -- Statut du traitement
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    -- PAS DE colonne personne_id pour garantir l'anonymat
+    INDEX idx_statut (statut)
+);
 */
