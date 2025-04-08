@@ -1161,15 +1161,35 @@ function displayCommunityDetails($community_id)
     }
 
     $data = [];
-    $data['community'] = fetchOne(TABLE_COMMUNAUTES, "id = :id", [':id' => $community_id]);
+    $data['community'] = fetchOne(TABLE_COMMUNAUTES, "id = :id", [':id' => $community_id], '');
 
     if (!$data['community']) {
         flashMessage("Communauté non trouvée.", "warning");
-        redirectTo(WEBCLIENT_URL . '/communautes.php');
+        redirectTo(WEBCLIENT_URL . '/modules/employees/communities.php');
+        return $data;
     }
 
-    $data['posts'] = [];
-    $data['csrf_token'] = $_SESSION['csrf_token'];
+    $query = "SELECT cm.*, p.prenom, p.nom 
+              FROM communaute_messages cm
+              JOIN personnes p ON cm.personne_id = p.id
+              WHERE cm.communaute_id = :community_id
+              ORDER BY cm.created_at ASC";
+    try {
+        $stmt = executeQuery($query, [':community_id' => $community_id]);
+        $posts = $stmt->fetchAll();
+
+        foreach ($posts as &$post) {
+            $post['auteur_nom'] = trim(($post['prenom'] ?? '') . ' ' . ($post['nom'] ?? 'Inconnu'));
+            if ($post['personne_id'] === $employee_id) {
+                $post['auteur_nom'] = 'Vous';
+            }
+            $post['created_at_formatted'] = isset($post['created_at']) ? formatDate($post['created_at'], 'd/m/Y H:i') : 'Date inconnue';
+        }
+        $data['posts'] = $posts;
+    } catch (Exception $e) {
+        logSystemActivity('error', "Erreur lors de la récupération des messages pour la communauté ID: $community_id: " . $e->getMessage());
+        flashMessage("Erreur lors du chargement des messages.", "danger");
+    }
 
     return $data;
 }
@@ -1198,8 +1218,29 @@ function handleCommunityPost($community_id)
             if (!$community) {
                 flashMessage("Communauté non trouvée.", "danger");
             } else {
+                $dataToInsert = [
+                    'communaute_id' => $community_id,
+                    'personne_id' => $employee_id,
+                    'message' => $message,
+                ];
 
-                flashMessage("Fonctionnalité de publication non implémentée.", "info");
+                try {
+                    $insertedId = insertRow('communaute_messages', $dataToInsert);
+
+                    if ($insertedId) {
+                        logActivity($employee_id, 'community_post', "Nouveau message posté dans la communauté ID: $community_id (Msg ID: $insertedId)");
+                        flashMessage("Votre message a été ajouté.", "success");
+                        return true;
+                    } else {
+                        logSystemActivity('error', "Échec de l'insertion du message pour la communauté ID: $community_id par l'employé ID: $employee_id");
+                        flashMessage("Erreur technique lors de l'ajout de votre message.", "danger");
+                        return false;
+                    }
+                } catch (Exception $e) {
+                    logSystemActivity('error', "Exception lors de l'ajout du message pour la communauté ID: $community_id: " . $e->getMessage());
+                    flashMessage("Erreur technique lors de l'ajout de votre message.", "danger");
+                    return false;
+                }
             }
         }
         redirectTo(WEBCLIENT_URL . '/communaute.php?id=' . $community_id);
@@ -1495,5 +1536,116 @@ function getServiceIcon($type)
             return 'fas fa-calendar-check';
         default:
             return 'fas fa-concierge-bell';
+    }
+}
+
+function getCommunityIcon($type)
+{
+
+    switch ($type) {
+        case 'sport':
+            return 'fas fa-futbol';
+        case 'bien_etre':
+            return 'fas fa-spa';
+        case 'sante':
+            return 'fas fa-heartbeat';
+        default:
+            return 'fas fa-users';
+    }
+}
+
+/**
+ * Prépare les données nécessaires pour la page de détails d'une communauté.
+ *
+ * @param int $community_id L'ID de la communauté.
+ * @return array Les données de la page (détails communauté, posts, token CSRF, etc.).
+ */
+function displayCommunityDetailsPageData($community_id)
+{
+    requireRole(ROLE_SALARIE);
+    $employee_id = $_SESSION['user_id'];
+
+    $data = [
+        'community' => null,
+        'posts' => [],
+        'csrf_token' => $_SESSION['csrf_token'] ?? ''
+    ];
+
+    $community_id = filter_var($community_id, FILTER_VALIDATE_INT);
+    if (!$community_id) {
+        flashMessage("ID de communauté invalide.", "danger");
+        redirectTo(WEBCLIENT_URL . '/modules/employees/communities.php');
+        return $data;
+    }
+
+    $data['community'] = fetchOne(TABLE_COMMUNAUTES, "id = :id", [':id' => $community_id], '');
+
+    if (!$data['community']) {
+        flashMessage("Communauté non trouvée.", "warning");
+        redirectTo(WEBCLIENT_URL . '/modules/employees/communities.php');
+        return $data; // Return empty data before redirect exit
+    }
+
+    // Fetch actual community posts/messages from the database
+    $query = "SELECT cm.*, p.prenom, p.nom 
+              FROM communaute_messages cm
+              JOIN personnes p ON cm.personne_id = p.id
+              WHERE cm.communaute_id = :community_id
+              ORDER BY cm.created_at ASC"; // Display oldest first
+    try {
+        $stmt = executeQuery($query, [':community_id' => $community_id]);
+        $posts = $stmt->fetchAll();
+
+        // Format data for display
+        foreach ($posts as &$post) {
+            $post['auteur_nom'] = trim(($post['prenom'] ?? '') . ' ' . ($post['nom'] ?? 'Inconnu'));
+            if ($post['personne_id'] === $employee_id) {
+                $post['auteur_nom'] = 'Vous'; // Display 'Vous' for the current user
+            }
+            $post['created_at_formatted'] = isset($post['created_at']) ? formatDate($post['created_at'], 'd/m/Y H:i') : 'Date inconnue';
+        }
+        $data['posts'] = $posts;
+    } catch (Exception $e) {
+        logSystemActivity('error', "Erreur lors de la récupération des messages pour la communauté ID: $community_id: " . $e->getMessage());
+        flashMessage("Erreur lors du chargement des messages.", "danger");
+        // Keep posts array empty in case of error
+    }
+
+    return $data;
+}
+
+function handleNewCommunityPost($community_id, $employee_id, $message)
+{
+    if (empty(trim($message))) {
+        flashMessage("Le message ne peut pas être vide.", "warning");
+        return false;
+    }
+    if (!filter_var($community_id, FILTER_VALIDATE_INT) || !filter_var($employee_id, FILTER_VALIDATE_INT)) {
+        flashMessage("ID invalide.", "danger");
+        return false;
+    }
+
+    $dataToInsert = [
+        'communaute_id' => $community_id,
+        'personne_id' => $employee_id,
+        'message' => $message,
+    ];
+
+    try {
+        $insertedId = insertRow('communaute_messages', $dataToInsert);
+
+        if ($insertedId) {
+            logActivity($employee_id, 'community_post', "Nouveau message posté dans la communauté ID: $community_id (Msg ID: $insertedId)");
+            flashMessage("Votre message a été ajouté.", "success");
+            return true;
+        } else {
+            logSystemActivity('error', "Échec de l'insertion du message pour la communauté ID: $community_id par l'employé ID: $employee_id");
+            flashMessage("Erreur technique lors de l'ajout de votre message.", "danger");
+            return false;
+        }
+    } catch (Exception $e) {
+        logSystemActivity('error', "Exception lors de l'ajout du message pour la communauté ID: $community_id: " . $e->getMessage());
+        flashMessage("Erreur technique lors de l'ajout de votre message.", "danger");
+        return false;
     }
 }

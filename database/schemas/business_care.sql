@@ -277,4 +277,15 @@ CREATE TABLE contrats_prestations (
     FOREIGN KEY (prestation_id) REFERENCES prestations(id) ON DELETE CASCADE
 );
 
-
+/*
+CREATE TABLE communaute_messages (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    communaute_id INT NOT NULL,
+    personne_id INT NOT NULL,
+    message TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (communaute_id) REFERENCES communautes(id) ON DELETE CASCADE,
+    FOREIGN KEY (personne_id) REFERENCES personnes(id) ON DELETE CASCADE,
+    INDEX idx_communaute_date (communaute_id, created_at)
+);
+*/

@@ -36,19 +36,15 @@ function executeQuery($sql, $params = [])
     try {
         $pdo = getDbConnection();
         $stmt = $pdo->prepare($sql);
+        if (!is_array($params)) {
+            error_log("Warning: executeQuery called with non-array params. SQL: " . $sql);
+            $params = [];
+        }
         $stmt->execute($params);
         return $stmt;
     } catch (PDOException $e) {
-        $errorInfo = isset($stmt) ? $stmt->errorInfo() : $pdo->errorInfo();
-        $logMessage = sprintf(
-            "[FAILURE] Impossible d'executer la requete.\nSQL: %s\nParams: %s\nError: %s\nPDO Error Info: %s",
-            $sql,
-            print_r($params, true),
-            $e->getMessage(),
-            print_r($errorInfo, true)
-        );
-        error_log($logMessage);
-        die("[FAILURE] Impossible d'executer la requete. Veuillez consulter les logs du serveur pour plus de détails. Message: " . $e->getMessage());
+        error_log("PDOException in executeQuery: " . $e->getMessage() . " | SQL: " . $sql . " | Params: " . json_encode($params));
+        throw $e;
     }
 }
 
@@ -112,6 +108,10 @@ function fetchOne($table, $where, $params = [], $orderBy = '')
         }
     }
     $sql .= " LIMIT 1";
+
+    // --- Debugging Log ---
+    error_log("[DEBUG] fetchOne called for table: $table | WHERE: $where | Params: " . json_encode($params) . " | SQL: $sql");
+    // --- End Debugging Log ---
 
     $stmt = executeQuery($sql, $params);
     return $stmt->fetch();
