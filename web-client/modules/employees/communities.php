@@ -6,20 +6,6 @@ $community_id = isset($_GET['id']) ? filter_var($_GET['id'], FILTER_VALIDATE_INT
 $current_employee_id = $_SESSION['user_id'] ?? null;
 $csrfToken = $_SESSION['csrf_token'] ?? '';
 
-function getCommunityIcon($type)
-{
-    switch ($type) {
-        case 'sport':
-            return 'fas fa-futbol';
-        case 'bien_etre':
-            return 'fas fa-spa';
-        case 'sante':
-            return 'fas fa-heartbeat';
-        default:
-            return 'fas fa-users';
-    }
-}
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? null;
     $posted_community_id = isset($_POST['community_id']) ? filter_var($_POST['community_id'], FILTER_VALIDATE_INT) : null;
@@ -41,7 +27,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($posted_community_id) {
                     logActivity($current_employee_id, 'community_join_attempt', "Tentative de rejoindre la communauté ID: $posted_community_id");
 
-                    $joined = true;
+                    // TODO: Implement actual join logic
+                    $joined = true; // Placeholder
                     if ($joined) {
                         flashMessage("Vous avez rejoint la communauté #" . htmlspecialchars($posted_community_id) . " (Simulation).", "info");
                     } else {
@@ -55,7 +42,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             case 'post_message':
                 if ($posted_community_id) {
                     $message_content = $_POST['message'] ?? null;
-                    handleCommunityPost($posted_community_id, $current_employee_id, $message_content);
+                    // Use the function from the included file
+                    handleNewCommunityPost($posted_community_id, $current_employee_id, $message_content);
                 } else {
                     flashMessage("ID de communauté manquant pour poster un message.", "danger");
                 }
@@ -77,9 +65,10 @@ $pageTitle = "Communautés - Espace Salarié";
 $communityData = null;
 $posts = [];
 $communitiesList = [];
-$viewMode = 'list';
+$viewMode = 'list'; // Default view mode
 
 if ($community_id) {
+    // Attempt to load community details
     $pageData = displayCommunityDetailsPageData($community_id);
     $communityData = $pageData['community'] ?? null;
 
@@ -88,17 +77,19 @@ if ($community_id) {
         $pageTitle = "Communauté : " . htmlspecialchars($communityData['nom']);
         $viewMode = 'detail';
     } else {
-
+        // Community not found or error loading
         if (!headers_sent()) {
-
+            // Only redirect if headers haven't been sent
             flashMessage("Communauté non trouvée.", "warning");
             redirectTo(WEBCLIENT_URL . '/modules/employees/communities.php');
             exit;
         }
+        // If headers sent, just set error state for display
         $pageTitle = "Erreur Communauté";
         $viewMode = 'error';
     }
 } else {
+    // Load the list of all communities
     $pageData = displayEmployeeCommunitiesPage();
     $communitiesList = $pageData['communities'] ?? [];
     $viewMode = 'list';

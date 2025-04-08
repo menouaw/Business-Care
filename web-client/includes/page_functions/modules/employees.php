@@ -1463,3 +1463,455 @@ function checkFirstLogin($employee_id)
     }
     return true;
 }
+
+
+function markTutorialAsCompleted($employee_id)
+{
+    requireRole(ROLE_SALARIE);
+    $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
+    if (!isset($_SESSION['user_id']) || $_SESSION['user_id'] != $employee_id) {
+        logSecurityEvent($employee_id, 'invalid_action', 'Tentative de marquer le tutoriel pour un autre utilisateur', true);
+        return false;
+    }
+
+    try {
+        $prefs = fetchOne(TABLE_USER_PREFERENCES, "personne_id = :id", [':id' => $employee_id]);
+        $data = ['first_login_completed' => 1];
+
+        if ($prefs) {
+            $updated = updateRow(TABLE_USER_PREFERENCES, $data, 'personne_id = :id', [':id' => $employee_id]);
+        } else {
+            $data['personne_id'] = $employee_id;
+            $data['langue'] = 'fr';
+            $data['notif_email'] = 1;
+            $data['theme'] = 'clair';
+            $updated = insertRow(TABLE_USER_PREFERENCES, $data);
+        }
+        if ($updated !== false) {
+            logActivity($employee_id, 'tutorial_completed', 'Tutoriel marqué comme complété');
+        }
+        return $updated !== false;
+    } catch (Exception $e) {
+        logSystemActivity('error', "Erreur markTutorialAsCompleted pour user #$employee_id: " . $e->getMessage());
+        return false;
+    }
+}
+
+
+
+function displayEmployeeServiceCatalogPage()
+{
+    requireRole(ROLE_SALARIE);
+    $employee_id = $_SESSION['user_id'];
+
+    $data = [
+        'services' => [],
+        'pagination_html' => '',
+        'types' => PRESTATION_TYPES,
+        'categories' => [],
+        'currentTypeFilter' => '',
+        'currentCategoryFilter' => '',
+        'hasActiveContract' => false
+    ];
+
+    $employee = fetchOne(TABLE_USERS, "id = :id", [':id' => $employee_id]);
+    if (!$employee || !$employee['entreprise_id']) {
+        flashMessage("Accès refusé: informations utilisateur ou entreprise manquantes.", "danger");
+        return $data;
+    }
+
+    $activeContract = fetchOne(
+        TABLE_CONTRACTS,
+        "entreprise_id = :company_id AND statut = :status AND (date_fin IS NULL OR date_fin >= CURDATE())",
+        [':company_id' => $employee['entreprise_id'], ':status' => STATUS_ACTIVE]
+    );
+
+    if (!$activeContract) {
+        flashMessage("Votre entreprise n'a pas de contrat actif pour accéder aux services.", "warning");
+        return $data;
+    }
+
+    $data['hasActiveContract'] = true;
+
+    $filters = getQueryData();
+    $page = isset($filters['page']) ? (int)$filters['page'] : 1;
+    $typeFilter = $filters['type'] ?? '';
+    $categoryFilter = $filters['categorie'] ?? '';
+    $data['currentTypeFilter'] = $typeFilter;
+    $data['currentCategoryFilter'] = $categoryFilter;
+
+    $where = [];
+    $params = [];
+    if ($typeFilter && in_array($typeFilter, PRESTATION_TYPES)) {
+        $where[] = "type = :type";
+        $params[':type'] = $typeFilter;
+    }
+    if ($categoryFilter) {
+        $where[] = "categorie = :categorie";
+        $params[':categorie'] = $categoryFilter;
+    }
+    $whereClause = !empty($where) ? implode(' AND ', $where) : '';
+
+    $paginationResult = paginateResults(TABLE_PRESTATIONS, $page, 9, $whereClause, 'type, nom ASC', $params);
+
+    $data['services'] = $paginationResult['items'];
+
+    foreach ($data['services'] as &$service) {
+        $service['prix_formate'] = isset($service['prix']) ? formatMoney($service['prix']) : 'N/A';
+    }
+
+    $urlPattern = "?type=$typeFilter&categorie=$categoryFilter&page={page}";
+    $data['pagination_html'] = renderPagination($paginationResult, $urlPattern);
+
+    $categoriesResult = executeQuery("SELECT DISTINCT categorie FROM " . TABLE_PRESTATIONS . " WHERE categorie IS NOT NULL AND categorie != '' ORDER BY categorie ASC");
+    $data['categories'] = $categoriesResult->fetchAll(PDO::FETCH_COLUMN);
+
+    return $data;
+}
+
+
+function getEmployeeServices($employee_id, $typeFilter = '', $categoryFilter = '', $page = 1, $perPage = 9)
+{
+    $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
+    $page = max(1, (int)sanitizeInput($page));
+    $perPage = max(1, (int)sanitizeInput($perPage));
+    $typeFilter = sanitizeInput($typeFilter);
+    $categoryFilter = sanitizeInput($categoryFilter);
+
+    $emptyResult = [
+        'items' => [],
+        'currentPage' => $page,
+        'totalPages' => 0,
+        'totalItems' => 0,
+        'perPage' => $perPage,
+        'hasActiveContract' => false
+    ];
+
+    $employee = fetchOne(TABLE_USERS, "id = :id", [':id' => $employee_id]);
+    if (!$employee || !$employee['entreprise_id']) {
+        flashMessage("Accès refusé: informations utilisateur ou entreprise manquantes.", "danger");
+        return $emptyResult;
+    }
+
+    $activeContract = fetchOne(
+        TABLE_CONTRACTS,
+        "entreprise_id = :company_id AND statut = :status AND (date_fin IS NULL OR date_fin >= CURDATE())",
+        [':company_id' => $employee['entreprise_id'], ':status' => STATUS_ACTIVE]
+    );
+
+    if (!$activeContract) {
+        flashMessage("Votre entreprise n'a pas de contrat actif pour accéder aux services.", "warning");
+        return $emptyResult;
+    }
+
+    $where = [];
+    $params = [];
+    if ($typeFilter && in_array($typeFilter, PRESTATION_TYPES)) {
+        $where[] = "type = :type";
+        $params[':type'] = $typeFilter;
+    }
+    if ($categoryFilter) {
+        $where[] = "categorie = :categorie";
+        $params[':categorie'] = $categoryFilter;
+    }
+    $whereClause = !empty($where) ? implode(' AND ', $where) : '';
+
+    $paginationResult = paginateResults(TABLE_PRESTATIONS, $page, $perPage, $whereClause, 'type, nom ASC', $params);
+
+    foreach ($paginationResult['items'] as &$service) {
+        $service['prix_formate'] = isset($service['prix']) ? formatMoney($service['prix']) : 'N/A';
+    }
+
+    $paginationResult['hasActiveContract'] = true;
+    return $paginationResult;
+}
+
+
+function getServiceIcon($type)
+{
+    switch ($type) {
+        case 'conference':
+            return 'fas fa-chalkboard-teacher';
+        case 'webinar':
+            return 'fas fa-desktop';
+        case 'atelier':
+            return 'fas fa-tools';
+        case 'consultation':
+            return 'fas fa-comments';
+        case 'evenement':
+            return 'fas fa-calendar-check';
+        default:
+            return 'fas fa-concierge-bell';
+    }
+}
+
+function getCommunityIcon($type)
+{
+
+    switch ($type) {
+        case 'sport':
+            return 'fas fa-futbol';
+        case 'bien_etre':
+            return 'fas fa-spa';
+        case 'sante':
+            return 'fas fa-heartbeat';
+        default:
+            return 'fas fa-users';
+    }
+}
+
+/**
+ * Prépare les données nécessaires pour la page de détails d'une communauté.
+ *
+ * @param int $community_id L'ID de la communauté.
+ * @return array Les données de la page (détails communauté, posts, token CSRF, etc.).
+ */
+
+function handleNewCommunityPost($community_id, $employee_id, $message): bool
+{
+    if (empty(trim($message))) {
+        flashMessage("Le message ne peut pas être vide.", "warning");
+        return false;
+    }
+    if (!filter_var($community_id, FILTER_VALIDATE_INT) || !filter_var($employee_id, FILTER_VALIDATE_INT)) {
+        flashMessage("ID invalide.", "danger");
+        return false;
+    }
+
+    $dataToInsert = [
+        'communaute_id' => $community_id,
+        'personne_id' => $employee_id,
+        'message' => $message,
+    ];
+
+    try {
+        $insertedId = insertRow('communaute_messages', $dataToInsert);
+
+        if ($insertedId) {
+            logActivity($employee_id, 'community_post', "Nouveau message posté dans la communauté ID: $community_id (Msg ID: $insertedId)");
+            flashMessage("Votre message a été ajouté.", "success");
+            return true;
+        } else {
+            logSystemActivity('error', "Échec de l'insertion du message pour la communauté ID: $community_id par l'employé ID: $employee_id");
+            flashMessage("Erreur technique lors de l'ajout de votre message.", "danger");
+            return false;
+        }
+    } catch (Exception $e) {
+        logSystemActivity('error', "Exception lors de l'ajout du message pour la communauté ID: $community_id: " . $e->getMessage());
+        flashMessage("Erreur technique lors de l'ajout de votre message.", "danger");
+        return false;
+    }
+}
+
+
+/**
+ * Retourne l'icône Font Awesome correspondant à un type d'événement.
+ *
+ * @param string $eventType Le type d'événement (ex: 'conference', 'webinar').
+ * @return string La classe CSS de l'icône Font Awesome.
+ */
+function getEventIcon($eventType)
+{
+    $eventType = strtolower(trim($eventType ?? 'autre'));
+
+    $iconMap = [
+        'conference' => 'fas fa-chalkboard-teacher',
+        'webinar' => 'fas fa-desktop',
+        'atelier' => 'fas fa-tools',
+        'defi_sportif' => 'fas fa-running',
+        'consultation' => 'fas fa-user-md',
+        'autre' => 'fas fa-calendar-day',
+        'default' => 'fas fa-calendar-alt'
+    ];
+
+    return $iconMap[$eventType] ?? $iconMap['default'];
+}
+
+/**
+ * Gère l'inscription d'un employé à un événement.
+ *
+ * @param int $employee_id ID de l'employé.
+ * @param int $event_id ID de l'événement.
+ * @return bool True si l'inscription a réussi, false sinon.
+ */
+function handleRegisterForEvent($employee_id, $event_id)
+{
+    requireRole(ROLE_SALARIE);
+
+    $employee_id = filter_var($employee_id, FILTER_VALIDATE_INT);
+    $event_id = filter_var($event_id, FILTER_VALIDATE_INT);
+
+    if (!$employee_id || !$event_id) {
+        flashMessage("Informations invalides pour l'inscription.", "danger");
+        return false;
+    }
+
+    $event = fetchOne('evenements', 'id = :id', [':id' => $event_id]);
+
+    if (!$event) {
+        flashMessage("L'événement demandé n'existe pas.", "warning");
+        return false;
+    }
+
+    $eventStartDate = new DateTime($event['date_debut']);
+    $now = new DateTime();
+    if ($now >= $eventStartDate) {
+        flashMessage("Cet événement est déjà passé ou en cours, inscription impossible.", "warning");
+        return false;
+    }
+
+    $existingRegistration = fetchOne(
+        'evenement_inscriptions',
+        'personne_id = :pid AND evenement_id = :eid AND statut = :statut',
+        [':pid' => $employee_id, ':eid' => $event_id, ':statut' => 'inscrit']
+    );
+    if ($existingRegistration) {
+        flashMessage("Vous êtes déjà inscrit à cet événement.", "info");
+        return true;
+    }
+
+    if (isset($event['capacite_max']) && $event['capacite_max'] !== null) {
+        $registeredCount = countTableRows(
+            'evenement_inscriptions',
+            'evenement_id = :eid AND statut = :statut',
+            [':eid' => $event_id, ':statut' => 'inscrit']
+        );
+
+        if ($registeredCount >= $event['capacite_max']) {
+            flashMessage("Désolé, cet événement est complet.", "warning");
+            return false;
+        }
+    }
+
+    try {
+        beginTransaction();
+
+        $cancelledRegistration = fetchOne(
+            'evenement_inscriptions',
+            'personne_id = :pid AND evenement_id = :eid AND statut = :statut',
+            [':pid' => $employee_id, ':eid' => $event_id, ':statut' => 'annule']
+        );
+
+        if ($cancelledRegistration) {
+            $updated = updateRow(
+                'evenement_inscriptions',
+                ['statut' => 'inscrit', 'updated_at' => date('Y-m-d H:i:s')],
+                'id = :id',
+                [':id' => $cancelledRegistration['id']]
+            );
+            $success = ($updated > 0);
+            $registrationId = $cancelledRegistration['id'];
+        } else {
+            $dataToInsert = [
+                'personne_id' => $employee_id,
+                'evenement_id' => $event_id,
+                'statut' => 'inscrit',
+            ];
+            $insertedId = insertRow('evenement_inscriptions', $dataToInsert);
+            $success = ($insertedId !== false);
+            $registrationId = $insertedId;
+        }
+
+        if ($success) {
+            commitTransaction();
+            logActivity($employee_id, 'event_registration', "Inscription à l'événement ID: $event_id réussie (Inscription ID: $registrationId).");
+            flashMessage("Inscription à l'événement réussie !", "success");
+            return true;
+        } else {
+            rollbackTransaction();
+            logSystemActivity('error', "Échec de l'inscription à l'événement ID: $event_id pour l'employé ID: $employee_id");
+            flashMessage("Erreur technique lors de l'inscription.", "danger");
+            return false;
+        }
+    } catch (Exception $e) {
+        if (getDbConnection()->inTransaction()) {
+            rollbackTransaction();
+        }
+        logSystemActivity('error', "Exception lors de l'inscription à l'événement ID: $event_id: " . $e->getMessage());
+        flashMessage("Erreur technique lors de l'inscription.", "danger");
+        return false;
+    }
+}
+
+/**
+ * Gère la désinscription d'un employé à un événement.
+ *
+ * @param int $employee_id ID de l'employé.
+ * @param int $event_id ID de l'événement.
+ * @return bool True si la désinscription a réussi, false sinon.
+ */
+function handleUnregisterFromEvent($employee_id, $event_id)
+{
+    requireRole(ROLE_SALARIE);
+
+    $employee_id = filter_var($employee_id, FILTER_VALIDATE_INT);
+    $event_id = filter_var($event_id, FILTER_VALIDATE_INT);
+
+    if (!$employee_id || !$event_id) {
+        flashMessage("Informations invalides pour la désinscription.", "danger");
+        return false;
+    }
+
+    $event = fetchOne('evenements', 'id = :id', [':id' => $event_id]);
+    if (!$event) {
+        flashMessage("L'événement demandé n'existe pas.", "warning");
+        return false;
+    }
+
+    $eventStartDate = new DateTime($event['date_debut']);
+    $now = new DateTime();
+    if ($now >= $eventStartDate) {
+        flashMessage("Cet événement est déjà passé ou en cours, désinscription impossible.", "warning");
+        return false;
+    }
+
+    $existingRegistration = fetchOne(
+        'evenement_inscriptions',
+        'personne_id = :pid AND evenement_id = :eid AND statut = :statut',
+        [':pid' => $employee_id, ':eid' => $event_id, ':statut' => 'inscrit']
+    );
+
+    if (!$existingRegistration) {
+        $cancelledRegistration = fetchOne(
+            'evenement_inscriptions',
+            'personne_id = :pid AND evenement_id = :eid AND statut = :statut',
+            [':pid' => $employee_id, ':eid' => $event_id, ':statut' => 'annule']
+        );
+        if ($cancelledRegistration) {
+            flashMessage("Vous êtes déjà désinscrit de cet événement.", "info");
+        } else {
+            flashMessage("Vous n'étiez pas inscrit à cet événement.", "warning");
+        }
+        return true;
+    }
+
+    try {
+        beginTransaction();
+
+        $updated = updateRow(
+            'evenement_inscriptions',
+            ['statut' => 'annule', 'updated_at' => date('Y-m-d H:i:s')],
+            'id = :id',
+            [':id' => $existingRegistration['id']]
+        );
+
+        if ($updated > 0) {
+            commitTransaction();
+            logActivity($employee_id, 'event_unregistration', "Désinscription de l'événement ID: $event_id réussie (Inscription ID: {$existingRegistration['id']}).");
+            flashMessage("Désinscription de l'événement réussie.", "success");
+            return true;
+        } else {
+            rollbackTransaction();
+            logSystemActivity('error', "Échec de la désinscription de l'événement ID: $event_id pour l'employé ID: $employee_id");
+            flashMessage("Erreur technique lors de la désinscription.", "danger");
+            return false;
+        }
+    } catch (Exception $e) {
+        if (getDbConnection()->inTransaction()) {
+            rollbackTransaction();
+        }
+        logSystemActivity('error', "Exception lors de la désinscription de l'événement ID: $event_id: " . $e->getMessage());
+        flashMessage("Erreur technique lors de la désinscription.", "danger");
+        return false;
+    }
+}
