@@ -179,7 +179,6 @@ CREATE TABLE evenements (
     INDEX idx_type (type)
 );
 
-
 CREATE TABLE communautes (
     id INT PRIMARY KEY AUTO_INCREMENT,
     nom VARCHAR(255) NOT NULL,
@@ -280,7 +279,6 @@ CREATE TABLE contrats_prestations (
     FOREIGN KEY (prestation_id) REFERENCES prestations(id) ON DELETE CASCADE
 );
 
-/*
 CREATE TABLE communaute_messages (
     id INT PRIMARY KEY AUTO_INCREMENT,
     communaute_id INT NOT NULL,
@@ -299,7 +297,7 @@ CREATE TABLE associations (
 );
 
 CREATE TABLE evenement_inscriptions (
-    id INT PRIMARY KEY AUTO_INCREMENT,s
+    id INT PRIMARY KEY AUTO_INCREMENT,
     personne_id INT NOT NULL,
     evenement_id INT NOT NULL,
     statut ENUM('inscrit', 'annule') DEFAULT 'inscrit',
@@ -320,6 +318,7 @@ CREATE TABLE signalements (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     -- PAS DE colonne personne_id pour garantir l'anonymat
     INDEX idx_statut (statut)
+);
 
 CREATE TABLE conseils (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -329,6 +328,3 @@ CREATE TABLE conseils (
     categorie VARCHAR(100),
     contenu LONGTEXT NOT NULL
 );
-
-);
-*/

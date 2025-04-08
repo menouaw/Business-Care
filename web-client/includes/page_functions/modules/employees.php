@@ -261,12 +261,12 @@ function getEmployeeAppointments($employee_id, $filter = 'upcoming', $page = 1, 
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
     if (!$employee_id) return [
         'items' => [],
-        'pagination_html' => '', // Retourner la structure même si ID invalide
+        'pagination_html' => '', 
     ];
 
     $filter = sanitizeInput($filter);
     $page = max(1, (int)$page);
-    $limit = max(5, (int)$limit); // Minimum 5 par page
+    $limit = max(5, (int)$limit); 
     $offset = ($page - 1) * $limit;
 
     $baseQuery = "FROM " . TABLE_APPOINTMENTS . " r
@@ -284,42 +284,34 @@ function getEmployeeAppointments($employee_id, $filter = 'upcoming', $page = 1, 
 
     $orderByDirection = 'DESC';
     if ($filter === 'upcoming') {
-        // Use NOW() for precise upcoming/past distinction including time
         $whereClause .= " AND r.date_rdv >= NOW() AND r.statut NOT IN ('annule', 'termine', 'no_show')";
         $orderByDirection = 'ASC';
     } else if ($filter === 'past') {
-        // Use NOW() here as well for consistency
         $whereClause .= " AND (r.date_rdv < NOW() OR r.statut IN ('termine', 'no_show')) AND r.statut != 'annule'";
     } else if ($filter === 'annule') {
         $whereClause .= " AND r.statut = 'annule'";
     }
 
-    // Appliquer la clause WHERE aux deux requêtes
     $countQuery .= $whereClause;
     $dataQuery .= $whereClause;
 
-    // Trier et limiter la requête de données
     $dataQuery .= " ORDER BY r.date_rdv $orderByDirection LIMIT :limit OFFSET :offset";
-    $dataParams = $params; // Copier les paramètres pour la requête de données
+    $dataParams = $params; 
     $dataParams[':limit'] = $limit;
     $dataParams[':offset'] = $offset;
 
     try {
-        // Compter le total
-        $totalStmt = executeQuery($countQuery, $params); // Utiliser les params sans limit/offset
+        $totalStmt = executeQuery($countQuery, $params);
         $totalItems = (int)$totalStmt->fetchColumn();
 
-        // Récupérer les données paginées
         $appointments = executeQuery($dataQuery, $dataParams)->fetchAll();
 
-        // Formater les données
         foreach ($appointments as &$appointment) {
             $appointment['date_rdv_formatee'] = isset($appointment['date_rdv']) ? formatDate($appointment['date_rdv'], 'd/m/Y H:i') : 'N/A';
             $appointment['statut_badge'] = isset($appointment['statut']) ? getStatusBadge($appointment['statut']) : '';
             $appointment['praticien_complet'] = isset($appointment['praticien_nom']) ? trim($appointment['praticien_prenom'] . ' ' . $appointment['praticien_nom']) : 'Non assigné';
         }
 
-        // Préparer les données de pagination
         $totalPages = ($limit > 0 && $totalItems > 0) ? ceil($totalItems / $limit) : 0;
         $paginationData = [
             'currentPage' => $page,
@@ -332,7 +324,6 @@ function getEmployeeAppointments($employee_id, $filter = 'upcoming', $page = 1, 
         return [
             'items' => $appointments,
             'pagination_html' => renderPagination($paginationData, $urlPattern),
-            // Optionnel: retourner les données brutes de pagination si nécessaire ailleurs
             'pagination_data' => $paginationData
         ];
     } catch (Exception $e) {
@@ -629,7 +620,6 @@ function getEmployeeEvents($employee_id, $event_type = 'all', $page = 1, $limit 
             }
         }
 
-        // Formater les données
         foreach ($events as &$event) {
             $event['date_debut_formatee'] = isset($event['date_debut']) ? formatDate($event['date_debut'], 'd/m/Y H:i') : 'N/A';
             $event['date_fin_formatee'] = isset($event['date_fin']) ? formatDate($event['date_fin'], 'd/m/Y H:i') : 'N/A';
@@ -1687,7 +1677,6 @@ function handleAnonymousReport($sujet, $description)
         'sujet' => !empty($sujet) ? $sujet : null,
         'description' => $description,
         'statut' => 'nouveau'
-
     ];
 
     if (!defined('TABLE_SIGNALEMENTS')) {
