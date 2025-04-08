@@ -172,6 +172,7 @@ include_once __DIR__ . '/../../templates/header.php';
                         <?php else : ?>
                             <div class="list-group list-group-flush">
                                 <?php foreach ($dashboardData['upcoming_appointments']['items'] as $rdv) : ?>
+
                                     <?php if (is_array($rdv)):
                                     ?>
                                         <div class="list-group-item border-0 px-0">
