@@ -65,9 +65,10 @@ function quotesGetList($page = 1, $perPage = DEFAULT_ITEMS_PER_PAGE, $search = '
  */
 function quotesGetDetails($id) {
     $quote = executeQuery(
-        "SELECT d.*, e.nom as nom_entreprise 
+        "SELECT d.*, e.nom as nom_entreprise, s.nom as nom_service, s.tarif_annuel_par_salarie 
          FROM " . TABLE_QUOTES . " d 
          LEFT JOIN " . TABLE_COMPANIES . " e ON d.entreprise_id = e.id 
+         LEFT JOIN " . TABLE_SERVICES . " s ON d.service_id = s.id
          WHERE d.id = ? LIMIT 1", 
         [$id]
     )->fetch();
@@ -127,15 +128,28 @@ function quotesGetPrestations() {
 }
 
 /**
+ * Recupere la liste des services (tiers) disponibles
+ * 
+ * @return array Liste des services (id, nom, tarif_annuel_par_salarie)
+ */
+function quotesGetServices() {
+    return executeQuery("SELECT id, nom, tarif_annuel_par_salarie FROM " . TABLE_SERVICES . " WHERE actif = 1 ORDER BY ordre ASC")->fetchAll();
+}
+
+/**
  * Crée ou met à jour un devis et ses lignes dans la base de données.
  *
- * @param array $data Données du devis (entreprise_id, date_creation, date_validite, statut, conditions_paiement, delai_paiement)
- * @param array $lines Lignes de prestation [['prestation_id' => int, 'quantite' => int, 'description_specifique' => string], ...]
+ * @param array $data Données du devis (entreprise_id, service_id, nombre_salaries_estimes, date_creation, date_validite, statut, conditions_paiement, delai_paiement, est_personnalise, notes_negociation)
+ * @param array $lines Lignes de prestation additionnelles (optionnel) [['prestation_id' => int, 'quantite' => int, 'description_specifique' => string], ...]
  * @param int $id L'identifiant du devis à mettre à jour, ou 0 pour créer.
  * @return array Résultat ['success' => bool, 'message' => string|null, 'errors' => array|null, 'quoteId' => int|null]
  */
 function quotesSave($data, $lines, $id = 0) {
     $errors = [];
+    $totalHT = 0;
+    $totalTTC = 0;
+    $tvaAmount = 0;
+    $selectedService = null;
 
     if (empty($data['entreprise_id'])) {
         $errors[] = "L'entreprise cliente est obligatoire.";
@@ -149,15 +163,31 @@ function quotesSave($data, $lines, $id = 0) {
     if (!empty($data['statut']) && !in_array($data['statut'], QUOTE_STATUSES)) {
         $errors[] = "Le statut sélectionné n'est pas valide.";
     }
-    if (empty($lines)) {
-         $errors[] = "Le devis doit contenir au moins une prestation.";
+    
+    // Validation et calcul basé sur le service si service_id est fourni
+    if (!empty($data['service_id'])) {
+        if (empty($data['nombre_salaries_estimes']) || !is_numeric($data['nombre_salaries_estimes']) || $data['nombre_salaries_estimes'] <= 0) {
+            $errors[] = "Le nombre de salariés estimés est obligatoire et doit être positif.";
+        } else {
+            $selectedService = fetchOne(TABLE_SERVICES, "id = ? AND actif = 1", '', [(int)$data['service_id']]);
+            if (!$selectedService) {
+                 $errors[] = "Le service sélectionné est invalide ou inactif.";
+            } else {
+                 $totalHT = $selectedService['tarif_annuel_par_salarie'] * (int)$data['nombre_salaries_estimes'];
+            }
+        }
+    } else {
+         // Si pas de service_id, on garde l'ancien comportement basé sur les lignes de prestation (ou on retourne une erreur si ni l'un ni l'autre n'est choisi)
+         if (empty($lines)) {
+              $errors[] = "Le devis doit contenir au moins une prestation ou être basé sur un service.";
+         }
     }
 
-    // Validation des lignes de prestation
-    $totalHT = 0;
+    // Validation des lignes de prestation (additionnelles ou alternatives)
     $validLines = [];
     if (!empty($lines)) {
         $prestationIds = array_column($lines, 'prestation_id');
+        $availablePrestations = [];
         if (!empty($prestationIds)) {
             $placeholders = implode(',', array_fill(0, count($prestationIds), '?'));
             $availablePrestations = executeQuery("SELECT id, prix FROM " . TABLE_PRESTATIONS . " WHERE id IN ($placeholders)", $prestationIds)->fetchAll(PDO::FETCH_KEY_PAIR);
@@ -165,17 +195,23 @@ function quotesSave($data, $lines, $id = 0) {
 
         foreach ($lines as $index => $line) {
             if (empty($line['prestation_id']) || !isset($availablePrestations[$line['prestation_id']])) {
-                $errors[] = "Ligne " . ($index + 1) . ": Prestation invalide ou non trouvée.";
+                $errors[] = "Ligne de prestation " . ($index + 1) . ": Prestation invalide ou non trouvée.";
                 continue;
             }
             if (!isset($line['quantite']) || !is_numeric($line['quantite']) || $line['quantite'] <= 0) {
-                $errors[] = "Ligne " . ($index + 1) . ": Quantité invalide.";
+                $errors[] = "Ligne de prestation " . ($index + 1) . ": Quantité invalide.";
                 continue;
             }
 
             $prixUnitaire = $availablePrestations[$line['prestation_id']];
             $lineTotal = $prixUnitaire * $line['quantite'];
-            $totalHT += $lineTotal;
+            
+            // Si pas de service_id, le total HT est basé sur les lignes
+            if(empty($data['service_id'])) {
+                $totalHT += $lineTotal;
+            } 
+            // Optionnel: Ajouter le coût des prestations additionnelles au total du service ?
+            // else { $totalHT += $lineTotal; }
 
             $validLines[] = [
                 'prestation_id' => $line['prestation_id'],
@@ -190,12 +226,24 @@ function quotesSave($data, $lines, $id = 0) {
         return ['success' => false, 'errors' => $errors];
     }
 
-    // Calcul des totaux
-    $tvaAmount = $totalHT * TVA_RATE;
-    $totalTTC = $totalHT + $tvaAmount;
+    // Calcul final des totaux si calcul basé sur les lignes
+    if ($totalHT >= 0) { // S'assurer qu'un calcul a été fait (soit par service, soit par lignes)
+        $tvaAmount = $totalHT * TVA_RATE;
+        $totalTTC = $totalHT + $tvaAmount;
+    } else {
+         // Gérer le cas où aucun prix n'a pu être calculé (ne devrait pas arriver si validation OK)
+         $totalHT = 0;
+         $totalTTC = 0;
+         $tvaAmount = 0;
+         $errors[] = "Impossible de calculer le montant du devis.";
+         return ['success' => false, 'errors' => $errors];
+    }
+
 
     $dbData = [
         'entreprise_id' => (int)$data['entreprise_id'],
+        'service_id' => !empty($data['service_id']) ? (int)$data['service_id'] : null,
+        'nombre_salaries_estimes' => !empty($data['nombre_salaries_estimes']) ? (int)$data['nombre_salaries_estimes'] : null,
         'date_creation' => $data['date_creation'],
         'date_validite' => $data['date_validite'],
         'montant_total' => $totalTTC,
@@ -204,17 +252,21 @@ function quotesSave($data, $lines, $id = 0) {
         'statut' => $data['statut'] ?: QUOTE_STATUS_PENDING,
         'conditions_paiement' => $data['conditions_paiement'] ?? null,
         'delai_paiement' => $data['delai_paiement'] ? (int)$data['delai_paiement'] : null,
+        'est_personnalise' => isset($data['est_personnalise']) ? (bool)$data['est_personnalise'] : false,
+        'notes_negociation' => $data['notes_negociation'] ?? null
     ];
 
     try {
         beginTransaction();
         $quoteId = $id;
+        $logServiceInfo = $dbData['service_id'] ? "Service ID: {$dbData['service_id']}, Salaries: {$dbData['nombre_salaries_estimes']}" : "Prestations specifiques";
 
         if ($id > 0) { 
             updateRow(TABLE_QUOTES, $dbData, "id = :where_id", [':where_id' => $id]);
-            deleteRow(TABLE_QUOTE_PRESTATIONS, "devis_id = ?", [$id]);
+            // Gérer les lignes: les supprimer et les recréer est simple
+            deleteRow(TABLE_QUOTE_PRESTATIONS, "devis_id = ?", [$id]); 
             $logAction = 'quote_update';
-            $logMessage = "Mise à jour devis ID: $id pour entreprise ID: {$dbData['entreprise_id']}, Statut: {$dbData['statut']}, Montant HT: {$totalHT}€";
+            $logMessage = "Mise à jour devis ID: $id pour entreprise ID: {$dbData['entreprise_id']}, {$logServiceInfo}, Statut: {$dbData['statut']}, Montant HT: {$totalHT}€";
             $successMessage = "Le devis a été mis à jour avec succès";
         } else {
             $quoteId = insertRow(TABLE_QUOTES, $dbData);
@@ -222,10 +274,11 @@ function quotesSave($data, $lines, $id = 0) {
                 throw new Exception("Échec de la création de l'enregistrement principal du devis.");
             }
             $logAction = 'quote_create';
-            $logMessage = "Création devis ID: $quoteId pour entreprise ID: {$dbData['entreprise_id']}, Statut: {$dbData['statut']}, Montant HT: {$totalHT}€";
+             $logMessage = "Création devis ID: $quoteId pour entreprise ID: {$dbData['entreprise_id']}, {$logServiceInfo}, Statut: {$dbData['statut']}, Montant HT: {$totalHT}€";
             $successMessage = "Le devis a été créé avec succès";
         }
 
+        // Insérer les lignes de prestation (même si le prix est basé sur le service, pour garder trace des éléments inclus/additionnels)
         foreach ($validLines as $lineData) {
             $lineData['devis_id'] = $quoteId;
             insertRow(TABLE_QUOTE_PRESTATIONS, $lineData);
@@ -261,17 +314,22 @@ function quotesHandlePostRequest($postData, $id) {
     
     $data = [
         'entreprise_id' => $postData['entreprise_id'] ?? null,
+        'service_id' => $postData['service_id'] ?? null, // Nouveau champ
+        'nombre_salaries_estimes' => $postData['nombre_salaries_estimes'] ?? null, // Nouveau champ
         'date_creation' => $postData['date_creation'] ?? date('Y-m-d'),
         'date_validite' => $postData['date_validite'] ?? null,
         'statut' => $postData['statut'] ?? QUOTE_STATUS_PENDING,
         'conditions_paiement' => $postData['conditions_paiement'] ?? null,
-        'delai_paiement' => $postData['delai_paiement'] ?? null
+        'delai_paiement' => $postData['delai_paiement'] ?? null,
+        'est_personnalise' => isset($postData['est_personnalise']) && $postData['est_personnalise'] == 1, // Handle checkbox/hidden input
+        'notes_negociation' => $postData['notes_negociation'] ?? null
     ];
 
     $lines = [];
     if (isset($postData['prestation_id']) && is_array($postData['prestation_id'])) {
         foreach ($postData['prestation_id'] as $index => $prestationId) {
-            if (!empty($prestationId) && isset($postData['quantite'][$index])) {
+            // Vérifier si la ligne est complète (au cas où des lignes vides sont soumises)
+             if (!empty($prestationId) && isset($postData['quantite'][$index]) && $postData['quantite'][$index] > 0) {
                 $lines[] = [
                     'prestation_id' => (int)$prestationId,
                     'quantite' => (int)$postData['quantite'][$index],
@@ -279,6 +337,14 @@ function quotesHandlePostRequest($postData, $id) {
                 ];
             }
         }
+    }
+
+    // Valider qu'au moins un service ou une prestation est choisi
+    if (empty($data['service_id']) && empty($lines)) {
+         return [
+            'success' => false,
+            'errors' => ["Vous devez sélectionner un service ou ajouter au moins une prestation au devis."]
+        ];
     }
 
     return quotesSave($data, $lines, $id);

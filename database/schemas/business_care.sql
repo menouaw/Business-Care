@@ -111,6 +111,10 @@ CREATE TABLE contrats (
 CREATE TABLE devis (
     id INT PRIMARY KEY AUTO_INCREMENT,
     entreprise_id INT NOT NULL,
+    service_id INT NULL,
+    nombre_salaries_estimes INT NULL,
+    est_personnalise BOOLEAN DEFAULT FALSE,
+    notes_negociation TEXT NULL,
     date_creation DATE NOT NULL,
     date_validite DATE,
     montant_total DECIMAL(10,2) NOT NULL,
@@ -122,8 +126,10 @@ CREATE TABLE devis (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (entreprise_id) REFERENCES entreprises(id),
+    FOREIGN KEY (service_id) REFERENCES services(id),
     INDEX idx_dates (date_creation, date_validite),
-    INDEX idx_statut (statut)
+    INDEX idx_statut (statut),
+    INDEX idx_service (service_id)
 );
 
 CREATE TABLE factures (
