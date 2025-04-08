@@ -155,19 +155,6 @@ include_once __DIR__ . '/../../templates/header.php';
                 </div>
             </div>
 
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">Documents et Conditions</h5>
-                </div>
-                <div class="card-body">
-                    <p class="text-muted">Vous pouvez consulter ici les documents relatifs à votre collaboration.</p>
-                    <ul>
-                        <li><a href="#" target="_blank">Conditions Générales de Collaboration Prestataire</a> (Lien exemple)</li>
-                        <li><a href="#" target="_blank">Charte Qualité Prestataire</a> (Lien exemple)</li>
-                    </ul>
-                    <p class="text-muted small mt-3">Assurez-vous de bien prendre connaissance de ces documents.</p>
-                </div>
-            </div>
 
         <?php elseif (!$dbError): ?>
             <div class="alert alert-warning" role="alert">

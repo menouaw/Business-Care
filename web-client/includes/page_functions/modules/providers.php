@@ -17,7 +17,7 @@ function getProvidersList($category = null, $page = 1, $limit = 20, $search = ''
               LEFT JOIN " . TABLE_PRESTATIONS . " pr ON r.prestation_id = pr.id
               WHERE p.role_id = ?";
 
-    $countQuery = "SELECT COUNT(DISTINCT p.id) as total
+    $countQuery = "SELECT COUNT(DISTINCT p.id) as total 
                   FROM " . TABLE_USERS . " p
                   LEFT JOIN " . TABLE_APPOINTMENTS . " r ON p.id = r.praticien_id
                   LEFT JOIN " . TABLE_PRESTATIONS . " pr ON r.prestation_id = pr.id
@@ -120,7 +120,7 @@ function getProviderDetails($provider_id)
     $provider['page_title'] = generatePageTitle("Prestataire: {$provider['prenom']} {$provider['nom']}");
     $provider['statut_badge'] = getStatusBadge($provider['statut']);
 
-    $servicesQuery = "SELECT DISTINCT pr.id, pr.nom, pr.description, pr.type,
+    $servicesQuery = "SELECT DISTINCT pr.id, pr.nom, pr.description, pr.type, 
                     pr.categorie, pr.prix, pr.duree
                     FROM " . TABLE_PRESTATIONS . " pr
                     JOIN " . TABLE_APPOINTMENTS . " r ON pr.id = r.prestation_id
@@ -196,7 +196,7 @@ function searchProviders($criteria)
                          WHERE r_inner.praticien_id IS NOT NULL
                          GROUP BY r_inner.praticien_id
                          HAVING AVG(e_inner.note) >= ?
-                         )";
+                        )";
             $params[] = $criteria['note_min'];
         }
 
@@ -464,7 +464,7 @@ function getProviderServices($provider_id)
               FROM " . TABLE_PRESTATIONS . " pr
               JOIN " . TABLE_APPOINTMENTS . " r ON pr.id = r.prestation_id
               WHERE r.praticien_id = ?
-              GROUP BY pr.id, pr.nom, pr.description, pr.type, pr.categorie,
+              GROUP BY pr.id, pr.nom, pr.description, pr.type, pr.categorie, 
               pr.prix, pr.duree, pr.niveau_difficulte
               ORDER BY nombre_prestations DESC";
 
@@ -756,4 +756,113 @@ function handleChangePassword($provider_id, $current_password, $new_password, $c
     } catch (Exception $e) {
         flashMessage("Une erreur serveur est survenue lors de la modification du mot de passe.", "danger");
     }
+}
+
+
+function renderStars($rating)
+{
+    $rating = max(0, min(5, round((float)($rating ?? 0))));
+    $output = '';
+    for ($i = 1; $i <= 5; $i++) {
+        $output .= '<i class="' . ($i <= $rating ? 'fas' : 'far') . ' fa-star text-warning"></i> ';
+    }
+    return trim($output);
+}
+
+function getProviderAppointments($provider_id, $status_filter = 'upcoming', $page = 1, $limit = 15)
+{
+    $provider_id = (int)sanitizeInput($provider_id);
+    $status_filter = sanitizeInput($status_filter);
+    $page = max(1, (int)$page);
+    $limit = max(1, (int)$limit);
+    $offset = ($page - 1) * $limit;
+
+    if (!$provider_id) {
+        return [
+            'appointments' => [],
+            'pagination_html' => '',
+            'total' => 0,
+            'current_filter' => $status_filter
+        ];
+    }
+
+    $baseQuery = "FROM " . TABLE_APPOINTMENTS . " r
+                  JOIN " . TABLE_PRESTATIONS . " pr ON r.prestation_id = pr.id
+                  JOIN " . TABLE_USERS . " c ON r.personne_id = c.id
+                  WHERE r.praticien_id = :provider_id";
+
+    $countQuery = "SELECT COUNT(r.id) as total " . $baseQuery;
+    $dataQuery = "SELECT r.id, r.date_rdv, r.duree, r.lieu, r.type_rdv, r.statut, r.notes,
+                         pr.nom as prestation_nom, pr.type as prestation_type,
+                         CONCAT(c.prenom, ' ', c.nom) as client_nom, c.email as client_email, c.telephone as client_telephone "
+        . $baseQuery;
+
+    $params = [':provider_id' => $provider_id];
+    $whereStatus = '';
+    $orderBy = 'ORDER BY r.date_rdv ASC';
+
+    switch ($status_filter) {
+        case 'upcoming':
+            $whereStatus = " AND r.statut IN ('planifie', 'confirme') AND r.date_rdv >= NOW()";
+            break;
+        case 'past':
+            $whereStatus = " AND r.statut IN ('termine', 'no_show')";
+            $orderBy = 'ORDER BY r.date_rdv DESC';
+            break;
+        case 'cancelled':
+            $whereStatus = " AND r.statut = 'annule'";
+            $orderBy = 'ORDER BY r.date_rdv DESC';
+            break;
+        case 'all':
+            $orderBy = 'ORDER BY r.date_rdv DESC';
+            break;
+        default:
+            $whereStatus = " AND r.statut IN ('planifie', 'confirme') AND r.date_rdv >= NOW()";
+            $status_filter = 'upcoming';
+            break;
+    }
+
+    $countQuery .= $whereStatus;
+    $dataQuery .= $whereStatus . " " . $orderBy . " LIMIT :limit OFFSET :offset";
+
+    $countStmt = executeQuery($countQuery, $params);
+    $total = $countStmt->fetchColumn();
+    $totalPages = ceil($total / $limit);
+
+    $params[':limit'] = $limit;
+    $params[':offset'] = $offset;
+    $stmt = executeQuery($dataQuery, $params);
+    $appointments = $stmt->fetchAll();
+
+    foreach ($appointments as &$appointment) {
+        if (isset($appointment['date_rdv'])) {
+            $appointment['date_rdv_formatee'] = formatDate($appointment['date_rdv'], 'd/m/Y H:i');
+            $appointment['date_formatee_jour'] = formatDate($appointment['date_rdv'], 'd/m/Y');
+            $appointment['date_formatee_heure'] = formatDate($appointment['date_rdv'], 'H:i');
+        }
+        $appointment['statut_badge'] = getStatusBadge($appointment['statut']);
+        $appointment['type_rdv_icon'] = match ($appointment['type_rdv']) {
+            'presentiel' => 'fa-map-marker-alt',
+            'visio' => 'fa-video',
+            'telephone' => 'fa-phone',
+            default => 'fa-question-circle'
+        };
+        $appointment['type_rdv_text'] = ucfirst($appointment['type_rdv'] ?? '?');
+    }
+
+    $paginationData = [
+        'currentPage' => $page,
+        'totalPages' => $totalPages,
+        'totalItems' => $total,
+        'perPage' => $limit
+    ];
+    $urlPattern = "?status=" . urlencode($status_filter) . "&page={page}";
+    $paginationHtml = renderPagination($paginationData, $urlPattern);
+
+    return [
+        'appointments' => $appointments,
+        'pagination_html' => $paginationHtml,
+        'total' => $total,
+        'current_filter' => $status_filter
+    ];
 }
