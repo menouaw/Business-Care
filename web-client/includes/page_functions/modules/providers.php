@@ -1,30 +1,26 @@
 <?php
 
-
 require_once __DIR__ . '/../../../includes/init.php';
-
 
 function getProvidersList($category = null, $page = 1, $limit = 20, $search = '')
 {
-    // Sanitize input parameters - utiliser sanitizeInput déjà disponible
     $category = sanitizeInput($category);
     $page = (int)$page;
     $limit = (int)$limit;
     $search = sanitizeInput($search);
 
-    // Calcul de l'offset pour la pagination
     $offset = ($page - 1) * $limit;
 
     $query = "SELECT DISTINCT p.id, p.nom, p.prenom, p.email, p.photo_url, p.statut
-              FROM personnes p
-              LEFT JOIN rendez_vous r ON p.id = r.personne_id
-              LEFT JOIN prestations pr ON r.prestation_id = pr.id
+              FROM " . TABLE_USERS . " p
+              LEFT JOIN " . TABLE_APPOINTMENTS . " r ON p.id = r.praticien_id
+              LEFT JOIN " . TABLE_PRESTATIONS . " pr ON r.prestation_id = pr.id
               WHERE p.role_id = ?";
 
-    $countQuery = "SELECT COUNT(DISTINCT p.id) as total 
-                  FROM personnes p
-                  LEFT JOIN rendez_vous r ON p.id = r.personne_id
-                  LEFT JOIN prestations pr ON r.prestation_id = pr.id
+    $countQuery = "SELECT COUNT(DISTINCT p.id) as total
+                  FROM " . TABLE_USERS . " p
+                  LEFT JOIN " . TABLE_APPOINTMENTS . " r ON p.id = r.praticien_id
+                  LEFT JOIN " . TABLE_PRESTATIONS . " pr ON r.prestation_id = pr.id
                   WHERE p.role_id = ?";
 
     $params = [ROLE_PRESTATAIRE];
@@ -55,18 +51,17 @@ function getProvidersList($category = null, $page = 1, $limit = 20, $search = ''
         $provider['statut_badge'] = getStatusBadge($provider['statut']);
 
         $servicesQuery = "SELECT DISTINCT pr.id, pr.nom, pr.type, pr.categorie
-                         FROM prestations pr
-                         JOIN rendez_vous r ON pr.id = r.prestation_id
-                         WHERE r.personne_id = ?
+                         FROM " . TABLE_PRESTATIONS . " pr
+                         JOIN " . TABLE_APPOINTMENTS . " r ON pr.id = r.prestation_id
+                         WHERE r.praticien_id = ?
                          LIMIT 5";
         $servicesStmt = executeQuery($servicesQuery, [$provider['id']]);
         $provider['services'] = $servicesStmt->fetchAll();
 
-        // Récupération de la note moyenne
         $ratingQuery = "SELECT AVG(e.note) as note_moyenne, COUNT(e.id) as nombre_avis
-                       FROM evaluations e
-                       JOIN rendez_vous r ON e.prestation_id = r.prestation_id
-                       WHERE r.personne_id = ?";
+                       FROM " . TABLE_EVALUATIONS . " e
+                       JOIN " . TABLE_APPOINTMENTS . " r ON e.prestation_id = r.prestation_id AND e.personne_id = r.personne_id
+                       WHERE r.praticien_id = ?";
         $ratingStmt = executeQuery($ratingQuery, [$provider['id']]);
         $rating = $ratingStmt->fetch();
 
@@ -74,15 +69,12 @@ function getProvidersList($category = null, $page = 1, $limit = 20, $search = ''
         $provider['nombre_avis'] = $rating['nombre_avis'] ?? 0;
     }
 
-    // Exécution de la requête de comptage
     $countStmt = executeQuery($countQuery, array_slice($params, 0, -2));
     $countResult = $countStmt->fetch();
     $total = $countResult['total'];
 
-    // Calcul des informations de pagination
     $totalPages = ceil($total / $limit);
 
-    // Préparer le résultat avec le HTML de pagination
     $paginationData = [
         'currentPage' => $page,
         'totalPages' => $totalPages,
@@ -90,7 +82,6 @@ function getProvidersList($category = null, $page = 1, $limit = 20, $search = ''
         'perPage' => $limit
     ];
 
-    // Construction de l'URL pour la pagination (considérer les filtres existants)
     $urlPattern = "?page={page}";
     if (!empty($category)) {
         $urlPattern .= "&category=" . urlencode($category);
@@ -111,76 +102,60 @@ function getProvidersList($category = null, $page = 1, $limit = 20, $search = ''
     ];
 }
 
-/**
- * récupère les détails d'un prestataire
- * 
- * @param int $provider_id identifiant du prestataire
- * @return array|false détails du prestataire ou false si non trouvé
- */
 function getProviderDetails($provider_id)
 {
-    // Validation de l'ID
     $provider_id = (int)sanitizeInput($provider_id);
     if (!$provider_id) {
         flashMessage("ID de prestataire invalide", "danger");
         return false;
     }
 
-    // Récupération des informations du prestataire (déjà utilise fetchOne, c'est bien)
-    $provider = fetchOne('personnes', "id = $provider_id AND role_id = " . ROLE_PRESTATAIRE);
+    $provider = fetchOne(TABLE_USERS, "id = :id AND role_id = :role", [':id' => $provider_id, ':role' => ROLE_PRESTATAIRE]);
 
     if (!$provider) {
         flashMessage("Prestataire non trouvé", "warning");
         return false;
     }
 
-    // Ajout du titre de page
     $provider['page_title'] = generatePageTitle("Prestataire: {$provider['prenom']} {$provider['nom']}");
-
-    // Ajouter le badge de statut
     $provider['statut_badge'] = getStatusBadge($provider['statut']);
 
-    // Récupération des services proposés
-    $servicesQuery = "SELECT DISTINCT pr.id, pr.nom, pr.description, pr.type, 
+    $servicesQuery = "SELECT DISTINCT pr.id, pr.nom, pr.description, pr.type,
                     pr.categorie, pr.prix, pr.duree
-                    FROM prestations pr
-                    JOIN rendez_vous r ON pr.id = r.prestation_id
-                    WHERE r.personne_id = ?";
+                    FROM " . TABLE_PRESTATIONS . " pr
+                    JOIN " . TABLE_APPOINTMENTS . " r ON pr.id = r.prestation_id
+                    WHERE r.praticien_id = ?";
     $servicesStmt = executeQuery($servicesQuery, [$provider_id]);
     $provider['services'] = $servicesStmt->fetchAll();
 
-    // Formater les prix des services
     foreach ($provider['services'] as &$service) {
         if (isset($service['prix'])) {
             $service['prix_formate'] = formatMoney($service['prix']);
         }
     }
 
-    // Récupération des évaluations
     $ratingsQuery = "SELECT e.*, CONCAT(p.prenom, ' ', p.nom) as client_nom,
                    CONCAT(pr.type, ' - ', pr.nom) as prestation_nom
-                   FROM evaluations e
-                   JOIN rendez_vous r ON e.prestation_id = r.prestation_id
-                   JOIN personnes p ON e.personne_id = p.id
-                   JOIN prestations pr ON e.prestation_id = pr.id
-                   WHERE r.personne_id = ?
+                   FROM " . TABLE_EVALUATIONS . " e
+                   JOIN " . TABLE_APPOINTMENTS . " r ON e.prestation_id = r.prestation_id AND e.personne_id = r.personne_id
+                   JOIN " . TABLE_USERS . " p ON e.personne_id = p.id
+                   JOIN " . TABLE_PRESTATIONS . " pr ON e.prestation_id = pr.id
+                   WHERE r.praticien_id = ?
                    ORDER BY e.date_evaluation DESC
                    LIMIT 5";
     $ratingsStmt = executeQuery($ratingsQuery, [$provider_id]);
     $provider['evaluations'] = $ratingsStmt->fetchAll();
 
-    // Formater les dates des évaluations
     foreach ($provider['evaluations'] as &$evaluation) {
         if (isset($evaluation['date_evaluation'])) {
             $evaluation['date_evaluation_formatee'] = formatDate($evaluation['date_evaluation'], 'd/m/Y');
         }
     }
 
-    // Calcul de la note moyenne
     $avgRatingQuery = "SELECT AVG(e.note) as note_moyenne, COUNT(e.id) as nombre_avis
-                     FROM evaluations e
-                     JOIN rendez_vous r ON e.prestation_id = r.prestation_id
-                     WHERE r.personne_id = ?";
+                     FROM " . TABLE_EVALUATIONS . " e
+                     JOIN " . TABLE_APPOINTMENTS . " r ON e.prestation_id = r.prestation_id AND e.personne_id = r.personne_id
+                     WHERE r.praticien_id = ?";
     $avgRatingStmt = executeQuery($avgRatingQuery, [$provider_id]);
     $avgRating = $avgRatingStmt->fetch();
 
@@ -190,28 +165,19 @@ function getProviderDetails($provider_id)
     return $provider;
 }
 
-/**
- * recherche de prestataires selon critères avancés
- * 
- * @param array $criteria critères de recherche (categorie, type, disponibilite, note_min)
- * @return array liste des prestataires correspondant aux critères
- */
 function searchProviders($criteria)
 {
-    // Sanitize input criteria - utiliser sanitizeInput uniquement
     $criteria = sanitizeInput($criteria);
 
     try {
-        // Construction de la requête de base
         $query = "SELECT DISTINCT p.id, p.nom, p.prenom, p.email, p.photo_url, p.statut
-                FROM personnes p
-                LEFT JOIN rendez_vous r ON p.id = r.personne_id
-                LEFT JOIN prestations pr ON r.prestation_id = pr.id
-                WHERE p.role_id = ? AND p.statut = 'actif'";
+                FROM " . TABLE_USERS . " p
+                LEFT JOIN " . TABLE_APPOINTMENTS . " r ON p.id = r.praticien_id
+                LEFT JOIN " . TABLE_PRESTATIONS . " pr ON r.prestation_id = pr.id
+                WHERE p.role_id = ? AND p.statut = '" . STATUS_ACTIVE . "'";
 
         $params = [ROLE_PRESTATAIRE];
 
-        // Ajout des critères s'ils sont spécifiés
         if (!empty($criteria['categorie'])) {
             $query .= " AND pr.categorie = ?";
             $params[] = $criteria['categorie'];
@@ -222,25 +188,23 @@ function searchProviders($criteria)
             $params[] = $criteria['type'];
         }
 
-        // Si critère de note minimum spécifié
         if (!empty($criteria['note_min'])) {
             $query .= " AND p.id IN (
-                        SELECT r.personne_id
-                        FROM rendez_vous r
-                        JOIN evaluations e ON r.prestation_id = e.prestation_id
-                        GROUP BY r.personne_id
-                        HAVING AVG(e.note) >= ?
-                        )";
+                         SELECT r_inner.praticien_id
+                         FROM " . TABLE_APPOINTMENTS . " r_inner
+                         JOIN " . TABLE_EVALUATIONS . " e_inner ON r_inner.prestation_id = e_inner.prestation_id AND r_inner.personne_id = e_inner.personne_id
+                         WHERE r_inner.praticien_id IS NOT NULL
+                         GROUP BY r_inner.praticien_id
+                         HAVING AVG(e_inner.note) >= ?
+                         )";
             $params[] = $criteria['note_min'];
         }
 
-        // Si critère de disponibilité spécifié
         if (!empty($criteria['disponibilite']) && !empty($criteria['date'])) {
-            // Cette requête suppose qu'une absence de rendez-vous à la date spécifiée indique une disponibilité
             $query .= " AND p.id NOT IN (
-                        SELECT DISTINCT r.personne_id
-                        FROM rendez_vous r
-                        WHERE DATE(r.date_rdv) = ? AND r.statut IN ('planifie', 'confirme')
+                        SELECT DISTINCT r_avail.praticien_id
+                        FROM " . TABLE_APPOINTMENTS . " r_avail
+                        WHERE DATE(r_avail.date_rdv) = ? AND r_avail.statut IN ('planifie', 'confirme')
                         )";
             $params[] = $criteria['date'];
         }
@@ -250,25 +214,21 @@ function searchProviders($criteria)
         $stmt = executeQuery($query, $params);
         $providers = $stmt->fetchAll();
 
-        // Pour chaque prestataire, récupérer quelques informations complémentaires
         foreach ($providers as &$provider) {
-            // Ajouter le badge de statut
             $provider['statut_badge'] = getStatusBadge($provider['statut']);
 
-            // Récupération des services
             $servicesQuery = "SELECT DISTINCT pr.id, pr.nom, pr.type, pr.categorie
-                           FROM prestations pr
-                           JOIN rendez_vous r ON pr.id = r.prestation_id
-                           WHERE r.personne_id = ?
+                           FROM " . TABLE_PRESTATIONS . " pr
+                           JOIN " . TABLE_APPOINTMENTS . " r ON pr.id = r.prestation_id
+                           WHERE r.praticien_id = ?
                            LIMIT 3";
             $servicesStmt = executeQuery($servicesQuery, [$provider['id']]);
             $provider['services'] = $servicesStmt->fetchAll();
 
-            // Récupération de la note moyenne
             $ratingQuery = "SELECT AVG(e.note) as note_moyenne, COUNT(e.id) as nombre_avis
-                         FROM evaluations e
-                         JOIN rendez_vous r ON e.prestation_id = r.prestation_id
-                         WHERE r.personne_id = ?";
+                         FROM " . TABLE_EVALUATIONS . " e
+                         JOIN " . TABLE_APPOINTMENTS . " r ON e.prestation_id = r.prestation_id AND e.personne_id = r.personne_id
+                         WHERE r.praticien_id = ?";
             $ratingStmt = executeQuery($ratingQuery, [$provider['id']]);
             $rating = $ratingStmt->fetch();
 
@@ -278,23 +238,13 @@ function searchProviders($criteria)
 
         return $providers;
     } catch (Exception $e) {
-        logSystemActivity('error', "Erreur recherche prestataires: " . $e->getMessage());
         flashMessage("Une erreur est survenue lors de la recherche de prestataires", "danger");
         return [];
     }
 }
 
-/**
- * récupère le calendrier de disponibilité d'un prestataire
- * 
- * @param int $provider_id identifiant du prestataire
- * @param string $start_date date de début (format Y-m-d)
- * @param string $end_date date de fin (format Y-m-d)
- * @return array calendrier de disponibilité
- */
 function getProviderCalendar($provider_id, $start_date, $end_date)
 {
-    // Validation de l'ID et des dates
     $provider_id = (int)sanitizeInput($provider_id);
     $start_date = sanitizeInput($start_date);
     $end_date = sanitizeInput($end_date);
@@ -303,12 +253,11 @@ function getProviderCalendar($provider_id, $start_date, $end_date)
         return [];
     }
 
-    // Récupération des rendez-vous dans la période donnée
     $query = "SELECT r.id, r.date_rdv, r.duree, r.lieu, r.type_rdv, r.statut,
               pr.nom as prestation_nom, pr.type as prestation_type
-              FROM rendez_vous r
-              JOIN prestations pr ON r.prestation_id = pr.id
-              WHERE r.personne_id = ? 
+              FROM " . TABLE_APPOINTMENTS . " r
+              JOIN " . TABLE_PRESTATIONS . " pr ON r.prestation_id = pr.id
+              WHERE r.praticien_id = ?
               AND DATE(r.date_rdv) BETWEEN ? AND ?
               AND r.statut IN ('planifie', 'confirme')
               ORDER BY r.date_rdv";
@@ -316,13 +265,11 @@ function getProviderCalendar($provider_id, $start_date, $end_date)
     $stmt = executeQuery($query, [$provider_id, $start_date, $end_date]);
     $appointments = $stmt->fetchAll();
 
-    // Formater les dates et ajouter les badges de statut
     foreach ($appointments as &$appointment) {
         $appointment['date_rdv_formatee'] = formatDate($appointment['date_rdv'], 'd/m/Y H:i');
         $appointment['statut_badge'] = getStatusBadge($appointment['statut']);
     }
 
-    // Création d'un tableau de jours entre start_date et end_date
     $period = new DatePeriod(
         new DateTime($start_date),
         new DateInterval('P1D'),
@@ -342,7 +289,7 @@ function getProviderCalendar($provider_id, $start_date, $end_date)
             'date_formatee' => formatDate($dateStr, 'd/m/Y'),
             'day_name' => $date->format('l'),
             'appointments' => array_values($dayAppointments),
-            'is_available' => count($dayAppointments) < 8, // hypothèse : max 8 RDV par jour
+            'is_available' => count($dayAppointments) < 8,
             'slots_taken' => count($dayAppointments),
             'slots_available' => 8 - count($dayAppointments)
         ];
@@ -351,17 +298,8 @@ function getProviderCalendar($provider_id, $start_date, $end_date)
     return $calendar;
 }
 
-/**
- * récupère les évaluations d'un prestataire
- * 
- * @param int $provider_id identifiant du prestataire
- * @param int $page numéro de page
- * @param int $limit nombre d'éléments par page
- * @return array évaluations et infos de pagination
- */
 function getProviderRatings($provider_id, $page = 1, $limit = 10)
 {
-    // Validation de l'ID
     $provider_id = (int)sanitizeInput($provider_id);
     if (!$provider_id) {
         return [
@@ -375,44 +313,38 @@ function getProviderRatings($provider_id, $page = 1, $limit = 10)
         ];
     }
 
-    // Calcul de l'offset pour la pagination
     $offset = ($page - 1) * $limit;
 
-    // Récupération des évaluations
     $query = "SELECT e.*, CONCAT(p.prenom, ' ', p.nom) as client_nom,
               pr.nom as prestation_nom, pr.type as prestation_type
-              FROM evaluations e
-              JOIN rendez_vous r ON e.prestation_id = r.prestation_id
-              JOIN personnes p ON e.personne_id = p.id
-              JOIN prestations pr ON e.prestation_id = pr.id
-              WHERE r.personne_id = ?
+              FROM " . TABLE_EVALUATIONS . " e
+              JOIN " . TABLE_APPOINTMENTS . " r ON e.prestation_id = r.prestation_id AND e.personne_id = r.personne_id
+              JOIN " . TABLE_USERS . " p ON e.personne_id = p.id
+              JOIN " . TABLE_PRESTATIONS . " pr ON e.prestation_id = pr.id
+              WHERE r.praticien_id = ?
               ORDER BY e.date_evaluation DESC
               LIMIT ? OFFSET ?";
 
     $stmt = executeQuery($query, [$provider_id, $limit, $offset]);
     $ratings = $stmt->fetchAll();
 
-    // Formater les dates des évaluations
     foreach ($ratings as &$rating) {
         if (isset($rating['date_evaluation'])) {
             $rating['date_evaluation_formatee'] = formatDate($rating['date_evaluation'], 'd/m/Y');
         }
     }
 
-    // Calcul du nombre total pour la pagination
-    $countQuery = "SELECT COUNT(*) as total
-                  FROM evaluations e
-                  JOIN rendez_vous r ON e.prestation_id = r.prestation_id
-                  WHERE r.personne_id = ?";
+    $countQuery = "SELECT COUNT(e.id) as total
+                  FROM " . TABLE_EVALUATIONS . " e
+                  JOIN " . TABLE_APPOINTMENTS . " r ON e.prestation_id = r.prestation_id AND e.personne_id = r.personne_id
+                  WHERE r.praticien_id = ?";
 
     $countStmt = executeQuery($countQuery, [$provider_id]);
     $countResult = $countStmt->fetch();
     $total = $countResult['total'];
 
-    // Calcul des informations de pagination
     $totalPages = ceil($total / $limit);
 
-    // Préparer les données pour renderPagination
     $paginationData = [
         'currentPage' => $page,
         'totalPages' => $totalPages,
@@ -420,7 +352,6 @@ function getProviderRatings($provider_id, $page = 1, $limit = 10)
         'perPage' => $limit
     ];
 
-    // Construire l'URL pattern pour la pagination
     $urlPattern = "?provider_id=$provider_id&page={page}";
 
     return [
@@ -439,20 +370,14 @@ function getProviderRatings($provider_id, $page = 1, $limit = 10)
     ];
 }
 
-/**
- * récupère la note moyenne d'un prestataire
- * 
- * @param int $provider_id identifiant du prestataire
- * @return float note moyenne
- */
 function getProviderAverageRating($provider_id)
 {
     $provider_id = (int)sanitizeInput($provider_id);
 
     $query = "SELECT AVG(e.note) as moyenne
-              FROM evaluations e
-              JOIN rendez_vous r ON e.prestation_id = r.prestation_id
-              WHERE r.personne_id = ?";
+              FROM " . TABLE_EVALUATIONS . " e
+              JOIN " . TABLE_APPOINTMENTS . " r ON e.prestation_id = r.prestation_id AND e.personne_id = r.personne_id
+              WHERE r.praticien_id = ?";
 
     $stmt = executeQuery($query, [$provider_id]);
     $result = $stmt->fetch();
@@ -460,40 +385,24 @@ function getProviderAverageRating($provider_id)
     return $result['moyenne'] ? round($result['moyenne'], 1) : 0;
 }
 
-/**
- * récupère les catégories de prestataires
- * 
- * @return array liste des catégories
- */
 function getProviderCategories()
 {
     try {
-        // Cette requête est trop spécifique pour utiliser fetchAll directement
-        // car nous avons besoin d'une agrégation (COUNT) et d'un ORDER BY sur cette agrégation
         $query = "SELECT DISTINCT categorie, COUNT(DISTINCT id) as count
-                FROM prestations
+                FROM " . TABLE_PRESTATIONS . "
                 WHERE categorie IS NOT NULL AND categorie != ''
                 GROUP BY categorie
                 ORDER BY count DESC";
 
         return executeQuery($query)->fetchAll();
     } catch (Exception $e) {
-        logSystemActivity('error', "Erreur récupération catégories prestataires: " . $e->getMessage());
         flashMessage("Une erreur est survenue lors de la récupération des catégories", "danger");
         return [];
     }
 }
 
-/**
- * récupère les contrats d'un prestataire
- * 
- * @param int $provider_id identifiant du prestataire
- * @param string $status filtre par statut (active, expired, all)
- * @return array liste des contrats
- */
 function getProviderContracts($provider_id, $status = 'active')
 {
-    // Validation de l'ID
     $provider_id = (int)sanitizeInput($provider_id);
     $status = sanitizeInput($status);
 
@@ -501,16 +410,12 @@ function getProviderContracts($provider_id, $status = 'active')
         return [];
     }
 
-    // Cette requête est une approximation car il n'y a pas de table explicite de contrats prestataires
-    // On considère ici qu'un prestataire a un contrat implicite avec chaque entreprise pour laquelle
-    // il a effectué des prestations
-
     $query = "SELECT DISTINCT e.id as entreprise_id, e.nom as entreprise_nom,
               MIN(r.date_rdv) as date_debut, MAX(r.date_rdv) as date_derniere,
               COUNT(r.id) as nombre_prestations
-              FROM rendez_vous r
-              JOIN personnes s ON r.personne_id = s.id
-              JOIN entreprises e ON s.entreprise_id = e.id
+              FROM " . TABLE_APPOINTMENTS . " r
+              JOIN " . TABLE_USERS . " s ON r.personne_id = s.id
+              JOIN " . TABLE_COMPANIES . " e ON s.entreprise_id = e.id
               WHERE r.praticien_id = ?
               AND s.entreprise_id IS NOT NULL";
 
@@ -532,7 +437,6 @@ function getProviderContracts($provider_id, $status = 'active')
     $stmt = executeQuery($query, $params);
     $contracts = $stmt->fetchAll();
 
-    // Formater les dates
     foreach ($contracts as &$contract) {
         if (isset($contract['date_debut'])) {
             $contract['date_debut_formatee'] = formatDate($contract['date_debut'], 'd/m/Y');
@@ -541,33 +445,24 @@ function getProviderContracts($provider_id, $status = 'active')
             $contract['date_derniere_formatee'] = formatDate($contract['date_derniere'], 'd/m/Y');
         }
 
-        // Ajouter un badge de statut basé sur l'état des dates
-        $contract['statut'] = ($status === 'active') ? 'actif' : 'expire';
+        $contract['statut'] = ($status === 'active') ? STATUS_ACTIVE : 'expire';
         $contract['statut_badge'] = getStatusBadge($contract['statut']);
     }
 
     return $contracts;
 }
 
-/**
- * récupère les services proposés par un prestataire
- * 
- * @param int $provider_id identifiant du prestataire
- * @return array liste des services
- */
 function getProviderServices($provider_id)
 {
-    // Validation de l'ID
     $provider_id = (int)sanitizeInput($provider_id);
     if (!$provider_id) {
         return [];
     }
 
-    // Récupération des services
     $query = "SELECT DISTINCT pr.id, pr.nom, pr.description, pr.type, pr.categorie,
               pr.prix, pr.duree, pr.niveau_difficulte, COUNT(r.id) as nombre_prestations
-              FROM prestations pr
-              JOIN rendez_vous r ON pr.id = r.prestation_id
+              FROM " . TABLE_PRESTATIONS . " pr
+              JOIN " . TABLE_APPOINTMENTS . " r ON pr.id = r.prestation_id
               WHERE r.praticien_id = ?
               GROUP BY pr.id, pr.nom, pr.description, pr.type, pr.categorie,
               pr.prix, pr.duree, pr.niveau_difficulte
@@ -576,7 +471,6 @@ function getProviderServices($provider_id)
     $stmt = executeQuery($query, [$provider_id]);
     $services = $stmt->fetchAll();
 
-    // Formater les prix
     foreach ($services as &$service) {
         if (isset($service['prix'])) {
             $service['prix_formate'] = formatMoney($service['prix']);
@@ -586,17 +480,8 @@ function getProviderServices($provider_id)
     return $services;
 }
 
-/**
- * récupère les factures d'un prestataire
- * 
- * @param int $provider_id identifiant du prestataire
- * @param string|null $start_date date de début (format Y-m-d)
- * @param string|null $end_date date de fin (format Y-m-d)
- * @return array liste des factures
- */
 function getProviderInvoices($provider_id, $start_date = null, $end_date = null)
 {
-    // Validation de l'ID
     $provider_id = (int)sanitizeInput($provider_id);
     $start_date = sanitizeInput($start_date);
     $end_date = sanitizeInput($end_date);
@@ -605,9 +490,6 @@ function getProviderInvoices($provider_id, $start_date = null, $end_date = null)
         return [];
     }
 
-    // Cette fonction est une approximation car il n'y a pas de table explicite de factures prestataires
-    // On regroupe les prestations par mois pour simuler les factures mensuelles
-
     $query = "SELECT CONCAT(YEAR(r.date_rdv), '-', MONTH(r.date_rdv)) as facture_id,
               DATE_FORMAT(r.date_rdv, '%Y-%m') as periode,
               COUNT(r.id) as nombre_prestations,
@@ -615,9 +497,9 @@ function getProviderInvoices($provider_id, $start_date = null, $end_date = null)
               MIN(r.date_rdv) as premiere_prestation,
               MAX(r.date_rdv) as derniere_prestation,
               'payee' as statut
-              FROM rendez_vous r
-              JOIN prestations pr ON r.prestation_id = pr.id
-              WHERE r.personne_id = ? AND r.statut = 'termine'";
+              FROM " . TABLE_APPOINTMENTS . " r
+              JOIN " . TABLE_PRESTATIONS . " pr ON r.prestation_id = pr.id
+              WHERE r.praticien_id = ? AND r.statut = 'termine'";
 
     $params = [$provider_id];
 
@@ -637,7 +519,6 @@ function getProviderInvoices($provider_id, $start_date = null, $end_date = null)
     $stmt = executeQuery($query, $params);
     $invoices = $stmt->fetchAll();
 
-    // Formater les dates et montants
     foreach ($invoices as &$invoice) {
         if (isset($invoice['premiere_prestation'])) {
             $invoice['premiere_prestation_formatee'] = formatDate($invoice['premiere_prestation'], 'd/m/Y');
@@ -649,23 +530,14 @@ function getProviderInvoices($provider_id, $start_date = null, $end_date = null)
             $invoice['montant_total_formate'] = formatMoney($invoice['montant_total']);
         }
 
-        // Ajouter le badge de statut
         $invoice['statut_badge'] = getStatusBadge($invoice['statut']);
     }
 
     return $invoices;
 }
 
-/**
- * met à jour les paramètres d'un prestataire
- * 
- * @param int $provider_id identifiant du prestataire
- * @param array $settings paramètres à mettre à jour
- * @return bool résultat de la mise à jour
- */
 function updateProviderSettings($provider_id, $settings)
 {
-    // Validation de l'ID
     $provider_id = (int)sanitizeInput($provider_id);
     $settings = sanitizeInput($settings);
 
@@ -674,7 +546,6 @@ function updateProviderSettings($provider_id, $settings)
         return false;
     }
 
-    // Liste des champs autorisés
     $allowedFields = [
         'nom',
         'prenom',
@@ -683,7 +554,6 @@ function updateProviderSettings($provider_id, $settings)
         'photo_url'
     ];
 
-    // Filtrage des paramètres
     $filteredSettings = array_intersect_key($settings, array_flip($allowedFields));
 
     if (empty($filteredSettings)) {
@@ -692,39 +562,27 @@ function updateProviderSettings($provider_id, $settings)
     }
 
     try {
-        // Utilisation de updateRow pour mettre à jour les paramètres
         $result = updateRow(
-            'personnes',
+            TABLE_USERS,
             $filteredSettings,
-            "id = $provider_id AND role_id = " . ROLE_PRESTATAIRE
+            "id = :id AND role_id = :role",
+            [':id' => $provider_id, ':role' => ROLE_PRESTATAIRE]
         );
 
         if ($result) {
-            logBusinessOperation($_SESSION['user_id'] ?? null, 'update_provider', "Mise à jour prestataire #$provider_id");
             flashMessage("Les paramètres du prestataire ont été mis à jour avec succès", "success");
             return true;
         }
 
         return false;
     } catch (Exception $e) {
-        logSystemActivity('error', "Erreur mise à jour prestataire: " . $e->getMessage());
         flashMessage("Une erreur est survenue lors de la mise à jour des paramètres", "danger");
         return false;
     }
 }
 
-/**
- * ajoute une évaluation pour un prestataire
- * 
- * @param int $user_id identifiant de l'utilisateur qui évalue
- * @param int $prestation_id identifiant de la prestation
- * @param int $note note (1-5)
- * @param string $commentaire commentaire
- * @return int|false ID de l'évaluation créée ou false en cas d'erreur
- */
 function addProviderRating($user_id, $prestation_id, $note, $commentaire = '')
 {
-    // Validation des paramètres
     $user_id = (int)sanitizeInput($user_id);
     $prestation_id = (int)sanitizeInput($prestation_id);
     $note = (int)sanitizeInput($note);
@@ -736,7 +594,6 @@ function addProviderRating($user_id, $prestation_id, $note, $commentaire = '')
     }
 
     try {
-        // Création des données pour insertion
         $ratingData = [
             'personne_id' => $user_id,
             'prestation_id' => $prestation_id,
@@ -745,19 +602,158 @@ function addProviderRating($user_id, $prestation_id, $note, $commentaire = '')
             'date_evaluation' => date('Y-m-d')
         ];
 
-        // Utilisation de insertRow pour créer l'évaluation
-        $ratingId = insertRow('evaluations', $ratingData);
+        $ratingId = insertRow(TABLE_EVALUATIONS, $ratingData);
 
         if ($ratingId) {
-            logBusinessOperation($user_id, 'evaluation', "Évaluation #$ratingId ajoutée pour prestation #$prestation_id");
             flashMessage("Merci pour votre évaluation !", "success");
             return $ratingId;
         }
 
         return false;
     } catch (Exception $e) {
-        logSystemActivity('error', "Erreur ajout évaluation: " . $e->getMessage());
         flashMessage("Une erreur est survenue lors de l'ajout de l'évaluation", "danger");
         return false;
+    }
+}
+
+function handleUpdateProviderSettings()
+{
+    $provider_id = $_SESSION['user_id'] ?? null;
+    if (!$provider_id) {
+        flashMessage("Session invalide ou expirée.", "danger");
+        return;
+    }
+
+    $profileData = [
+        'nom' => $_POST['nom'] ?? null,
+        'prenom' => $_POST['prenom'] ?? null,
+        'telephone' => $_POST['telephone'] ?? null,
+    ];
+    $profileData = array_filter($profileData, function ($value) {
+        return $value !== null;
+    });
+
+    $preferenceData = [
+        'langue' => $_POST['langue'] ?? 'fr',
+        'notif_email' => isset($_POST['notif_email']) ? 1 : 0,
+    ];
+
+    $profileUpdated = false;
+    $prefsUpdated = false;
+
+    if (!empty($profileData)) {
+        try {
+            $rowsAffected = updateRow(TABLE_USERS, $profileData, "id = :id", [':id' => $provider_id]);
+            if ($rowsAffected > 0) {
+                $profileUpdated = true;
+
+                if (isset($profileData['prenom']) || isset($profileData['nom'])) {
+                    $updatedUser = fetchOne(TABLE_USERS, "id = :id", [':id' => $provider_id]);
+                    $_SESSION['user_name'] = ($updatedUser['prenom'] ?? '') . ' ' . ($updatedUser['nom'] ?? '');
+                }
+            }
+        } catch (Exception $e) {
+            flashMessage("Une erreur est survenue lors de la mise à jour du profil.", "danger");
+            return;
+        }
+    }
+
+    $existingPrefs = fetchOne(TABLE_USER_PREFERENCES, "personne_id = :id", [':id' => $provider_id]);
+
+    try {
+        if ($existingPrefs) {
+            $rowsAffected = updateRow(TABLE_USER_PREFERENCES, $preferenceData, "personne_id = :id", [':id' => $provider_id]);
+            if ($rowsAffected > 0) $prefsUpdated = true;
+        } else {
+            $preferenceData['personne_id'] = $provider_id;
+            $newId = insertRow(TABLE_USER_PREFERENCES, $preferenceData);
+            if ($newId) $prefsUpdated = true;
+        }
+    } catch (Exception $e) {
+        flashMessage("Une erreur est survenue lors de la mise à jour des préférences.", "danger");
+    }
+
+    if ($profileUpdated || $prefsUpdated) {
+        flashMessage("Profil et préférences mis à jour avec succès.", "success");
+
+        if (isset($preferenceData['langue']) && ($_SESSION['user_language'] ?? 'fr') !== $preferenceData['langue']) {
+            $_SESSION['user_language'] = $preferenceData['langue'];
+        }
+    } else {
+        flashMessage("Aucune modification détectée.", "info");
+    }
+}
+
+function displayProviderSettingsPageData()
+{
+    $provider_id = $_SESSION['user_id'] ?? null;
+    if (!$provider_id) {
+        flashMessage("Utilisateur non identifié.", "danger");
+        redirectTo(WEBCLIENT_URL . '/login.php');
+        exit;
+    }
+
+    $providerData = fetchOne(TABLE_USERS, "id = :id AND role_id = :role", [':id' => $provider_id, ':role' => ROLE_PRESTATAIRE]);
+    $preferencesData = fetchOne(TABLE_USER_PREFERENCES, "personne_id = :id", [':id' => $provider_id]);
+
+    if (!$providerData) {
+        flashMessage("Impossible de charger les informations du compte prestataire.", "danger");
+        return ['provider' => [], 'settings' => []];
+    }
+
+    if (!$preferencesData) {
+        $preferencesData = ['langue' => 'fr', 'notif_email' => 1, 'theme' => 'clair'];
+    }
+
+    return [
+        'provider' => $providerData,
+        'settings' => $preferencesData
+    ];
+}
+
+function handleChangePassword($provider_id, $current_password, $new_password, $confirm_password)
+{
+    if (empty($current_password) || empty($new_password) || empty($confirm_password)) {
+        flashMessage("Tous les champs de mot de passe sont requis.", "danger");
+        return;
+    }
+
+    if (strlen($new_password) < 8) {
+        flashMessage("Le nouveau mot de passe doit comporter au moins 8 caractères.", "danger");
+        return;
+    }
+
+    if ($new_password !== $confirm_password) {
+        flashMessage("Le nouveau mot de passe et sa confirmation ne correspondent pas.", "danger");
+        return;
+    }
+
+    $user = fetchOne(TABLE_USERS, "id = :id", [':id' => $provider_id]);
+    if (!$user) {
+        flashMessage("Utilisateur non trouvé.", "danger");
+        return;
+    }
+
+    if (!password_verify($current_password, $user['mot_de_passe'])) {
+        flashMessage("Le mot de passe actuel est incorrect.", "danger");
+        return;
+    }
+
+    if (password_verify($new_password, $user['mot_de_passe'])) {
+        flashMessage("Le nouveau mot de passe doit être différent de l'ancien.", "warning");
+        return;
+    }
+
+    $new_password_hash = password_hash($new_password, PASSWORD_DEFAULT);
+
+    try {
+        $rowsAffected = updateRow(TABLE_USERS, ['mot_de_passe' => $new_password_hash], "id = :id", [':id' => $provider_id]);
+        if ($rowsAffected > 0) {
+            flashMessage("Mot de passe modifié avec succès.", "success");
+        } else {
+            flashMessage("La mise à jour du mot de passe a échoué sans erreur explicite.", "warning");
+        }
+    } catch (Exception $e) {
+        flashMessage("Une erreur serveur est survenue lors de la modification du mot de passe.", "danger");
     }
 }
