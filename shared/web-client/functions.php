@@ -7,17 +7,6 @@ define('DEFAULT_DATE_FORMAT', 'd/m/Y H:i');
 define('DEFAULT_CURRENCY', '€');
 define('INVOICE_PREFIX', 'F');
 
-
-/**
- * Formate une date selon un format spécifié.
- *
- * La fonction convertit la chaîne de caractères représentant une date en timestamp, puis renvoie la date formatée selon le format indiqué.
- * Si la date d'entrée est vide, elle renvoie une chaîne vide.
- *
- * @param string $date Chaîne représentant la date à formater.
- * @param string $format Format de la date souhaité. Si omis, le format par défaut est défini par DEFAULT_DATE_FORMAT.
- * @return string La date formatée ou une chaîne vide si l'entrée est vide.
- */
 function formatDate($date, $format = DEFAULT_DATE_FORMAT)
 {
     if (!$date) return '';
@@ -25,31 +14,13 @@ function formatDate($date, $format = DEFAULT_DATE_FORMAT)
     return date($format, $timestamp);
 }
 
-/**
- * Formate un montant en chaîne de caractères selon le format monétaire français.
- *
- * Le montant est présenté avec deux décimales, en utilisant la virgule pour le séparateur décimal et l'espace pour le séparateur des milliers,
- * suivi d'un espace et du symbole de la devise.
- *
- * @param float $amount Le montant à formater.
- * @param string $currency Le symbole de la devise, par défaut celui défini par DEFAULT_CURRENCY.
- * @return string Le montant formaté avec la devise.
- */
+
 function formatMoney($amount, $currency = DEFAULT_CURRENCY)
 {
     return number_format($amount, 2, ',', ' ') . ' ' . $currency;
 }
 
-/**
- * Nettoie et sécurise les données utilisateur pour prévenir les injections et assurer un affichage correct.
- *
- * La fonction transforme toute entrée en chaîne de caractères sécurisée : les espaces superflus sont supprimés,
- * les antislashes retirés, et les caractères spéciaux convertis en entités HTML. Si une valeur nulle est fournie,
- * elle est convertie en chaîne vide. Pour un tableau, le nettoyage s'applique récursivement à chaque élément.
- *
- * @param mixed $input Donnée ou tableau de données à nettoyer.
- * @return mixed Données nettoyées, sous forme de chaîne ou de tableau selon l'entrée.
- */
+
 function sanitizeInput($input)
 {
     if (is_array($input)) {
@@ -66,13 +37,6 @@ function sanitizeInput($input)
     }
     return $input;
 }
-
-/**
- * Génère le titre de la page en ajoutant optionnellement un titre spécifique
- * 
- * @param string $title Titre spécifique de la page
- * @return string Titre complet formaté
- */
 function generatePageTitle($title = '')
 {
     if ($title) {
@@ -81,12 +45,7 @@ function generatePageTitle($title = '')
     return APP_NAME;
 }
 
-/**
- * Redirige l'utilisateur vers l'URL spécifiée
- *
- * @param string $url URL de destination
- * @return void
- */
+
 function redirectTo($url)
 {
     session_write_close();
@@ -95,37 +54,22 @@ function redirectTo($url)
     exit;
 }
 
-/**
- * Récupère les données du formulaire POST avec nettoyage
- * 
- * @return array Données du formulaire nettoyées
- */
+
 function getFormData()
 {
     return sanitizeInput($_POST);
 }
 
-/**
- * Récupère et nettoie les paramètres de la requête GET
- *
- * @return array Les paramètres GET nettoyés
- */
+
 function getQueryData()
 {
     return sanitizeInput($_GET);
 }
 
-/**
- * Enregistre un ou plusieurs messages temporaires en session
- * 
- * @param string|array $message Contenu du message ou tableau de messages
- * @param string $type Type de message (success, danger, warning, info)
- * @return void
- */
 function flashMessage($message, $type = 'success')
 {
     if (!isset($_SESSION['flash_messages'])) {
-        $_SESSION['flash_messages'] = []; 
+        $_SESSION['flash_messages'] = [];
     }
     $_SESSION['flash_messages'][] = [
         'message' => $message,
@@ -135,10 +79,10 @@ function flashMessage($message, $type = 'success')
 
 
 function getFlashMessages()
-{ 
+{
     $messages = $_SESSION['flash_messages'] ?? [];
     if (!empty($messages)) {
-        unset($_SESSION['flash_messages']); 
+        unset($_SESSION['flash_messages']);
     }
     return $messages;
 }
@@ -169,18 +113,13 @@ function displayFlashMessages()
         $alertClass = $alertTypes[$type] ?? 'alert-info';
 
         $output .= '<div class="alert ' . $alertClass . ' alert-dismissible fade show" role="alert">'
-            . htmlspecialchars($message) 
+            . htmlspecialchars($message)
             . '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>'
             . '</div>';
     }
     return $output;
 }
 
-/**
- * Génère un jeton CSRF pour la protection des formulaires
- * 
- * @return string Jeton CSRF
- */
 function generateToken()
 {
     if (!isset($_SESSION['csrf_token'])) {
@@ -211,27 +150,61 @@ function validateToken($token)
  */
 function getStatusBadge($status)
 {
-    $badges = [
-        'actif' => 'success',
-        'inactif' => 'danger',
-        'en_attente' => 'warning',
-        'suspendu' => 'secondary',
-        'expire' => 'danger',
-        'resilie' => 'danger',
-        'accepte' => 'success',
-        'refuse' => 'danger',
-        'confirme' => 'success',
-        'annule' => 'danger',
-        'termine' => 'info',
-        'planifie' => 'primary',
-        'no_show' => 'danger',
-        'payee' => 'success',
-        'impayee' => 'danger',
-        'retard' => 'warning'
-    ];
+    $statusLower = strtolower($status);
+    switch ($statusLower) {
+        case 'actif':
+            return '<span class="badge bg-success">Actif</span>';
+        case 'en_attente':
+            return '<span class="badge bg-warning text-dark">En attente</span>';
+        case 'suspendu':
+            return '<span class="badge bg-danger">Suspendu</span>';
+        case 'inactif':
+            return '<span class="badge bg-secondary">Inactif</span>';
 
-    $class = isset($badges[$status]) ? $badges[$status] : 'primary';
-    return '<span class="badge bg-' . $class . '">' . ucfirst($status) . '</span>';
+        case 'expire':
+            return '<span class="badge bg-secondary">Expiré</span>';
+        case 'resilie':
+            return '<span class="badge bg-danger">Résilie</span>';
+        case 'accepte':
+            return '<span class="badge bg-success">Accepté</span>';
+        case 'refuse':
+            return '<span class="badge bg-danger">Refusé</span>';
+
+        case 'confirme':
+            return '<span class="badge bg-primary">Confirmé</span>';
+        case 'termine':
+            return '<span class="badge bg-info text-dark">Terminé</span>';
+        case 'planifie':
+            return '<span class="badge bg-info text-dark">Planifié</span>';
+        case 'annule':
+            return '<span class="badge bg-danger">Annulé</span>';
+        case 'no_show':
+            return '<span class="badge bg-warning text-dark">Non Présenté</span>';
+
+        case 'payee':
+            return '<span class="badge bg-success">Payée</span>';
+        case 'impayee':
+            return '<span class="badge bg-danger">Impayée</span>';
+        case 'retard':
+            return '<span class="badge bg-warning text-dark">En Retard</span>';
+        case 'en_attente_paiement':
+            return '<span class="badge bg-warning text-dark">En attente</span>';
+
+        case 'valide':
+            return '<span class="badge bg-success">Validé</span>';
+        case 'nouveau':
+            return '<span class="badge bg-primary">Nouveau</span>';
+        case 'en_cours':
+            return '<span class="badge bg-info text-dark">En cours</span>';
+        case 'resolu':
+            return '<span class="badge bg-success">Résolu</span>';
+        case 'clos':
+            return '<span class="badge bg-secondary">Clos</span>';
+
+
+        default:
+            return '<span class="badge bg-light text-dark">' . htmlspecialchars(ucfirst($status)) . '</span>';
+    }
 }
 
 

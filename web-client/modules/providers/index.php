@@ -1,4 +1,5 @@
 <?php
+
 /**
  * tableau de bord - prestataires
  *
@@ -30,7 +31,7 @@ foreach ($calendarData as $day) {
     }
 }
 // Trier par date
-usort($rdvs, function($a, $b) {
+usort($rdvs, function ($a, $b) {
     return strtotime($a['date_rdv']) - strtotime($b['date_rdv']);
 });
 
@@ -80,7 +81,7 @@ include_once __DIR__ . '/../../templates/header.php';
                     </div>
                 </div>
             </div>
-            
+
             <div class="col-md-6 col-lg-3">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body">
@@ -94,12 +95,12 @@ include_once __DIR__ . '/../../templates/header.php';
                             </div>
                         </div>
                         <div class="mt-3">
-                            <a href="mes-prestations.php" class="btn btn-sm btn-outline-success">Gérer</a>
+                            <a href="contracts.php" class="btn btn-sm btn-outline-success">Gérer</a>
                         </div>
                     </div>
                 </div>
             </div>
-            
+
             <div class="col-md-6 col-lg-3">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body">
@@ -118,7 +119,7 @@ include_once __DIR__ . '/../../templates/header.php';
                     </div>
                 </div>
             </div>
-            
+
             <div class="col-md-6 col-lg-3">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body">
@@ -152,7 +153,7 @@ include_once __DIR__ . '/../../templates/header.php';
                             <p class="text-center text-muted my-5">Aucun rendez-vous planifié</p>
                         <?php else: ?>
                             <div class="list-group list-group-flush">
-                                <?php foreach (array_slice($rdvs, 0, 5) as $rdv): 
+                                <?php foreach (array_slice($rdvs, 0, 5) as $rdv):
                                     // récupérer les détails si nécessaire
                                     $prestation = isset($rdv['prestation']) ? $rdv['prestation'] : (isset($rdv['prestation_id']) ? fetchOne('prestations', "id = {$rdv['prestation_id']}") : null);
                                     $client = isset($rdv['client']) ? $rdv['client'] : (isset($rdv['personne_id']) ? fetchOne('personnes', "id = {$rdv['personne_id']}") : null);
@@ -162,7 +163,7 @@ include_once __DIR__ . '/../../templates/header.php';
                                             <div>
                                                 <h6 class="mb-1"><?= $prestation['nom'] ?? $rdv['prestation_nom'] ?? 'Prestation inconnue' ?></h6>
                                                 <p class="mb-1">
-                                                    <span class="fw-bold">Client :</span> 
+                                                    <span class="fw-bold">Client :</span>
                                                     <?= $client ? $client['prenom'] . ' ' . $client['nom'] : ($rdv['client_nom'] ?? 'Client inconnu') ?>
                                                 </p>
                                                 <p class="text-muted mb-0">
@@ -202,7 +203,7 @@ include_once __DIR__ . '/../../templates/header.php';
                             <p class="text-center text-muted my-5">Aucune évaluation disponible</p>
                         <?php else: ?>
                             <div class="list-group list-group-flush">
-                                <?php foreach ($evaluations as $evaluation): 
+                                <?php foreach ($evaluations as $evaluation):
                                     // récupérer les détails de la prestation si nécessaire
                                     $prestation = isset($evaluation['prestation']) ? $evaluation['prestation'] : (isset($evaluation['prestation_id']) ? fetchOne('prestations', "id = {$evaluation['prestation_id']}") : null);
                                 ?>
@@ -251,7 +252,7 @@ include_once __DIR__ . '/../../templates/header.php';
                                 </a>
                             </div>
                             <div class="col-md-3">
-                                <a href="mes-contrats.php" class="btn btn-warning d-block py-3">
+                                <a href="contracts.php" class="btn btn-warning d-block py-3">
                                     <i class="fas fa-file-contract me-2"></i>Mes contrats
                                 </a>
                             </div>
