@@ -78,6 +78,12 @@ CREATE TABLE services (
     description TEXT,
     actif BOOLEAN DEFAULT TRUE,
     ordre INT DEFAULT 0,
+    max_effectif_inferieur_egal INT NULL,
+    activites_incluses INT NOT NULL DEFAULT 0,
+    rdv_medicaux_inclus INT NOT NULL DEFAULT 0,
+    chatbot_questions_limite INT NULL,
+    conseils_hebdo_personnalises BOOLEAN DEFAULT FALSE,
+    tarif_annuel_par_salarie DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_nom (nom),
@@ -87,18 +93,19 @@ CREATE TABLE services (
 CREATE TABLE contrats (
     id INT PRIMARY KEY AUTO_INCREMENT,
     entreprise_id INT NOT NULL,
+    service_id INT NOT NULL,
     date_debut DATE NOT NULL,
     date_fin DATE,
-    montant_mensuel DECIMAL(10,2),
     nombre_salaries INT,
-    type_contrat ENUM('standard', 'premium', 'entreprise') NOT NULL,
     statut ENUM('actif', 'expire', 'resilie', 'en_attente') DEFAULT 'actif',
     conditions_particulieres TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (entreprise_id) REFERENCES entreprises(id),
+    FOREIGN KEY (service_id) REFERENCES services(id),
     INDEX idx_dates (date_debut, date_fin),
-    INDEX idx_statut (statut)
+    INDEX idx_statut (statut),
+    INDEX idx_service (service_id)
 );
 
 CREATE TABLE devis (
@@ -267,6 +274,17 @@ CREATE TABLE preferences_utilisateurs (
     theme ENUM('clair', 'sombre') DEFAULT 'clair',
     FOREIGN KEY (personne_id) REFERENCES personnes(id),
     UNIQUE KEY unique_personne_id (personne_id)
+);
+
+CREATE TABLE devis_prestations (
+    devis_id INT NOT NULL,
+    prestation_id INT NOT NULL,
+    quantite INT DEFAULT 1,
+    prix_unitaire_devis DECIMAL(10,2) NOT NULL,
+    description_specifique TEXT,
+    PRIMARY KEY (devis_id, prestation_id),
+    FOREIGN KEY (devis_id) REFERENCES devis(id) ON DELETE CASCADE,
+    FOREIGN KEY (prestation_id) REFERENCES prestations(id) ON DELETE CASCADE
 );
 
 CREATE TABLE contrats_prestations (

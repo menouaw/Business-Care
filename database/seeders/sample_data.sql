@@ -12,6 +12,7 @@ TRUNCATE TABLE evenements;
 TRUNCATE TABLE rendez_vous;
 TRUNCATE TABLE factures;
 TRUNCATE TABLE devis;
+TRUNCATE TABLE devis_prestations;
 TRUNCATE TABLE contrats;
 TRUNCATE TABLE preferences_utilisateurs;
 TRUNCATE TABLE remember_me_tokens;
@@ -48,15 +49,28 @@ INSERT INTO personnes (nom, prenom, email, mot_de_passe, telephone, date_naissan
 ('Durand', 'Sophie', 'sophie.durand@prestataire.com', '$2y$10$CGP1gfg0khtXjAZcJFC6iO3oYisjwlPfkm8tQ8Q/OxWpFdR7tOiqO', '0600000001', '1988-03-15', 'F', '', 3, NULL, 'actif', NOW()),
 ('Leroy', 'Isabelle', 'isabelle.leroy@techsolutions.fr', '$2y$10$CGP1gfg0khtXjAZcJFC6iO3oYisjwlPfkm8tQ8Q/OxWpFdR7tOiqO', '0123456701', '1980-04-12', 'F', '', 4, 1, 'actif', NOW());
 
-INSERT INTO contrats (entreprise_id, date_debut, date_fin, montant_mensuel, nombre_salaries, type_contrat, statut, conditions_particulieres) VALUES
-(1, '2024-01-01', '2024-12-31', 5000.00, 150, 'premium', 'actif', 'Acces a toutes les prestations premium'),
-(2, '2024-02-01', '2025-01-31', 7500.00, 300, 'entreprise', 'actif', 'Acces illimite aux prestations'),
-(3, '2024-03-01', '2024-08-31', 2500.00, 35, 'standard', 'actif', 'Acces aux prestations de base');
+INSERT INTO services (nom, description, actif, ordre, max_effectif_inferieur_egal, activites_incluses, rdv_medicaux_inclus, chatbot_questions_limite, conseils_hebdo_personnalises, tarif_annuel_par_salarie) VALUES
+('Starter Pack', 'Pour les petites équipes (jusqu\'à 30 salariés)', TRUE, 10, 30, 2, 1, 6, FALSE, 180.00),
+('Basic Pack', 'Solution équilibrée (jusqu\'à 250 salariés)', TRUE, 20, 250, 3, 2, 20, FALSE, 150.00),
+('Premium Pack', 'Offre complète pour grandes entreprises (251+ salariés)', TRUE, 30, NULL, 4, 3, NULL, TRUE, 100.00);
+
+INSERT INTO contrats (entreprise_id, service_id, date_debut, date_fin, nombre_salaries, statut, conditions_particulieres) VALUES
+(1, 3, '2024-01-01', '2024-12-31', 150, 'actif', 'Acces a toutes les prestations premium'),
+(2, 3, '2024-02-01', '2025-01-31', 300, 'actif', 'Acces illimite aux prestations'),
+(3, 2, '2024-03-01', '2024-08-31', 35, 'actif', 'Acces aux prestations de base');
 
 INSERT INTO devis (entreprise_id, date_creation, date_validite, montant_total, montant_ht, tva, statut, conditions_paiement, delai_paiement) VALUES
 (1, '2024-01-15', '2024-02-15', 1500.00, 1250.00, 20.00, 'accepte', 'Paiement a 30 jours', 30),
 (2, '2024-02-01', '2024-03-01', 2000.00, 1666.67, 20.00, 'accepte', 'Paiement a 45 jours', 45),
 (3, '2024-02-15', '2024-03-15', 1800.00, 1500.00, 20.00, 'refuse', 'Paiement a 30 jours', 30);
+
+INSERT INTO devis_prestations (devis_id, prestation_id, quantite, prix_unitaire_devis, description_specifique) VALUES
+(1, 1, 10, 80.00, '10 consultations psychologiques individuelles'), 
+(1, 2, 5, 120.00, '5 seances de yoga en entreprise'), 
+(1, 3, 1, 100.00, '1 webinar gestion du stress (prix special)'), 
+
+(2, 1, 15, 75.00, '15 consultations psychologiques (prix negocie)'), 
+(2, 2, 7, 125.00, '7 seances de yoga (prix premium)'); 
 
 INSERT INTO factures (entreprise_id, devis_id, numero_facture, date_emission, date_echeance, montant_total, montant_ht, tva, statut, mode_paiement) VALUES
 (1, 1, 'FACT-2024-001', '2024-01-20', '2024-02-20', 1500.00, 1250.00, 20.00, 'payee', 'virement'),
@@ -92,8 +106,3 @@ INSERT INTO contrats_prestations (contrat_id, prestation_id) VALUES
 (1, 1),
 (2, 2),
 (3, 3);
-
-INSERT INTO services (nom, description, actif, ordre) VALUES
-('Starter Pack', 'Pour les petites équipes (jusqu\'à 30 salariés)', TRUE, 10),
-('Basic Pack', 'Solution équilibrée (jusqu\'à 250 salariés)', TRUE, 20),
-('Premium Pack', 'Offre complète pour grandes entreprises (251+ salariés)', TRUE, 30);
