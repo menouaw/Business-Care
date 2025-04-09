@@ -199,8 +199,7 @@ include_once __DIR__ . '/../../templates/header.php';
                             <p class="text-center text-muted my-5">Aucun événement à venir</p>
                         <?php else : ?>
                             <div class="list-group list-group-flush">
-                                <?php foreach (array_slice($dashboardData['upcoming_events'], 0, 3) as $event) :
-                                ?>
+                                <?php foreach (array_slice($dashboardData['upcoming_events'], 0, 3) as $event) : ?>
                                     <div class="list-group-item border-0 px-0">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div>

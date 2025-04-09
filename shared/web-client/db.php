@@ -45,7 +45,7 @@ function executeQuery($sql, $params = [])
 
         return $stmt;
     } catch (PDOException $e) {
-        error_log("PDOException in executeQuery: " . $e->getMessage() . " | SQL: " . $sql . " | Params: " . json_encode($params));
+        error_log(message: "PDOException in executeQuery: " . $e->getMessage() . " | SQL: " . $sql . " | Params: " . json_encode($params));
         throw $e;
     }
 }

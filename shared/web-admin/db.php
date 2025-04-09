@@ -126,19 +126,7 @@ function fetchAll($table, $where = '', $orderBy = '', $limit = 0, $offset = 0)
     return $stmt->fetchAll();
 }
 
-/**
- * Récupère le premier enregistrement d'une table selon une condition donnée.
- *
- * La fonction valide le nom de la table pour éviter les injections SQL, puis construit
- * et exécute une requête SQL avec une clause WHERE et, si spécifiée, une clause ORDER BY.
- * Elle retourne le premier enregistrement trouvé sous forme de tableau associatif ou false si aucun enregistrement ne correspond.
- *
- * @param string $table Nom de la table concernée.
- * @param string $where Condition SQL pour filtrer les enregistrements.
- * @param string $orderBy Clause SQL pour ordonner les résultats (facultative).
- * @param array $params Paramètres à lier à la clause WHERE.
- * @return array|false Tableau associatif représentant l'enregistrement trouvé ou false si aucun enregistrement ne correspond.
- */
+
 function fetchOne($table, $where, $orderBy = '', $params = []) {
     $table = validateTableName($table);
 
@@ -152,19 +140,7 @@ function fetchOne($table, $where, $orderBy = '', $params = []) {
     return $stmt->fetch();
 }
 
-/**
- * Insère une nouvelle ligne dans la table spécifiée.
- *
- * Cette fonction prépare et exécute une requête SQL afin d'insérer les données
- * indiquées dans la table. Le nom de la table est d'abord validé pour éviter toute injection SQL.
- * En cas de succès, elle retourne l'identifiant de la nouvelle ligne insérée, sinon false.
- *
- * @param string $table Nom de la table dans laquelle insérer la nouvelle ligne.
- * @param array $data Tableau associatif des colonnes et valeurs à insérer.
- * @return int|false Identifiant de la ligne insérée ou false si l'insertion échoue.
- *
- * @throws Exception Si la validation du nom de la table échoue ou en cas d'erreur lors de l'exécution de la requête.
- */
+
 function insertRow($table, $data)
 {
     $table = validateTableName($table);
@@ -180,21 +156,7 @@ function insertRow($table, $data)
     return $stmt->rowCount() > 0 ? getDbConnection()->lastInsertId() : false;
 }
 
-/**
- * Met à jour les enregistrements d'une table avec les données fournies.
- *
- * Cette fonction valide le nom de la table, construit dynamiquement la clause SET en encapsulant les noms de colonnes avec des backticks et en utilisant des placeholders préfixés par "set_", puis exécute une requête SQL UPDATE avec une clause WHERE personnalisée. Si le tableau de données est vide, une exception est levée. En cas d'erreur lors de l'exécution de la requête, l'erreur est loguée et une exception PDO est relancée.
- * Utilise des placeholders nommés pour les clauses SET et WHERE.
- *
- * @param string $table Nom de la table cible.
- * @param array $data Tableau associatif contenant les colonnes et leurs nouvelles valeurs (pour SET).
- * @param string $where Clause SQL WHERE avec des placeholders nommés (ex: "id = :where_id").
- * @param array $whereParams Tableau associatif des valeurs pour les placeholders de la clause WHERE (ex: [':where_id' => 1]).
- * @return int Nombre d'enregistrements mis à jour.
- *
- * @throws Exception Si le tableau $data est vide.
- * @throws PDOException Si une erreur survient lors de l'exécution de la requête.
- */
+
 function updateRow($table, $data, $where, $whereParams = [])
 {
     $table = validateTableName($table);
@@ -231,16 +193,7 @@ function updateRow($table, $data, $where, $whereParams = [])
     }
 }
 
-/**
- * Supprime des lignes de la table spécifiée.
- *
- * Valide le nom de la table pour prévenir les injections SQL, puis exécute une requête DELETE en utilisant la clause WHERE et les paramètres indiqués.
- *
- * @param string $table Nom de la table depuis laquelle supprimer les lignes (après validation).
- * @param string $where Clause WHERE déterminant les critères de suppression.
- * @param array $params Valeurs associées à la clause WHERE.
- * @return int Le nombre de lignes supprimées.
- */
+
 function deleteRow($table, $where, $params = [])
 {
     $table = validateTableName($table);
@@ -251,31 +204,16 @@ function deleteRow($table, $where, $params = [])
     return $stmt->rowCount();
 }
 
-/**
- * Démarre une transaction SQL
- * 
- * @return void
- */
 function beginTransaction()
 {
     getDbConnection()->beginTransaction();
 }
 
-/**
- * Valide une transaction SQL en cours
- * 
- * @return void
- */
 function commitTransaction()
 {
     getDbConnection()->commit();
 }
 
-/**
- * Annule une transaction SQL en cours
- * 
- * @return void
- */
 function rollbackTransaction()
 {
     getDbConnection()->rollBack();

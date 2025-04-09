@@ -1,9 +1,5 @@
 <?php
-/**
- * page de connexion
- *
- * cette page permet à l'utilisateur de se connecter
- */
+
 
 require_once __DIR__ . '/includes/init.php';
 require_once __DIR__ . '/includes/page_functions/login.php';
@@ -20,22 +16,17 @@ if (isAuthenticated()) {
     }
 }
 
-// Initialiser les variables
 $email = '';
 $error = '';
 $success = '';
 
-// Traiter la soumission du formulaire
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $result = processLoginForm($_POST);
-    
+
     if ($result['success']) {
-        // La redirection est déjà gérée dans processLoginForm
-        // qui redirige vers le bon module selon le rôle
         if (!empty($result['redirect'])) {
             redirectTo($result['redirect']);
         } else {
-            // Redirection de secours basée sur le rôle de l'utilisateur
             if (isEntrepriseUser()) {
                 redirectTo(WEBCLIENT_URL . '/modules/companies/index.php');
             } elseif (isSalarieUser()) {
@@ -52,13 +43,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Définir transparentNav pour avoir une barre de navigation transparente
 $transparentNav = false;
 
-// Définir le titre de la page
 $pageTitle = "Connexion - Business Care";
 
-// Inclure l'en-tête
 include_once __DIR__ . '/templates/header.php';
 ?>
 
@@ -73,41 +61,41 @@ include_once __DIR__ . '/templates/header.php';
                             <h2 class="fw-bold">Connexion</h2>
                             <p class="text-muted">Accédez à votre espace personnel</p>
                         </div>
-                        
+
                         <?php if (!empty($error)): ?>
                             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                                 <?= $error ?>
                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
                         <?php endif; ?>
-                        
+
                         <?php if (!empty($success)): ?>
                             <div class="alert alert-success alert-dismissible fade show" role="alert">
                                 <?= $success ?>
                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
                         <?php endif; ?>
-                        
+
                         <form action="<?= $_SERVER['PHP_SELF'] ?>" method="post" class="needs-validation" novalidate>
                             <div class="mb-3">
                                 <label for="email" class="form-label">Adresse email</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                                    <input type="email" class="form-control" id="email" name="email" 
-                                           value="<?= htmlspecialchars($email) ?>" required 
-                                           placeholder="Votre adresse email">
+                                    <input type="email" class="form-control" id="email" name="email"
+                                        value="<?= htmlspecialchars($email) ?>" required
+                                        placeholder="Votre adresse email">
                                     <div class="invalid-feedback">
                                         Veuillez saisir une adresse email valide.
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div class="mb-3">
                                 <label for="password" class="form-label">Mot de passe</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                                    <input type="password" class="form-control" id="password" name="password" 
-                                           required placeholder="Votre mot de passe">
+                                    <input type="password" class="form-control" id="password" name="password"
+                                        required placeholder="Votre mot de passe">
                                     <button class="btn btn-outline-secondary" type="button" id="togglePassword">
                                         <i class="fas fa-eye"></i>
                                     </button>
@@ -116,7 +104,11 @@ include_once __DIR__ . '/templates/header.php';
                                     </div>
                                 </div>
                             </div>
-                            
+
+                            <!-- Add CSRF Token Field -->
+                            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
+                            <!-- End CSRF Token Field -->
+
                             <div class="row mb-4">
                                 <div class="col">
                                     <div class="form-check">
@@ -130,20 +122,20 @@ include_once __DIR__ . '/templates/header.php';
                                     <a href="reset-password.php" class="text-decoration-none">Mot de passe oublié ?</a>
                                 </div>
                             </div>
-                            
+
                             <div class="d-grid gap-2">
                                 <button type="submit" class="btn btn-primary btn-lg">
                                     <i class="fas fa-sign-in-alt me-2"></i>Connexion
                                 </button>
                             </div>
                         </form>
-                        
+
                         <div class="text-center mt-4">
                             <p class="mb-0">Vous n'avez pas de compte ? <a href="inscription.php" class="text-decoration-none">Créer un compte</a></p>
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="card mt-4 border-0 shadow-sm">
                     <div class="card-body p-4">
                         <h5 class="card-title">Besoin d'aide ?</h5>
@@ -156,6 +148,5 @@ include_once __DIR__ . '/templates/header.php';
 </main>
 
 <?php
-// Inclure le pied de page
 include_once __DIR__ . '/templates/footer.php';
 ?>
