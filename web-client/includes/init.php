@@ -7,11 +7,6 @@ require_once __DIR__ . '/../../shared/web-client/db.php';
 require_once __DIR__ . '/../../shared/web-client/functions.php';
 require_once __DIR__ . '/../../shared/web-client/auth.php';
 
-/**
- * Génère et stocke un jeton CSRF dans la session si nécessaire.
- *
- * @return string Le jeton CSRF.
- */
 function generateCsrfToken()
 {
     if (!isset($_SESSION['csrf_token'])) {
@@ -20,10 +15,6 @@ function generateCsrfToken()
     return $_SESSION['csrf_token'];
 }
 
-/**
- * Vérifie le jeton CSRF pour les requêtes POST.
- * En cas d'échec, affiche un message flash et redirige.
- */
 function verifyCsrfToken()
 {
     // Vérifie uniquement pour les requêtes POST
@@ -49,3 +40,5 @@ function verifyCsrfToken()
 
 // Assure la génération du token pour chaque chargement de page où init.php est inclus.
 generateCsrfToken();
+
+verifyCsrfToken();

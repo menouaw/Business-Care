@@ -125,7 +125,7 @@ function getQueryData()
 function flashMessage($message, $type = 'success')
 {
     if (!isset($_SESSION['flash_messages'])) {
-        $_SESSION['flash_messages'] = []; 
+        $_SESSION['flash_messages'] = [];
     }
     $_SESSION['flash_messages'][] = [
         'message' => $message,
@@ -135,10 +135,10 @@ function flashMessage($message, $type = 'success')
 
 
 function getFlashMessages()
-{ 
+{
     $messages = $_SESSION['flash_messages'] ?? [];
     if (!empty($messages)) {
-        unset($_SESSION['flash_messages']); 
+        unset($_SESSION['flash_messages']);
     }
     return $messages;
 }
@@ -169,7 +169,7 @@ function displayFlashMessages()
         $alertClass = $alertTypes[$type] ?? 'alert-info';
 
         $output .= '<div class="alert ' . $alertClass . ' alert-dismissible fade show" role="alert">'
-            . htmlspecialchars($message) 
+            . htmlspecialchars($message)
             . '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>'
             . '</div>';
     }
@@ -234,6 +234,25 @@ function getStatusBadge($status)
     return '<span class="badge bg-' . $class . '">' . ucfirst($status) . '</span>';
 }
 
+
+function getServiceIcon($type)
+{
+    switch (strtolower($type)) {
+        case 'conference':
+            return 'fas fa-chalkboard-teacher';
+        case 'webinar':
+            return 'fas fa-desktop';
+        case 'atelier':
+            return 'fas fa-tools';
+        case 'consultation':
+            return 'fas fa-user-md';
+        case 'evenement': // Keep consistent with the function removed from services.php
+            return 'fas fa-calendar-alt';
+        case 'autre':
+        default:
+            return 'fas fa-concierge-bell';
+    }
+}
 
 function paginateResults($table, $page, $perPage = DEFAULT_ITEMS_PER_PAGE, $where = '', $orderBy = '', $params = [])
 {

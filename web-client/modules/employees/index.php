@@ -152,11 +152,11 @@ include_once __DIR__ . '/../../templates/header.php';
                         <a href="<?= WEBCLIENT_URL ?>/modules/employees/appointments.php" class="btn btn-sm btn-outline-primary">Voir mon planning</a>
                     </div>
                     <div class="card-body">
-                        <?php if (empty($dashboardData['upcoming_appointments'])) : ?>
+                        <?php if (empty($dashboardData['upcoming_appointments']['items'])) : ?>
                             <p class="text-center text-muted my-5">Aucun rendez-vous planifié</p>
                         <?php else : ?>
                             <div class="list-group list-group-flush">
-                                <?php foreach ($dashboardData['upcoming_appointments'] as $rdv) : ?>
+                                <?php foreach ($dashboardData['upcoming_appointments']['items'] as $rdv) : ?>
                                     <?php if (is_array($rdv)):
                                     ?>
                                         <div class="list-group-item border-0 px-0">

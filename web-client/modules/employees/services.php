@@ -7,39 +7,35 @@ require_once __DIR__ . '/../../includes/page_functions/modules/employees.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['prestation_id'], $_POST['csrf_token'])) {
 
-        if (validateToken($_POST['csrf_token'])) {
-            requireRole(ROLE_SALARIE);
-            $employee_id = $_SESSION['user_id'];
-            $prestation_id = filter_var($_POST['prestation_id'], FILTER_VALIDATE_INT);
-            $success = false;
-            $message = 'Erreur inconnue.';
+        requireRole(ROLE_SALARIE);
+        $employee_id = $_SESSION['user_id'];
+        $prestation_id = filter_var($_POST['prestation_id'], FILTER_VALIDATE_INT);
+        $success = false;
+        $message = 'Erreur inconnue.';
 
-            if ($prestation_id) {
+        if ($prestation_id) {
 
-                $dummy_appointment_data = [
-                    'prestation_id' => $prestation_id,
-                    'date_rdv'      => date('Y-m-d H:i:s', strtotime('+1 day')), 
-                    'duree'         => 60,
-                    'type_rdv'      => 'visio',
-                    'notes'         => 'Réservation rapide depuis catalogue.'
-                ];
+            $dummy_appointment_data = [
+                'prestation_id' => $prestation_id,
+                'date_rdv'      => date('Y-m-d H:i:s', strtotime('+1 day')),
+                'duree'         => 60,
+                'type_rdv'      => 'visio',
+                'notes'         => 'Réservation rapide depuis catalogue.'
+            ];
 
-                $result = bookEmployeeAppointment($employee_id, $dummy_appointment_data);
+            $result = bookEmployeeAppointment($employee_id, $dummy_appointment_data);
 
-                if ($result) {
-                    $success = true;
-                    $message = "La prestation a bien été réservée (ID: $result). Statut : Planifié.";
-                } else {
-
-                    $flashMessages = $_SESSION['flash_messages'] ?? [];
-                    $lastMessage = end($flashMessages);
-                    $message = $lastMessage['message'] ?? "Erreur lors de la tentative de réservation.";
-                }
+            if ($result) {
+                $success = true;
+                $message = "La prestation a bien été réservée (ID: $result). Statut : Planifié.";
             } else {
-                $message = "ID de prestation invalide.";
+
+                $flashMessages = $_SESSION['flash_messages'] ?? [];
+                $lastMessage = end($flashMessages);
+                $message = $lastMessage['message'] ?? "Erreur lors de la tentative de réservation.";
             }
         } else {
-            $message = "Erreur de sécurité (jeton invalide).";
+            $message = "ID de prestation invalide.";
         }
 
         flashMessage($message, $success ? 'success' : 'danger');
@@ -48,6 +44,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+if (isset($_SESSION['flash_messages'])) {
+    unset($_SESSION['flash_messages']);
+}
 
 $pageData = displayServiceCatalog();
 $services = $pageData['services'] ?? [];
@@ -63,25 +62,6 @@ $pageTitle = "Catalogue des Services - Espace Salarié";
 include_once __DIR__ . '/../../templates/header.php';
 
 $csrfToken = $_SESSION['csrf_token'] ?? '';
-
-function getServiceIcon($type)
-{
-    switch (strtolower($type)) {
-        case 'conference':
-            return 'fas fa-chalkboard-teacher';
-        case 'webinar':
-            return 'fas fa-desktop';
-        case 'atelier':
-            return 'fas fa-tools';
-        case 'consultation':
-            return 'fas fa-user-md';
-        case 'evenement':
-            return 'fas fa-calendar-alt';
-        case 'autre':
-        default:
-            return 'fas fa-concierge-bell'; 
-    }
-}
 
 ?>
 

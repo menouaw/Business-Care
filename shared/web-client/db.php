@@ -38,7 +38,7 @@ function executeQuery($sql, $params = [])
         $stmt = $pdo->prepare($sql);
         if (!is_array($params)) {
             error_log("Warning: executeQuery called with non-array params. SQL: " . $sql);
-            $params = []; 
+            $params = [];
         }
 
         $stmt->execute($params);
@@ -46,7 +46,7 @@ function executeQuery($sql, $params = [])
         return $stmt;
     } catch (PDOException $e) {
         error_log("PDOException in executeQuery: " . $e->getMessage() . " | SQL: " . $sql . " | Params: " . json_encode($params));
-        throw $e; 
+        throw $e;
     }
 }
 
@@ -114,6 +114,15 @@ function fetchOne($table, $where, $params = [], $orderBy = '')
     error_log("[DEBUG] fetchOne called for table: $table | WHERE: $where | Params: " . json_encode($params) . " | SQL: $sql");
 
     $stmt = executeQuery($sql, $params);
+
+    // --- DEBUGGING START ---
+    // Remove this block
+    // $errorInfo = $stmt->errorInfo();
+    // $result = $stmt->fetch();
+    // error_log("[DEBUG] fetchOne fetch() result: " . var_export($result, true));
+    // --- DEBUGGING END ---
+
+    // return $result; // Change back to original
     return $stmt->fetch();
 }
 

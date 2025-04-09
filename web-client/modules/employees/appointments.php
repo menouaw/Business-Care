@@ -48,7 +48,7 @@ include_once __DIR__ . '/../../templates/header.php';
                 <p class="text-muted mb-0">Consultez l'historique et les détails de vos réservations (consultations, ateliers, etc.).</p>
             </div>
             <div class="col-auto">
-                <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                <a href="<?= WEBCLIENT_URL ?>/modules/employees/index.php" class="btn btn-outline-secondary">
                     <i class="fas fa-arrow-left me-1"></i> Retour
                 </a>
             </div>
@@ -114,8 +114,6 @@ include_once __DIR__ . '/../../templates/header.php';
                         }
                         ?>
                         <br>
-                        <!-- REMOVED Button from here -->
-                        <!-- <a href="<?= WEBCLIENT_URL ?>/modules/employees/services.php" class="btn btn-sm btn-primary mt-3">Voir le catalogue des prestations</a> -->
                     </p>
                 <?php else : ?>
                     <div class="list-group ">
@@ -165,7 +163,7 @@ include_once __DIR__ . '/../../templates/header.php';
                     </div>
 
                     <div class="mt-4 d-flex justify-content-center">
-                        <?= $pageData['pagination_html'] ?? '' // Utiliser la clé définie dans displayEmployeeAppointmentsPage 
+                        <?= $pageData['pagination_html'] ?? ''
                         ?>
                     </div>
 
