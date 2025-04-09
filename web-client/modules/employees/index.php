@@ -171,7 +171,7 @@ include_once __DIR__ . '/../../templates/header.php';
                                                     <?php endif; ?>
                                                 </p>
                                                 <p class="text-muted mb-0 small">
-                                                    <i class="fas fa-map-marker-alt me-1"></i> <?= htmlspecialchars($rdv['lieu'] ?: ($rdv['type_rdv'] === 'visio' ? 'Visioconférence' : 'Téléphone')) ?>
+                                                    <i class="fas fa-map-marker-alt me-1"></i> <?= htmlspecialchars($rdv['lieu'] ?? (($rdv['type_rdv'] ?? null) === 'visio' ? 'Visioconférence' : 'Téléphone')) ?>
                                                 </p>
                                             </div>
                                             <?= $rdv['statut_badge'] ?? '' ?>
@@ -209,7 +209,7 @@ include_once __DIR__ . '/../../templates/header.php';
                                                     <i class="fas fa-map-marker-alt me-1"></i> <?= htmlspecialchars($event['lieu'] ?? 'Lieu à confirmer') ?>
                                                 </p>
                                             </div>
-                                            <a href="<?= WEBCLIENT_URL ?>/events.php?id=<?= $event['id'] ?>" class="btn btn-sm btn-outline-success">Voir détails</a>
+                                            <a href="<?= WEBCLIENT_URL ?>/events.php?id=<?= htmlspecialchars($event['id'] ?? '') ?>" class="btn btn-sm btn-outline-success">Voir détails</a>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>

@@ -124,7 +124,6 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
                                     <li>
                                         <hr class="dropdown-divider">
                                     </li>
-                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/settings.php"><i class="fas fa-cog me-2"></i>Mes Paramètres</a></li>
                                 </ul>
                             </li>
                             <li class="nav-item">
@@ -156,10 +155,8 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
                     <?php endif; ?>
                 </ul>
 
-                <!-- Partie droite : connexion ou profil/déconnexion -->
                 <ul class="navbar-nav ms-auto">
                     <?php if ($isLoggedIn): ?>
-                        <!-- Notifications -->
                         <li class="nav-item dropdown">
                             <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="fas fa-bell"></i>
@@ -202,7 +199,7 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
                             </div>
                         </li>
 
-                        <!-- Profil utilisateur -->
+                        <!-- Profil  -->
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <?php if (isset($_SESSION['user_photo']) && !empty($_SESSION['user_photo'])): ?>

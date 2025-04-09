@@ -52,7 +52,7 @@ include_once __DIR__ . '/../../templates/header.php';
             </div>
             <div class="col-auto">
                 <a href="<?= WEBCLIENT_URL ?>/modules/providers/index.php" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-1"></i> Retour 
+                    <i class="fas fa-arrow-left me-1"></i> Retour
                 </a>
             </div>
         </div>
