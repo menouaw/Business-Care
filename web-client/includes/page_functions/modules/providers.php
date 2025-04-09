@@ -291,9 +291,9 @@ function getProviderCalendar($provider_id, $start_date, $end_date)
             'date_formatee' => formatDate($dateStr, 'd/m/Y'),
             'day_name' => $date->format('l'),
             'appointments' => array_values($dayAppointments),
-            'is_available' => count($dayAppointments) < 8,
+            'is_available' => count($dayAppointments) < MAX_APPOINTMENTS_PER_DAY,
             'slots_taken' => count($dayAppointments),
-            'slots_available' => 8 - count($dayAppointments)
+            'slots_available' => MAX_APPOINTMENTS_PER_DAY - count($dayAppointments)
         ];
     }
 

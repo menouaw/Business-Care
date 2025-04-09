@@ -40,7 +40,7 @@ include_once __DIR__ . '/../../templates/header.php';
                                     </a>
                                 </div>
                             <?php endif; ?>
-                            <?php if (userHasPermission('employee_counsel')): // Assuming permission name convention
+                            <?php if (userHasPermission('employee_counsel')):
                             ?>
                                 <div class="col-sm-6 col-md-3 mb-2 mb-md-0">
                                     <a href="<?= WEBCLIENT_URL ?>/modules/employees/counsel.php" class="btn btn-success d-block py-3">

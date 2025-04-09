@@ -115,14 +115,7 @@ function fetchOne($table, $where, $params = [], $orderBy = '')
 
     $stmt = executeQuery($sql, $params);
 
-    // --- DEBUGGING START ---
-    // Remove this block
-    // $errorInfo = $stmt->errorInfo();
-    // $result = $stmt->fetch();
-    // error_log("[DEBUG] fetchOne fetch() result: " . var_export($result, true));
-    // --- DEBUGGING END ---
 
-    // return $result; // Change back to original
     return $stmt->fetch();
 }
 
