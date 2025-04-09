@@ -26,36 +26,50 @@ include_once __DIR__ . '/../../templates/header.php';
                     </div>
                     <div class="card-body">
                         <div class="row g-3">
-                            <div class="col-sm-6 col-md-3 mb-2 mb-md-0">
-                                <a href="<?= WEBCLIENT_URL ?>/modules/employees/services.php" class="btn btn-primary d-block py-3">
-                                    <i class="fas fa-search me-2"></i>Catalogue Services
-                                </a>
-                            </div>
-                            <div class="col-sm-6 col-md-3 mb-2 mb-md-0">
-                                <a href="<?= WEBCLIENT_URL ?>/modules/employees/signalement.php" class="btn btn-warning d-block py-3">
-                                    <i class="fas fa-exclamation-triangle me-2"></i>Signaler Situation
-                                </a>
-                            </div>
-                            <div class="col-sm-6 col-md-3 mb-2 mb-md-0">
-                                <a href="<?= WEBCLIENT_URL ?>/modules/employees/counsel.php" class="btn btn-success d-block py-3">
-                                    <i class="fas fa-heart me-2"></i>Conseils Bien-être
-                                </a>
-                            </div>
-                            <div class="col-sm-6 col-md-3 mb-2 mb-md-0">
-                                <a href="<?= WEBCLIENT_URL ?>/modules/employees/communities.php" class="btn btn-info d-block py-3">
-                                    <i class="fas fa-comments me-2"></i>Communautés
-                                </a>
-                            </div>
-                            <div class="col-sm-6 col-md-3 mb-2 mb-md-0">
-                                <a href="<?= WEBCLIENT_URL ?>/modules/employees/chatbot.php" class="btn btn-dark d-block py-3">
-                                    <i class="fas fa-robot me-2"></i>Assistant Virtuel
-                                </a>
-                            </div>
-                            <div class="col-sm-6 col-md-3 mb-2 mb-md-0">
-                                <a href="<?= WEBCLIENT_URL ?>/modules/employees/settings.php" class="btn btn-secondary d-block py-3">
-                                    <i class="fas fa-cog me-2"></i>Mes Paramètres
-                                </a>
-                            </div>
+                            <?php if (userHasPermission('employee_services')): ?>
+                                <div class="col-sm-6 col-md-3 mb-2 mb-md-0">
+                                    <a href="<?= WEBCLIENT_URL ?>/modules/employees/services.php" class="btn btn-primary d-block py-3">
+                                        <i class="fas fa-search me-2"></i>Catalogue Services
+                                    </a>
+                                </div>
+                            <?php endif; ?>
+                            <?php if (userHasPermission('employee_signalement')): ?>
+                                <div class="col-sm-6 col-md-3 mb-2 mb-md-0">
+                                    <a href="<?= WEBCLIENT_URL ?>/modules/employees/signalement.php" class="btn btn-warning d-block py-3">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>Signaler Situation
+                                    </a>
+                                </div>
+                            <?php endif; ?>
+                            <?php if (userHasPermission('employee_counsel')): // Assuming permission name convention
+                            ?>
+                                <div class="col-sm-6 col-md-3 mb-2 mb-md-0">
+                                    <a href="<?= WEBCLIENT_URL ?>/modules/employees/counsel.php" class="btn btn-success d-block py-3">
+                                        <i class="fas fa-heart me-2"></i>Conseils Bien-être
+                                    </a>
+                                </div>
+                            <?php endif; ?>
+                            <?php if (userHasPermission('employee_communities')): ?>
+                                <div class="col-sm-6 col-md-3 mb-2 mb-md-0">
+                                    <a href="<?= WEBCLIENT_URL ?>/modules/employees/communities.php" class="btn btn-info d-block py-3">
+                                        <i class="fas fa-comments me-2"></i>Communautés
+                                    </a>
+                                </div>
+                            <?php endif; ?>
+                            <?php if (userHasPermission('employee_chatbot')): // Assuming permission name convention
+                            ?>
+                                <div class="col-sm-6 col-md-3 mb-2 mb-md-0">
+                                    <a href="<?= WEBCLIENT_URL ?>/modules/employees/chatbot.php" class="btn btn-dark d-block py-3">
+                                        <i class="fas fa-robot me-2"></i>Assistant Virtuel
+                                    </a>
+                                </div>
+                            <?php endif; ?>
+                            <?php if (userHasPermission('employee_settings')): ?>
+                                <div class="col-sm-6 col-md-3 mb-2 mb-md-0">
+                                    <a href="<?= WEBCLIENT_URL ?>/modules/employees/settings.php" class="btn btn-secondary d-block py-3">
+                                        <i class="fas fa-cog me-2"></i>Mes Paramètres
+                                    </a>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>

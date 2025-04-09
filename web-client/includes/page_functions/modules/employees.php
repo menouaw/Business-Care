@@ -834,7 +834,8 @@ function bookEmployeeAppointment($employee_id, $appointment_data)
 
 function displayEmployeeDashboard()
 {
-    $employee_id = 1;
+    requireRole(ROLE_SALARIE);
+    $employee_id = $_SESSION['user_id'];
 
     $data = [];
     $data['user'] = getUserInfo($employee_id);
@@ -843,11 +844,16 @@ function displayEmployeeDashboard()
         redirectTo(WEBCLIENT_URL . '/connexion.php');
     }
 
-    $data['upcoming_appointments'] = getEmployeeAppointments($employee_id, 'upcoming');
+    $appointmentsResult = getEmployeeAppointments($employee_id, 'upcoming', 1, 3); 
+    $data['upcoming_appointments'] = $appointmentsResult; 
 
-    $data['upcoming_events'] = getEmployeeEvents($employee_id);
+    $eventsResult = getEmployeeEvents($employee_id, 'all', 1, 3);
+    $data['upcoming_events'] = $eventsResult['items'] ?? [];    
 
-    $data['unread_notifications'] = fetchAll(TABLE_NOTIFICATIONS, 'personne_id = :id AND lu = 0', 'created_at DESC', 5, 0, [':id' => $employee_id]);
+    $data['unread_notifications'] = fetchAll(TABLE_NOTIFICATIONS, 'personne_id = :id AND lu = 0', 'created_at DESC', 5, 0, ['id' => $employee_id]);
+
+    $activityResult = getEmployeeActivityHistory($employee_id, 1, 5); 
+    $data['recent_activity'] = $activityResult; 
 
 
     return $data;

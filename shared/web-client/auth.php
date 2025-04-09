@@ -332,3 +332,47 @@ function deleteRememberMeToken($token)
         return false;
     }
 }
+
+function userHasPermission($permission)
+{
+    if (!isAuthenticated()) {
+        return false; // Not logged in, no permissions
+    }
+
+    $role_id = $_SESSION['user_role'] ?? null;
+
+    switch ($permission) {
+        case 'employee_dashboard':
+        case 'employee_services':
+        case 'employee_appointments':
+        case 'employee_profile':
+        case 'employee_settings':
+        case 'employee_history':
+        case 'employee_events':
+        case 'employee_communities':
+        case 'employee_donations':
+        case 'employee_signalement':
+        case 'employee_counsel':
+        case 'employee_chatbot':
+            return ($role_id == ROLE_SALARIE);
+
+        case 'company_dashboard':
+        case 'company_employees':
+        case 'company_contracts':
+        case 'company_settings':
+            return ($role_id == ROLE_ENTREPRISE);
+
+        case 'provider_dashboard':
+        case 'provider_appointments':
+        case 'provider_services':
+        case 'provider_settings':
+            return ($role_id == ROLE_PRESTATAIRE);
+
+        case 'view_notifications':
+            return true; 
+
+        default:
+            logSecurityEvent($_SESSION['user_id'] ?? null, 'permission_check_unknown', "[WARNING] Unknown permission checked: $permission");
+            return false;
+    }
+}

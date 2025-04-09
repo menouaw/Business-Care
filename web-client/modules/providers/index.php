@@ -149,11 +149,6 @@ include_once __DIR__ . '/../../templates/header.php';
                         <a href="mes-rendez-vous.php" class="btn btn-sm btn-outline-primary">Gérer mon planning</a>
                     </div>
                     <div class="card-body">
-                        <?php
-                        echo "<pre>DEBUG: Contents of \$rdvs array:\n"; // Debugging line
-                        var_dump($rdvs); // Debugging line
-                        echo "</pre>"; // Debugging line
-                        ?>
                         <?php if (empty($rdvs)): ?>
                             <p class="text-center text-muted my-5">Aucun rendez-vous planifié</p>
                         <?php else: ?>
