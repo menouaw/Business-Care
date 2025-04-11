@@ -79,7 +79,6 @@ include '../../templates/header.php';
                         <table class="table table-striped table-hover table-sm">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
                                     <th>Nom</th>
                                     <th>Email</th>
                                     <th>Rôle</th>
@@ -91,7 +90,6 @@ include '../../templates/header.php';
                             <tbody>
                                 <?php foreach ($users as $user): ?>
                                 <tr>
-                                    <td><?php echo $user['id']; ?></td>
                                     <td>
                                         <?php if ($user['photo_url']): ?>
                                         <img src="<?php echo htmlspecialchars(ROOT_URL . $user['photo_url']); ?>" alt="Profil" class="rounded-circle me-2" width="30" height="30" style="object-fit: cover;">
@@ -130,7 +128,6 @@ include '../../templates/header.php';
                         'totalItems' => $totalUsers,
                         'itemsPerPage' => $itemsPerPage
                     ];
-                    // Construct the URL pattern, filtering out empty parameters
                     $urlParams = array_filter(['search' => $search, 'role' => $role, 'statut' => $statut]);
                     $urlPattern = WEBADMIN_URL . '/modules/users/index.php?' . http_build_query($urlParams) . (empty($urlParams) ? '' : '&') . 'page={page}';
                     ?>

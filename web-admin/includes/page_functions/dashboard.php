@@ -19,6 +19,6 @@ function getDashboardStats() {
  * @param int $limit Nombre d'activites a recuperer
  * @return array Tableau d'activites recentes
  */
-function getDashboardRecentActivities($limit = DASHBOARD_RECENT_ACTIVITIES_LIMIT) {
+function getDashboardRecentActivities($limit=20) {
     return getRecentActivities($limit);
 } 

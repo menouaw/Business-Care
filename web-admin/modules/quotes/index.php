@@ -19,19 +19,6 @@ $sector = $filterData['sector'];
 $action = $filterData['action'];
 $id = $filterData['id'];
 
-if ($action === 'delete' && $id > 0) {
-    if (!isset($_GET['csrf_token']) || !validateToken($_GET['csrf_token'])) {
-        flashMessage('Erreur de securite ou jeton expire. Veuillez reessayer.', 'danger');
-    } else {
-        $result = quotesDelete($id); 
-        flashMessage($result['message'], $result['success'] ? 'success' : 'danger');
-    }
-    $redirectParams = array_filter($filterData, function($key) { 
-        return !in_array($key, ['action', 'id']); 
-    }, ARRAY_FILTER_USE_KEY);
-    redirectTo(WEBADMIN_URL . '/modules/quotes/' . (!empty($redirectParams) ? '?' . http_build_query($redirectParams) : ''));
-}
-
 $result = quotesGetList($page, DEFAULT_ITEMS_PER_PAGE, $search, $status, $sector);
 $quotes = $result['items'];
 $totalPages = $result['totalPages'];
@@ -103,7 +90,6 @@ include_once '../../templates/header.php';
                             <table class="table table-striped table-hover table-sm">
                                 <thead>
                                     <tr>
-                                        <th>ID</th>
                                         <th>Entreprise</th>
                                         <th>Date Création</th>
                                         <th>Date Validité</th>
@@ -115,7 +101,6 @@ include_once '../../templates/header.php';
                                 <tbody>
                                     <?php foreach ($quotes as $quote): ?>
                                         <tr>
-                                            <td><?php echo $quote['id']; ?></td>
                                             <td>
                                                 <?php if ($quote['entreprise_id']): ?>
                                                 <a href="<?php echo WEBADMIN_URL; ?>/modules/companies/view.php?id=<?php echo $quote['entreprise_id']; ?>">
@@ -136,20 +121,13 @@ include_once '../../templates/header.php';
                                                 <a href="<?php echo WEBADMIN_URL; ?>/modules/quotes/edit.php?id=<?php echo $quote['id']; ?>" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="Modifier">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
-                                                 <?php 
-                                                 $deleteParams = $filterData;
-                                                 $deleteParams['action'] = 'delete';
-                                                 $deleteParams['id'] = $quote['id'];
-                                                 $deleteParams['csrf_token'] = generateToken();
-                                                 unset($deleteParams['page']); 
-                                                 $deleteUrl = WEBADMIN_URL . '/modules/quotes/index.php?' . http_build_query($deleteParams);
-                                                 ?>
-                                                <a href="<?php echo $deleteUrl; ?>" 
-                                                   class="btn btn-sm btn-danger btn-delete" 
-                                                   data-bs-toggle="tooltip" 
-                                                   title="Supprimer"> 
-                                                    <i class="fas fa-trash"></i>
-                                                </a>
+                                                 <form method="POST" action="<?php echo WEBADMIN_URL; ?>/modules/quotes/delete.php" style="display: inline;">
+                                                     <input type="hidden" name="id" value="<?php echo $quote['id']; ?>">
+                                                     <input type="hidden" name="csrf_token" value="<?php echo generateToken(); ?>">
+                                                     <button type="submit" class="btn btn-sm btn-danger btn-delete" data-bs-toggle="tooltip" title="Supprimer">
+                                                         <i class="fas fa-trash"></i>
+                                                     </button>
+                                                 </form>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>

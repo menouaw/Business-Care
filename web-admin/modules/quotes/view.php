@@ -39,20 +39,17 @@ include_once '../../templates/header.php';
                     <a href="<?php echo WEBADMIN_URL; ?>/modules/quotes/edit.php?id=<?php echo $quote['id']; ?>" class="btn btn-sm btn-primary me-2" data-bs-toggle="tooltip" title="Modifier ce devis">
                         <i class="fas fa-edit"></i> Modifier
                     </a>
-                    <?php 
-                    $deleteParams = ['action' => 'delete', 'id' => $quote['id'], 'csrf_token' => generateToken()];
-                    $deleteUrl = WEBADMIN_URL . '/modules/quotes/index.php?' . http_build_query($deleteParams);
-                    ?>
-                    <a href="<?php echo $deleteUrl; ?>" 
-                       class="btn btn-sm btn-danger me-2 btn-delete"
-                       data-bs-toggle="tooltip" title="Supprimer ce devis"
-                       onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce devis (ID: <?php echo $quote['id']; ?>) ?');">
-                        <i class="fas fa-trash"></i> Supprimer
-                    </a>
+                    <form method="POST" action="<?php echo WEBADMIN_URL; ?>/modules/quotes/delete.php" style="display: inline;" class="me-2">
+                        <input type="hidden" name="id" value="<?php echo $quote['id']; ?>">
+                        <input type="hidden" name="csrf_token" value="<?php echo generateToken(); ?>">
+                        <button type="submit" class="btn btn-sm btn-danger btn-delete" data-bs-toggle="tooltip" title="Supprimer ce devis">
+                            <i class="fas fa-trash"></i> Supprimer
+                        </button>
+                    </form>
                     <a href="<?php echo WEBADMIN_URL; ?>/modules/quotes/index.php" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" title="Retourner à la liste des devis">
                         <i class="fas fa-arrow-left"></i> Retour
                     </a>
-                     <!-- TODO: Add Generate PDF button? -->
+                     <!-- TODO: Ajouter le bouton de génération du PDF? -->
                 </div>
             </div>
 
@@ -142,8 +139,8 @@ include_once '../../templates/header.php';
                             <?php endif; ?>
                         </div>
                         <div class="card-body">
-                            <?php if ($quote['est_personnalise']): // Display Personalized Program Details ?>
-                                <?php if ($quote['service_id']): // Check if based on a standard service ?>
+                            <?php if ($quote['est_personnalise']):  ?>
+                                <?php if ($quote['service_id']):  ?>
                                 <p class="fst-italic mb-2">Basé sur le service: 
                                     <a href="<?php echo WEBADMIN_URL; ?>/modules/services/view.php?id=<?php echo $quote['service_id']; ?>" title="Voir le service standard">
                                         <?php echo htmlspecialchars($quote['nom_service'] ?? 'Inconnu'); ?>
@@ -159,7 +156,7 @@ include_once '../../templates/header.php';
                                      <div class="col-md-6">
                                         <small class="text-muted d-block">Tarif Négocié (Annuel/Salarié HT)</small>
                                         <?php 
-                                            // Attempt to calculate negotiated rate if possible, otherwise show N/A
+                                             
                                             $negociatedRate = null;
                                             if (!empty($quote['nombre_salaries_estimes']) && $quote['nombre_salaries_estimes'] > 0 && isset($quote['montant_ht'])) {
                                                 $negociatedRate = $quote['montant_ht'] / $quote['nombre_salaries_estimes'];
@@ -193,7 +190,7 @@ include_once '../../templates/header.php';
                                     <div class="col-md-4 text-end fs-5"><strong><?php echo formatMoney($quote['montant_total']); ?></strong></div>
                                 </div>
 
-                                <?php if (!empty($lines)): // Display additional specific lines if present ?>
+                                <?php if (!empty($lines)):  ?>
                                 <h5 class="mt-4">Prestations Spécifiques Ajoutées</h5>
                                  <div class="table-responsive">
                                     <table class="table table-striped table-hover table-sm mb-0">
