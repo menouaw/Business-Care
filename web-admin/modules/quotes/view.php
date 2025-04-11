@@ -143,7 +143,7 @@ include_once '../../templates/header.php';
                                 <?php if ($quote['service_id']):  ?>
                                 <p class="fst-italic mb-2">Basé sur le service: 
                                     <a href="<?php echo WEBADMIN_URL; ?>/modules/services/view.php?id=<?php echo $quote['service_id']; ?>" title="Voir le service standard">
-                                        <?php echo htmlspecialchars($quote['nom_service'] ?? 'Inconnu'); ?>
+                                        <?php echo htmlspecialchars($quote['type_service'] ?? 'Inconnu'); ?>
                                     </a>
                                 </p>
                                 <?php endif; ?>
@@ -230,7 +230,7 @@ include_once '../../templates/header.php';
                                         <small class="text-muted d-block">Service selectionné</small>
                                         <strong>
                                             <a href="<?php echo WEBADMIN_URL; ?>/modules/services/view.php?id=<?php echo $quote['service_id']; ?>" title="Voir le service">
-                                                <?php echo htmlspecialchars($quote['nom_service'] ?? 'Inconnu'); ?>
+                                                <?php echo htmlspecialchars($quote['type_service'] ?? 'Inconnu'); ?>
                                             </a>
                                         </strong>
                                     </div>

@@ -26,7 +26,7 @@ function contractsGetList($page = 1, $perPage = DEFAULT_ITEMS_PER_PAGE, $search 
     }
 
     if ($search) {
-        $conditions[] = "(e.nom LIKE ? OR s.nom LIKE ?)";
+        $conditions[] = "(e.nom LIKE ? OR s.type LIKE ?)";
         $params[] = "%{$search}%";
         $params[] = "%{$search}%";
     }
@@ -49,7 +49,7 @@ function contractsGetList($page = 1, $perPage = DEFAULT_ITEMS_PER_PAGE, $search 
     $page = max(1, min($page, $totalPages)); 
     $offset = ($page - 1) * $perPage;
 
-    $sql = "SELECT c.*, e.nom as nom_entreprise, s.nom as nom_service 
+    $sql = "SELECT c.*, e.nom as nom_entreprise, s.type as type_service 
             FROM " . TABLE_CONTRACTS . " c 
             LEFT JOIN " . TABLE_COMPANIES . " e ON c.entreprise_id = e.id
             LEFT JOIN " . TABLE_SERVICES . " s ON c.service_id = s.id
@@ -75,7 +75,7 @@ function contractsGetList($page = 1, $perPage = DEFAULT_ITEMS_PER_PAGE, $search 
  * @return array|false Donnees du contrat ou false si non trouve
  */
 function contractsGetDetails($id) {
-    $sql = "SELECT c.*, e.nom as nom_entreprise, s.nom as nom_service
+    $sql = "SELECT c.*, e.nom as nom_entreprise, s.type as type_service
             FROM " . TABLE_CONTRACTS . " c 
             LEFT JOIN " . TABLE_COMPANIES . " e ON c.entreprise_id = e.id 
             LEFT JOIN " . TABLE_SERVICES . " s ON c.service_id = s.id

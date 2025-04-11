@@ -332,7 +332,7 @@ function getEmployeeReservations($employee_id, $status = 'all')
 
     // Construction de la requête
     $query = "SELECT r.*, p.nom as prestation_nom, p.type as prestation_type, 
-              CONCAT(pers.prenom, ' ', pers.nom) as prestataire_nom
+              CONCAT(pers.prenom, ' ', pers.type) as prestataire_nom
               FROM rendez_vous r
               JOIN prestations p ON r.prestation_id = p.id
               JOIN personnes pers ON r.personne_id = pers.id

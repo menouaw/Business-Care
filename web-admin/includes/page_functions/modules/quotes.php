@@ -65,7 +65,7 @@ function quotesGetList($page = 1, $perPage = DEFAULT_ITEMS_PER_PAGE, $search = '
  */
 function quotesGetDetails($id) {
     $quote = executeQuery(
-        "SELECT d.*, e.nom as nom_entreprise, s.nom as nom_service, s.tarif_annuel_par_salarie 
+        "SELECT d.*, e.nom as nom_entreprise, s.type as type_service, s.tarif_annuel_par_salarie 
          FROM " . TABLE_QUOTES . " d 
          LEFT JOIN " . TABLE_COMPANIES . " e ON d.entreprise_id = e.id 
          LEFT JOIN " . TABLE_SERVICES . " s ON d.service_id = s.id
@@ -130,10 +130,10 @@ function quotesGetPrestations() {
 /**
  * Recupere la liste des services (tiers) disponibles
  * 
- * @return array Liste des services (id, nom, tarif_annuel_par_salarie)
+ * @return array Liste des services (id, type, tarif_annuel_par_salarie)
  */
 function quotesGetServices() {
-    return executeQuery("SELECT id, nom, tarif_annuel_par_salarie FROM " . TABLE_SERVICES . " WHERE actif = 1 ORDER BY ordre ASC")->fetchAll();
+    return executeQuery("SELECT id, type, tarif_annuel_par_salarie FROM " . TABLE_SERVICES . " WHERE actif = 1 ORDER BY ordre ASC")->fetchAll();
 }
 
 /**
