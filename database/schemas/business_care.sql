@@ -301,4 +301,35 @@ CREATE TABLE contrats_prestations (
     FOREIGN KEY (prestation_id) REFERENCES prestations(id) ON DELETE CASCADE
 );
 
+CREATE TABLE factures_prestataires (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    prestataire_id INT NOT NULL,
+    numero_facture VARCHAR(50) UNIQUE,
+    date_facture DATE NOT NULL,
+    periode_debut DATE,
+    periode_fin DATE,
+    montant_total DECIMAL(10,2) NOT NULL,
+    statut ENUM('generation_attendue', 'impayee', 'payee') DEFAULT 'generation_attendue',
+    date_paiement DATETIME NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (prestataire_id) REFERENCES personnes(id) ON DELETE CASCADE,
+    INDEX idx_numero (numero_facture),
+    INDEX idx_periode (periode_debut, periode_fin),
+    INDEX idx_statut (statut),
+    INDEX idx_prestataire (prestataire_id)
+);
+
+CREATE TABLE facture_prestataire_lignes (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    facture_prestataire_id INT NOT NULL,
+    rendez_vous_id INT UNIQUE,
+    description TEXT NOT NULL,
+    montant DECIMAL(10,2) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (facture_prestataire_id) REFERENCES factures_prestataires(id) ON DELETE CASCADE,
+    FOREIGN KEY (rendez_vous_id) REFERENCES rendez_vous(id) ON DELETE SET NULL,
+    INDEX idx_facture_id (facture_prestataire_id)
+);
+
 

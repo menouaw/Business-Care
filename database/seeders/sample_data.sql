@@ -1,4 +1,4 @@
-delete: source C:/MAMP/htdocs/Business-Care/database/seeders/sample_data.sql
+-- source C:/MAMP/htdocs/Business-Care/database/seeders/sample_data.sql
 
 USE business_care;
 
@@ -22,6 +22,8 @@ TRUNCATE TABLE entreprises;
 TRUNCATE TABLE roles;
 TRUNCATE TABLE contrats_prestations;
 TRUNCATE TABLE services;
+TRUNCATE TABLE factures_prestataires;
+TRUNCATE TABLE facture_prestataire_lignes;
 SET FOREIGN_KEY_CHECKS = 1;
 
 INSERT INTO roles (nom, description) VALUES
@@ -326,3 +328,37 @@ INSERT INTO notifications (personne_id, titre, message, type, lien, lu, date_lec
 (5, 'Nouveau Rendez-vous', 'Votre rendez-vous a ete confirme', 'success', '/rendez-vous/1', false, NULL),
 (5, 'Paiement Reçu', 'Votre paiement a ete reçu avec succes', 'success', '/factures/1', true, '2024-03-17 10:30:00'),
 (6, 'Nouvelle Evaluation', 'Votre evaluation a ete enregistree', 'info', '/evaluations/1', false, NULL);
+
+INSERT INTO factures_prestataires (id, prestataire_id, numero_facture, date_facture, periode_debut, periode_fin, montant_total, statut, date_paiement) VALUES
+(1, 6, 'FP-202404-001', '2024-05-01', '2024-04-01', '2024-04-30', 370.00, 'impayee', NULL);
+
+INSERT INTO facture_prestataire_lignes (facture_prestataire_id, rendez_vous_id, description, montant) VALUES
+(1, 4, 'RDV - Yoga en Entreprise', 120.00),
+(1, 18, 'RDV - Formation Risques Psycho-sociaux (RPS)', 250.00);
+
+INSERT INTO factures_prestataires (id, prestataire_id, numero_facture, date_facture, periode_debut, periode_fin, montant_total, statut, date_paiement) VALUES
+(2, 13, 'FP-202404-002', '2024-05-01', '2024-04-01', '2024-04-30', 415.00, 'payee', '2024-05-10 14:00:00');
+
+INSERT INTO facture_prestataire_lignes (facture_prestataire_id, rendez_vous_id, description, montant) VALUES
+(2, 5, 'RDV - Consultation Psychologique', 80.00),
+(2, 6, 'RDV - Consultation Psychologique', 80.00),
+(2, 11, 'RDV - Consultation Psychologique', 80.00),
+(2, 27, 'RDV - Webinar Intelligence Emotionnelle', 175.00);
+
+INSERT INTO factures_prestataires (id, prestataire_id, numero_facture, date_facture, periode_debut, periode_fin, montant_total, statut, date_paiement) VALUES
+(3, 20, 'FP-202404-003', '2024-05-01', '2024-04-01', '2024-04-30', 700.00, 'impayee', NULL);
+
+INSERT INTO facture_prestataire_lignes (facture_prestataire_id, rendez_vous_id, description, montant) VALUES
+(3, 3, 'RDV - Webinar Gestion du Stress', 150.00),
+(3, 9, 'RDV - Formation Leadership', 200.00),
+(3, 10, 'RDV - Formation Leadership', 200.00),
+(3, 13, 'RDV - Webinar Communication Non Violente (CNV)', 160.00);
+
+INSERT INTO factures_prestataires (id, prestataire_id, numero_facture, date_facture, periode_debut, periode_fin, montant_total, statut, date_paiement) VALUES
+(4, 20, 'FP-202405-001', '2024-06-01', '2024-05-01', '2024-05-31', 540.00, 'impayee', NULL);
+
+INSERT INTO facture_prestataire_lignes (facture_prestataire_id, rendez_vous_id, description, montant) VALUES
+(4, 15, 'RDV - Coaching Carriere', 100.00),
+(4, 21, 'RDV - Webinar Communication Non Violente (CNV)', 160.00),
+(4, 22, 'RDV - Atelier Gestion du Temps', 140.00),
+(4, 26, 'RDV - Coaching Prise de Parole', 120.00);

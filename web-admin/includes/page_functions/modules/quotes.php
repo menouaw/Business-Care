@@ -164,7 +164,7 @@ function quotesSave($data, $lines, $id = 0) {
         $errors[] = "Le statut sélectionné n'est pas valide.";
     }
     
-    // Validation et calcul basé sur le service si service_id est fourni
+    
     if (!empty($data['service_id'])) {
         if (empty($data['nombre_salaries_estimes']) || !is_numeric($data['nombre_salaries_estimes']) || $data['nombre_salaries_estimes'] <= 0) {
             $errors[] = "Le nombre de salariés estimés est obligatoire et doit être positif.";
@@ -177,13 +177,13 @@ function quotesSave($data, $lines, $id = 0) {
             }
         }
     } else {
-         // Si pas de service_id, on garde l'ancien comportement basé sur les lignes de prestation (ou on retourne une erreur si ni l'un ni l'autre n'est choisi)
+         
          if (empty($lines)) {
               $errors[] = "Le devis doit contenir au moins une prestation ou être basé sur un service.";
          }
     }
 
-    // Validation des lignes de prestation (additionnelles ou alternatives)
+    
     $validLines = [];
     if (!empty($lines)) {
         $prestationIds = array_column($lines, 'prestation_id');
@@ -206,12 +206,12 @@ function quotesSave($data, $lines, $id = 0) {
             $prixUnitaire = $availablePrestations[$line['prestation_id']];
             $lineTotal = $prixUnitaire * $line['quantite'];
             
-            // Si pas de service_id, le total HT est basé sur les lignes
+            
             if(empty($data['service_id'])) {
                 $totalHT += $lineTotal;
             } 
-            // Optionnel: Ajouter le coût des prestations additionnelles au total du service ?
-            // else { $totalHT += $lineTotal; }
+            
+            
 
             $validLines[] = [
                 'prestation_id' => $line['prestation_id'],
@@ -226,12 +226,12 @@ function quotesSave($data, $lines, $id = 0) {
         return ['success' => false, 'errors' => $errors];
     }
 
-    // Calcul final des totaux si calcul basé sur les lignes
-    if ($totalHT >= 0) { // S'assurer qu'un calcul a été fait (soit par service, soit par lignes)
+    
+    if ($totalHT >= 0) { 
         $tvaAmount = $totalHT * TVA_RATE;
         $totalTTC = $totalHT + $tvaAmount;
     } else {
-         // Gérer le cas où aucun prix n'a pu être calculé (ne devrait pas arriver si validation OK)
+         
          $totalHT = 0;
          $totalTTC = 0;
          $tvaAmount = 0;
@@ -263,7 +263,7 @@ function quotesSave($data, $lines, $id = 0) {
 
         if ($id > 0) { 
             updateRow(TABLE_QUOTES, $dbData, "id = :where_id", [':where_id' => $id]);
-            // Gérer les lignes: les supprimer et les recréer est simple
+            
             deleteRow(TABLE_QUOTE_PRESTATIONS, "devis_id = ?", [$id]); 
             $logAction = 'quote_update';
             $logMessage = "Mise à jour devis ID: $id pour entreprise ID: {$dbData['entreprise_id']}, {$logServiceInfo}, Statut: {$dbData['statut']}, Montant HT: {$totalHT}€";
@@ -278,7 +278,7 @@ function quotesSave($data, $lines, $id = 0) {
             $successMessage = "Le devis a été créé avec succès";
         }
 
-        // Insérer les lignes de prestation (même si le prix est basé sur le service, pour garder trace des éléments inclus/additionnels)
+        
         foreach ($validLines as $lineData) {
             $lineData['devis_id'] = $quoteId;
             insertRow(TABLE_QUOTE_PRESTATIONS, $lineData);
@@ -314,21 +314,21 @@ function quotesHandlePostRequest($postData, $id) {
     
     $data = [
         'entreprise_id' => $postData['entreprise_id'] ?? null,
-        'service_id' => $postData['service_id'] ?? null, // Nouveau champ
-        'nombre_salaries_estimes' => $postData['nombre_salaries_estimes'] ?? null, // Nouveau champ
+        'service_id' => $postData['service_id'] ?? null, 
+        'nombre_salaries_estimes' => $postData['nombre_salaries_estimes'] ?? null, 
         'date_creation' => $postData['date_creation'] ?? date('Y-m-d'),
         'date_validite' => $postData['date_validite'] ?? null,
         'statut' => $postData['statut'] ?? QUOTE_STATUS_PENDING,
         'conditions_paiement' => $postData['conditions_paiement'] ?? null,
         'delai_paiement' => $postData['delai_paiement'] ?? null,
-        'est_personnalise' => isset($postData['est_personnalise']) && $postData['est_personnalise'] == 1, // Handle checkbox/hidden input
+        'est_personnalise' => isset($postData['est_personnalise']) && $postData['est_personnalise'] == 1, 
         'notes_negociation' => $postData['notes_negociation'] ?? null
     ];
 
     $lines = [];
     if (isset($postData['prestation_id']) && is_array($postData['prestation_id'])) {
         foreach ($postData['prestation_id'] as $index => $prestationId) {
-            // Vérifier si la ligne est complète (au cas où des lignes vides sont soumises)
+            
              if (!empty($prestationId) && isset($postData['quantite'][$index]) && $postData['quantite'][$index] > 0) {
                 $lines[] = [
                     'prestation_id' => (int)$prestationId,
@@ -339,7 +339,7 @@ function quotesHandlePostRequest($postData, $id) {
         }
     }
 
-    // Valider qu'au moins un service ou une prestation est choisi
+    
     if (empty($data['service_id']) && empty($lines)) {
          return [
             'success' => false,
@@ -372,11 +372,11 @@ function quotesDelete($id) {
         
         if ($deletedRows > 0) {
             commitTransaction();
-            logBusinessOperation($_SESSION['user_id'], 'quote_delete', "Suppression devis ID: $id");
+            logBusinessOperation($_SESSION['user_id'], ':quote_delete', "Suppression devis ID: $id");
             return ['success' => true, 'message' => "Le devis a été supprimé avec succès"];
         } else {
             rollbackTransaction();
-            logBusinessOperation($_SESSION['user_id'], 'quote_delete_attempt', "[ERROR] ID: $id - Échec suppression enregistrement principal");
+            logBusinessOperation($_SESSION['user_id'], ':quote_delete_attempt', "[ERROR] ID: $id - Échec suppression enregistrement principal");
             return ['success' => false, 'message' => "Impossible de supprimer le devis (erreur inattendue)."];
         }
     } catch (Exception $e) {
@@ -385,3 +385,4 @@ function quotesDelete($id) {
          return ['success' => false, 'message' => "Erreur de base de données lors de la suppression."];
     }
 }
+?>

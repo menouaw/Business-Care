@@ -80,6 +80,23 @@ define('DONATION_TYPES', ['financier', 'materiel']);
 // constantes globales de statut
 define('STATUS_ACTIVE', 'actif');
 
+// constantes pour les factures des prestataires
+define('TABLE_PRACTITIONER_INVOICES', 'factures_prestataires'); // Or use TABLE_INVOICES if structure allows
+
+// Statuses for practitioner invoices
+define('PRACTITIONER_INVOICE_STATUS_UNPAID', 'impayee');
+define('PRACTITIONER_INVOICE_STATUS_PAID', 'payee');
+define('PRACTITIONER_INVOICE_STATUS_PENDING_GENERATION', 'generation_attendue');
+define('PRACTITIONER_INVOICE_STATUSES', [
+    PRACTITIONER_INVOICE_STATUS_UNPAID, 
+    PRACTITIONER_INVOICE_STATUS_PAID, 
+    PRACTITIONER_INVOICE_STATUS_PENDING_GENERATION
+]);
+define('TABLE_PRACTITIONER_INVOICE_LINES', 'facture_prestataire_lignes');
+
+// Prefix for practitioner invoices
+define('PRACTITIONER_INVOICE_PREFIX', 'FP'); 
+
 // limites diverses
 define('DASHBOARD_RECENT_ACTIVITIES_LIMIT', 5);
 
