@@ -8,6 +8,9 @@ $filterData = getQueryData([
     'search' => '', 
     'status' => '', 
     'sector' => '',
+    'startDate' => '', 
+    'endDate' => '', 
+    'serviceId' => 0, 
     'action' => '', 
     'id' => 0
 ]);
@@ -16,10 +19,13 @@ $page = $filterData['page'];
 $search = $filterData['search'];
 $status = $filterData['status'];
 $sector = $filterData['sector'];
+$startDate = $filterData['startDate'];
+$endDate = $filterData['endDate'];
+$serviceId = $filterData['serviceId'];
 $action = $filterData['action'];
 $id = $filterData['id'];
 
-$result = quotesGetList($page, DEFAULT_ITEMS_PER_PAGE, $search, $status, $sector);
+$result = quotesGetList($page, DEFAULT_ITEMS_PER_PAGE, $search, $status, $sector, $startDate, $endDate, $serviceId);
 $quotes = $result['items'];
 $totalPages = $result['totalPages'];
 $totalItems = $result['totalItems'];
@@ -28,6 +34,7 @@ $itemsPerPage = $result['perPage'];
 
 $statuses = quotesGetStatuses();
 $sectors = quotesGetCompanySectors();
+$services = quotesGetServices();
 
 $pageTitle = "Gestion des devis ({$totalItems})";
 include_once '../../templates/header.php';
@@ -52,11 +59,11 @@ include_once '../../templates/header.php';
             <div class="card mb-4">
                 <div class="card-header">
                      <form method="get" action="<?php echo WEBADMIN_URL; ?>/modules/quotes/index.php" class="row g-3 align-items-center">
-                        <div class="col-md-3">
+                        <div class="col-lg-3 col-md-6">
                             <label for="search" class="visually-hidden">Rechercher</label>
                             <input type="text" class="form-control form-control-sm" id="search" name="search" placeholder="Rechercher..." value="<?php echo htmlspecialchars($search); ?>">
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-lg-3 col-md-6">
                             <label for="status" class="visually-hidden">Statut</label>
                             <select class="form-select form-select-sm" id="status" name="status">
                                 <option value="">Tous les statuts</option>
@@ -65,7 +72,7 @@ include_once '../../templates/header.php';
                                 <?php endforeach; ?>
                             </select>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-lg-3 col-md-6">
                             <label for="sector" class="visually-hidden">Secteur d'activité</label>
                             <select class="form-select form-select-sm" id="sector" name="sector">
                                 <option value="">Tous les secteurs</option>
@@ -74,7 +81,24 @@ include_once '../../templates/header.php';
                                 <?php endforeach; ?>
                             </select>
                         </div>
-                        <div class="col-md-3 d-flex">
+                        <div class="col-lg-3 col-md-6">
+                            <label for="serviceId" class="visually-hidden">Type Service</label>
+                            <select class="form-select form-select-sm" id="serviceId" name="serviceId">
+                                <option value="0">Tous les services</option>
+                                <?php foreach ($services as $service): ?>
+                                    <option value="<?php echo $service['id']; ?>" <?php echo ($serviceId == $service['id']) ? 'selected' : ''; ?>><?php echo htmlspecialchars($service['type']); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-lg-4 col-md-6">
+                            <label for="startDate" class="visually-hidden">Date début</label>
+                            <input type="date" class="form-control form-control-sm" id="startDate" name="startDate" value="<?php echo htmlspecialchars($startDate); ?>" title="Date de début">
+                        </div>
+                        <div class="col-lg-4 col-md-6">
+                            <label for="endDate" class="visually-hidden">Date fin</label>
+                            <input type="date" class="form-control form-control-sm" id="endDate" name="endDate" value="<?php echo htmlspecialchars($endDate); ?>" title="Date de fin">
+                        </div>
+                        <div class="col-lg-4 col-md-12 d-flex align-items-end">
                             <button type="submit" class="btn btn-sm btn-primary w-100 me-2">
                                 <i class="fas fa-filter"></i> Filtrer
                             </button>

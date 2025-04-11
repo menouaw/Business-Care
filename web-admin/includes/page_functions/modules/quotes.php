@@ -9,10 +9,13 @@ require_once __DIR__ . '/../../init.php';
  * @param string $search Terme de recherche (sur ID devis ou nom entreprise)
  * @param string $status Filtre par statut
  * @param string $sector Filtre par secteur d'activité de l'entreprise
+ * @param string $startDate Filtre par date de création (début)
+ * @param string $endDate Filtre par date de création (fin)
+ * @param int $serviceId Filtre par ID de service
  * @param string $orderBy Clause ORDER BY
  * @return array Donnees de pagination et liste des devis
  */
-function quotesGetList($page = 1, $perPage = DEFAULT_ITEMS_PER_PAGE, $search = '', $status = '', $sector = '', $orderBy = 'd.created_at DESC') {
+function quotesGetList($page = 1, $perPage = DEFAULT_ITEMS_PER_PAGE, $search = '', $status = '', $sector = '', $startDate = '', $endDate = '', $serviceId = 0, $orderBy = 'd.created_at DESC') {
     $whereClauses = ['1=1'];
     $params = [];
 
@@ -30,6 +33,21 @@ function quotesGetList($page = 1, $perPage = DEFAULT_ITEMS_PER_PAGE, $search = '
     if ($sector) {
         $whereClauses[] = "e.secteur_activite = ?";
         $params[] = $sector;
+    }
+
+    if ($startDate) {
+        $whereClauses[] = "d.date_creation >= ?";
+        $params[] = $startDate;
+    }
+
+    if ($endDate) {
+        $whereClauses[] = "d.date_creation <= ?";
+        $params[] = $endDate;
+    }
+
+    if ($serviceId > 0) {
+        $whereClauses[] = "d.service_id = ?";
+        $params[] = (int)$serviceId;
     }
     
     $whereSql = implode(' AND ', $whereClauses);
@@ -176,15 +194,11 @@ function quotesSave($data, $lines, $id = 0) {
                  $totalHT = $selectedService['tarif_annuel_par_salarie'] * (int)$data['nombre_salaries_estimes'];
             }
         }
-    } else {
-         
-         if (empty($lines)) {
-              $errors[] = "Le devis doit contenir au moins une prestation ou être basé sur un service.";
-         }
     }
 
-    
+     
     $validLines = [];
+    $linesTotalHT = 0;  
     if (!empty($lines)) {
         $prestationIds = array_column($lines, 'prestation_id');
         $availablePrestations = [];
@@ -206,20 +220,26 @@ function quotesSave($data, $lines, $id = 0) {
             $prixUnitaire = $availablePrestations[$line['prestation_id']];
             $lineTotal = $prixUnitaire * $line['quantite'];
             
+            $linesTotalHT += $lineTotal;  
             
-            if(empty($data['service_id'])) {
-                $totalHT += $lineTotal;
-            } 
-            
-            
-
-            $validLines[] = [
+            $validLines[] = [  
                 'prestation_id' => $line['prestation_id'],
                 'quantite' => (int)$line['quantite'],
                 'prix_unitaire_devis' => $prixUnitaire,
                 'description_specifique' => $line['description_specifique'] ?? null
             ];
         }
+    }
+
+     
+    $totalHT += $linesTotalHT;
+
+     
+    if (empty($data['service_id']) && empty($validLines)) {
+         
+        if (empty($data['service_id']) && empty($lines)) {
+            $errors[] = "Le devis doit contenir au moins un service standard ou une prestation spécifique.";
+        }  
     }
 
     if (!empty($errors)) {
@@ -252,7 +272,7 @@ function quotesSave($data, $lines, $id = 0) {
         'statut' => $data['statut'] ?: QUOTE_STATUS_PENDING,
         'conditions_paiement' => $data['conditions_paiement'] ?? null,
         'delai_paiement' => $data['delai_paiement'] ? (int)$data['delai_paiement'] : null,
-        'est_personnalise' => isset($data['est_personnalise']) ? (bool)$data['est_personnalise'] : false,
+        'est_personnalise' => (int)(isset($data['est_personnalise']) && $data['est_personnalise']),
         'notes_negociation' => $data['notes_negociation'] ?? null
     ];
 

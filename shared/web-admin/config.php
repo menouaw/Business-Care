@@ -8,7 +8,7 @@ define('DB_CHARSET', 'utf8mb4');
 
 // parametres de l'application
 define('APP_NAME', 'Business Care');
-define('APP_VERSION', '0.4.0');
+define('APP_VERSION', '0.5.0');
 
 // url de l'application
 define('WEBADMIN_URL', 'http://localhost/Business-Care/web-admin');

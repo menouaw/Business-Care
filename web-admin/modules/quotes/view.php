@@ -133,7 +133,7 @@ include_once '../../templates/header.php';
                             <?php if ($quote['est_personnalise']): ?>
                                 <i class="fas fa-cogs me-1"></i> Programme Personnalisé
                             <?php elseif ($quote['service_id']): ?>
-                                <i class="fas fa-concierge-bell me-1"></i> Détails du Service Standard
+                                <i class="fas fa-concierge-bell me-1"></i> Détails
                             <?php else: ?>
                                 <i class="fas fa-tasks me-1"></i> Lignes de prestations
                             <?php endif; ?>
@@ -197,10 +197,10 @@ include_once '../../templates/header.php';
                                         <thead>
                                             <tr>
                                                 <th style="width: 30%;">Prestation</th>
-                                                <th>Description Spécifique</th>
+                                                <th>Description</th>
                                                 <th class="text-end">Qté</th>
-                                                <th class="text-end">Prix Unitaire (HT)</th>
-                                                <th class="text-end">Total Ligne (HT)</th>
+                                                <th class="text-end">Prix (HT)</th>
+                                                <th class="text-end">Total (HT)</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -266,8 +266,8 @@ include_once '../../templates/header.php';
                                                 <th style="width: 30%;">Prestation</th>
                                                 <th>Description Spécifique</th>
                                                 <th class="text-end">Qté</th>
-                                                <th class="text-end">Prix Unitaire (HT)</th>
-                                                <th class="text-end">Total Ligne (HT)</th>
+                                                <th class="text-end">Prix (HT)</th>
+                                                <th class="text-end">Total (HT)</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -352,4 +352,4 @@ include_once '../../templates/header.php';
     </div>
 </div>
 
-</rewritten_file>
+

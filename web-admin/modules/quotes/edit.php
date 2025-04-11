@@ -1,14 +1,18 @@
 <?php
-require_once '../../includes/init.php'; 
 require_once '../../includes/page_functions/modules/quotes.php'; 
 
 requireRole(ROLE_ADMIN);
 
-// Determine if it's an edit or add operation
+ 
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-$isEditing = ($id > 0);
 
-// Initialize variables
+ 
+if ($id <= 0) {
+    flashMessage('Identifiant de devis invalide pour la modification.', 'danger');
+    redirectTo(WEBADMIN_URL . '/modules/quotes/index.php');
+}
+
+ 
 $quote = null;
 $lines = [];
 $formData = [
@@ -25,8 +29,8 @@ $formData = [
 ];
 $errors = [];
 
-// Fetch data for editing
-if ($isEditing) {
+ 
+if ($id > 0) {
     $result = quotesGetDetails($id);
     if (!$result) {
         flashMessage("Devis non trouvé.", 'danger');
@@ -34,56 +38,71 @@ if ($isEditing) {
     }
     $quote = $result['quote'];
     $lines = $result['lines'];
-    $formData = array_merge($formData, $quote); // Pre-fill form with existing data
+    $formData = array_merge($formData, $quote);  
 }
 
-// Fetch data for dropdowns
+ 
 $companies = quotesGetCompanies();
 $services = quotesGetServices();
 $prestations = quotesGetPrestations();
 $statuses = quotesGetStatuses();
 
-// Handle form submission
+ 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!validateToken($_POST['csrf_token'] ?? '')) {
-         // Using a generic message for CSRF failure on POST
-        flashMessage('Erreur de sécurité ou session expirée. Veuillez soumettre à nouveau le formulaire.', 'danger');
-        // Re-populate form data from POST to avoid data loss
+
+     
+    if (isset($_POST['add_line'])) {
+         
+        $formData = array_merge($formData, $_POST); 
+        $lines = [];
+        if (isset($_POST['prestation_id']) && is_array($_POST['prestation_id'])) {
+            foreach ($_POST['prestation_id'] as $index => $prestationId) {
+                 
+                $lines[] = [
+                    'prestation_id' => $prestationId,  
+                    'quantite' => $_POST['quantite'][$index] ?? 1,
+                    'description_specifique' => $_POST['description_specifique'][$index] ?? null
+                ];
+            }
+        }
+         
+        $lines[] = ['prestation_id' => '', 'quantite' => 1, 'description_specifique' => null];
+        
+     
+    } elseif (isset($_POST['delete_line']) && is_array($_POST['delete_line'])) {
+        $deleteIndex = key($_POST['delete_line']);  
+        
+         
         $formData = array_merge($formData, $_POST);
-        // Re-populate lines data if possible (tricky without JS state preservation)
-        // This part might require client-side handling for better UX if validation fails
-        $postedLines = [];
+        $currentLines = [];
          if (isset($_POST['prestation_id']) && is_array($_POST['prestation_id'])) {
             foreach ($_POST['prestation_id'] as $index => $prestationId) {
-                 if (!empty($prestationId) && isset($_POST['quantite'][$index]) && $_POST['quantite'][$index] > 0) {
-                    $postedLines[] = [
-                        'prestation_id' => (int)$prestationId,
-                        'quantite' => (int)$_POST['quantite'][$index],
+                 if ($index != $deleteIndex) {  
+                    $currentLines[] = [
+                        'prestation_id' => $prestationId,
+                        'quantite' => $_POST['quantite'][$index] ?? 1,
                         'description_specifique' => $_POST['description_specifique'][$index] ?? null
                     ];
                 }
             }
         }
-        // We reassign $lines here for form repopulation, but these are not yet fully validated/priced
-        $lines = $postedLines; 
+        $lines = $currentLines;  
+          
+        if (empty($lines)) {
+             $lines[] = ['prestation_id' => '', 'quantite' => 1, 'description_specifique' => null];
+        }
 
+     
     } else {
-        // Call the handler function which includes validation and saving
-        $postData = $_POST; // Pass the raw POST data
-        $result = quotesHandlePostRequest($postData, $id);
-
-        if ($result['success']) {
-            flashMessage($result['message'], 'success');
-            redirectTo(WEBADMIN_URL . '/modules/quotes/view.php?id=' . $result['quoteId']);
-        } else {
-            $errors = $result['errors'] ?? ['db_error' => 'Une erreur inconnue est survenue lors de la sauvegarde.'];
-            // Re-populate form data from POST
-            $formData = array_merge($formData, $postData);
-            // Re-populate lines (same caveat as above)
-             $postedLines = [];
+         
+        if (!validateToken($_POST['csrf_token'] ?? '')) {
+            flashMessage('Erreur de sécurité ou session expirée. Veuillez soumettre à nouveau le formulaire.', 'danger');
+            $formData = array_merge($formData, $_POST);
+             
+            $postedLines = [];
              if (isset($_POST['prestation_id']) && is_array($_POST['prestation_id'])) {
                 foreach ($_POST['prestation_id'] as $index => $prestationId) {
-                     if (!empty($prestationId) && isset($_POST['quantite'][$index]) && $_POST['quantite'][$index] > 0) {
+                     if (!empty($prestationId) && isset($_POST['quantite'][$index]) && $_POST['quantite'][$index] > 0) {  
                         $postedLines[] = [
                             'prestation_id' => (int)$prestationId,
                             'quantite' => (int)$_POST['quantite'][$index],
@@ -93,16 +112,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
             $lines = $postedLines; 
-            // Display errors as flash messages
-            foreach ($errors as $error) {
-                 flashMessage($error, 'danger');
+        } else {
+             
+            $postData = $_POST; 
+            $result = quotesHandlePostRequest($postData, $id);
+
+            if ($result['success']) {
+                flashMessage($result['message'], 'success');
+                redirectTo(WEBADMIN_URL . '/modules/quotes/view.php?id=' . $result['quoteId']);
+            } else {
+                $errors = $result['errors'] ?? ['db_error' => 'Une erreur inconnue est survenue lors de la sauvegarde.'];
+                $formData = array_merge($formData, $postData);
+                 
+                 $postedLines = [];
+                 if (isset($_POST['prestation_id']) && is_array($_POST['prestation_id'])) {
+                    foreach ($_POST['prestation_id'] as $index => $prestationId) {
+                          
+                         $postedLines[] = [
+                            'prestation_id' => $prestationId,  
+                            'quantite' => $_POST['quantite'][$index] ?? 1,
+                            'description_specifique' => $_POST['description_specifique'][$index] ?? null
+                        ];
+                    }
+                }
+                $lines = $postedLines; 
+                foreach ($errors as $error) {
+                     flashMessage($error, 'danger');
+                }
             }
         }
     }
 }
 
-// Set page title based on operation
-$pageTitle = $isEditing ? "Modifier le devis #" . $id : "Créer un nouveau devis";
+ 
+$pageTitle = "Modifier le devis";
 include_once '../../templates/header.php';
 ?>
 
@@ -116,7 +159,7 @@ include_once '../../templates/header.php';
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                 <h1 class="h2"><?php echo $pageTitle; ?></h1>
                 <div class="btn-toolbar mb-2 mb-md-0">
-                    <?php if ($isEditing): ?>
+                    <?php if ($id > 0): ?>
                         <a href="<?php echo WEBADMIN_URL; ?>/modules/quotes/view.php?id=<?php echo $id; ?>" class="btn btn-sm btn-outline-secondary me-2" data-bs-toggle="tooltip" title="Voir le devis">
                             <i class="fas fa-eye"></i> Voir
                         </a>
@@ -127,11 +170,11 @@ include_once '../../templates/header.php';
                 </div>
             </div>
 
-            <form action="<?php echo WEBADMIN_URL; ?>/modules/quotes/edit.php<?php echo $isEditing ? '?id=' . $id : ''; ?>" method="POST" id="quote-form">
+            <form action="<?php echo WEBADMIN_URL; ?>/modules/quotes/edit.php?id=<?php echo $id; ?>" method="POST" id="quote-form">
                 <input type="hidden" name="csrf_token" value="<?php echo generateToken(); ?>">
 
                 <div class="card mb-4">
-                    <div class="card-header">Informations Générales</div>
+                    <div class="card-header">Informations</div>
                     <div class="card-body">
                         <div class="row mb-3">
                             <div class="col-md-6">
@@ -182,17 +225,12 @@ include_once '../../templates/header.php';
                 </div>
 
                  <div class="card mb-4">
-                    <div class="card-header">Détails du Devis (Choisir Service OU Prestations spécifiques)</div>
+                    <div class="card-header">Détails</div>
                     <div class="card-body">
-                         <div class="mb-3 form-check">
-                             <input type="hidden" name="est_personnalise" value="0"> <!-- Default value -->
-                            <input type="checkbox" class="form-check-input" id="est_personnalise" name="est_personnalise" value="1" <?php echo (isset($formData['est_personnalise']) && $formData['est_personnalise']) ? 'checked' : ''; ?>>
-                            <label class="form-check-label" for="est_personnalise">Devis Personnalisé (négocié)</label>
-                        </div>
 
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label for="service_id" class="form-label">Basé sur un Service Standard</label>
+                                <label for="service_id" class="form-label">Pack</label>
                                 <select class="form-select" id="service_id" name="service_id">
                                     <option value="">-- Aucun (utiliser prestations spécifiques) --</option>
                                      <?php foreach ($services as $service): ?>
@@ -201,83 +239,63 @@ include_once '../../templates/header.php';
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
-                                <small class="form-text text-muted">Si sélectionné, le prix sera basé sur ce service et le nombre de salariés.</small>
                             </div>
                              <div class="col-md-6">
-                                <label for="nombre_salaries_estimes" class="form-label">Nombre Salariés Estimés (requis si service choisi)</label>
+                                <label for="nombre_salaries_estimes" class="form-label">Salariés</label>
                                 <input type="number" min="1" class="form-control" id="nombre_salaries_estimes" name="nombre_salaries_estimes" value="<?php echo htmlspecialchars($formData['nombre_salaries_estimes'] ?? ''); ?>">
                             </div>
                         </div>
                         
-                         <div class="mb-3 <?php echo (isset($formData['est_personnalise']) && $formData['est_personnalise']) ? '' : 'd-none'; ?>" id="notes-personnalise-group">
-                            <label for="notes_negociation" class="form-label">Notes Internes (Négociation)</label>
+                         <div class="mb-2" id="notes-personnalise-group">
+                            <label for="notes_negociation" class="form-label">Notes</label>
                             <textarea class="form-control" id="notes_negociation" name="notes_negociation" rows="3"><?php echo htmlspecialchars($formData['notes_negociation'] ?? ''); ?></textarea>
                             <small class="form-text text-muted">Visible uniquement en interne.</small>
                         </div>
                         
                         <hr>
-                        <h5 class="mb-3">OU Lignes de Prestations Spécifiques / Additionnelles</h5>
+                        <h5 class="mb-3">Prestations additionnelles</h5>
 
                         <div id="prestation-lines-container">
-                            <?php if (empty($lines)): ?>
-                                <!-- Start with one empty line if none exist -->
-                                <div class="row prestation-line mb-2">
-                                    <div class="col-md-4">
+                            <?php  
+                            if (!is_array($lines)) { $lines = []; } 
+                             
+                             if (empty($lines)) {
+                                 $lines[] = ['prestation_id' => '', 'quantite' => 1, 'description_specifique' => null];
+                            } 
+                            ?>
+                            <?php foreach ($lines as $index => $line): ?>
+                                 <div class="row prestation-line mb-2">
+                                    <div class="col-md-5">
                                         <label class="visually-hidden">Prestation</label>
                                         <select name="prestation_id[]" class="form-select form-select-sm prestation-select">
                                             <option value="">Sélectionnez une prestation...</option>
                                             <?php foreach ($prestations as $p): ?>
-                                                <option value="<?php echo $p['id']; ?>" data-price="<?php echo $p['prix']; ?>"><?php echo htmlspecialchars($p['nom']); ?></option>
+                                                <option value="<?php echo $p['id']; ?>" data-price="<?php echo $p['prix']; ?>" <?php echo (isset($line['prestation_id']) && $line['prestation_id'] == $p['id']) ? 'selected' : ''; ?>>
+                                                    <?php echo htmlspecialchars($p['nom']); ?>
+                                                </option>
                                             <?php endforeach; ?>
                                         </select>
                                     </div>
-                                    <div class="col-md-2">
+                                    <div class="col-md-1">
                                         <label class="visually-hidden">Quantité</label>
-                                        <input type="number" name="quantite[]" class="form-control form-control-sm line-quantity" placeholder="Qté" min="1" value="1">
+                                        <input type="number" name="quantite[]" class="form-control form-control-sm line-quantity" placeholder="Qté" min="1" value="<?php echo htmlspecialchars($line['quantite'] ?? '1'); ?>">
                                     </div>
-                                     <div class="col-md-4">
+                                     <div class="col-md-5">
                                          <label class="visually-hidden">Description Spécifique</label>
-                                        <input type="text" name="description_specifique[]" class="form-control form-control-sm" placeholder="Description spécifique (optionnel)">
+                                        <input type="text" name="description_specifique[<?php echo $index; ?>]" class="form-control form-control-sm" placeholder="Description spécifique (optionnel)" value="<?php echo htmlspecialchars($line['description_specifique'] ?? ''); ?>">
                                     </div>
-                                    <div class="col-md-2 text-end">
-                                        <button type="button" class="btn btn-sm btn-danger remove-line-btn">
+                                    <div class="col-md-1 text-end">
+                                        <!-- Delete button submits the form -->
+                                        <button type="submit" name="delete_line[<?php echo $index; ?>]" class="btn btn-sm btn-danger" title="Supprimer cette ligne">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </div>
                                 </div>
-                            <?php else: ?>
-                                <?php foreach ($lines as $line): ?>
-                                     <div class="row prestation-line mb-2">
-                                        <div class="col-md-4">
-                                            <label class="visually-hidden">Prestation</label>
-                                            <select name="prestation_id[]" class="form-select form-select-sm prestation-select">
-                                                <option value="">Sélectionnez une prestation...</option>
-                                                <?php foreach ($prestations as $p): ?>
-                                                    <option value="<?php echo $p['id']; ?>" data-price="<?php echo $p['prix']; ?>" <?php echo (isset($line['prestation_id']) && $line['prestation_id'] == $p['id']) ? 'selected' : ''; ?>>
-                                                        <?php echo htmlspecialchars($p['nom']); ?>
-                                                    </option>
-                                                <?php endforeach; ?>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-2">
-                                            <label class="visually-hidden">Quantité</label>
-                                            <input type="number" name="quantite[]" class="form-control form-control-sm line-quantity" placeholder="Qté" min="1" value="<?php echo htmlspecialchars($line['quantite'] ?? '1'); ?>">
-                                        </div>
-                                         <div class="col-md-4">
-                                             <label class="visually-hidden">Description Spécifique</label>
-                                            <input type="text" name="description_specifique[]" class="form-control form-control-sm" placeholder="Description spécifique (optionnel)" value="<?php echo htmlspecialchars($line['description_specifique'] ?? ''); ?>">
-                                        </div>
-                                        <div class="col-md-2 text-end">
-                                            <button type="button" class="btn btn-sm btn-danger remove-line-btn">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
+                            <?php endforeach; ?>
                         </div>
 
-                         <button type="button" class="btn btn-sm btn-outline-primary" id="add-line-btn">
+                        <!-- Add Line button submits the form -->
+                        <button type="submit" name="add_line" class="btn btn-sm btn-outline-primary mt-2">
                             <i class="fas fa-plus"></i> Ajouter une ligne de prestation
                         </button>
 
@@ -286,97 +304,16 @@ include_once '../../templates/header.php';
 
                  <div class="text-end">
                       <button type="submit" class="btn btn-primary">
-                         <i class="fas fa-save me-1"></i> <?php echo $isEditing ? 'Enregistrer les modifications' : 'Créer le devis'; ?>
+                         <i class="fas fa-save me-1"></i> Enregistrer les modifications
                      </button>
                      <a href="<?php echo WEBADMIN_URL; ?>/modules/quotes/index.php" class="btn btn-secondary">Annuler</a>
                  </div>
 
             </form>
 
-            <!-- Template Row for JS -->
-            <div id="prestation-line-template" class="row prestation-line mb-2" style="display: none;">
-                 <div class="col-md-4">
-                    <label class="visually-hidden">Prestation</label>
-                    <select name="prestation_id[]" class="form-select form-select-sm prestation-select">
-                        <option value="">Sélectionnez une prestation...</option>
-                        <?php foreach ($prestations as $p): ?>
-                            <option value="<?php echo $p['id']; ?>" data-price="<?php echo $p['prix']; ?>"><?php echo htmlspecialchars($p['nom']); ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label class="visually-hidden">Quantité</label>
-                    <input type="number" name="quantite[]" class="form-control form-control-sm line-quantity" placeholder="Qté" min="1" value="1">
-                </div>
-                 <div class="col-md-4">
-                     <label class="visually-hidden">Description Spécifique</label>
-                    <input type="text" name="description_specifique[]" class="form-control form-control-sm" placeholder="Description spécifique (optionnel)">
-                </div>
-                <div class="col-md-2 text-end">
-                    <button type="button" class="btn btn-sm btn-danger remove-line-btn">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </div>
-
-
             <?php include_once '../../templates/footer.php'; ?>
-
-            <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    const container = document.getElementById('prestation-lines-container');
-                    const addButton = document.getElementById('add-line-btn');
-                    const template = document.getElementById('prestation-line-template');
-                    const personnaliseCheckbox = document.getElementById('est_personnalise');
-                    const notesGroup = document.getElementById('notes-personnalise-group');
-
-                    // Function to add remove listener
-                    const addRemoveListener = (button) => {
-                        button.addEventListener('click', function() {
-                            // Only remove if more than one line exists or if container is not empty
-                             if (container.querySelectorAll('.prestation-line').length > 1) {
-                                this.closest('.prestation-line').remove();
-                             } else {
-                                 // Optionally clear the first line instead of removing? Or just leave it.
-                                 // For simplicity, we allow removing the last line. The backend validation
-                                 // ensures at least a service or a line is present.
-                                 this.closest('.prestation-line').remove();
-                             }
-                        });
-                    };
-
-                    // Add line functionality
-                    addButton.addEventListener('click', function() {
-                        const clone = template.cloneNode(true);
-                        clone.removeAttribute('id');
-                        clone.removeAttribute('style'); // Make it visible
-                        container.appendChild(clone);
-                        // Add listener to the new remove button
-                        addRemoveListener(clone.querySelector('.remove-line-btn'));
-                    });
-
-                    // Add listeners to existing remove buttons
-                    container.querySelectorAll('.remove-line-btn').forEach(addRemoveListener);
-
-                    // Toggle notes field based on personnalise checkbox
-                     personnaliseCheckbox.addEventListener('change', function() {
-                        if (this.checked) {
-                            notesGroup.classList.remove('d-none');
-                        } else {
-                            notesGroup.classList.add('d-none');
-                        }
-                    });
-                    // Initial check
-                     if (personnaliseCheckbox.checked) {
-                        notesGroup.classList.remove('d-none');
-                    }
-
-                    // Optional: Add logic to disable/enable service vs specific lines based on selection
-                    // (This can get complex depending on exact desired UX)
-                });
-            </script>
         </main>
     </div>
 </div>
 
-</rewritten_file>
+
