@@ -174,7 +174,7 @@ include_once '../../templates/header.php';
                     <?php else:
                         $isFiltering = !empty($search) || !empty($status) || !empty($sector);
                         $message = $isFiltering 
-                            ? "Aucun devis trouvé correspondant à vos critères."
+                            ? "Aucun devis trouvé correspondant à vos critères de recherche."
                             : "Aucun devis n'a été créé pour le moment. <a href=\"" . WEBADMIN_URL . "/modules/quotes/edit.php\" class=\"alert-link\">Ajouter un devis</a>";
                         ?>
                         <div class="alert alert-info">
