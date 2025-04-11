@@ -48,6 +48,17 @@ define('QUOTE_STATUS_REFUSED', 'refuse');
 define('QUOTE_STATUS_EXPIRED', 'expire');
 define('QUOTE_STATUSES', [QUOTE_STATUS_PENDING, QUOTE_STATUS_ACCEPTED, QUOTE_STATUS_REFUSED, QUOTE_STATUS_EXPIRED]);
 
+// constantes pour les packs/services principaux
+
+define('PACK_STARTER_NAME', 'Starter Pack');
+define('PACK_BASIC_NAME', 'Basic Pack');
+define('PACK_PREMIUM_NAME', 'Premium Pack');
+define('SERVICE_TYPES', [
+    PACK_STARTER_NAME,
+    PACK_BASIC_NAME,
+    PACK_PREMIUM_NAME
+]);
+
 // taux de tva standard
 define('TVA_RATE', 0.20); // 20%
 
