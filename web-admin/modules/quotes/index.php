@@ -48,7 +48,7 @@ include_once '../../templates/header.php';
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                 <h1 class="h2"><?php echo $pageTitle; ?></h1>
                 <div class="btn-toolbar mb-2 mb-md-0">
-                    <a href="<?php echo WEBADMIN_URL; ?>/modules/quotes/edit.php" class="btn btn-sm btn-primary">
+                    <a href="<?php echo WEBADMIN_URL; ?>/modules/quotes/add.php" class="btn btn-sm btn-primary">
                         <i class="fas fa-plus"></i> Ajouter un devis
                     </a>
                 </div>
@@ -177,7 +177,7 @@ include_once '../../templates/header.php';
                         $isFiltering = !empty($search) || !empty($status) || !empty($sector);
                         $message = $isFiltering 
                             ? "Aucun devis trouvé correspondant à vos critères de recherche."
-                            : "Aucun devis n'a été créé pour le moment. <a href=\"" . WEBADMIN_URL . "/modules/quotes/edit.php\" class=\"alert-link\">Ajouter un devis</a>";
+                            : "Aucun devis n'a été créé pour le moment. <a href=\"" . WEBADMIN_URL . "/modules/quotes/add.php\" class=\"alert-link\">Ajouter un devis</a>";
                         ?>
                         <div class="alert alert-info">
                             <?php echo $message; ?>
