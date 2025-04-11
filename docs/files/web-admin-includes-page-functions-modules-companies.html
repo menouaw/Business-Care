@@ -143,6 +143,20 @@
 </dt>
 <dd>Supprime une entreprise en vérifiant l&#039;absence d&#039;associations.</dd>
 
+            <dt class="phpdocumentor-table-of-contents__entry -function -">
+    <a class="" href="namespaces/default.html#function_companiesGetCities">companiesGetCities()</a>
+    <span>
+                                &nbsp;: array&lt;string|int, mixed&gt;    </span>
+</dt>
+<dd>Recupere la liste des villes distinctes des entreprises</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -function -">
+    <a class="" href="namespaces/default.html#function_companiesGetSizes">companiesGetSizes()</a>
+    <span>
+                                &nbsp;: array&lt;string|int, mixed&gt;    </span>
+</dt>
+<dd>Recupere la liste des tailles d&#039;entreprise possibles</dd>
+
     </dl>
 
 
@@ -164,7 +178,7 @@
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="web-admin/includes/page_functions/modules/companies.php"><a href="files/web-admin-includes-page-functions-modules-companies.html"><abbr title="web-admin/includes/page_functions/modules/companies.php">companies.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">12</span>
+    <span class="phpdocumentor-element-found-in__line">14</span>
 
     </aside>
 
@@ -173,7 +187,7 @@
     
     <code class="phpdocumentor-code phpdocumentor-signature ">
     <span class="phpdocumentor-signature__visibility"></span>
-                    <span class="phpdocumentor-signature__name">companiesGetList</span><span>(</span><span class="phpdocumentor-signature__argument"><span>[</span><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$page</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">1</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$perPage</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">10</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$search</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">&#039;&#039;</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span></code>
+                    <span class="phpdocumentor-signature__name">companiesGetList</span><span>(</span><span class="phpdocumentor-signature__argument"><span>[</span><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$page</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">1</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$perPage</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">DEFAULT_ITEMS_PER_PAGE</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$search</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">&#039;&#039;</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$city</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">&#039;&#039;</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$size</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">&#039;&#039;</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span></code>
 
     
         <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
@@ -190,7 +204,7 @@
                     <dt class="phpdocumentor-argument-list__entry">
                 <span class="phpdocumentor-signature__argument__name">$perPage</span>
                 : <span class="phpdocumentor-signature__argument__return-type">int</span>
-                 = <span class="phpdocumentor-signature__argument__default-value">10</span>            </dt>
+                 = <span class="phpdocumentor-signature__argument__default-value">DEFAULT_ITEMS_PER_PAGE</span>            </dt>
             <dd class="phpdocumentor-argument-list__definition">
                     <section class="phpdocumentor-description"><p>Nombre d'elements par page</p>
 </section>
@@ -202,6 +216,24 @@
                  = <span class="phpdocumentor-signature__argument__default-value">&#039;&#039;</span>            </dt>
             <dd class="phpdocumentor-argument-list__definition">
                     <section class="phpdocumentor-description"><p>Terme de recherche</p>
+</section>
+
+            </dd>
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-signature__argument__name">$city</span>
+                : <span class="phpdocumentor-signature__argument__return-type">string</span>
+                 = <span class="phpdocumentor-signature__argument__default-value">&#039;&#039;</span>            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>Filtre par ville</p>
+</section>
+
+            </dd>
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-signature__argument__name">$size</span>
+                : <span class="phpdocumentor-signature__argument__return-type">string</span>
+                 = <span class="phpdocumentor-signature__argument__default-value">&#039;&#039;</span>            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>Filtre par taille</p>
 </section>
 
             </dd>
@@ -228,7 +260,7 @@
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="web-admin/includes/page_functions/modules/companies.php"><a href="files/web-admin-includes-page-functions-modules-companies.html"><abbr title="web-admin/includes/page_functions/modules/companies.php">companies.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">65</span>
+    <span class="phpdocumentor-element-found-in__line">63</span>
 
     </aside>
 
@@ -274,7 +306,7 @@
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="web-admin/includes/page_functions/modules/companies.php"><a href="files/web-admin-includes-page-functions-modules-companies.html"><abbr title="web-admin/includes/page_functions/modules/companies.php">companies.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">99</span>
+    <span class="phpdocumentor-element-found-in__line">91</span>
 
     </aside>
 
@@ -285,9 +317,7 @@
     <span class="phpdocumentor-signature__visibility"></span>
                     <span class="phpdocumentor-signature__name">companiesSave</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type">array&lt;string|int, mixed&gt;&nbsp;</span><span class="phpdocumentor-signature__argument__name">$data</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$id</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">0</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span></code>
 
-        <section class="phpdocumentor-description"><p>Insère une nouvelle entreprise ou modifie une entreprise existante dans la base de données en fonction de l'identifiant fourni.
-Le tableau $data doit contenir les informations de l'entreprise, avec le champ 'nom' étant obligatoire. En cas d'erreur de validation
-ou de problème de base de données, la fonction retourne un tableau indiquant l'échec de l'opération ainsi que les messages d'erreur.</p>
+        <section class="phpdocumentor-description"><p>Utilise insertRow ou updateRow de db.php.</p>
 </section>
 
         <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
@@ -306,7 +336,7 @@ ou de problème de base de données, la fonction retourne un tableau indiquant l
                 : <span class="phpdocumentor-signature__argument__return-type">int</span>
                  = <span class="phpdocumentor-signature__argument__default-value">0</span>            </dt>
             <dd class="phpdocumentor-argument-list__definition">
-                    <section class="phpdocumentor-description"><p>Identifiant de l'entreprise (0 pour création, supérieur à 0 pour mise à jour).</p>
+                    <section class="phpdocumentor-description"><p>Identifiant de l'entreprise (0 pour création).</p>
 </section>
 
             </dd>
@@ -318,7 +348,7 @@ ou de problème de base de données, la fonction retourne un tableau indiquant l
         <h5 class="phpdocumentor-return-value__heading">Return values</h5>
         <span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span>
                     &mdash;
-                <section class="phpdocumentor-description"><p>Tableau contenant le statut de l'opération et un message de confirmation ou une liste d'erreurs.</p>
+                <section class="phpdocumentor-description"><p>Résultat ['success' =&gt; bool, 'message' =&gt; string|null, 'errors' =&gt; array|null]</p>
 </section>
 
             </section>
@@ -333,7 +363,7 @@ ou de problème de base de données, la fonction retourne un tableau indiquant l
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="web-admin/includes/page_functions/modules/companies.php"><a href="files/web-admin-includes-page-functions-modules-companies.html"><abbr title="web-admin/includes/page_functions/modules/companies.php">companies.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">202</span>
+    <span class="phpdocumentor-element-found-in__line">174</span>
 
     </aside>
 
@@ -344,10 +374,7 @@ ou de problème de base de données, la fonction retourne un tableau indiquant l
     <span class="phpdocumentor-signature__visibility"></span>
                     <span class="phpdocumentor-signature__name">companiesDelete</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$id</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span></code>
 
-        <section class="phpdocumentor-description"><p>Cette fonction vérifie d'abord qu'aucun utilisateur ou contrat n'est associé à l'entreprise identifiée par son ID.
-Si des associations existent, elle loggue une tentative échouée et renvoie un tableau indiquant l'échec de l'opération
-avec un message explicatif. Sinon, l'entreprise est supprimée, une opération de suppression est logguée,
-et la fonction renvoie un tableau confirmant la réussite de l'opération.</p>
+        <section class="phpdocumentor-description"><p>Utilise executeQuery pour les vérifications et deleteRow pour la suppression.</p>
 </section>
 
         <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
@@ -369,8 +396,75 @@ et la fonction renvoie un tableau confirmant la réussite de l'opération.</p>
         <h5 class="phpdocumentor-return-value__heading">Return values</h5>
         <span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span>
                     &mdash;
-                <section class="phpdocumentor-description"><p>Un tableau associatif contenant la clé 'success' (booléen) indiquant le résultat de l'opération
-et la clé 'message' (string) avec des détails sur le résultat.</p>
+                <section class="phpdocumentor-description"><p>Résultat ['success' =&gt; bool, 'message' =&gt; string]</p>
+</section>
+
+            </section>
+
+</article>
+                    <article class="phpdocumentor-element -function - ">
+    <h4 class="phpdocumentor-element__name" id="function_companiesGetCities">
+        companiesGetCities()
+        <a href="namespaces/default.html#function_companiesGetCities" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="web-admin/includes/page_functions/modules/companies.php"><a href="files/web-admin-includes-page-functions-modules-companies.html"><abbr title="web-admin/includes/page_functions/modules/companies.php">companies.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">227</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Recupere la liste des villes distinctes des entreprises</p>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility"></span>
+                    <span class="phpdocumentor-signature__name">companiesGetCities</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span></code>
+
+    
+    
+    
+
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>Liste des villes</p>
+</section>
+
+            </section>
+
+</article>
+                    <article class="phpdocumentor-element -function - ">
+    <h4 class="phpdocumentor-element__name" id="function_companiesGetSizes">
+        companiesGetSizes()
+        <a href="namespaces/default.html#function_companiesGetSizes" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="web-admin/includes/page_functions/modules/companies.php"><a href="files/web-admin-includes-page-functions-modules-companies.html"><abbr title="web-admin/includes/page_functions/modules/companies.php">companies.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">237</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Recupere la liste des tailles d&#039;entreprise possibles</p>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility"></span>
+                    <span class="phpdocumentor-signature__name">companiesGetSizes</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span></code>
+
+    
+    
+    
+
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>Liste des tailles</p>
 </section>
 
             </section>
@@ -490,8 +584,10 @@ et la clé 'message' (string) avec des détails sur le résultat.</p>
                 <li>
                     <ul class="phpdocumentor-list -clean">
                                                     <li class=""><a href="namespaces/default.html#function_companiesDelete">companiesDelete()</a></li>
+                                                    <li class=""><a href="namespaces/default.html#function_companiesGetCities">companiesGetCities()</a></li>
                                                     <li class=""><a href="namespaces/default.html#function_companiesGetDetails">companiesGetDetails()</a></li>
                                                     <li class=""><a href="namespaces/default.html#function_companiesGetList">companiesGetList()</a></li>
+                                                    <li class=""><a href="namespaces/default.html#function_companiesGetSizes">companiesGetSizes()</a></li>
                                                     <li class=""><a href="namespaces/default.html#function_companiesSave">companiesSave()</a></li>
                                             </ul>
                 </li>

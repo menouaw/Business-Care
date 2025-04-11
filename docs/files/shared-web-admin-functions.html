@@ -210,11 +210,11 @@
 <dd>Enregistre un message temporaire en session</dd>
 
             <dt class="phpdocumentor-table-of-contents__entry -function -">
-    <a class="" href="namespaces/default.html#function_getFlashMessage">getFlashMessage()</a>
+    <a class="" href="namespaces/default.html#function_getFlashMessages">getFlashMessages()</a>
     <span>
-                                &nbsp;: array&lt;string|int, mixed&gt;|null    </span>
+                                &nbsp;: array&lt;string|int, mixed&gt;    </span>
 </dt>
-<dd>Récupère le message flash enregistré en session et le supprime</dd>
+<dd>Récupère tous les messages flash enregistrés en session et les supprime</dd>
 
             <dt class="phpdocumentor-table-of-contents__entry -function -">
     <a class="" href="namespaces/default.html#function_displayFlashMessages">displayFlashMessages()</a>
@@ -257,6 +257,41 @@
                                 &nbsp;: string    </span>
 </dt>
 <dd>Génère et renvoie une interface de pagination au format Bootstrap.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -function -">
+    <a class="" href="namespaces/default.html#function_redirectBasedOnReferer">redirectBasedOnReferer()</a>
+    <span>
+                                &nbsp;: void    </span>
+</dt>
+<dd>Redirige l&#039;utilisateur en fonction de la page précédente (referer).</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -function -">
+    <a class="" href="namespaces/default.html#function_handleCsrfFailureRedirect">handleCsrfFailureRedirect()</a>
+    <span>
+                                &nbsp;: void    </span>
+</dt>
+<dd>Gère la redirection en cas d&#039;échec de validation CSRF.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -function -">
+    <a class="" href="namespaces/default.html#function_formatCurrency">formatCurrency()</a>
+    <span>
+                                &nbsp;: string    </span>
+</dt>
+<dd>Formate un nombre en devise (euros).</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -function -">
+    <a class="" href="namespaces/default.html#function_formatDuration">formatDuration()</a>
+    <span>
+                                &nbsp;: string    </span>
+</dt>
+<dd>Formate un objet DateInterval en une chaîne de caractères représentant le nombre total de mois.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -function -">
+    <a class="" href="namespaces/default.html#function_generateSecureReferer">generateSecureReferer()</a>
+    <span>
+                                &nbsp;: string    </span>
+</dt>
+<dd>Genere une URL de referer securisee.</dd>
 
     </dl>
 
@@ -468,7 +503,7 @@ En cas de conversion échouée (via strtotime), le timestamp 0 (l'époque Unix) 
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="shared/web-admin/functions.php"><a href="files/shared-web-admin-functions.html"><abbr title="shared/web-admin/functions.php">functions.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">36</span>
+    <span class="phpdocumentor-element-found-in__line">37</span>
 
     </aside>
 
@@ -526,7 +561,7 @@ suivi du symbole de la devise.</p>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="shared/web-admin/functions.php"><a href="files/shared-web-admin-functions.html"><abbr title="shared/web-admin/functions.php">functions.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">50</span>
+    <span class="phpdocumentor-element-found-in__line">52</span>
 
     </aside>
 
@@ -576,7 +611,7 @@ et convertit les caractères spéciaux en entités HTML sécurisées.</p>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="shared/web-admin/functions.php"><a href="files/shared-web-admin-functions.html"><abbr title="shared/web-admin/functions.php">functions.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">69</span>
+    <span class="phpdocumentor-element-found-in__line">72</span>
 
     </aside>
 
@@ -622,7 +657,7 @@ et convertit les caractères spéciaux en entités HTML sécurisées.</p>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="shared/web-admin/functions.php"><a href="files/shared-web-admin-functions.html"><abbr title="shared/web-admin/functions.php">functions.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">86</span>
+    <span class="phpdocumentor-element-found-in__line">90</span>
 
     </aside>
 
@@ -668,7 +703,7 @@ et convertit les caractères spéciaux en entités HTML sécurisées.</p>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="shared/web-admin/functions.php"><a href="files/shared-web-admin-functions.html"><abbr title="shared/web-admin/functions.php">functions.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">101</span>
+    <span class="phpdocumentor-element-found-in__line">106</span>
 
     </aside>
 
@@ -708,7 +743,7 @@ et convertit les caractères spéciaux en entités HTML sécurisées.</p>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="shared/web-admin/functions.php"><a href="files/shared-web-admin-functions.html"><abbr title="shared/web-admin/functions.php">functions.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">111</span>
+    <span class="phpdocumentor-element-found-in__line">117</span>
 
     </aside>
 
@@ -742,7 +777,7 @@ et convertit les caractères spéciaux en entités HTML sécurisées.</p>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="shared/web-admin/functions.php"><a href="files/shared-web-admin-functions.html"><abbr title="shared/web-admin/functions.php">functions.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">123</span>
+    <span class="phpdocumentor-element-found-in__line">130</span>
 
     </aside>
 
@@ -779,7 +814,7 @@ appliqué un nettoyage afin d'assurer la sécurité des données.</p>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="shared/web-admin/functions.php"><a href="files/shared-web-admin-functions.html"><abbr title="shared/web-admin/functions.php">functions.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">134</span>
+    <span class="phpdocumentor-element-found-in__line">142</span>
 
     </aside>
 
@@ -818,24 +853,24 @@ appliqué un nettoyage afin d'assurer la sécurité des données.</p>
     
 </article>
                     <article class="phpdocumentor-element -function - ">
-    <h4 class="phpdocumentor-element__name" id="function_getFlashMessage">
-        getFlashMessage()
-        <a href="namespaces/default.html#function_getFlashMessage" class="headerlink"><i class="fas fa-link"></i></a>
+    <h4 class="phpdocumentor-element__name" id="function_getFlashMessages">
+        getFlashMessages()
+        <a href="namespaces/default.html#function_getFlashMessages" class="headerlink"><i class="fas fa-link"></i></a>
 
     </h4>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="shared/web-admin/functions.php"><a href="files/shared-web-admin-functions.html"><abbr title="shared/web-admin/functions.php">functions.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">146</span>
+    <span class="phpdocumentor-element-found-in__line">155</span>
 
     </aside>
 
-        <p class="phpdocumentor-summary">Récupère le message flash enregistré en session et le supprime</p>
+        <p class="phpdocumentor-summary">Récupère tous les messages flash enregistrés en session et les supprime</p>
 
     
     <code class="phpdocumentor-code phpdocumentor-signature ">
     <span class="phpdocumentor-signature__visibility"></span>
-                    <span class="phpdocumentor-signature__name">getFlashMessage</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;|null</span></code>
+                    <span class="phpdocumentor-signature__name">getFlashMessages</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span></code>
 
     
     
@@ -843,9 +878,9 @@ appliqué un nettoyage afin d'assurer la sécurité des données.</p>
 
             <section>
         <h5 class="phpdocumentor-return-value__heading">Return values</h5>
-        <span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;|null</span>
+        <span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span>
                     &mdash;
-                <section class="phpdocumentor-description"><p>Message flash ou null si aucun message</p>
+                <section class="phpdocumentor-description"><p>Tableau de messages flash ou tableau vide si aucun message</p>
 </section>
 
             </section>
@@ -860,7 +895,7 @@ appliqué un nettoyage afin d'assurer la sécurité des données.</p>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="shared/web-admin/functions.php"><a href="files/shared-web-admin-functions.html"><abbr title="shared/web-admin/functions.php">functions.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">160</span>
+    <span class="phpdocumentor-element-found-in__line">170</span>
 
     </aside>
 
@@ -894,7 +929,7 @@ appliqué un nettoyage afin d'assurer la sécurité des données.</p>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="shared/web-admin/functions.php"><a href="files/shared-web-admin-functions.html"><abbr title="shared/web-admin/functions.php">functions.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">188</span>
+    <span class="phpdocumentor-element-found-in__line">208</span>
 
     </aside>
 
@@ -928,7 +963,7 @@ appliqué un nettoyage afin d'assurer la sécurité des données.</p>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="shared/web-admin/functions.php"><a href="files/shared-web-admin-functions.html"><abbr title="shared/web-admin/functions.php">functions.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">201</span>
+    <span class="phpdocumentor-element-found-in__line">222</span>
 
     </aside>
 
@@ -974,7 +1009,7 @@ appliqué un nettoyage afin d'assurer la sécurité des données.</p>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="shared/web-admin/functions.php"><a href="files/shared-web-admin-functions.html"><abbr title="shared/web-admin/functions.php">functions.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">217</span>
+    <span class="phpdocumentor-element-found-in__line">239</span>
 
     </aside>
 
@@ -1023,7 +1058,7 @@ Si le statut n'est pas reconnu parmi les valeurs prédéfinies, la classe &quot;
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="shared/web-admin/functions.php"><a href="files/shared-web-admin-functions.html"><abbr title="shared/web-admin/functions.php">functions.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">252</span>
+    <span class="phpdocumentor-element-found-in__line">283</span>
 
     </aside>
 
@@ -1116,7 +1151,7 @@ ensuite les enregistrements de la page courante en appliquant les clauses facult
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="shared/web-admin/functions.php"><a href="files/shared-web-admin-functions.html"><abbr title="shared/web-admin/functions.php">functions.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">283</span>
+    <span class="phpdocumentor-element-found-in__line">328</span>
 
     </aside>
 
@@ -1164,6 +1199,270 @@ le numéro de page.</p>
                     &mdash;
                 <section class="phpdocumentor-description"><p>Le code HTML de l'interface de pagination ou une chaîne vide si aucune pagination
 n'est nécessaire.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article class="phpdocumentor-element -function - ">
+    <h4 class="phpdocumentor-element__name" id="function_redirectBasedOnReferer">
+        redirectBasedOnReferer()
+        <a href="namespaces/default.html#function_redirectBasedOnReferer" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="shared/web-admin/functions.php"><a href="files/shared-web-admin-functions.html"><abbr title="shared/web-admin/functions.php">functions.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">368</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Redirige l&#039;utilisateur en fonction de la page précédente (referer).</p>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility"></span>
+                    <span class="phpdocumentor-signature__name">redirectBasedOnReferer</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$id</span></span><span class="phpdocumentor-signature__argument"><span>, </span><span class="phpdocumentor-signature__argument__return-type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$module</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">void</span></code>
+
+        <section class="phpdocumentor-description"><p>Si la page précédente est la page de vue de l'entité spécifiée, redirige vers cette page,
+sinon, redirige vers la page d'index du module spécifié.</p>
+</section>
+
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-signature__argument__name">$id</span>
+                : <span class="phpdocumentor-signature__argument__return-type">int</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>Identifiant de l'entité.</p>
+</section>
+
+            </dd>
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-signature__argument__name">$module</span>
+                : <span class="phpdocumentor-signature__argument__return-type">string</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>Nom du module (ex: 'users', 'companies').</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+
+    
+</article>
+                    <article class="phpdocumentor-element -function - ">
+    <h4 class="phpdocumentor-element__name" id="function_handleCsrfFailureRedirect">
+        handleCsrfFailureRedirect()
+        <a href="namespaces/default.html#function_handleCsrfFailureRedirect" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="shared/web-admin/functions.php"><a href="files/shared-web-admin-functions.html"><abbr title="shared/web-admin/functions.php">functions.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">391</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Gère la redirection en cas d&#039;échec de validation CSRF.</p>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility"></span>
+                    <span class="phpdocumentor-signature__name">handleCsrfFailureRedirect</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$entityId</span></span><span class="phpdocumentor-signature__argument"><span>, </span><span class="phpdocumentor-signature__argument__return-type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$module</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$actionDescription</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">&#039;action&#039;</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">void</span></code>
+
+        <section class="phpdocumentor-description"><p>Log l'échec, affiche un message flash et redirige en utilisant redirectBasedOnReferer.</p>
+</section>
+
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-signature__argument__name">$entityId</span>
+                : <span class="phpdocumentor-signature__argument__return-type">int</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>Identifiant de l'entité (0 si non applicable).</p>
+</section>
+
+            </dd>
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-signature__argument__name">$module</span>
+                : <span class="phpdocumentor-signature__argument__return-type">string</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>Nom du module (ex: 'users', 'companies').</p>
+</section>
+
+            </dd>
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-signature__argument__name">$actionDescription</span>
+                : <span class="phpdocumentor-signature__argument__return-type">string</span>
+                 = <span class="phpdocumentor-signature__argument__default-value">&#039;action&#039;</span>            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>Description de l'action tentée (ex: 'modification utilisateur').</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+
+    
+</article>
+                    <article class="phpdocumentor-element -function - ">
+    <h4 class="phpdocumentor-element__name" id="function_formatCurrency">
+        formatCurrency()
+        <a href="namespaces/default.html#function_formatCurrency" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="shared/web-admin/functions.php"><a href="files/shared-web-admin-functions.html"><abbr title="shared/web-admin/functions.php">functions.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">410</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Formate un nombre en devise (euros).</p>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility"></span>
+                    <span class="phpdocumentor-signature__name">formatCurrency</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type">float|null&nbsp;</span><span class="phpdocumentor-signature__argument__name">$amount</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$currencySymbol</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">&#039;€&#039;</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">string</span></code>
+
+    
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-signature__argument__name">$amount</span>
+                : <span class="phpdocumentor-signature__argument__return-type">float|null</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>Le montant.</p>
+</section>
+
+            </dd>
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-signature__argument__name">$currencySymbol</span>
+                : <span class="phpdocumentor-signature__argument__return-type">string</span>
+                 = <span class="phpdocumentor-signature__argument__default-value">&#039;€&#039;</span>            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>Le symbole de la devise.</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">string</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>Le montant formaté ou 'N/A' si null.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article class="phpdocumentor-element -function - ">
+    <h4 class="phpdocumentor-element__name" id="function_formatDuration">
+        formatDuration()
+        <a href="namespaces/default.html#function_formatDuration" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="shared/web-admin/functions.php"><a href="files/shared-web-admin-functions.html"><abbr title="shared/web-admin/functions.php">functions.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">423</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Formate un objet DateInterval en une chaîne de caractères représentant le nombre total de mois.</p>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility"></span>
+                    <span class="phpdocumentor-signature__name">formatDuration</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type"><abbr title="\DateInterval">DateInterval</abbr>|null&nbsp;</span><span class="phpdocumentor-signature__argument__name">$interval</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">string</span></code>
+
+    
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-signature__argument__name">$interval</span>
+                : <span class="phpdocumentor-signature__argument__return-type"><abbr title="\DateInterval">DateInterval</abbr>|null</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>L'intervalle de temps.</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">string</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>La durée formatée en mois (ex: &quot;36 mois&quot;) ou &quot;-&quot; si null/invalide.</p>
+</section>
+
+            </section>
+
+</article>
+                    <article class="phpdocumentor-element -function - ">
+    <h4 class="phpdocumentor-element__name" id="function_generateSecureReferer">
+        generateSecureReferer()
+        <a href="namespaces/default.html#function_generateSecureReferer" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="shared/web-admin/functions.php"><a href="files/shared-web-admin-functions.html"><abbr title="shared/web-admin/functions.php">functions.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">440</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Genere une URL de referer securisee.</p>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility"></span>
+                    <span class="phpdocumentor-signature__name">generateSecureReferer</span><span>(</span><span class="phpdocumentor-signature__argument"><span>[</span><span class="phpdocumentor-signature__argument__return-type">string|null&nbsp;</span><span class="phpdocumentor-signature__argument__name">$defaultUrl</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">null</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">array&lt;string|int, mixed&gt;&nbsp;</span><span class="phpdocumentor-signature__argument__name">$allowedHosts</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">[]</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">string</span></code>
+
+    
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-signature__argument__name">$defaultUrl</span>
+                : <span class="phpdocumentor-signature__argument__return-type">string|null</span>
+                 = <span class="phpdocumentor-signature__argument__default-value">null</span>            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>L'URL par defaut si le referer n'est pas valide ou absent.</p>
+</section>
+
+            </dd>
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-signature__argument__name">$allowedHosts</span>
+                : <span class="phpdocumentor-signature__argument__return-type">array&lt;string|int, mixed&gt;</span>
+                 = <span class="phpdocumentor-signature__argument__default-value">[]</span>            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>Hotes autorises pour le referer.</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">string</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>L'URL de redirection.</p>
 </section>
 
             </section>
@@ -1294,16 +1593,21 @@ n'est nécessaire.</p>
                     <ul class="phpdocumentor-list -clean">
                                                     <li class=""><a href="namespaces/default.html#function_displayFlashMessages">displayFlashMessages()</a></li>
                                                     <li class=""><a href="namespaces/default.html#function_flashMessage">flashMessage()</a></li>
+                                                    <li class=""><a href="namespaces/default.html#function_formatCurrency">formatCurrency()</a></li>
                                                     <li class=""><a href="namespaces/default.html#function_formatDate">formatDate()</a></li>
+                                                    <li class=""><a href="namespaces/default.html#function_formatDuration">formatDuration()</a></li>
                                                     <li class=""><a href="namespaces/default.html#function_formatMoney">formatMoney()</a></li>
                                                     <li class=""><a href="namespaces/default.html#function_generatePageTitle">generatePageTitle()</a></li>
+                                                    <li class=""><a href="namespaces/default.html#function_generateSecureReferer">generateSecureReferer()</a></li>
                                                     <li class=""><a href="namespaces/default.html#function_generateToken">generateToken()</a></li>
-                                                    <li class=""><a href="namespaces/default.html#function_getFlashMessage">getFlashMessage()</a></li>
+                                                    <li class=""><a href="namespaces/default.html#function_getFlashMessages">getFlashMessages()</a></li>
                                                     <li class=""><a href="namespaces/default.html#function_getFormData">getFormData()</a></li>
                                                     <li class=""><a href="namespaces/default.html#function_getQueryData">getQueryData()</a></li>
                                                     <li class=""><a href="namespaces/default.html#function_getRecentActivities">getRecentActivities()</a></li>
                                                     <li class=""><a href="namespaces/default.html#function_getStatusBadge">getStatusBadge()</a></li>
+                                                    <li class=""><a href="namespaces/default.html#function_handleCsrfFailureRedirect">handleCsrfFailureRedirect()</a></li>
                                                     <li class=""><a href="namespaces/default.html#function_paginateResults">paginateResults()</a></li>
+                                                    <li class=""><a href="namespaces/default.html#function_redirectBasedOnReferer">redirectBasedOnReferer()</a></li>
                                                     <li class=""><a href="namespaces/default.html#function_redirectTo">redirectTo()</a></li>
                                                     <li class=""><a href="namespaces/default.html#function_renderPagination">renderPagination()</a></li>
                                                     <li class=""><a href="namespaces/default.html#function_sanitizeInput">sanitizeInput()</a></li>

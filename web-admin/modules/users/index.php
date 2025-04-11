@@ -74,11 +74,11 @@ include '../../templates/header.php';
                     </form>
                 </div>
                 <div class="card-body">
+                    <?php if (!empty($users)): ?>
                     <div class="table-responsive">
                         <table class="table table-striped table-hover table-sm">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
                                     <th>Nom</th>
                                     <th>Email</th>
                                     <th>Rôle</th>
@@ -88,14 +88,8 @@ include '../../templates/header.php';
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php if (empty($users)): ?>
-                                <tr>
-                                    <td colspan="7" class="text-center fst-italic text-muted">Aucun utilisateur trouvé correspondant aux filtres.</td>
-                                </tr>
-                                <?php else: ?>
                                 <?php foreach ($users as $user): ?>
                                 <tr>
-                                    <td><?php echo $user['id']; ?></td>
                                     <td>
                                         <?php if ($user['photo_url']): ?>
                                         <img src="<?php echo htmlspecialchars(ROOT_URL . $user['photo_url']); ?>" alt="Profil" class="rounded-circle me-2" width="30" height="30" style="object-fit: cover;">
@@ -123,7 +117,6 @@ include '../../templates/header.php';
                                     </td>
                                 </tr>
                                 <?php endforeach; ?>
-                                <?php endif; ?>
                             </tbody>
                         </table>
                     </div>
@@ -135,11 +128,23 @@ include '../../templates/header.php';
                         'totalItems' => $totalUsers,
                         'itemsPerPage' => $itemsPerPage
                     ];
-                    $urlPattern = WEBADMIN_URL . '/modules/users/index.php?search=' . urlencode($search) . '&role=' . urlencode($role) . '&statut=' . urlencode($statut) . '&page={page}';
+                    $urlParams = array_filter(['search' => $search, 'role' => $role, 'statut' => $statut]);
+                    $urlPattern = WEBADMIN_URL . '/modules/users/index.php?' . http_build_query($urlParams) . (empty($urlParams) ? '' : '&') . 'page={page}';
                     ?>
                     <div class="d-flex justify-content-center">
                         <?php echo renderPagination($paginationInfo, $urlPattern); ?>
                     </div>
+                    <?php else: ?>
+                        <?php
+                        $isFiltering = !empty($search) || !empty($role) || !empty($statut);
+                        $message = $isFiltering 
+                            ? "Aucun utilisateur trouvé correspondant à vos critères de recherche."
+                            : "Aucun utilisateur n'a été créé pour le moment. <a href=\"" . WEBADMIN_URL . "/modules/users/add.php\" class=\"alert-link\">Ajouter un utilisateur</a>";
+                        ?>
+                        <div class="alert alert-info mt-3" role="alert">
+                            <?php echo $message; ?>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
             

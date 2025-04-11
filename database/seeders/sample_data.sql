@@ -22,6 +22,8 @@ TRUNCATE TABLE entreprises;
 TRUNCATE TABLE roles;
 TRUNCATE TABLE contrats_prestations;
 TRUNCATE TABLE services;
+TRUNCATE TABLE factures_prestataires;
+TRUNCATE TABLE facture_prestataire_lignes;
 SET FOREIGN_KEY_CHECKS = 1;
 
 INSERT INTO roles (nom, description) VALUES
@@ -110,48 +112,18 @@ INSERT INTO personnes (nom, prenom, email, mot_de_passe, telephone, date_naissan
 ('Roux', 'Maxime', 'maxime.roux@sophrologue.com', '$2y$10$CGP1gfg0khtXjAZcJFC6iO3oYisjwlPfkm8tQ8Q/OxWpFdR7tOiqO', '0690011223', '1981-11-14', 'M', '', 3, NULL, 'actif', NOW()),
 ('Vincent', 'Eva', 'eva.vincent@fintechbanque.fr', '$2y$10$CGP1gfg0khtXjAZcJFC6iO3oYisjwlPfkm8tQ8Q/OxWpFdR7tOiqO', '0602233445', '1999-01-07', 'F', '', 2, 20, 'actif', NOW());
 
-INSERT INTO services (nom, description, actif, ordre, max_effectif_inferieur_egal, activites_incluses, rdv_medicaux_inclus, chatbot_questions_limite, conseils_hebdo_personnalises, tarif_annuel_par_salarie) VALUES
-('Starter Pack', 'Pour les petites equipes (jusqu\'a 30 salaries)', TRUE, 10, 30, 2, 1, 6, FALSE, 180.00),
-('Basic Pack', 'Solution equilibree (jusqu\'a 250 salaries)', TRUE, 20, 250, 3, 2, 20, FALSE, 150.00),
-('Premium Pack', 'Offre complete pour grandes entreprises (251+ salaries)', TRUE, 30, NULL, 4, 3, NULL, TRUE, 100.00),
-('Advanced Pack', 'Pour les equipes de taille moyenne', TRUE, 40, 100, 5, 2, 10, TRUE, 200.00),
-('Essential Care', 'Le minimum vital pour le bien-etre', TRUE, 15, 50, 1, 0, 5, FALSE, 120.00),
-('Growth Plan', 'Accompagne la croissance de vos equipes', TRUE, 25, 150, 3, 1, 15, FALSE, 160.00),
-('Enterprise Solution', 'Solution sur mesure pour les grands comptes', TRUE, 35, NULL, 5, 4, NULL, TRUE, 90.00),
-('Wellness Boost', 'Focus sur le bien-etre physique et mental', TRUE, 50, 75, 4, 2, 10, TRUE, 190.00),
-('Mental Health First', 'Priorite a la sante mentale', TRUE, 55, NULL, 2, 5, 30, TRUE, 140.00),
-('Team Spirit', 'Renforcez la cohesion de vos equipes', TRUE, 60, 100, 3, 0, 5, FALSE, 170.00),
-('Flex Office Pack', 'Adapte aux entreprises en teletravail', TRUE, 65, 200, 2, 1, 10, FALSE, 130.00),
-('Executive Wellness', 'Programme dedie aux cadres dirigeants', TRUE, 70, 20, 5, 3, NULL, TRUE, 250.00),
-('Startup Deal', 'Offre speciale pour les jeunes pousses', TRUE, 5, 15, 1, 1, 3, FALSE, 100.00),
-('SME Advantage', 'Pack avantageux pour les PME', TRUE, 45, 90, 3, 1, 8, FALSE, 145.00),
-('Industry Specific Care - Tech', 'Programme adapte au secteur technologique', TRUE, 75, NULL, 4, 2, 20, TRUE, 155.00),
-('Industry Specific Care - Health', 'Programme adapte au secteur de la sante', TRUE, 80, NULL, 3, 4, 15, TRUE, 165.00),
-('Prevention Pro', 'Focus sur la prevention des risques professionnels', TRUE, 85, 300, 2, 1, 10, FALSE, 110.00),
-('Eco Conscious Plan', 'Services orientes developpement durable', TRUE, 90, 120, 3, 0, 5, FALSE, 175.00),
-('Night Shift Support', 'Accompagnement pour les travailleurs de nuit', TRUE, 95, NULL, 2, 2, 10, FALSE, 185.00),
-('Global Coverage', 'Pour les entreprises internationales', FALSE, 100, NULL, 5, 5, NULL, TRUE, 80.00);
+INSERT INTO services (id, type, description, actif, ordre, max_effectif_inferieur_egal, activites_incluses, rdv_medicaux_inclus, chatbot_questions_limite, conseils_hebdo_personnalises, tarif_annuel_par_salarie) VALUES
+(1, 'Starter Pack', 'Pour les petites equipes (jusqu\'a 30 salaries)', TRUE, 10, 30, 2, 1, 6, FALSE, 180.00),
+(2, 'Basic Pack', 'Solution equilibree (jusqu\'a 250 salaries)', TRUE, 20, 250, 3, 2, 20, FALSE, 150.00),
+(3, 'Premium Pack', 'Offre complete pour grandes entreprises (251+ salaries)', TRUE, 30, NULL, 4, 3, NULL, TRUE, 100.00);
 
 INSERT INTO contrats (entreprise_id, service_id, date_debut, date_fin, nombre_salaries, statut, conditions_particulieres) VALUES
 (1, 3, '2024-01-01', '2024-12-31', 150, 'actif', 'Acces a toutes les prestations premium'),
 (2, 3, '2024-02-01', '2025-01-31', 300, 'actif', 'Acces illimite aux prestations'),
 (3, 2, '2024-03-01', '2024-08-31', 35, 'actif', 'Acces aux prestations de base'),
 (4, 1, '2024-04-01', '2025-03-31', 50, 'actif', 'Acces aux services de base'),
-(6, 7, '2023-11-01', '2024-10-31', 250, 'actif', 'Solution entreprise personnalisee'),
-(7, 4, '2024-01-15', '2024-07-14', 60, 'actif', 'Advanced pack + 2 ateliers cohesion'),
-(8, 7, '2024-02-20', '2025-02-19', 600, 'actif', 'Acces complet + reporting personnalise'),
-(9, 5, '2024-03-10', '2024-09-09', 45, 'actif', 'Essential Care + 1 webinar/mois'),
-(10, 13, '2024-04-05', '2024-10-04', 8, 'actif', 'Startup Deal inaugural'),
-(11, 16, '2023-12-01', '2024-11-30', 180, 'actif', 'Industry Specific Health'),
-(12, 6, '2024-05-01', '2025-04-30', 40, 'actif', 'Growth Plan standard'),
 (13, 1, '2024-05-15', '2024-11-14', 5, 'en_attente', 'Conditions a valider'),
-(14, 14, '2024-06-01', '2025-05-31', 30, 'actif', 'SME Advantage - 1ere annee'),
-(15, 6, '2024-06-15', '2025-06-14', 120, 'actif', 'Growth Plan + option transport'),
-(16, 11, '2024-07-01', '2025-06-30', 48, 'actif', 'Flex Office standard'),
-(17, 1, '2024-07-10', '2024-10-09', 9, 'resilie', 'Resiliation anticipee cause fermeture'),
-(18, 18, '2024-08-01', '2025-07-31', 25, 'actif', 'Eco Conscious Plan'),
-(19, 17, '2024-08-15', '2025-08-14', 190, 'actif', 'Prevention Pro + suivi individuel'),
-(20, 15, '2024-09-01', '2025-08-31', 450, 'actif', 'Industry Specific Tech - Grand Compte');
+(17, 1, '2024-07-10', '2024-10-09', 9, 'resilie', 'Resiliation anticipee cause fermeture');
 
 INSERT INTO contrats_prestations (contrat_id, prestation_id) VALUES
 (1, 1),
@@ -160,123 +132,49 @@ INSERT INTO contrats_prestations (contrat_id, prestation_id) VALUES
 (1, 2),
 (2, 3),
 (3, 1),
-(4, 2),
-(5, 1), (5, 5), (5, 9), (5, 10), 
-(6, 2), (6, 4), (6, 7), (6, 17), 
-(7, 1), (7, 2), (7, 3), (7, 4), (7, 5), (7, 6), (7, 10),
-(8, 1), (8, 3), 
-(9, 1), (9, 6), 
-(10, 1), (10, 7), (10, 11), (10, 21), 
-(11, 2), (11, 4), (11, 14), 
-(13, 2), (13, 4), 
-(14, 1), (14, 6), (14, 21), 
-(15, 3), (15, 13),
-(17, 4), (17, 8),
-(18, 1), (18, 9), (18, 21),
-(19, 1), (19, 3), (19, 5), (19, 13), (19, 23), (19, 25);
+(4, 2);
 
-INSERT INTO devis (entreprise_id, date_creation, date_validite, montant_total, montant_ht, tva, statut, conditions_paiement, delai_paiement) VALUES
-(1, '2024-01-15', '2024-02-15', 1500.00, 1250.00, 20.00, 'accepte', 'Paiement a 30 jours', 30),
-(2, '2024-02-01', '2024-03-01', 2000.00, 1666.67, 20.00, 'accepte', 'Paiement a 45 jours', 45),
-(3, '2024-02-15', '2024-03-15', 1800.00, 1500.00, 20.00, 'refuse', 'Paiement a 30 jours', 30),
-(4, '2024-03-01', '2024-04-01', 2500.00, 2083.33, 20.00, 'en_attente', 'Paiement a 60 jours', 60),
-(5, '2024-04-05', '2024-05-05', 3000.00, 2500.00, 20.00, 'en_attente', 'Paiement a 30 jours', 30),
-(1, '2024-04-10', '2024-05-10', 1200.00, 1000.00, 20.00, 'accepte', 'Paiement comptant', 0),
-(2, '2024-04-15', '2024-05-15', 2200.00, 1833.33, 20.00, 'en_attente', 'Paiement a 30 jours', 30),
-(3, '2024-04-20', '2024-05-20', 950.00, 791.67, 20.00, 'accepte', 'Paiement a reception', 0),
-(4, '2024-04-25', '2024-05-25', 1750.00, 1458.33, 20.00, 'refuse', 'Paiement a 45 jours', 45),
-(5, '2024-05-01', '2024-06-01', 4000.00, 3333.33, 20.00, 'accepte', 'Paiement a 60 jours', 60),
-(1, '2024-05-05', '2024-06-05', 1350.00, 1125.00, 20.00, 'en_attente', 'Paiement a 30 jours', 30),
-(2, '2024-05-10', '2024-06-10', 2800.00, 2333.33, 20.00, 'accepte', 'Paiement a 45 jours', 45),
-(3, '2024-05-15', '2024-06-15', 700.00, 583.33, 20.00, 'en_attente', 'Paiement comptant', 0),
-(4, '2024-05-20', '2024-06-20', 3100.00, 2583.33, 20.00, 'accepte', 'Paiement a 30 jours', 30),
-(6, '2024-05-25', '2024-06-25', 500.00, 416.67, 20.00, 'accepte', 'Paiement a 30 jours', 30),
-(7, '2024-06-01', '2024-07-01', 1600.00, 1333.33, 20.00, 'en_attente', 'Paiement a 45 jours', 45),
-(8, '2024-06-05', '2024-07-05', 2100.00, 1750.00, 20.00, 'accepte', 'Paiement comptant', 0),
-(9, '2024-06-10', '2024-07-10', 850.00, 708.33, 20.00, 'refuse', 'Paiement a 30 jours', 30),
-(10, '2024-06-15', '2024-07-15', 3200.00, 2666.67, 20.00, 'en_attente', 'Paiement a 60 jours', 60),
-(11, '2024-06-20', '2024-07-20', 1100.00, 916.67, 20.00, 'accepte', 'Paiement a reception', 0),
-(12, '2024-06-25', '2024-07-25', 1950.00, 1625.00, 20.00, 'en_attente', 'Paiement a 30 jours', 30),
-(13, '2024-07-01', '2024-08-01', 600.00, 500.00, 20.00, 'accepte', 'Paiement comptant', 0),
-(14, '2024-07-05', '2024-08-05', 2700.00, 2250.00, 20.00, 'refuse', 'Paiement a 45 jours', 45),
-(15, '2024-07-10', '2024-08-10', 3500.00, 2916.67, 20.00, 'accepte', 'Paiement a 60 jours', 60),
-(16, '2024-07-15', '2024-08-15', 1400.00, 1166.67, 20.00, 'en_attente', 'Paiement a 30 jours', 30),
-(17, '2024-07-20', '2024-08-20', 2300.00, 1916.67, 20.00, 'accepte', 'Paiement a 45 jours', 45),
-(18, '2024-07-25', '2024-08-25', 900.00, 750.00, 20.00, 'expire', 'Paiement comptant', 0),
-(19, '2024-08-01', '2024-09-01', 3800.00, 3166.67, 20.00, 'accepte', 'Paiement a 30 jours', 30),
-(20, '2024-08-05', '2024-09-05', 1550.00, 1291.67, 20.00, 'en_attente', 'Paiement a 60 jours', 60);
-
-INSERT INTO devis_prestations (devis_id, prestation_id, quantite, prix_unitaire_devis, description_specifique) VALUES
-(1, 1, 10, 80.00, '10 consultations psychologiques individuelles'), 
-(1, 2, 5, 120.00, '5 seances de yoga en entreprise'), 
-(1, 3, 1, 100.00, '1 webinar gestion du stress (prix special)'), 
-(2, 1, 15, 75.00, '15 consultations psychologiques (prix negocie)'), 
-(2, 2, 7, 125.00, '7 seances de yoga (prix premium)'),
-(3, 1, 5, 85.00, '5 consultations psychologiques avec remise'),
-(3, 2, 3, 115.00, '3 seances de yoga avec tarif reduit'),
-(4, 3, 10, 150.00, '10 webinars gestion du stress'),
-(4, 4, 8, 100.00, '8 ateliers meditation'),
-(5, 5, 12, 200.00, '12 formations leadership'),
-(6, 1, 8, 80.00, '8 consultations psy'),
-(6, 4, 5, 100.00, '5 ateliers meditation'),
-(7, 2, 10, 120.00, '10 seances yoga'),
-(7, 3, 5, 150.00, '5 webinars stress'),
-(8, 1, 6, 78.00, '6 consultations (negocie)'),
-(9, 5, 7, 190.00, '7 formations leadership (remise)'),
-(10, 1, 20, 70.00, '20 consultations psy (gros volume)'),
-(10, 2, 15, 110.00, '15 seances yoga (gros volume)'),
-(11, 4, 10, 95.00, '10 ateliers meditation'),
-(12, 5, 10, 200.00, '10 formations leadership'),
-(13, 6, 5, 100.00, '5 coachings carriere'),
-(14, 7, 10, 130.00, '10 ateliers nutrition'),
-(14, 8, 50, 15.00, '50 massages amma assis (15min)'),
-(15, 9, 1, 250.00, 'Formation RPS groupe 1'),
-(15, 10, 1, 300.00, 'Team building Escape Game session 1'),
-(16, 11, 8, 90.00, '8 consultations dietetique'),
-(16, 12, 4, 110.00, '4 seances sophrologie groupe'),
-(17, 13, 1, 160.00, 'Webinar CNV'),
-(17, 14, 2, 140.00, '2 ateliers gestion du temps'),
-(18, 15, 1, 180.00, 'Conference Sante du dos'),
-(19, 16, 10, 120.00, '10 coachings prise de parole'),
-(20, 17, 5, 125.00, '5 seances Pilates'),
-(20, 18, 1, 220.00, 'Formation PSC1'),
-(21, 19, 2, 170.00, '2 ateliers creativite'),
-(22, 20, 1, 280.00, 'Team Building Jeu de piste equipe A'),
-(23, 21, 10, 85.00, '10 consultations ergo'),
-(24, 22, 6, 115.00, '6 seances Qi Gong'),
-(25, 23, 1, 175.00, 'Webinar Intel Emotionnelle'),
-(25, 24, 1, 155.00, 'Atelier Cuisine Saine'),
-(26, 25, 1, 190.00, 'Conference Cybersecurite');
+INSERT INTO devis (entreprise_id, service_id, nombre_salaries_estimes, date_creation, date_validite, montant_total, montant_ht, tva, statut, conditions_paiement, delai_paiement, est_personnalise, notes_negociation) VALUES
+(1, 3, 150, '2024-01-15', '2024-02-15', 18000.00, 15000.00, 20.00, 'accepte', 'Paiement a 30 jours', 30, TRUE, 'Conditions standards personnalisees.'),
+(2, 3, 300, '2024-02-01', '2024-03-01', 36000.00, 30000.00, 20.00, 'accepte', 'Paiement a 45 jours', 45, TRUE, 'Conditions standards personnalisees.'),
+(3, 2, 40, '2024-02-15', '2024-03-15', 7200.00, 6000.00, 20.00, 'refuse', 'Paiement a 30 jours', 30, TRUE, 'Conditions standards personnalisees.'),
+(4, 1, 8, '2024-03-01', '2024-04-01', 1728.00, 1440.00, 20.00, 'en_attente', 'Paiement a 60 jours', 60, TRUE, 'Conditions standards personnalisees.'),
+(5, 2, 25, '2024-04-05', '2024-05-05', 4500.00, 3750.00, 20.00, 'en_attente', 'Paiement a 30 jours', 30, TRUE, 'Conditions standards personnalisees.'),
+(1, 2, 180, '2024-05-05', '2024-06-05', 32400.00, 27000.00, 20.00, 'en_attente', 'Paiement a 30 jours', 30, TRUE, 'Conditions standards personnalisees.'),
+(2, 3, 400, '2024-05-10', '2024-06-10', 48000.00, 40000.00, 20.00, 'accepte', 'Paiement a 45 jours', 45, TRUE, 'Conditions standards personnalisees.'),
+(4, 1, 5, '2024-05-20', '2024-06-20', 1080.00, 900.00, 20.00, 'accepte', 'Paiement a 30 jours', 30, TRUE, 'Conditions standards personnalisees.'),
+(13, 1, 5, '2024-07-01', '2024-08-01', 1080.00, 900.00, 20.00, 'accepte', 'Paiement comptant', 0, TRUE, 'Conditions standards personnalisees.'),
+(17, 1, 9, '2024-07-20', '2024-08-20', 1944.00, 1620.00, 20.00, 'accepte', 'Paiement a 45 jours', 45, TRUE, 'Conditions standards personnalisees.');
 
 INSERT INTO factures (entreprise_id, devis_id, numero_facture, date_emission, date_echeance, montant_total, montant_ht, tva, statut, mode_paiement) VALUES
-(1, 1, 'FACT-2024-001', '2024-01-20', '2024-02-20', 1500.00, 1250.00, 20.00, 'payee', 'virement'),
-(2, 2, 'FACT-2024-002', '2024-02-05', '2024-03-22', 2000.00, 1666.67, 20.00, 'payee', 'carte'),
-(3, NULL, 'FACT-2024-015', '2024-04-25', '2024-05-25', 1200.00, 1000.00, 20.00, 'annulee', 'virement'),
-(4, 4, 'FACT-2024-003', '2024-03-10', '2024-04-10', 2500.00, 2083.33, 20.00, 'en_attente', 'prelevement'),
-(5, NULL, 'FACT-2024-004', '2024-04-10', '2024-05-10', 3000.00, 2500.00, 20.00, 'payee', 'virement'),
-(1, 6, 'FACT-2024-005', '2024-04-12', '2024-04-12', 1200.00, 1000.00, 20.00, 'payee', 'carte'),
-(2, NULL, 'FACT-2024-006', '2024-04-20', '2024-05-20', 2200.00, 1833.33, 20.00, 'en_attente', 'prelevement'),
-(3, 8, 'FACT-2024-007', '2024-04-22', '2024-04-22', 950.00, 791.67, 20.00, 'payee', 'virement'),
-(4, NULL, 'FACT-2024-008', '2024-05-01', '2024-06-15', 1750.00, 1458.33, 20.00, 'annulee', 'virement'),
-(5, 10, 'FACT-2024-009', '2024-05-05', '2024-07-05', 4000.00, 3333.33, 20.00, 'payee', 'prelevement'),
-(1, NULL, 'FACT-2024-010', '2024-05-10', '2024-06-10', 1350.00, 1125.00, 20.00, 'en_attente', 'carte'),
-(2, 12, 'FACT-2024-011', '2024-05-12', '2024-06-27', 2800.00, 2333.33, 20.00, 'payee', 'virement'),
-(3, NULL, 'FACT-2024-012', '2024-05-20', '2024-05-20', 700.00, 583.33, 20.00, 'en_attente', 'carte'),
-(4, 14, 'FACT-2024-013', '2024-05-22', '2024-06-22', 3100.00, 2583.33, 20.00, 'payee', 'prelevement'),
-(6, 15, 'FACT-2024-014', '2024-05-28', '2024-06-28', 500.00, 416.67, 20.00, 'en_attente', 'virement'),
-(7, NULL, 'FACT-2024-016', '2024-06-05', '2024-07-20', 1600.00, 1333.33, 20.00, 'en_attente', 'prelevement'),
-(8, 17, 'FACT-2024-017', '2024-06-07', '2024-06-07', 2100.00, 1750.00, 20.00, 'payee', 'carte'),
-(9, NULL, 'FACT-2024-018', '2024-06-12', '2024-07-12', 850.00, 708.33, 20.00, 'annulee', 'virement'),
-(10, NULL, 'FACT-2024-019', '2024-06-20', '2024-08-20', 3200.00, 2666.67, 20.00, 'en_attente', 'prelevement'),
-(11, 20, 'FACT-2024-020', '2024-06-22', '2024-06-22', 1100.00, 916.67, 20.00, 'payee', 'virement'),
-(12, NULL, 'FACT-2024-021', '2024-06-28', '2024-07-28', 1950.00, 1625.00, 20.00, 'en_attente', 'carte'),
-(13, 22, 'FACT-2024-022', '2024-07-03', '2024-07-03', 600.00, 500.00, 20.00, 'payee', 'carte'),
-(14, NULL, 'FACT-2024-023', '2024-07-08', '2024-08-23', 2700.00, 2250.00, 20.00, 'annulee', 'virement'),
-(15, 24, 'FACT-2024-024', '2024-07-12', '2024-09-12', 3500.00, 2916.67, 20.00, 'payee', 'prelevement'),
-(16, NULL, 'FACT-2024-025', '2024-07-18', '2024-08-18', 1400.00, 1166.67, 20.00, 'en_attente', 'carte'),
-(17, 26, 'FACT-2024-026', '2024-07-22', '2024-09-06', 2300.00, 1916.67, 20.00, 'payee', 'virement'),
-(18, NULL, 'FACT-2024-027', '2024-07-28', '2024-07-28', 900.00, 750.00, 20.00, 'annulee', 'virement'),
-(19, 28, 'FACT-2024-028', '2024-08-05', '2024-09-05', 3800.00, 3166.67, 20.00, 'payee', 'prelevement'),
+(1, NULL, 'FACT-2024-001', '2024-01-20', '2024-02-20', 18000.00, 15000.00, 20.00, 'payee', 'virement'),  
+(2, NULL, 'FACT-2024-002', '2024-02-05', '2024-03-22', 36000.00, 30000.00, 20.00, 'payee', 'carte'),      
+(4, NULL, 'FACT-2024-003', '2024-03-10', '2024-04-10', 1728.00, 1440.00, 20.00, 'en_attente', 'prelevement'), 
+(5, NULL, 'FACT-2024-004', '2024-04-10', '2024-05-10', 3000.00, 2500.00, 20.00, 'payee', 'virement'), 
+(1, NULL, 'FACT-2024-005', '2024-04-12', '2024-04-12', 24000.00, 20000.00, 20.00, 'payee', 'carte'), 
+(2, NULL, 'FACT-2024-006', '2024-04-20', '2024-05-20', 2200.00, 1833.33, 20.00, 'en_attente', 'prelevement'), 
+(3, NULL, 'FACT-2024-007', '2024-04-22', '2024-04-22', 4320.00, 3600.00, 20.00, 'payee', 'virement'), 
+(4, NULL, 'FACT-2024-008', '2024-05-01', '2024-06-15', 1750.00, 1458.33, 20.00, 'annulee', 'virement'), 
+(5, NULL, 'FACT-2024-009', '2024-05-05', '2024-07-05', 8640.00, 7200.00, 20.00, 'payee', 'prelevement'), 
+(1, NULL, 'FACT-2024-010', '2024-05-10', '2024-06-10', 1350.00, 1125.00, 20.00, 'en_attente', 'carte'), 
+(2, NULL, 'FACT-2024-011', '2024-05-12', '2024-06-27', 48000.00, 40000.00, 20.00, 'payee', 'virement'), 
+(3, NULL, 'FACT-2024-012', '2024-05-20', '2024-05-20', 700.00, 583.33, 20.00, 'en_attente', 'carte'), 
+(4, NULL, 'FACT-2024-013', '2024-05-22', '2024-06-22', 1080.00, 900.00, 20.00, 'payee', 'prelevement'),  
+(6, NULL, 'FACT-2024-014', '2024-05-28', '2024-06-28', 27000.00, 22500.00, 20.00, 'en_attente', 'virement'), 
+(3, NULL, 'FACT-2024-015', '2024-04-25', '2024-05-25', 1200.00, 1000.00, 20.00, 'annulee', 'virement'), 
+(7, NULL, 'FACT-2024-016', '2024-06-05', '2024-07-20', 1600.00, 1333.33, 20.00, 'en_attente', 'prelevement'), 
+(8, NULL, 'FACT-2024-017', '2024-06-07', '2024-06-07', 64800.00, 54000.00, 20.00, 'payee', 'carte'), 
+(9, NULL, 'FACT-2024-018', '2024-06-12', '2024-07-12', 850.00, 708.33, 20.00, 'annulee', 'virement'), 
+(10, NULL, 'FACT-2024-019', '2024-06-20', '2024-08-20', 3200.00, 2666.67, 20.00, 'en_attente', 'prelevement'), 
+(11, NULL, 'FACT-2024-020', '2024-06-22', '2024-06-22', 35640.00, 29700.00, 20.00, 'payee', 'virement'), 
+(12, NULL, 'FACT-2024-021', '2024-06-28', '2024-07-28', 1950.00, 1625.00, 20.00, 'en_attente', 'carte'), 
+(13, NULL, 'FACT-2024-022', '2024-07-03', '2024-07-03', 1080.00, 900.00, 20.00, 'payee', 'carte'),    
+(14, NULL, 'FACT-2024-023', '2024-07-08', '2024-08-23', 2700.00, 2250.00, 20.00, 'annulee', 'virement'), 
+(15, NULL, 'FACT-2024-024', '2024-07-12', '2024-09-12', 23040.00, 19200.00, 20.00, 'payee', 'prelevement'), 
+(16, NULL, 'FACT-2024-025', '2024-07-18', '2024-08-18', 1400.00, 1166.67, 20.00, 'en_attente', 'carte'), 
+(17, NULL, 'FACT-2024-026', '2024-07-22', '2024-09-06', 1944.00, 1620.00, 20.00, 'payee', 'virement'),  
+(18, NULL, 'FACT-2024-027', '2024-07-28', '2024-07-28', 900.00, 750.00, 20.00, 'annulee', 'virement'), 
+(19, NULL, 'FACT-2024-028', '2024-08-05', '2024-09-05', 25080.00, 20900.00, 20.00, 'payee', 'prelevement'), 
 (20, NULL, 'FACT-2024-029', '2024-08-08', '2024-10-08', 1550.00, 1291.67, 20.00, 'en_attente', 'carte');
 
 INSERT INTO rendez_vous (personne_id, prestation_id, praticien_id, date_rdv, duree, lieu, type_rdv, statut, notes) VALUES
@@ -368,3 +266,37 @@ INSERT INTO notifications (personne_id, titre, message, type, lien, lu, date_lec
 (5, 'Nouveau Rendez-vous', 'Votre rendez-vous a ete confirme', 'success', '/rendez-vous/1', false, NULL),
 (5, 'Paiement Reçu', 'Votre paiement a ete reçu avec succes', 'success', '/factures/1', true, '2024-03-17 10:30:00'),
 (6, 'Nouvelle Evaluation', 'Votre evaluation a ete enregistree', 'info', '/evaluations/1', false, NULL);
+
+INSERT INTO factures_prestataires (id, prestataire_id, numero_facture, date_facture, periode_debut, periode_fin, montant_total, statut, date_paiement) VALUES
+(1, 6, 'FP-202404-001', '2024-05-01', '2024-04-01', '2024-04-30', 370.00, 'impayee', NULL);
+
+INSERT INTO facture_prestataire_lignes (facture_prestataire_id, rendez_vous_id, description, montant) VALUES
+(1, 4, 'RDV - Yoga en Entreprise', 120.00),
+(1, 18, 'RDV - Formation Risques Psycho-sociaux (RPS)', 250.00);
+
+INSERT INTO factures_prestataires (id, prestataire_id, numero_facture, date_facture, periode_debut, periode_fin, montant_total, statut, date_paiement) VALUES
+(2, 13, 'FP-202404-002', '2024-05-01', '2024-04-01', '2024-04-30', 415.00, 'payee', '2024-05-10 14:00:00');
+
+INSERT INTO facture_prestataire_lignes (facture_prestataire_id, rendez_vous_id, description, montant) VALUES
+(2, 5, 'RDV - Consultation Psychologique', 80.00),
+(2, 6, 'RDV - Consultation Psychologique', 80.00),
+(2, 11, 'RDV - Consultation Psychologique', 80.00),
+(2, 27, 'RDV - Webinar Intelligence Emotionnelle', 175.00);
+
+INSERT INTO factures_prestataires (id, prestataire_id, numero_facture, date_facture, periode_debut, periode_fin, montant_total, statut, date_paiement) VALUES
+(3, 20, 'FP-202404-003', '2024-05-01', '2024-04-01', '2024-04-30', 700.00, 'impayee', NULL);
+
+INSERT INTO facture_prestataire_lignes (facture_prestataire_id, rendez_vous_id, description, montant) VALUES
+(3, 3, 'RDV - Webinar Gestion du Stress', 150.00),
+(3, 9, 'RDV - Formation Leadership', 200.00),
+(3, 10, 'RDV - Formation Leadership', 200.00),
+(3, 13, 'RDV - Webinar Communication Non Violente (CNV)', 160.00);
+
+INSERT INTO factures_prestataires (id, prestataire_id, numero_facture, date_facture, periode_debut, periode_fin, montant_total, statut, date_paiement) VALUES
+(4, 20, 'FP-202405-001', '2024-06-01', '2024-05-01', '2024-05-31', 540.00, 'impayee', NULL);
+
+INSERT INTO facture_prestataire_lignes (facture_prestataire_id, rendez_vous_id, description, montant) VALUES
+(4, 15, 'RDV - Coaching Carriere', 100.00),
+(4, 21, 'RDV - Webinar Communication Non Violente (CNV)', 160.00),
+(4, 22, 'RDV - Atelier Gestion du Temps', 140.00),
+(4, 26, 'RDV - Coaching Prise de Parole', 120.00);

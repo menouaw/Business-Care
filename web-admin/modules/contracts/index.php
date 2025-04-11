@@ -186,7 +186,7 @@ include_once '../../templates/header.php';
                 <div class="row">
                     <div class="col-md-6">
                         <p><strong>Entreprise:</strong> <a href="<?php echo WEBADMIN_URL; ?>/modules/companies/view.php?id=<?php echo $contract['entreprise_id']; ?>"><?php echo htmlspecialchars($contract['nom_entreprise']); ?></a></p>
-                        <p><strong>Service:</strong> <?php echo htmlspecialchars(ucfirst($contract['nom_service'])); ?></p>
+                        <p><strong>Service:</strong> <?php echo htmlspecialchars(ucfirst($contract['type_service'])); ?></p>
                         <p><strong>Date de debut:</strong> <?php echo date('d/m/Y', strtotime($contract['date_debut'])); ?></p>
                         <p><strong>Date de fin:</strong> <?php echo $contract['date_fin'] ? date('d/m/Y', strtotime($contract['date_fin'])) : 'Indeterminee'; ?></p>
                     </div>
@@ -291,7 +291,7 @@ include_once '../../templates/header.php';
                             <?php foreach ($contracts as $contract): ?>
                                 <tr>
                                     <td><a href="<?php echo WEBADMIN_URL; ?>/modules/companies/view.php?id=<?php echo $contract['entreprise_id']; ?>"><?php echo htmlspecialchars($contract['nom_entreprise']); ?></a></td>
-                                    <td><?php echo htmlspecialchars(ucfirst($contract['nom_service'])); ?></td>
+                                    <td><?php echo htmlspecialchars(ucfirst($contract['type_service'])); ?></td>
                                     <td><?php echo date('d/m/Y', strtotime($contract['date_debut'])); ?></td>
                                     <td><?php echo $contract['date_fin'] ? date('d/m/Y', strtotime($contract['date_fin'])) : '-'; ?></td>
                                     <td><?php echo getStatusBadge($contract['statut']); ?></td>

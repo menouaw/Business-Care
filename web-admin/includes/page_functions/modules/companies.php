@@ -67,7 +67,7 @@ function companiesGetDetails($id) {
         return false;
     }
     
-    $sqlContracts = "SELECT c.*, s.nom as nom_service 
+    $sqlContracts = "SELECT c.*, s.type as type_service 
                      FROM " . TABLE_CONTRACTS . " c 
                      LEFT JOIN " . TABLE_SERVICES . " s ON c.service_id = s.id
                      WHERE c.entreprise_id = ? ORDER BY c.date_debut DESC";

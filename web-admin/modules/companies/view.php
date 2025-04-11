@@ -131,7 +131,7 @@ include '../../templates/header.php';
                                 <tbody>
                                     <?php foreach ($contracts as $contract): ?>
                                         <tr>
-                                            <td><?php echo htmlspecialchars($contract['nom_service'] ?? 'Inconnu'); ?></td>
+                                            <td><?php echo htmlspecialchars($contract['type_service'] ?? 'Inconnu'); ?></td>
                                             <td><?php echo formatDate($contract['date_debut'], 'd/m/Y'); ?></td>
                                             <td><?php echo $contract['date_fin'] ? formatDate($contract['date_fin'], 'd/m/Y') : '-'; ?></td>
                                             <td><?php echo getStatusBadge($contract['statut']); ?></td>

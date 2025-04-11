@@ -127,14 +127,28 @@
     <span>
                                 &nbsp;: array&lt;string|int, mixed&gt;|false    </span>
 </dt>
-<dd>Recupere les details d&#039;un service</dd>
+<dd>Recupere les details d&#039;un service, et optionnellement les rendez-vous et evaluations associes.</dd>
 
             <dt class="phpdocumentor-table-of-contents__entry -function -">
     <a class="" href="namespaces/default.html#function_servicesGetTypes">servicesGetTypes()</a>
     <span>
                                 &nbsp;: array&lt;string|int, mixed&gt;    </span>
 </dt>
-<dd>Recupere la liste des types de services</dd>
+<dd>Recupere la liste des types de services distincts</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -function -">
+    <a class="" href="namespaces/default.html#function_servicesGetCategories">servicesGetCategories()</a>
+    <span>
+                                &nbsp;: array&lt;string|int, mixed&gt;    </span>
+</dt>
+<dd>Recupere la liste des categories de services distinctes</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -function -">
+    <a class="" href="namespaces/default.html#function_servicesGetDistinctValues">servicesGetDistinctValues()</a>
+    <span>
+                                &nbsp;: array&lt;string|int, mixed&gt;    </span>
+</dt>
+<dd>Récupère la liste des valeurs distinctes pour un champ donné</dd>
 
             <dt class="phpdocumentor-table-of-contents__entry -function -">
     <a class="" href="namespaces/default.html#function_servicesSave">servicesSave()</a>
@@ -142,6 +156,13 @@
                                 &nbsp;: array&lt;string|int, mixed&gt;    </span>
 </dt>
 <dd>Crée ou met à jour un service dans la base de données.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -function -">
+    <a class="" href="namespaces/default.html#function_servicesHandlePostRequest">servicesHandlePostRequest()</a>
+    <span>
+                                &nbsp;: array&lt;string|int, mixed&gt;    </span>
+</dt>
+<dd>Gère la soumission du formulaire d&#039;ajout/modification de service.</dd>
 
             <dt class="phpdocumentor-table-of-contents__entry -function -">
     <a class="" href="namespaces/default.html#function_servicesDelete">servicesDelete()</a>
@@ -171,7 +192,7 @@
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="web-admin/includes/page_functions/modules/services.php"><a href="files/web-admin-includes-page-functions-modules-services.html"><abbr title="web-admin/includes/page_functions/modules/services.php">services.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">13</span>
+    <span class="phpdocumentor-element-found-in__line">14</span>
 
     </aside>
 
@@ -180,7 +201,7 @@
     
     <code class="phpdocumentor-code phpdocumentor-signature ">
     <span class="phpdocumentor-signature__visibility"></span>
-                    <span class="phpdocumentor-signature__name">servicesGetList</span><span>(</span><span class="phpdocumentor-signature__argument"><span>[</span><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$page</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">1</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$perPage</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">10</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$search</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">&#039;&#039;</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$type</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">&#039;&#039;</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span></code>
+                    <span class="phpdocumentor-signature__name">servicesGetList</span><span>(</span><span class="phpdocumentor-signature__argument"><span>[</span><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$page</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">1</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$perPage</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">DEFAULT_ITEMS_PER_PAGE</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$search</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">&#039;&#039;</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$type</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">&#039;&#039;</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$category</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">&#039;&#039;</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span></code>
 
     
         <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
@@ -197,7 +218,7 @@
                     <dt class="phpdocumentor-argument-list__entry">
                 <span class="phpdocumentor-signature__argument__name">$perPage</span>
                 : <span class="phpdocumentor-signature__argument__return-type">int</span>
-                 = <span class="phpdocumentor-signature__argument__default-value">10</span>            </dt>
+                 = <span class="phpdocumentor-signature__argument__default-value">DEFAULT_ITEMS_PER_PAGE</span>            </dt>
             <dd class="phpdocumentor-argument-list__definition">
                     <section class="phpdocumentor-description"><p>Nombre d'elements par page</p>
 </section>
@@ -218,6 +239,15 @@
                  = <span class="phpdocumentor-signature__argument__default-value">&#039;&#039;</span>            </dt>
             <dd class="phpdocumentor-argument-list__definition">
                     <section class="phpdocumentor-description"><p>Filtre par type</p>
+</section>
+
+            </dd>
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-signature__argument__name">$category</span>
+                : <span class="phpdocumentor-signature__argument__return-type">string</span>
+                 = <span class="phpdocumentor-signature__argument__default-value">&#039;&#039;</span>            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>Filtre par categorie</p>
 </section>
 
             </dd>
@@ -244,16 +274,16 @@
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="web-admin/includes/page_functions/modules/services.php"><a href="files/web-admin-includes-page-functions-modules-services.html"><abbr title="web-admin/includes/page_functions/modules/services.php">services.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">68</span>
+    <span class="phpdocumentor-element-found-in__line">65</span>
 
     </aside>
 
-        <p class="phpdocumentor-summary">Recupere les details d&#039;un service</p>
+        <p class="phpdocumentor-summary">Recupere les details d&#039;un service, et optionnellement les rendez-vous et evaluations associes.</p>
 
     
     <code class="phpdocumentor-code phpdocumentor-signature ">
     <span class="phpdocumentor-signature__visibility"></span>
-                    <span class="phpdocumentor-signature__name">servicesGetDetails</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$id</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;|false</span></code>
+                    <span class="phpdocumentor-signature__name">servicesGetDetails</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$id</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">bool&nbsp;</span><span class="phpdocumentor-signature__argument__name">$fetchRelated</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">false</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;|false</span></code>
 
     
         <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
@@ -267,6 +297,15 @@
 </section>
 
             </dd>
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-signature__argument__name">$fetchRelated</span>
+                : <span class="phpdocumentor-signature__argument__return-type">bool</span>
+                 = <span class="phpdocumentor-signature__argument__default-value">false</span>            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>Indique s'il faut recuperer les donnees associees (rendez-vous, evaluations)</p>
+</section>
+
+            </dd>
             </dl>
 
     
@@ -275,7 +314,7 @@
         <h5 class="phpdocumentor-return-value__heading">Return values</h5>
         <span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;|false</span>
                     &mdash;
-                <section class="phpdocumentor-description"><p>Donnees du service ou false si non trouve</p>
+                <section class="phpdocumentor-description"><p>Donnees du service (et donnees associees si demande) ou false si non trouve</p>
 </section>
 
             </section>
@@ -290,11 +329,11 @@
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="web-admin/includes/page_functions/modules/services.php"><a href="files/web-admin-includes-page-functions-modules-services.html"><abbr title="web-admin/includes/page_functions/modules/services.php">services.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">86</span>
+    <span class="phpdocumentor-element-found-in__line">98</span>
 
     </aside>
 
-        <p class="phpdocumentor-summary">Recupere la liste des types de services</p>
+        <p class="phpdocumentor-summary">Recupere la liste des types de services distincts</p>
 
     
     <code class="phpdocumentor-code phpdocumentor-signature ">
@@ -316,6 +355,86 @@
 
 </article>
                     <article class="phpdocumentor-element -function - ">
+    <h4 class="phpdocumentor-element__name" id="function_servicesGetCategories">
+        servicesGetCategories()
+        <a href="namespaces/default.html#function_servicesGetCategories" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="web-admin/includes/page_functions/modules/services.php"><a href="files/web-admin-includes-page-functions-modules-services.html"><abbr title="web-admin/includes/page_functions/modules/services.php">services.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">107</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Recupere la liste des categories de services distinctes</p>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility"></span>
+                    <span class="phpdocumentor-signature__name">servicesGetCategories</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span></code>
+
+    
+    
+    
+
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>Liste des categories</p>
+</section>
+
+            </section>
+
+</article>
+                    <article class="phpdocumentor-element -function - ">
+    <h4 class="phpdocumentor-element__name" id="function_servicesGetDistinctValues">
+        servicesGetDistinctValues()
+        <a href="namespaces/default.html#function_servicesGetDistinctValues" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="web-admin/includes/page_functions/modules/services.php"><a href="files/web-admin-includes-page-functions-modules-services.html"><abbr title="web-admin/includes/page_functions/modules/services.php">services.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">117</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Récupère la liste des valeurs distinctes pour un champ donné</p>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility"></span>
+                    <span class="phpdocumentor-signature__name">servicesGetDistinctValues</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$field</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span></code>
+
+    
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-signature__argument__name">$field</span>
+                : <span class="phpdocumentor-signature__argument__return-type">string</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>Nom du champ à récupérer (doit être un nom de colonne valide et sûr)</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>Liste des valeurs distinctes</p>
+</section>
+
+            </section>
+
+</article>
+                    <article class="phpdocumentor-element -function - ">
     <h4 class="phpdocumentor-element__name" id="function_servicesSave">
         servicesSave()
         <a href="namespaces/default.html#function_servicesSave" class="headerlink"><i class="fas fa-link"></i></a>
@@ -324,7 +443,7 @@
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="web-admin/includes/page_functions/modules/services.php"><a href="files/web-admin-includes-page-functions-modules-services.html"><abbr title="web-admin/includes/page_functions/modules/services.php">services.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">106</span>
+    <span class="phpdocumentor-element-found-in__line">139</span>
 
     </aside>
 
@@ -337,8 +456,7 @@
 
         <section class="phpdocumentor-description"><p>Cette fonction vérifie que les données obligatoires (nom, prix et type) sont présentes et valides.
 En cas d'erreur de validation, elle retourne un tableau contenant les messages d'erreur.
-Si les validations réussissent, elle effectue une mise à jour si un identifiant supérieur à 0 est fourni,
-ou crée un nouveau service sinon. En cas d'échec de l'opération en base de données, un tableau d'erreurs est retourné.</p>
+Si les validations réussissent, elle utilise updateRow ou insertRow pour effectuer l'opération.</p>
 </section>
 
         <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
@@ -348,7 +466,7 @@ ou crée un nouveau service sinon. En cas d'échec de l'opération en base de do
                 : <span class="phpdocumentor-signature__argument__return-type">array&lt;string|int, mixed&gt;</span>
                             </dt>
             <dd class="phpdocumentor-argument-list__definition">
-                    <section class="phpdocumentor-description"><p>Les informations du service, incluant notamment 'nom', 'prix', 'type', et d'autres champs optionnels.</p>
+                    <section class="phpdocumentor-description"><p>Les informations du service.</p>
 </section>
 
             </dd>
@@ -357,7 +475,7 @@ ou crée un nouveau service sinon. En cas d'échec de l'opération en base de do
                 : <span class="phpdocumentor-signature__argument__return-type">int</span>
                  = <span class="phpdocumentor-signature__argument__default-value">0</span>            </dt>
             <dd class="phpdocumentor-argument-list__definition">
-                    <section class="phpdocumentor-description"><p>L'identifiant du service à mettre à jour, ou 0 pour créer un nouveau service.</p>
+                    <section class="phpdocumentor-description"><p>L'identifiant du service à mettre à jour, ou 0 pour créer.</p>
 </section>
 
             </dd>
@@ -369,8 +487,65 @@ ou crée un nouveau service sinon. En cas d'échec de l'opération en base de do
         <h5 class="phpdocumentor-return-value__heading">Return values</h5>
         <span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span>
                     &mdash;
-                <section class="phpdocumentor-description"><p>Tableau associatif indiquant le succès de l'opération. En cas de succès, il contient une clé 'message';
-en cas d'erreur, une clé 'errors' avec la liste des messages d'erreur.</p>
+                <section class="phpdocumentor-description"><p>Résultat ['success' =&gt; bool, 'message' =&gt; string|null, 'errors' =&gt; array|null]</p>
+</section>
+
+            </section>
+
+</article>
+                    <article class="phpdocumentor-element -function - ">
+    <h4 class="phpdocumentor-element__name" id="function_servicesHandlePostRequest">
+        servicesHandlePostRequest()
+        <a href="namespaces/default.html#function_servicesHandlePostRequest" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="web-admin/includes/page_functions/modules/services.php"><a href="files/web-admin-includes-page-functions-modules-services.html"><abbr title="web-admin/includes/page_functions/modules/services.php">services.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">235</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Gère la soumission du formulaire d&#039;ajout/modification de service.</p>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility"></span>
+                    <span class="phpdocumentor-signature__name">servicesHandlePostRequest</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type">array&lt;string|int, mixed&gt;&nbsp;</span><span class="phpdocumentor-signature__argument__name">$postData</span></span><span class="phpdocumentor-signature__argument"><span>, </span><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$id</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span></code>
+
+        <section class="phpdocumentor-description"><p>Valide le token CSRF, prépare les données, et appelle servicesSave.
+Retourne un tableau avec le résultat de l'opération (succès, message/erreurs).</p>
+</section>
+
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-signature__argument__name">$postData</span>
+                : <span class="phpdocumentor-signature__argument__return-type">array&lt;string|int, mixed&gt;</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>Données du formulaire ($_POST)</p>
+</section>
+
+            </dd>
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-signature__argument__name">$id</span>
+                : <span class="phpdocumentor-signature__argument__return-type">int</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>ID du service (0 pour ajout)</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>Résultat de l'opération ['success' =&gt; bool, 'message' =&gt; string|null, 'errors' =&gt; array|null]</p>
 </section>
 
             </section>
@@ -385,7 +560,7 @@ en cas d'erreur, une clé 'errors' avec la liste des messages d'erreur.</p>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="web-admin/includes/page_functions/modules/services.php"><a href="files/web-admin-includes-page-functions-modules-services.html"><abbr title="web-admin/includes/page_functions/modules/services.php">services.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">215</span>
+    <span class="phpdocumentor-element-found-in__line">267</span>
 
     </aside>
 
@@ -396,10 +571,7 @@ en cas d'erreur, une clé 'errors' avec la liste des messages d'erreur.</p>
     <span class="phpdocumentor-signature__visibility"></span>
                     <span class="phpdocumentor-signature__name">servicesDelete</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$id</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span></code>
 
-        <section class="phpdocumentor-description"><p>Cette fonction tente de supprimer un service identifié par son ID, après avoir vérifié
-qu'il n'a aucun rendez-vous ou évaluation associé. Si des dépendances sont présentes,
-la suppression est annulée et une opération d'échec est consignée. Sinon, le service
-est supprimé et l'opération de suppression est enregistrée.</p>
+        <section class="phpdocumentor-description"><p>Utilise les fonctions de db.php pour vérifier les dépendances et supprimer.</p>
 </section>
 
         <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
@@ -421,8 +593,7 @@ est supprimé et l'opération de suppression est enregistrée.</p>
         <h5 class="phpdocumentor-return-value__heading">Return values</h5>
         <span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span>
                     &mdash;
-                <section class="phpdocumentor-description"><p>Un tableau associatif contenant un booléen sous la clé 'success' indiquant
-si l'opération a réussi et un message descriptif sous la clé 'message'.</p>
+                <section class="phpdocumentor-description"><p>Résultat ['success' =&gt; bool, 'message' =&gt; string]</p>
 </section>
 
             </section>
@@ -542,9 +713,12 @@ si l'opération a réussi et un message descriptif sous la clé 'message'.</p>
                 <li>
                     <ul class="phpdocumentor-list -clean">
                                                     <li class=""><a href="namespaces/default.html#function_servicesDelete">servicesDelete()</a></li>
+                                                    <li class=""><a href="namespaces/default.html#function_servicesGetCategories">servicesGetCategories()</a></li>
                                                     <li class=""><a href="namespaces/default.html#function_servicesGetDetails">servicesGetDetails()</a></li>
+                                                    <li class=""><a href="namespaces/default.html#function_servicesGetDistinctValues">servicesGetDistinctValues()</a></li>
                                                     <li class=""><a href="namespaces/default.html#function_servicesGetList">servicesGetList()</a></li>
                                                     <li class=""><a href="namespaces/default.html#function_servicesGetTypes">servicesGetTypes()</a></li>
+                                                    <li class=""><a href="namespaces/default.html#function_servicesHandlePostRequest">servicesHandlePostRequest()</a></li>
                                                     <li class=""><a href="namespaces/default.html#function_servicesSave">servicesSave()</a></li>
                                             </ul>
                 </li>

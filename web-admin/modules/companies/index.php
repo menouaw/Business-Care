@@ -385,7 +385,7 @@ include_once '../../templates/header.php';
                                 <?php 
                                 $isFiltering = !empty($search) || !empty($city) || !empty($size);
                                 $message = $isFiltering 
-                                    ? "Aucune entreprise trouvée correspondant à vos critères."
+                                    ? "Aucune entreprise trouvée correspondant à vos critères de recherche."
                                     : "Aucune entreprise trouvée. <a href=\"" . WEBADMIN_URL . "/modules/companies/add.php\" class=\"alert-link\">Ajouter une entreprise</a>";
                                 echo $message;
                                 ?>

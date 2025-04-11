@@ -55,7 +55,7 @@ include '../../templates/header.php';
             <?php echo displayFlashMessages(); ?>
 
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h2"><?php echo $pageTitle; ?> : <?php echo htmlspecialchars($contract['nom_entreprise']); ?></h1>
+                <h1 class="h2"><?php echo $pageTitle; ?></h1>
                 <div class="btn-toolbar mb-2 mb-md-0">
                     <a href="<?php echo WEBADMIN_URL; ?>/modules/contracts/view.php?id=<?php echo $id; ?>" class="btn btn-sm btn-outline-secondary me-2" data-bs-toggle="tooltip" title="Voir le contrat">
                         <i class="fas fa-eye"></i> Voir
@@ -91,7 +91,7 @@ include '../../templates/header.php';
                                     <option value="">Selectionnez un service...</option>
                                     <?php foreach ($services as $s): ?>
                                         <option value="<?php echo $s['id']; ?>" <?php echo (isset($formData['service_id']) && $formData['service_id'] == $s['id']) ? 'selected' : ''; ?>>
-                                            <?php echo htmlspecialchars($s['nom']); ?>
+                                            <?php echo htmlspecialchars($s['type']); ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
@@ -152,4 +152,4 @@ include '../../templates/header.php';
     </div>
 </div>
 
-</rewritten_file>
+

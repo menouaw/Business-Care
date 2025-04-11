@@ -144,11 +144,18 @@
 <dd>Vérifie que l&#039;utilisateur est authentifié.</dd>
 
             <dt class="phpdocumentor-table-of-contents__entry -function -">
-    <a class="" href="namespaces/default.html#function_hasPermission">hasPermission()</a>
+    <a class="" href="namespaces/default.html#function_hasRole">hasRole()</a>
     <span>
                                 &nbsp;: bool    </span>
 </dt>
-<dd>Vérifie si l&#039;utilisateur authentifié dispose de la permission nécessaire.</dd>
+<dd>Vérifie si l&#039;utilisateur authentifié dispose du rôle spécifié.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -function -">
+    <a class="" href="namespaces/default.html#function_requireRole">requireRole()</a>
+    <span>
+                                &nbsp;: void    </span>
+</dt>
+<dd>Vérifie que l&#039;utilisateur est authentifié et possède le rôle requis, redirige sinon.</dd>
 
             <dt class="phpdocumentor-table-of-contents__entry -function -">
     <a class="" href="namespaces/default.html#function_getUserInfo">getUserInfo()</a>
@@ -373,29 +380,26 @@ La fonction termine immédiatement l'exécution du script après la redirection.
     
 </article>
                     <article class="phpdocumentor-element -function - ">
-    <h4 class="phpdocumentor-element__name" id="function_hasPermission">
-        hasPermission()
-        <a href="namespaces/default.html#function_hasPermission" class="headerlink"><i class="fas fa-link"></i></a>
+    <h4 class="phpdocumentor-element__name" id="function_hasRole">
+        hasRole()
+        <a href="namespaces/default.html#function_hasRole" class="headerlink"><i class="fas fa-link"></i></a>
 
     </h4>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="shared/web-admin/auth.php"><a href="files/shared-web-admin-auth.html"><abbr title="shared/web-admin/auth.php">auth.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">135</span>
+    <span class="phpdocumentor-element-found-in__line">132</span>
 
     </aside>
 
-        <p class="phpdocumentor-summary">Vérifie si l&#039;utilisateur authentifié dispose de la permission nécessaire.</p>
+        <p class="phpdocumentor-summary">Vérifie si l&#039;utilisateur authentifié dispose du rôle spécifié.</p>
 
     
     <code class="phpdocumentor-code phpdocumentor-signature ">
     <span class="phpdocumentor-signature__visibility"></span>
-                    <span class="phpdocumentor-signature__name">hasPermission</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$requiredRole</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">bool</span></code>
+                    <span class="phpdocumentor-signature__name">hasRole</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$requiredRole</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">bool</span></code>
 
-        <section class="phpdocumentor-description"><p>Actuellement, la vérification ignore le paramètre $requiredRole et se contente de
-confirmer que l'utilisateur possède le rôle administrateur (role_id = 3) dans la session.</p>
-</section>
-
+    
         <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
     <dl class="phpdocumentor-argument-list">
                     <dt class="phpdocumentor-argument-list__entry">
@@ -403,7 +407,7 @@ confirmer que l'utilisateur possède le rôle administrateur (role_id = 3) dans 
                 : <span class="phpdocumentor-signature__argument__return-type">int</span>
                             </dt>
             <dd class="phpdocumentor-argument-list__definition">
-                    <section class="phpdocumentor-description"><p>Identifiant du rôle requis (non utilisé dans l'implémentation actuelle)</p>
+                    <section class="phpdocumentor-description"><p>Identifiant du rôle requis.</p>
 </section>
 
             </dd>
@@ -415,11 +419,53 @@ confirmer que l'utilisateur possède le rôle administrateur (role_id = 3) dans 
         <h5 class="phpdocumentor-return-value__heading">Return values</h5>
         <span class="phpdocumentor-signature__response_type">bool</span>
                     &mdash;
-                <section class="phpdocumentor-description"><p>Retourne true si l'utilisateur est authentifié et est administrateur, sinon false.</p>
+                <section class="phpdocumentor-description"><p>Retourne true si l'utilisateur est authentifié et a le rôle requis, sinon false.</p>
 </section>
 
             </section>
 
+</article>
+                    <article class="phpdocumentor-element -function - ">
+    <h4 class="phpdocumentor-element__name" id="function_requireRole">
+        requireRole()
+        <a href="namespaces/default.html#function_requireRole" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="shared/web-admin/auth.php"><a href="files/shared-web-admin-auth.html"><abbr title="shared/web-admin/auth.php">auth.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">159</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Vérifie que l&#039;utilisateur est authentifié et possède le rôle requis, redirige sinon.</p>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility"></span>
+                    <span class="phpdocumentor-signature__name">requireRole</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$requiredRole</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">void</span></code>
+
+        <section class="phpdocumentor-description"><p>Appelle requireAuthentication pour s'assurer que l'utilisateur est connecté.
+Si l'utilisateur n'a pas le rôle requis, enregistre l'événement et redirige
+vers la page de connexion administrateur avec une erreur.</p>
+</section>
+
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-signature__argument__name">$requiredRole</span>
+                : <span class="phpdocumentor-signature__argument__return-type">int</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>Identifiant du rôle requis.</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+
+    
 </article>
                     <article class="phpdocumentor-element -function - ">
     <h4 class="phpdocumentor-element__name" id="function_getUserInfo">
@@ -430,7 +476,7 @@ confirmer que l'utilisateur possède le rôle administrateur (role_id = 3) dans 
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="shared/web-admin/auth.php"><a href="files/shared-web-admin-auth.html"><abbr title="shared/web-admin/auth.php">auth.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">161</span>
+    <span class="phpdocumentor-element-found-in__line">183</span>
 
     </aside>
 
@@ -479,7 +525,7 @@ Elle retourne les informations de l'utilisateur sous forme de tableau associatif
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="shared/web-admin/auth.php"><a href="files/shared-web-admin-auth.html"><abbr title="shared/web-admin/auth.php">auth.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">192</span>
+    <span class="phpdocumentor-element-found-in__line">214</span>
 
     </aside>
 
@@ -530,7 +576,7 @@ et consigne l'initiation de la demande de réinitialisation.</p>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="shared/web-admin/auth.php"><a href="files/shared-web-admin-auth.html"><abbr title="shared/web-admin/auth.php">auth.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">225</span>
+    <span class="phpdocumentor-element-found-in__line">247</span>
 
     </aside>
 
@@ -580,7 +626,7 @@ lors de sa création.</p>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="shared/web-admin/auth.php"><a href="files/shared-web-admin-auth.html"><abbr title="shared/web-admin/auth.php">auth.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">251</span>
+    <span class="phpdocumentor-element-found-in__line">273</span>
 
     </aside>
 
@@ -631,7 +677,7 @@ du jeton ou si l'utilisateur est introuvable, un événement d'échec est consig
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="shared/web-admin/auth.php"><a href="files/shared-web-admin-auth.html"><abbr title="shared/web-admin/auth.php">auth.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">284</span>
+    <span class="phpdocumentor-element-found-in__line">306</span>
 
     </aside>
 
@@ -787,11 +833,12 @@ un événement de sécurité indiquant si l'opération a réussi ou échoué.</p
                                                     <li class=""><a href="namespaces/default.html#function_createRememberMeToken">createRememberMeToken()</a></li>
                                                     <li class=""><a href="namespaces/default.html#function_deleteRememberMeToken">deleteRememberMeToken()</a></li>
                                                     <li class=""><a href="namespaces/default.html#function_getUserInfo">getUserInfo()</a></li>
-                                                    <li class=""><a href="namespaces/default.html#function_hasPermission">hasPermission()</a></li>
+                                                    <li class=""><a href="namespaces/default.html#function_hasRole">hasRole()</a></li>
                                                     <li class=""><a href="namespaces/default.html#function_isAuthenticated">isAuthenticated()</a></li>
                                                     <li class=""><a href="namespaces/default.html#function_login">login()</a></li>
                                                     <li class=""><a href="namespaces/default.html#function_logout">logout()</a></li>
                                                     <li class=""><a href="namespaces/default.html#function_requireAuthentication">requireAuthentication()</a></li>
+                                                    <li class=""><a href="namespaces/default.html#function_requireRole">requireRole()</a></li>
                                                     <li class=""><a href="namespaces/default.html#function_resetPassword">resetPassword()</a></li>
                                                     <li class=""><a href="namespaces/default.html#function_validateRememberMeToken">validateRememberMeToken()</a></li>
                                             </ul>
