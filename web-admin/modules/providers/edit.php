@@ -10,7 +10,7 @@ if ($id <= 0) {
     redirectTo(WEBADMIN_URL . '/modules/providers/index.php');
 }
 
-// Initialiser formData avec les valeurs par défaut ou vides
+
 $formData = [
     'nom' => '',
     'prenom' => '',
@@ -19,28 +19,28 @@ $formData = [
     'date_naissance' => '',
     'genre' => '',
     'photo_url' => '',
-    'statut' => STATUS_ACTIVE, // Default status
+    'statut' => STATUS_ACTIVE, 
 ];
 $errors = [];
 
-// Récupérer les données actuelles du prestataire
+
 $provider = getProviderDetails($id);
 if (!$provider) {
     flashMessage("Prestataire non trouvé.", 'danger');
     redirectTo(WEBADMIN_URL . '/modules/providers/index.php');
 }
-// Fusionner les données existantes dans formData pour pré-remplir le formulaire
+
 $formData = array_merge($formData, $provider);
 
-// Traitement du formulaire de soumission
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!validateToken($_POST['csrf_token'] ?? '')) {
         flashMessage('Erreur de sécurité ou session expirée. Veuillez soumettre à nouveau le formulaire.', 'danger');
         $errors['csrf'] = 'Token CSRF invalide.';
-        $formData = array_merge($formData, $_POST); // Garder les données soumises
+        $formData = array_merge($formData, $_POST); 
     } else {
-        // Validation des données
-        $formData = array_merge($formData, $_POST); // Fusionner les données postées pour validation
+        
+        $formData = array_merge($formData, $_POST); 
         $nom = trim($formData['nom']);
         $prenom = trim($formData['prenom']);
         $email = trim($formData['email']);
@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $errors['email'] = 'Une adresse email valide est requise.';
         } else {
-            // Vérifier l'unicité de l'email (sauf pour l'utilisateur actuel)
+            
             $existingUser = fetchOne(TABLE_USERS, 'email = :email AND id != :id', '', [':email' => $email, ':id' => $id]);
             if ($existingUser) {
                 $errors['email'] = 'Cet email est déjà utilisé par un autre utilisateur.';
@@ -65,10 +65,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errors['statut'] = 'Le statut sélectionné est invalide.';
         }
 
-        // S'il n'y a pas d'erreurs, tenter la mise à jour
+        
         if (empty($errors)) {
             try {
-                // Préparer les données pour la mise à jour
+                
                 $updateData = [
                     'nom' => $nom,
                     'prenom' => $prenom,
@@ -85,17 +85,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($affectedRows > 0) {
                     flashMessage('Les informations du prestataire ont été mises à jour avec succès.', 'success');
                 } else {
-                    flashMessage('Aucune modification détectée ou erreur lors de la mise à jour.', 'info'); // Ou 'warning'
+                    flashMessage('Aucune modification détectée ou erreur lors de la mise à jour.', 'info'); 
                 }
                 redirectTo(WEBADMIN_URL . '/modules/providers/view.php?id=' . $id);
                 
             } catch (Exception $e) {
                 flashMessage('Erreur lors de la mise à jour du prestataire: ' . $e->getMessage(), 'danger');
                 $errors['db_error'] = 'Erreur base de données.';
-                // Ne pas rediriger, rester sur la page pour afficher l'erreur et corriger
+                
             }
         } else {
-            // Afficher les erreurs de validation
+            
             foreach ($errors as $errorMsg) {
                  flashMessage($errorMsg, 'danger');
             }
@@ -103,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$pageTitle = "Modifier le prestataire: " . htmlspecialchars($provider['prenom'] . ' ' . $provider['nom']);
+$pageTitle = "Modifier le prestataire";
 include_once '../../templates/header.php';
 ?>
 
@@ -130,7 +130,7 @@ include_once '../../templates/header.php';
                 <input type="hidden" name="csrf_token" value="<?php echo generateToken(); ?>">
 
                 <div class="card mb-4">
-                    <div class="card-header">Informations Personnelles</div>
+                    <div class="card-header">Informations</div>
                     <div class="card-body">
                         <div class="row mb-3">
                             <div class="col-md-6">
@@ -156,7 +156,7 @@ include_once '../../templates/header.php';
                         
                         <div class="row mb-3">
                             <div class="col-md-4">
-                                <label for="date_naissance" class="form-label">Date de Naissance</label>
+                                <label for="date_naissance" class="form-label">Date de naissance</label>
                                 <input type="date" class="form-control" id="date_naissance" name="date_naissance" value="<?php echo htmlspecialchars($formData['date_naissance']); ?>">
                             </div>
                             <div class="col-md-4">
@@ -169,28 +169,10 @@ include_once '../../templates/header.php';
                                 </select>
                             </div>
                             <div class="col-md-4">
-                                <label for="photo_url" class="form-label">URL Photo de Profil</label>
-                                <input type="url" class="form-control" id="photo_url" name="photo_url" placeholder="https://..." value="<?php echo htmlspecialchars($formData['photo_url']); ?>">
+                                <label for="photo_url" class="form-label">URL photo de profil</label>
+                                <input type="url" class="form-control" id="photo_url" name="photo_url"
                             </div>
                         </div>
-                    </div>
-                </div>
-                
-                 <div class="card mb-4">
-                    <div class="card-header">Statut</div>
-                    <div class="card-body">
-                         <div class="row">
-                             <div class="col-md-6">
-                                <label for="statut" class="form-label">Statut du compte <span class="text-danger">*</span></label>
-                                <select class="form-select <?php echo isset($errors['statut']) ? 'is-invalid' : ''; ?>" id="statut" name="statut" required>
-                                    <?php foreach (USER_STATUSES as $s): ?>
-                                        <option value="<?php echo $s; ?>" <?php echo ($formData['statut'] === $s) ? 'selected' : ''; ?>>
-                                            <?php echo ucfirst(htmlspecialchars($s)); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                             </div>
-                         </div>
                     </div>
                 </div>
 

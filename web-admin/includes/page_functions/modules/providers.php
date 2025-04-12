@@ -114,7 +114,7 @@ function updateProviderStatus($provider_id, $new_status)
  */
 function updateProviderDetails($provider_id, $data)
 {
-    // Filtrer les données pour ne garder que les champs modifiables pour un prestataire
+    
     $allowed_fields = ['nom', 'prenom', 'email', 'telephone', 'date_naissance', 'genre', 'photo_url', 'statut'];
     $update_data = array_intersect_key($data, array_flip($allowed_fields));
 
@@ -122,12 +122,12 @@ function updateProviderDetails($provider_id, $data)
         throw new InvalidArgumentException("Aucune donnée valide fournie pour la mise à jour.");
     }
     
-    // Assurer que le statut est valide s'il est fourni
+    
     if (isset($update_data['statut']) && !in_array($update_data['statut'], USER_STATUSES)) {
         throw new InvalidArgumentException("Statut invalide fourni.");
     }
 
-    // S'assurer qu'on ne modifie que les utilisateurs ayant le rôle prestataire
+    
     $affectedRows = updateRow(
         TABLE_USERS,
         $update_data,
@@ -139,12 +139,83 @@ function updateProviderDetails($provider_id, $data)
         logBusinessOperation($_SESSION['user_id'] ?? 0, 'provider_details_update', 
             "[SUCCESS] Détails prestataire ID: {$provider_id} mis à jour.");
     } else {
-        // Peut-être qu'aucune donnée n'a réellement changé ou l'ID/rôle ne correspond pas
+        
         logBusinessOperation($_SESSION['user_id'] ?? 0, 'provider_details_update_attempt', 
             "[INFO] Tentative de mise à jour détails prestataire ID: {$provider_id}, 0 lignes affectées.");
     }
     
     return $affectedRows;
+}
+
+/**
+ * Supprime un prestataire (utilisateur avec le rôle prestataire).
+ * TODO: Ajouter une gestion des dépendances (ex: rendez-vous futurs, etc.) si nécessaire.
+ *
+ * @param int $provider_id L'ID du prestataire à supprimer.
+ * @return array Un tableau avec 'success' (bool) et 'message' (string).
+ */
+function deleteProvider($provider_id)
+{
+    if ($provider_id <= 0) {
+        return ['success' => false, 'message' => 'ID de prestataire invalide.'];
+    }
+
+    // Vérifier les dépendances avant de tenter la suppression
+    $donationCount = fetchOne(TABLE_DONATIONS, 'personne_id = :id', '', [':id' => $provider_id]);
+    if ($donationCount) {
+         return ['success' => false, 'message' => 'Impossible de supprimer ce prestataire car il est lié à des dons existants.'];
+    }
+
+    // Vérifier les rendez-vous futurs ou actifs où le prestataire est praticien
+    $appointmentCount = fetchOne(
+        TABLE_APPOINTMENTS, 
+        'praticien_id = :id AND statut IN (:status_planifie, :status_confirme)', 
+        '', 
+        [
+            ':id' => $provider_id, 
+            ':status_planifie' => 'planifie',
+            ':status_confirme' => 'confirme'
+            // On pourrait aussi vérifier date_rdv >= NOW()
+        ]
+    );
+    if ($appointmentCount) {
+         return ['success' => false, 'message' => 'Impossible de supprimer ce prestataire car il est assigné à des rendez-vous futurs ou confirmés.'];
+    }
+    
+    // Optionnel: Vérifier d'autres dépendances (ex: logs ?)
+
+    try {
+        beginTransaction();
+        
+        
+        deleteRow(TABLE_PROVIDER_SERVICES, 'prestataire_id = :id', [':id' => $provider_id]);
+        
+        
+        deleteRow(TABLE_HABILITATIONS, 'prestataire_id = :id', [':id' => $provider_id]);
+        
+        
+        deleteRow(TABLE_PROVIDER_AVAILABILITY, 'prestataire_id = :id', [':id' => $provider_id]);
+        
+        
+        $affectedRows = deleteRow(TABLE_USERS, 'id = :id AND role_id = :role_id', [':id' => $provider_id, ':role_id' => ROLE_PRESTATAIRE]);
+
+        if ($affectedRows > 0) {
+            commitTransaction();
+            logBusinessOperation($_SESSION['user_id'] ?? 0, 'provider_delete', 
+                "[SUCCESS] Prestataire ID: {$provider_id} supprimé.");
+            return ['success' => true, 'message' => 'Le prestataire a été supprimé avec succès.'];
+        } else {
+            rollbackTransaction();
+            logBusinessOperation($_SESSION['user_id'] ?? 0, 'provider_delete_fail', 
+                "[FAILURE] Tentative de suppression du prestataire ID: {$provider_id}, non trouvé ou rôle incorrect.");
+            return ['success' => false, 'message' => 'Impossible de supprimer le prestataire (peut-être déjà supprimé ou rôle incorrect).'];
+        }
+    } catch (Exception $e) {
+        rollbackTransaction();
+        logSecurityEvent($_SESSION['user_id'] ?? 0, 'provider_delete_error', 
+            "[ERROR] Erreur lors de la suppression du prestataire ID: {$provider_id} - " . $e->getMessage());
+        return ['success' => false, 'message' => 'Une erreur est survenue lors de la suppression du prestataire. ' . $e->getMessage()];
+    }
 }
 
 /**
@@ -558,7 +629,7 @@ function reassignAppointmentProvider($appointment_id, $new_provider_id)
  */
 function getProviderEvaluations($provider_id, $limit = 5)
 {
-    // Récupérer les évaluations récentes pour les prestations que ce prestataire peut effectuer
+    
     $sql = "SELECT e.*, p.nom as prestation_nom, 
                    CONCAT(u.prenom, ' ', u.nom) as client_nom
             FROM " . TABLE_EVALUATIONS . " e
