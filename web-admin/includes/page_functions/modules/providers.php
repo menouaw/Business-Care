@@ -505,4 +505,40 @@ function reassignAppointmentProvider($appointment_id, $new_provider_id)
     return $affectedRows;
 }
 
+/**
+ * Récupère les évaluations récentes et la note moyenne pour les prestations susceptibles d'être réalisées par un prestataire spécifique.
+ * Note: Basé sur les prestations assignées, pas sur les rendez-vous spécifiques effectués par ce prestataire,
+ * en raison de la structure actuelle de la table 'evaluations'.
+ *
+ * @param int $provider_id L'ID du prestataire.
+ * @param int $limit Le nombre maximum d'évaluations récentes à récupérer.
+ * @return array Contenant 'evaluations' (liste), 'average_score' (float|null), 'total_evaluations' (int).
+ */
+function getProviderEvaluations($provider_id, $limit = 5)
+{
+    // Récupérer les évaluations récentes pour les prestations que ce prestataire peut effectuer
+    $sql = "SELECT e.*, p.nom as prestation_nom, 
+                   CONCAT(u.prenom, ' ', u.nom) as client_nom
+            FROM " . TABLE_EVALUATIONS . " e
+            JOIN " . TABLE_PRESTATIONS . " p ON e.prestation_id = p.id
+            JOIN " . TABLE_USERS . " u ON e.personne_id = u.id 
+            WHERE e.prestation_id IN (SELECT prestation_id FROM " . TABLE_PROVIDER_SERVICES . " WHERE prestataire_id = :provider_id)
+            ORDER BY e.date_evaluation DESC
+            LIMIT :limit";
+            
+    $evaluations = executeQuery($sql, [':provider_id' => $provider_id, ':limit' => $limit])->fetchAll();
+
+    $sqlAvg = "SELECT AVG(e.note) as average_score, COUNT(e.id) as total_evaluations
+               FROM " . TABLE_EVALUATIONS . " e
+               WHERE e.prestation_id IN (SELECT prestation_id FROM " . TABLE_PROVIDER_SERVICES . " WHERE prestataire_id = :provider_id)";
+               
+    $stats = executeQuery($sqlAvg, [':provider_id' => $provider_id])->fetch();
+    
+    return [
+        'evaluations' => $evaluations,
+        'average_score' => $stats['average_score'] ? round($stats['average_score'], 2) : null,
+        'total_evaluations' => $stats['total_evaluations'] ?? 0
+    ];
+}
+
 ?>
