@@ -40,6 +40,9 @@ define('TABLE_INVOICES', 'factures');
 define('TABLE_USER_PREFERENCES', 'preferences_utilisateurs');
 define('TABLE_LOGS', 'logs');
 define('TABLE_REMEMBER_ME', 'remember_me_tokens');
+define('TABLE_HABILITATIONS', 'habilitations');
+define('TABLE_PROVIDER_SERVICES', 'prestataires_prestations');
+define('TABLE_PROVIDER_AVAILABILITY', 'prestataires_disponibilites');
 
 // constantes pour les devis (quotes)
 define('QUOTE_STATUS_PENDING', 'en_attente');
@@ -107,6 +110,19 @@ define('TABLE_PRACTITIONER_INVOICE_LINES', 'facture_prestataire_lignes');
 
 // Prefix for practitioner invoices
 define('PRACTITIONER_INVOICE_PREFIX', 'FP'); 
+
+// constantes pour les habilitations des prestataires
+define('HABILITATION_STATUS_PENDING', 'en_attente_validation');
+define('HABILITATION_STATUS_VERIFIED', 'verifiee');
+define('HABILITATION_STATUS_REJECTED', 'rejetee');
+define('HABILITATION_STATUS_EXPIRED', 'expiree');
+define('HABILITATION_STATUSES', [HABILITATION_STATUS_PENDING, HABILITATION_STATUS_VERIFIED, HABILITATION_STATUS_REJECTED, HABILITATION_STATUS_EXPIRED]);
+
+// constantes pour la disponibilite des prestataires
+define('AVAILABILITY_TYPE_RECURRING', 'recurrente');
+define('AVAILABILITY_TYPE_SPECIFIC', 'specifique');
+define('AVAILABILITY_TYPE_UNAVAILABLE', 'indisponible');
+define('AVAILABILITY_TYPES', [AVAILABILITY_TYPE_RECURRING, AVAILABILITY_TYPE_SPECIFIC, AVAILABILITY_TYPE_UNAVAILABLE]);
 
 // limites diverses
 define('DASHBOARD_RECENT_ACTIVITIES_LIMIT', 5);
