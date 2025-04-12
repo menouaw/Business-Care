@@ -72,4 +72,48 @@ SELECT
 FROM prestations p
 LEFT JOIN evaluations e ON p.id = e.prestation_id
 GROUP BY p.id
-ORDER BY note_moyenne DESC; 
+ORDER BY note_moyenne DESC;
+
+
+CREATE VIEW v_factures_prestataires_impayees AS
+SELECT 
+    fp.id,
+    fp.numero_facture,
+    fp.date_facture,
+    fp.periode_debut,
+    fp.periode_fin,
+    fp.montant_total,
+    fp.statut,
+    p.id as prestataire_id,
+    CONCAT(p.prenom, ' ', p.nom) as nom_prestataire,
+    p.email as email_prestataire
+FROM factures_prestataires fp
+JOIN personnes p ON fp.prestataire_id = p.id
+WHERE fp.statut = 'impayee'
+ORDER BY fp.date_facture DESC;
+
+
+CREATE VIEW v_details_facture_prestataire AS
+SELECT
+    fp.id as facture_id,
+    fp.numero_facture,
+    fp.date_facture,
+    fp.periode_debut,
+    fp.periode_fin,
+    fp.montant_total as facture_montant_total,
+    fp.statut as facture_statut,
+    fp.date_paiement,
+    p_prest.id as prestataire_id,
+    CONCAT(p_prest.prenom, ' ', p_prest.nom) as nom_prestataire,
+    p_prest.email as email_prestataire,
+    fpl.id as ligne_id,
+    fpl.description as ligne_description,
+    fpl.montant as ligne_montant,
+    fpl.rendez_vous_id,
+    rdv.date_rdv,
+    prest.nom as nom_prestation
+FROM factures_prestataires fp
+JOIN personnes p_prest ON fp.prestataire_id = p_prest.id
+LEFT JOIN facture_prestataire_lignes fpl ON fp.id = fpl.facture_prestataire_id
+LEFT JOIN rendez_vous rdv ON fpl.rendez_vous_id = rdv.id
+LEFT JOIN prestations prest ON rdv.prestation_id = prest.id; 

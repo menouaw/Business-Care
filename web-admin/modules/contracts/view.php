@@ -56,7 +56,7 @@ include_once '../../templates/header.php';
                     <div class="row">
                         <div class="col-md-6">
                             <p><strong>Entreprise:</strong> <a href="<?php echo WEBADMIN_URL; ?>/modules/companies/view.php?id=<?php echo $contract['entreprise_id']; ?>" data-bs-toggle="tooltip" title="Voir l'entreprise <?php echo htmlspecialchars($contract['nom_entreprise']); ?>"><?php echo htmlspecialchars($contract['nom_entreprise']); ?></a></p>
-                            <p><strong>Service:</strong> <?php echo htmlspecialchars(ucfirst($contract['nom_service'])); ?></p>
+                            <p><strong>Service:</strong> <?php echo htmlspecialchars(ucfirst($contract['type_service'])); ?></p>
                             <p><strong>Date de debut:</strong> <?php echo formatDate($contract['date_debut']); ?></p>
                             <p><strong>Date de fin:</strong> <?php echo $contract['date_fin'] ? formatDate($contract['date_fin']) : 'Indeterminee'; ?></p>
                         </div>
