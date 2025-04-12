@@ -1,17 +1,30 @@
 <?php
 require_once '../../includes/page_functions/modules/providers.php';
+require_once '../../includes/page_functions/modules/users.php';
 
 requireRole(ROLE_ADMIN);
 
 
-$filterData = getQueryData(['page' => 1, 'search' => '', 'status' => '']);
+$filterData = getQueryData([
+    'page' => 1, 
+    'search' => '', 
+    'status' => '', 
+    'entreprise_id' => 0
+]);
 $page = $filterData['page'];
 $search = $filterData['search'];
 $status = $filterData['status'];
 
 
-$listResult = getProvidersList($filterData, ['page' => $page], 'p.nom ASC, p.prenom ASC');
-$providers = $listResult['items'];
+$listResult = usersGetList(
+    $page, 
+    DEFAULT_ITEMS_PER_PAGE, 
+    $search, 
+    ROLE_PRESTATAIRE,
+    0,
+    $status
+);
+$providers = $listResult['users'];
 $totalPages = $listResult['totalPages'];
 $totalItems = $listResult['totalItems'];
 $page = $listResult['currentPage'];

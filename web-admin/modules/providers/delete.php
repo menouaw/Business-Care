@@ -33,5 +33,5 @@ $result = deleteProvider($id);
 flashMessage($result['message'], $result['success'] ? 'success' : 'danger');
 
 
-redirectTo(WEBADMIN_URL . '/modules/providers/index.php');
+redirectBasedOnReferer($id, 'providers', true);
 ?>

@@ -3,64 +3,6 @@ require_once __DIR__ . '/../../init.php';
 
 
 /**
- * Récupère une liste paginée de prestataires.
- *
- * @param array $filters Tableau associatif de filtres (ex: ['status' => 'actif', 'search' => 'John']).
- * @param array $pagination Paramètres de pagination (ex: ['page' => 1, 'perPage' => 10]).
- * @param string $orderBy Clause SQL ORDER BY.
- * @return array Tableau de résultat de pagination incluant role_name.
- */
-function getProvidersList($filters = [], $pagination = [], $orderBy = 'p.nom ASC, p.prenom ASC')
-{
-    $page = $pagination['page'] ?? 1;
-    $perPage = $pagination['perPage'] ?? DEFAULT_ITEMS_PER_PAGE;
-    
-    $params = [':role_id' => ROLE_PRESTATAIRE];
-    $conditions = ['p.role_id = :role_id'];
-
-    if (!empty($filters['status'])) {
-        $conditions[] = 'p.statut = :status';
-        $params[':status'] = $filters['status'];
-    }
-    if (!empty($filters['search'])) {
-        $conditions[] = '(p.nom LIKE :search OR p.prenom LIKE :search OR p.email LIKE :search)';
-        $params[':search'] = '%' . $filters['search'] . '%';
-    }
-    
-    $whereSql = implode(' AND ', $conditions);
-    
-    $countSql = "SELECT COUNT(p.id) FROM " . TABLE_USERS . " p WHERE " . $whereSql;
-    $totalItems = executeQuery($countSql, $params)->fetchColumn();
-    
-    $totalPages = $perPage > 0 ? ceil($totalItems / $perPage) : 1;
-    $page = max(1, min($page, ($totalPages > 0 ? $totalPages : 1) ));
-    $offset = ($page - 1) * $perPage;
-
-    $sql = "SELECT p.*, r.nom as role_name 
-            FROM " . TABLE_USERS . " p 
-            LEFT JOIN " . TABLE_ROLES . " r ON p.role_id = r.id 
-            WHERE " . $whereSql . " 
-            ORDER BY " . $orderBy;
-            
-    if ($perPage > 0) {
-         $sql .= " LIMIT :limit OFFSET :offset";
-         $params[':limit'] = $perPage;
-         $params[':offset'] = $offset;
-    }
-
-    $stmt = executeQuery($sql, $params);
-    $items = $stmt->fetchAll();
-
-    return [
-        'items' => $items,
-        'currentPage' => $page,
-        'totalPages' => $totalPages,
-        'totalItems' => $totalItems,
-        'perPage' => $perPage
-    ];
-}
-
-/**
  * Récupère tous les détails d'un prestataire unique, incluant le nom du rôle.
  *
  * @param int $provider_id L'ID du prestataire.
@@ -98,50 +40,6 @@ function updateProviderStatus($provider_id, $new_status)
     if ($affectedRows > 0) {
         logBusinessOperation($_SESSION['user_id'] ?? 0, 'provider_status_update', 
             "[SUCCESS] Statut prestataire ID: {$provider_id} mis à jour à {$new_status}");
-    }
-    
-    return $affectedRows;
-}
-
-/**
- * Met à jour les détails généraux d'un prestataire (utilisateur avec le rôle prestataire).
- *
- * @param int $provider_id L'ID du prestataire à mettre à jour.
- * @param array $data Tableau associatif des données à mettre à jour (ex: ['nom' => ..., 'email' => ...]). 
- *                    Les clés doivent correspondre aux colonnes de la table 'personnes'.
- * @return int Nombre de lignes affectées.
- * @throws InvalidArgumentException Si des données non autorisées sont fournies (ex: role_id).
- */
-function updateProviderDetails($provider_id, $data)
-{
-    
-    $allowed_fields = ['nom', 'prenom', 'email', 'telephone', 'date_naissance', 'genre', 'photo_url', 'statut'];
-    $update_data = array_intersect_key($data, array_flip($allowed_fields));
-
-    if (empty($update_data)) {
-        throw new InvalidArgumentException("Aucune donnée valide fournie pour la mise à jour.");
-    }
-    
-    
-    if (isset($update_data['statut']) && !in_array($update_data['statut'], USER_STATUSES)) {
-        throw new InvalidArgumentException("Statut invalide fourni.");
-    }
-
-    
-    $affectedRows = updateRow(
-        TABLE_USERS,
-        $update_data,
-        'id = :id AND role_id = :role_id',
-        ['id' => $provider_id, 'role_id' => ROLE_PRESTATAIRE]
-    );
-    
-    if ($affectedRows > 0) {
-        logBusinessOperation($_SESSION['user_id'] ?? 0, 'provider_details_update', 
-            "[SUCCESS] Détails prestataire ID: {$provider_id} mis à jour.");
-    } else {
-        
-        logBusinessOperation($_SESSION['user_id'] ?? 0, 'provider_details_update_attempt', 
-            "[INFO] Tentative de mise à jour détails prestataire ID: {$provider_id}, 0 lignes affectées.");
     }
     
     return $affectedRows;
@@ -186,6 +84,9 @@ function deleteProvider($provider_id)
 
     try {
         beginTransaction();
+        
+        // Supprimer les préférences utilisateur associées
+        deleteRow(TABLE_USER_PREFERENCES, 'personne_id = :id', [':id' => $provider_id]);
         
         
         deleteRow(TABLE_PROVIDER_SERVICES, 'prestataire_id = :id', [':id' => $provider_id]);
