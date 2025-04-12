@@ -103,7 +103,49 @@ function updateProviderStatus($provider_id, $new_status)
     return $affectedRows;
 }
 
+/**
+ * Met à jour les détails généraux d'un prestataire (utilisateur avec le rôle prestataire).
+ *
+ * @param int $provider_id L'ID du prestataire à mettre à jour.
+ * @param array $data Tableau associatif des données à mettre à jour (ex: ['nom' => ..., 'email' => ...]). 
+ *                    Les clés doivent correspondre aux colonnes de la table 'personnes'.
+ * @return int Nombre de lignes affectées.
+ * @throws InvalidArgumentException Si des données non autorisées sont fournies (ex: role_id).
+ */
+function updateProviderDetails($provider_id, $data)
+{
+    // Filtrer les données pour ne garder que les champs modifiables pour un prestataire
+    $allowed_fields = ['nom', 'prenom', 'email', 'telephone', 'date_naissance', 'genre', 'photo_url', 'statut'];
+    $update_data = array_intersect_key($data, array_flip($allowed_fields));
 
+    if (empty($update_data)) {
+        throw new InvalidArgumentException("Aucune donnée valide fournie pour la mise à jour.");
+    }
+    
+    // Assurer que le statut est valide s'il est fourni
+    if (isset($update_data['statut']) && !in_array($update_data['statut'], USER_STATUSES)) {
+        throw new InvalidArgumentException("Statut invalide fourni.");
+    }
+
+    // S'assurer qu'on ne modifie que les utilisateurs ayant le rôle prestataire
+    $affectedRows = updateRow(
+        TABLE_USERS,
+        $update_data,
+        'id = :id AND role_id = :role_id',
+        ['id' => $provider_id, 'role_id' => ROLE_PRESTATAIRE]
+    );
+    
+    if ($affectedRows > 0) {
+        logBusinessOperation($_SESSION['user_id'] ?? 0, 'provider_details_update', 
+            "[SUCCESS] Détails prestataire ID: {$provider_id} mis à jour.");
+    } else {
+        // Peut-être qu'aucune donnée n'a réellement changé ou l'ID/rôle ne correspond pas
+        logBusinessOperation($_SESSION['user_id'] ?? 0, 'provider_details_update_attempt', 
+            "[INFO] Tentative de mise à jour détails prestataire ID: {$provider_id}, 0 lignes affectées.");
+    }
+    
+    return $affectedRows;
+}
 
 /**
  * Récupère toutes les habilitations associées à un prestataire spécifique.
