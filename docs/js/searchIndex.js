@@ -18,7 +18,7 @@ Search.appendIndex(
         },                {
             "fqsen": "\\updateCompany\u0028\u0029",
             "name": "updateCompany",
-            "summary": "Met\u0020\u00E0\u0020jour\u0020les\u0020informations\u0020d\u0027une\u0020entreprise",
+            "summary": "Met\u0020\u00E0\u0020jour\u0020une\u0020entreprise\u0020existante",
             "url": "namespaces/default.html#function_updateCompany"
         },                {
             "fqsen": "\\deleteCompany\u0028\u0029",
@@ -156,10 +156,15 @@ Search.appendIndex(
             "summary": "V\u00E9rifie\u0020que\u0020l\u0027utilisateur\u0020est\u0020authentifi\u00E9.",
             "url": "namespaces/default.html#function_requireAuthentication"
         },                {
-            "fqsen": "\\hasPermission\u0028\u0029",
-            "name": "hasPermission",
-            "summary": "V\u00E9rifie\u0020si\u0020l\u0027utilisateur\u0020authentifi\u00E9\u0020dispose\u0020de\u0020la\u0020permission\u0020n\u00E9cessaire.",
-            "url": "namespaces/default.html#function_hasPermission"
+            "fqsen": "\\hasRole\u0028\u0029",
+            "name": "hasRole",
+            "summary": "V\u00E9rifie\u0020si\u0020l\u0027utilisateur\u0020authentifi\u00E9\u0020dispose\u0020du\u0020r\u00F4le\u0020sp\u00E9cifi\u00E9.",
+            "url": "namespaces/default.html#function_hasRole"
+        },                {
+            "fqsen": "\\requireRole\u0028\u0029",
+            "name": "requireRole",
+            "summary": "V\u00E9rifie\u0020que\u0020l\u0027utilisateur\u0020est\u0020authentifi\u00E9\u0020et\u0020poss\u00E8de\u0020le\u0020r\u00F4le\u0020requis,\u0020redirige\u0020sinon.",
+            "url": "namespaces/default.html#function_requireRole"
         },                {
             "fqsen": "\\getUserInfo\u0028\u0029",
             "name": "getUserInfo",
@@ -271,10 +276,180 @@ Search.appendIndex(
             "summary": "",
             "url": "namespaces/default.html#constant_ROLE_ENTREPRISE"
         },                {
+            "fqsen": "\\TABLE_COMPANIES",
+            "name": "TABLE_COMPANIES",
+            "summary": "",
+            "url": "namespaces/default.html#constant_TABLE_COMPANIES"
+        },                {
+            "fqsen": "\\TABLE_USERS",
+            "name": "TABLE_USERS",
+            "summary": "",
+            "url": "namespaces/default.html#constant_TABLE_USERS"
+        },                {
+            "fqsen": "\\TABLE_CONTRACTS",
+            "name": "TABLE_CONTRACTS",
+            "summary": "",
+            "url": "namespaces/default.html#constant_TABLE_CONTRACTS"
+        },                {
+            "fqsen": "\\TABLE_ROLES",
+            "name": "TABLE_ROLES",
+            "summary": "",
+            "url": "namespaces/default.html#constant_TABLE_ROLES"
+        },                {
+            "fqsen": "\\TABLE_SERVICES",
+            "name": "TABLE_SERVICES",
+            "summary": "",
+            "url": "namespaces/default.html#constant_TABLE_SERVICES"
+        },                {
+            "fqsen": "\\TABLE_PRESTATIONS",
+            "name": "TABLE_PRESTATIONS",
+            "summary": "",
+            "url": "namespaces/default.html#constant_TABLE_PRESTATIONS"
+        },                {
+            "fqsen": "\\TABLE_QUOTE_PRESTATIONS",
+            "name": "TABLE_QUOTE_PRESTATIONS",
+            "summary": "",
+            "url": "namespaces/default.html#constant_TABLE_QUOTE_PRESTATIONS"
+        },                {
+            "fqsen": "\\TABLE_APPOINTMENTS",
+            "name": "TABLE_APPOINTMENTS",
+            "summary": "",
+            "url": "namespaces/default.html#constant_TABLE_APPOINTMENTS"
+        },                {
+            "fqsen": "\\TABLE_EVALUATIONS",
+            "name": "TABLE_EVALUATIONS",
+            "summary": "",
+            "url": "namespaces/default.html#constant_TABLE_EVALUATIONS"
+        },                {
+            "fqsen": "\\TABLE_DONATIONS",
+            "name": "TABLE_DONATIONS",
+            "summary": "",
+            "url": "namespaces/default.html#constant_TABLE_DONATIONS"
+        },                {
+            "fqsen": "\\TABLE_QUOTES",
+            "name": "TABLE_QUOTES",
+            "summary": "",
+            "url": "namespaces/default.html#constant_TABLE_QUOTES"
+        },                {
+            "fqsen": "\\TABLE_INVOICES",
+            "name": "TABLE_INVOICES",
+            "summary": "",
+            "url": "namespaces/default.html#constant_TABLE_INVOICES"
+        },                {
+            "fqsen": "\\TABLE_USER_PREFERENCES",
+            "name": "TABLE_USER_PREFERENCES",
+            "summary": "",
+            "url": "namespaces/default.html#constant_TABLE_USER_PREFERENCES"
+        },                {
+            "fqsen": "\\TABLE_LOGS",
+            "name": "TABLE_LOGS",
+            "summary": "",
+            "url": "namespaces/default.html#constant_TABLE_LOGS"
+        },                {
+            "fqsen": "\\TABLE_REMEMBER_ME",
+            "name": "TABLE_REMEMBER_ME",
+            "summary": "",
+            "url": "namespaces/default.html#constant_TABLE_REMEMBER_ME"
+        },                {
+            "fqsen": "\\QUOTE_STATUS_PENDING",
+            "name": "QUOTE_STATUS_PENDING",
+            "summary": "",
+            "url": "namespaces/default.html#constant_QUOTE_STATUS_PENDING"
+        },                {
+            "fqsen": "\\QUOTE_STATUS_ACCEPTED",
+            "name": "QUOTE_STATUS_ACCEPTED",
+            "summary": "",
+            "url": "namespaces/default.html#constant_QUOTE_STATUS_ACCEPTED"
+        },                {
+            "fqsen": "\\QUOTE_STATUS_REFUSED",
+            "name": "QUOTE_STATUS_REFUSED",
+            "summary": "",
+            "url": "namespaces/default.html#constant_QUOTE_STATUS_REFUSED"
+        },                {
+            "fqsen": "\\QUOTE_STATUS_EXPIRED",
+            "name": "QUOTE_STATUS_EXPIRED",
+            "summary": "",
+            "url": "namespaces/default.html#constant_QUOTE_STATUS_EXPIRED"
+        },                {
+            "fqsen": "\\QUOTE_STATUSES",
+            "name": "QUOTE_STATUSES",
+            "summary": "",
+            "url": "namespaces/default.html#constant_QUOTE_STATUSES"
+        },                {
+            "fqsen": "\\TVA_RATE",
+            "name": "TVA_RATE",
+            "summary": "",
+            "url": "namespaces/default.html#constant_TVA_RATE"
+        },                {
             "fqsen": "\\SESSION_LIFETIME",
             "name": "SESSION_LIFETIME",
             "summary": "",
             "url": "namespaces/default.html#constant_SESSION_LIFETIME"
+        },                {
+            "fqsen": "\\USER_STATUSES",
+            "name": "USER_STATUSES",
+            "summary": "",
+            "url": "namespaces/default.html#constant_USER_STATUSES"
+        },                {
+            "fqsen": "\\COMPANY_SIZES",
+            "name": "COMPANY_SIZES",
+            "summary": "",
+            "url": "namespaces/default.html#constant_COMPANY_SIZES"
+        },                {
+            "fqsen": "\\CONTRACT_STATUSES",
+            "name": "CONTRACT_STATUSES",
+            "summary": "",
+            "url": "namespaces/default.html#constant_CONTRACT_STATUSES"
+        },                {
+            "fqsen": "\\DEFAULT_CONTRACT_STATUS",
+            "name": "DEFAULT_CONTRACT_STATUS",
+            "summary": "",
+            "url": "namespaces/default.html#constant_DEFAULT_CONTRACT_STATUS"
+        },                {
+            "fqsen": "\\PRESTATION_TYPES",
+            "name": "PRESTATION_TYPES",
+            "summary": "",
+            "url": "namespaces/default.html#constant_PRESTATION_TYPES"
+        },                {
+            "fqsen": "\\PRESTATION_DIFFICULTIES",
+            "name": "PRESTATION_DIFFICULTIES",
+            "summary": "",
+            "url": "namespaces/default.html#constant_PRESTATION_DIFFICULTIES"
+        },                {
+            "fqsen": "\\DEFAULT_PRESTATION_STATUS",
+            "name": "DEFAULT_PRESTATION_STATUS",
+            "summary": "",
+            "url": "namespaces/default.html#constant_DEFAULT_PRESTATION_STATUS"
+        },                {
+            "fqsen": "\\APPOINTMENT_STATUSES",
+            "name": "APPOINTMENT_STATUSES",
+            "summary": "",
+            "url": "namespaces/default.html#constant_APPOINTMENT_STATUSES"
+        },                {
+            "fqsen": "\\APPOINTMENT_TYPES",
+            "name": "APPOINTMENT_TYPES",
+            "summary": "",
+            "url": "namespaces/default.html#constant_APPOINTMENT_TYPES"
+        },                {
+            "fqsen": "\\DONATION_STATUSES",
+            "name": "DONATION_STATUSES",
+            "summary": "",
+            "url": "namespaces/default.html#constant_DONATION_STATUSES"
+        },                {
+            "fqsen": "\\DONATION_TYPES",
+            "name": "DONATION_TYPES",
+            "summary": "",
+            "url": "namespaces/default.html#constant_DONATION_TYPES"
+        },                {
+            "fqsen": "\\STATUS_ACTIVE",
+            "name": "STATUS_ACTIVE",
+            "summary": "",
+            "url": "namespaces/default.html#constant_STATUS_ACTIVE"
+        },                {
+            "fqsen": "\\DASHBOARD_RECENT_ACTIVITIES_LIMIT",
+            "name": "DASHBOARD_RECENT_ACTIVITIES_LIMIT",
+            "summary": "",
+            "url": "namespaces/default.html#constant_DASHBOARD_RECENT_ACTIVITIES_LIMIT"
         },                {
             "fqsen": "\\getDbConnection\u0028\u0029",
             "name": "getDbConnection",
@@ -313,7 +488,7 @@ Search.appendIndex(
         },                {
             "fqsen": "\\updateRow\u0028\u0029",
             "name": "updateRow",
-            "summary": "Met\u0020\u00E0\u0020jour\u0020des\u0020lignes\u0020dans\u0020une\u0020table",
+            "summary": "Met\u0020\u00E0\u0020jour\u0020les\u0020enregistrements\u0020d\u0027une\u0020table\u0020avec\u0020les\u0020donn\u00E9es\u0020fournies.",
             "url": "namespaces/default.html#function_updateRow"
         },                {
             "fqsen": "\\deleteRow\u0028\u0029",
@@ -401,10 +576,10 @@ Search.appendIndex(
             "summary": "Enregistre\u0020un\u0020message\u0020temporaire\u0020en\u0020session",
             "url": "namespaces/default.html#function_flashMessage"
         },                {
-            "fqsen": "\\getFlashMessage\u0028\u0029",
-            "name": "getFlashMessage",
-            "summary": "R\u00E9cup\u00E8re\u0020le\u0020message\u0020flash\u0020enregistr\u00E9\u0020en\u0020session\u0020et\u0020le\u0020supprime",
-            "url": "namespaces/default.html#function_getFlashMessage"
+            "fqsen": "\\getFlashMessages\u0028\u0029",
+            "name": "getFlashMessages",
+            "summary": "R\u00E9cup\u00E8re\u0020tous\u0020les\u0020messages\u0020flash\u0020enregistr\u00E9s\u0020en\u0020session\u0020et\u0020les\u0020supprime",
+            "url": "namespaces/default.html#function_getFlashMessages"
         },                {
             "fqsen": "\\displayFlashMessages\u0028\u0029",
             "name": "displayFlashMessages",
@@ -435,6 +610,31 @@ Search.appendIndex(
             "name": "renderPagination",
             "summary": "G\u00E9n\u00E8re\u0020et\u0020renvoie\u0020une\u0020interface\u0020de\u0020pagination\u0020au\u0020format\u0020Bootstrap.",
             "url": "namespaces/default.html#function_renderPagination"
+        },                {
+            "fqsen": "\\redirectBasedOnReferer\u0028\u0029",
+            "name": "redirectBasedOnReferer",
+            "summary": "Redirige\u0020l\u0027utilisateur\u0020en\u0020fonction\u0020de\u0020la\u0020page\u0020pr\u00E9c\u00E9dente\u0020\u0028referer\u0029.",
+            "url": "namespaces/default.html#function_redirectBasedOnReferer"
+        },                {
+            "fqsen": "\\handleCsrfFailureRedirect\u0028\u0029",
+            "name": "handleCsrfFailureRedirect",
+            "summary": "G\u00E8re\u0020la\u0020redirection\u0020en\u0020cas\u0020d\u0027\u00E9chec\u0020de\u0020validation\u0020CSRF.",
+            "url": "namespaces/default.html#function_handleCsrfFailureRedirect"
+        },                {
+            "fqsen": "\\formatCurrency\u0028\u0029",
+            "name": "formatCurrency",
+            "summary": "Formate\u0020un\u0020nombre\u0020en\u0020devise\u0020\u0028euros\u0029.",
+            "url": "namespaces/default.html#function_formatCurrency"
+        },                {
+            "fqsen": "\\formatDuration\u0028\u0029",
+            "name": "formatDuration",
+            "summary": "Formate\u0020un\u0020objet\u0020DateInterval\u0020en\u0020une\u0020cha\u00EEne\u0020de\u0020caract\u00E8res\u0020repr\u00E9sentant\u0020le\u0020nombre\u0020total\u0020de\u0020mois.",
+            "url": "namespaces/default.html#function_formatDuration"
+        },                {
+            "fqsen": "\\generateSecureReferer\u0028\u0029",
+            "name": "generateSecureReferer",
+            "summary": "Genere\u0020une\u0020URL\u0020de\u0020referer\u0020securisee.",
+            "url": "namespaces/default.html#function_generateSecureReferer"
         },                {
             "fqsen": "\\logActivity\u0028\u0029",
             "name": "logActivity",
@@ -471,6 +671,51 @@ Search.appendIndex(
             "summary": "traite\u0020la\u0020soumission\u0020du\u0020formulaire\u0020de\u0020connexion",
             "url": "namespaces/default.html#function_processLoginForm"
         },                {
+            "fqsen": "\\appointmentsGetList\u0028\u0029",
+            "name": "appointmentsGetList",
+            "summary": "Recupere\u0020la\u0020liste\u0020des\u0020rendez\u002Dvous\u0020avec\u0020pagination\u0020et\u0020filtrage",
+            "url": "namespaces/default.html#function_appointmentsGetList"
+        },                {
+            "fqsen": "\\appointmentsGetDetails\u0028\u0029",
+            "name": "appointmentsGetDetails",
+            "summary": "Recupere\u0020les\u0020details\u0020d\u0027un\u0020rendez\u002Dvous",
+            "url": "namespaces/default.html#function_appointmentsGetDetails"
+        },                {
+            "fqsen": "\\appointmentsSave\u0028\u0029",
+            "name": "appointmentsSave",
+            "summary": "Cr\u00E9e\u0020ou\u0020met\u0020\u00E0\u0020jour\u0020un\u0020rendez\u002Dvous\u0020dans\u0020la\u0020base\u0020de\u0020donn\u00E9es.",
+            "url": "namespaces/default.html#function_appointmentsSave"
+        },                {
+            "fqsen": "\\appointmentsDelete\u0028\u0029",
+            "name": "appointmentsDelete",
+            "summary": "Supprime\u0020un\u0020rendez\u002Dvous\u0020de\u0020la\u0020base\u0020de\u0020donn\u00E9es.",
+            "url": "namespaces/default.html#function_appointmentsDelete"
+        },                {
+            "fqsen": "\\appointmentsGetPatients\u0028\u0029",
+            "name": "appointmentsGetPatients",
+            "summary": "Recupere\u0020la\u0020liste\u0020des\u0020patients\u0020\u0028salaries\u0029\u0020pour\u0020les\u0020formulaires",
+            "url": "namespaces/default.html#function_appointmentsGetPatients"
+        },                {
+            "fqsen": "\\appointmentsGetPractitioners\u0028\u0029",
+            "name": "appointmentsGetPractitioners",
+            "summary": "Recupere\u0020la\u0020liste\u0020des\u0020praticiens\u0020pour\u0020les\u0020formulaires",
+            "url": "namespaces/default.html#function_appointmentsGetPractitioners"
+        },                {
+            "fqsen": "\\appointmentsGetServices\u0028\u0029",
+            "name": "appointmentsGetServices",
+            "summary": "Recupere\u0020la\u0020liste\u0020des\u0020services\u0020\u0028prestations\u0029\u0020pour\u0020les\u0020formulaires",
+            "url": "namespaces/default.html#function_appointmentsGetServices"
+        },                {
+            "fqsen": "\\appointmentsGetStatuses\u0028\u0029",
+            "name": "appointmentsGetStatuses",
+            "summary": "Recupere\u0020la\u0020liste\u0020des\u0020statuts\u0020de\u0020rendez\u002Dvous\u0020possibles",
+            "url": "namespaces/default.html#function_appointmentsGetStatuses"
+        },                {
+            "fqsen": "\\appointmentsGetTypes\u0028\u0029",
+            "name": "appointmentsGetTypes",
+            "summary": "Recupere\u0020la\u0020liste\u0020des\u0020types\u0020de\u0020rendez\u002Dvous\u0020possibles",
+            "url": "namespaces/default.html#function_appointmentsGetTypes"
+        },                {
             "fqsen": "\\companiesGetList\u0028\u0029",
             "name": "companiesGetList",
             "summary": "Recupere\u0020la\u0020liste\u0020des\u0020entreprises\u0020avec\u0020pagination\u0020et\u0020filtrage",
@@ -491,6 +736,16 @@ Search.appendIndex(
             "summary": "Supprime\u0020une\u0020entreprise\u0020en\u0020v\u00E9rifiant\u0020l\u0027absence\u0020d\u0027associations.",
             "url": "namespaces/default.html#function_companiesDelete"
         },                {
+            "fqsen": "\\companiesGetCities\u0028\u0029",
+            "name": "companiesGetCities",
+            "summary": "Recupere\u0020la\u0020liste\u0020des\u0020villes\u0020distinctes\u0020des\u0020entreprises",
+            "url": "namespaces/default.html#function_companiesGetCities"
+        },                {
+            "fqsen": "\\companiesGetSizes\u0028\u0029",
+            "name": "companiesGetSizes",
+            "summary": "Recupere\u0020la\u0020liste\u0020des\u0020tailles\u0020d\u0027entreprise\u0020possibles",
+            "url": "namespaces/default.html#function_companiesGetSizes"
+        },                {
             "fqsen": "\\contractsGetList\u0028\u0029",
             "name": "contractsGetList",
             "summary": "Recupere\u0020la\u0020liste\u0020des\u0020contrats\u0020avec\u0020pagination\u0020et\u0020filtrage",
@@ -506,6 +761,11 @@ Search.appendIndex(
             "summary": "Recupere\u0020la\u0020liste\u0020des\u0020entreprises\u0020pour\u0020le\u0020formulaire",
             "url": "namespaces/default.html#function_contractsGetEntreprises"
         },                {
+            "fqsen": "\\contractsGetServices\u0028\u0029",
+            "name": "contractsGetServices",
+            "summary": "Recupere\u0020la\u0020liste\u0020des\u0020services\u0020pour\u0020le\u0020formulaire",
+            "url": "namespaces/default.html#function_contractsGetServices"
+        },                {
             "fqsen": "\\contractsSave\u0028\u0029",
             "name": "contractsSave",
             "summary": "Cr\u00E9e\u0020ou\u0020met\u0020\u00E0\u0020jour\u0020un\u0020contrat\u0020dans\u0020la\u0020base\u0020de\u0020donn\u00E9es.",
@@ -516,10 +776,95 @@ Search.appendIndex(
             "summary": "Supprime\u0020un\u0020contrat\u0020de\u0020la\u0020base\u0020de\u0020donn\u00E9es.",
             "url": "namespaces/default.html#function_contractsDelete"
         },                {
+            "fqsen": "\\contractsGetActiveUserCountForCompany\u0028\u0029",
+            "name": "contractsGetActiveUserCountForCompany",
+            "summary": "Compte\u0020le\u0020nombre\u0020d\u0027utilisateurs\u0020actifs\u0020associ\u00E9s\u0020\u00E0\u0020une\u0020entreprise.",
+            "url": "namespaces/default.html#function_contractsGetActiveUserCountForCompany"
+        },                {
             "fqsen": "\\contractsUpdateStatus\u0028\u0029",
             "name": "contractsUpdateStatus",
             "summary": "Met\u0020\u00E0\u0020jour\u0020le\u0020statut\u0020d\u0027un\u0020contrat.",
             "url": "namespaces/default.html#function_contractsUpdateStatus"
+        },                {
+            "fqsen": "\\donationsGetList\u0028\u0029",
+            "name": "donationsGetList",
+            "summary": "recupere\u0020la\u0020liste\u0020des\u0020dons\u0020avec\u0020pagination\u0020et\u0020filtrage",
+            "url": "namespaces/default.html#function_donationsGetList"
+        },                {
+            "fqsen": "\\donationsGetDetails\u0028\u0029",
+            "name": "donationsGetDetails",
+            "summary": "recupere\u0020les\u0020details\u0020d\u0027un\u0020don",
+            "url": "namespaces/default.html#function_donationsGetDetails"
+        },                {
+            "fqsen": "\\donationsUpdateStatus\u0028\u0029",
+            "name": "donationsUpdateStatus",
+            "summary": "met\u0020a\u0020jour\u0020le\u0020statut\u0020d\u0027un\u0020don",
+            "url": "namespaces/default.html#function_donationsUpdateStatus"
+        },                {
+            "fqsen": "\\donationsGetTypes\u0028\u0029",
+            "name": "donationsGetTypes",
+            "summary": "recupere\u0020la\u0020liste\u0020des\u0020types\u0020de\u0020dons\u0020possibles",
+            "url": "namespaces/default.html#function_donationsGetTypes"
+        },                {
+            "fqsen": "\\donationsGetStatuses\u0028\u0029",
+            "name": "donationsGetStatuses",
+            "summary": "recupere\u0020la\u0020liste\u0020des\u0020statuts\u0020de\u0020dons\u0020possibles",
+            "url": "namespaces/default.html#function_donationsGetStatuses"
+        },                {
+            "fqsen": "\\donationsGetDonors\u0028\u0029",
+            "name": "donationsGetDonors",
+            "summary": "recupere\u0020la\u0020liste\u0020des\u0020donateurs\u0020potentiels\u0020\u0028salaries\u0020actifs\u0029",
+            "url": "namespaces/default.html#function_donationsGetDonors"
+        },                {
+            "fqsen": "\\quotesGetList\u0028\u0029",
+            "name": "quotesGetList",
+            "summary": "Recupere\u0020la\u0020liste\u0020des\u0020devis\u0020avec\u0020pagination\u0020et\u0020filtrage",
+            "url": "namespaces/default.html#function_quotesGetList"
+        },                {
+            "fqsen": "\\quotesGetDetails\u0028\u0029",
+            "name": "quotesGetDetails",
+            "summary": "Recupere\u0020les\u0020details\u0020d\u0027un\u0020devis\u0020et\u0020de\u0020ses\u0020lignes",
+            "url": "namespaces/default.html#function_quotesGetDetails"
+        },                {
+            "fqsen": "\\quotesGetStatuses\u0028\u0029",
+            "name": "quotesGetStatuses",
+            "summary": "Recupere\u0020la\u0020liste\u0020des\u0020statuts\u0020de\u0020devis\u0020possibles",
+            "url": "namespaces/default.html#function_quotesGetStatuses"
+        },                {
+            "fqsen": "\\quotesGetCompanySectors\u0028\u0029",
+            "name": "quotesGetCompanySectors",
+            "summary": "Recupere\u0020la\u0020liste\u0020des\u0020secteurs\u0020d\u0027activite\u0020distincts\u0020des\u0020entreprises",
+            "url": "namespaces/default.html#function_quotesGetCompanySectors"
+        },                {
+            "fqsen": "\\quotesGetCompanies\u0028\u0029",
+            "name": "quotesGetCompanies",
+            "summary": "Recupere\u0020la\u0020liste\u0020des\u0020entreprises\u0020clientes",
+            "url": "namespaces/default.html#function_quotesGetCompanies"
+        },                {
+            "fqsen": "\\quotesGetPrestations\u0028\u0029",
+            "name": "quotesGetPrestations",
+            "summary": "Recupere\u0020la\u0020liste\u0020des\u0020prestations\u0020disponibles\u0020pour\u0020un\u0020devis",
+            "url": "namespaces/default.html#function_quotesGetPrestations"
+        },                {
+            "fqsen": "\\quotesGetServices\u0028\u0029",
+            "name": "quotesGetServices",
+            "summary": "Recupere\u0020la\u0020liste\u0020des\u0020services\u0020\u0028tiers\u0029\u0020disponibles",
+            "url": "namespaces/default.html#function_quotesGetServices"
+        },                {
+            "fqsen": "\\quotesSave\u0028\u0029",
+            "name": "quotesSave",
+            "summary": "Cr\u00E9e\u0020ou\u0020met\u0020\u00E0\u0020jour\u0020un\u0020devis\u0020et\u0020ses\u0020lignes\u0020dans\u0020la\u0020base\u0020de\u0020donn\u00E9es.",
+            "url": "namespaces/default.html#function_quotesSave"
+        },                {
+            "fqsen": "\\quotesHandlePostRequest\u0028\u0029",
+            "name": "quotesHandlePostRequest",
+            "summary": "G\u00E8re\u0020la\u0020soumission\u0020du\u0020formulaire\u0020d\u0027ajout\/modification\u0020de\u0020devis.",
+            "url": "namespaces/default.html#function_quotesHandlePostRequest"
+        },                {
+            "fqsen": "\\quotesDelete\u0028\u0029",
+            "name": "quotesDelete",
+            "summary": "Supprime\u0020un\u0020devis\u0020s\u0027il\u0020est\u0020dans\u0020un\u0020statut\u0020appropri\u00E9\u0020\u0028ex\u003A\u0020\u0027en_attente\u0027\u0029.",
+            "url": "namespaces/default.html#function_quotesDelete"
         },                {
             "fqsen": "\\servicesGetList\u0028\u0029",
             "name": "servicesGetList",
@@ -528,18 +873,33 @@ Search.appendIndex(
         },                {
             "fqsen": "\\servicesGetDetails\u0028\u0029",
             "name": "servicesGetDetails",
-            "summary": "Recupere\u0020les\u0020details\u0020d\u0027un\u0020service",
+            "summary": "Recupere\u0020les\u0020details\u0020d\u0027un\u0020service,\u0020et\u0020optionnellement\u0020les\u0020rendez\u002Dvous\u0020et\u0020evaluations\u0020associes.",
             "url": "namespaces/default.html#function_servicesGetDetails"
         },                {
             "fqsen": "\\servicesGetTypes\u0028\u0029",
             "name": "servicesGetTypes",
-            "summary": "Recupere\u0020la\u0020liste\u0020des\u0020types\u0020de\u0020services",
+            "summary": "Recupere\u0020la\u0020liste\u0020des\u0020types\u0020de\u0020services\u0020distincts",
             "url": "namespaces/default.html#function_servicesGetTypes"
+        },                {
+            "fqsen": "\\servicesGetCategories\u0028\u0029",
+            "name": "servicesGetCategories",
+            "summary": "Recupere\u0020la\u0020liste\u0020des\u0020categories\u0020de\u0020services\u0020distinctes",
+            "url": "namespaces/default.html#function_servicesGetCategories"
+        },                {
+            "fqsen": "\\servicesGetDistinctValues\u0028\u0029",
+            "name": "servicesGetDistinctValues",
+            "summary": "R\u00E9cup\u00E8re\u0020la\u0020liste\u0020des\u0020valeurs\u0020distinctes\u0020pour\u0020un\u0020champ\u0020donn\u00E9",
+            "url": "namespaces/default.html#function_servicesGetDistinctValues"
         },                {
             "fqsen": "\\servicesSave\u0028\u0029",
             "name": "servicesSave",
             "summary": "Cr\u00E9e\u0020ou\u0020met\u0020\u00E0\u0020jour\u0020un\u0020service\u0020dans\u0020la\u0020base\u0020de\u0020donn\u00E9es.",
             "url": "namespaces/default.html#function_servicesSave"
+        },                {
+            "fqsen": "\\servicesHandlePostRequest\u0028\u0029",
+            "name": "servicesHandlePostRequest",
+            "summary": "G\u00E8re\u0020la\u0020soumission\u0020du\u0020formulaire\u0020d\u0027ajout\/modification\u0020de\u0020service.",
+            "url": "namespaces/default.html#function_servicesHandlePostRequest"
         },                {
             "fqsen": "\\servicesDelete\u0028\u0029",
             "name": "servicesDelete",
@@ -548,12 +908,12 @@ Search.appendIndex(
         },                {
             "fqsen": "\\usersGetList\u0028\u0029",
             "name": "usersGetList",
-            "summary": "Recupere\u0020la\u0020liste\u0020des\u0020utilisateurs\u0020avec\u0020pagination\u0020et\u0020filtrage",
+            "summary": "R\u00E9cup\u00E8re\u0020une\u0020liste\u0020pagin\u00E9e\u0020d\u0027utilisateurs\u0020avec\u0020possibilit\u00E9\u0020de\u0020filtrer\u0020par\u0020recherche,\u0020r\u00F4le,\u0020entreprise\u0020et\u0020statut.",
             "url": "namespaces/default.html#function_usersGetList"
         },                {
             "fqsen": "\\usersGetDetails\u0028\u0029",
             "name": "usersGetDetails",
-            "summary": "Recupere\u0020les\u0020details\u0020d\u0027un\u0020utilisateur",
+            "summary": "R\u00E9cup\u00E8re\u0020les\u0020d\u00E9tails\u0020complets\u0020d\u0027un\u0020utilisateur\u0020et\u0020des\u0020informations\u0020compl\u00E9mentaires\u0020selon\u0020son\u0020r\u00F4le.",
             "url": "namespaces/default.html#function_usersGetDetails"
         },                {
             "fqsen": "\\usersGetRoles\u0028\u0029",
@@ -568,18 +928,28 @@ Search.appendIndex(
         },                {
             "fqsen": "\\usersSave\u0028\u0029",
             "name": "usersSave",
-            "summary": "Cr\u00E9e\u0020ou\u0020met\u0020\u00E0\u0020jour\u0020un\u0020utilisateur\u0020dans\u0020la\u0020base\u0020de\u0020donn\u00E9es\u0020apr\u00E8s\u0020validation\u0020des\u0020donn\u00E9es\u0020fournies.",
+            "summary": "Cr\u00E9e\u0020ou\u0020met\u0020\u00E0\u0020jour\u0020un\u0020utilisateur\u0020dans\u0020la\u0020base\u0020de\u0020donn\u00E9es.",
             "url": "namespaces/default.html#function_usersSave"
         },                {
             "fqsen": "\\usersDelete\u0028\u0029",
             "name": "usersDelete",
-            "summary": "Supprime\u0020un\u0020utilisateur\u0020apr\u00E8s\u0020v\u00E9rification\u0020de\u0020l\u0027absence\u0020d\u0027associations.",
+            "summary": "Supprime\u0020un\u0020utilisateur\u0020en\u0020v\u00E9rifiant\u0020l\u0027absence\u0020de\u0020rendez\u002Dvous\u0020associ\u00E9s\u0020et\u0020en\u0020emp\u00EAchant\u0020la\u0020suppression\u0020du\u0020compte\u0020connect\u00E9.",
             "url": "namespaces/default.html#function_usersDelete"
         },                {
             "fqsen": "\\BASE_DIR",
             "name": "BASE_DIR",
             "summary": "",
             "url": "namespaces/default.html#constant_BASE_DIR"
+        },                {
+            "fqsen": "\\generateCsrfToken\u0028\u0029",
+            "name": "generateCsrfToken",
+            "summary": "G\u00E9n\u00E8re\u0020et\u0020stocke\u0020un\u0020jeton\u0020CSRF\u0020dans\u0020la\u0020session\u0020si\u0020n\u00E9cessaire.",
+            "url": "namespaces/default.html#function_generateCsrfToken"
+        },                {
+            "fqsen": "\\verifyCsrfToken\u0028\u0029",
+            "name": "verifyCsrfToken",
+            "summary": "V\u00E9rifie\u0020le\u0020jeton\u0020CSRF\u0020pour\u0020les\u0020requ\u00EAtes\u0020POST.",
+            "url": "namespaces/default.html#function_verifyCsrfToken"
         },                {
             "fqsen": "\\processPasswordResetForm\u0028\u0029",
             "name": "processPasswordResetForm",
@@ -596,40 +966,20 @@ Search.appendIndex(
             "summary": "traite\u0020la\u0020soumission\u0020du\u0020formulaire\u0020de\u0020d\u00E9finition\u0020du\u0020nouveau\u0020mot\u0020de\u0020passe",
             "url": "namespaces/default.html#function_processNewPasswordForm"
         },                {
+            "fqsen": "\\validateBirthDate\u0028\u0029",
+            "name": "validateBirthDate",
+            "summary": "",
+            "url": "namespaces/default.html#function_validateBirthDate"
+        },                {
             "fqsen": "\\getCompaniesList\u0028\u0029",
             "name": "getCompaniesList",
-            "summary": "R\u00E9cup\u00E8re\u0020la\u0020liste\u0020des\u0020entreprises\u0020avec\u0020pagination\u0020et\u0020recherche",
+            "summary": "",
             "url": "namespaces/default.html#function_getCompaniesList"
         },                {
             "fqsen": "\\getCompanyDetails\u0028\u0029",
             "name": "getCompanyDetails",
             "summary": "R\u00E9cup\u00E8re\u0020les\u0020d\u00E9tails\u0020d\u0027une\u0020entreprise",
             "url": "namespaces/default.html#function_getCompanyDetails"
-        },                {
-            "fqsen": "\\addCompany\u0028\u0029",
-            "name": "addCompany",
-            "summary": "Ajoute\u0020une\u0020nouvelle\u0020entreprise",
-            "url": "namespaces/default.html#function_addCompany"
-        },                {
-            "fqsen": "\\getCompanyContracts\u0028\u0029",
-            "name": "getCompanyContracts",
-            "summary": "R\u00E9cup\u00E8re\u0020les\u0020contrats\u0020d\u0027une\u0020entreprise",
-            "url": "namespaces/default.html#function_getCompanyContracts"
-        },                {
-            "fqsen": "\\getCompanyEmployees\u0028\u0029",
-            "name": "getCompanyEmployees",
-            "summary": "R\u00E9cup\u00E8re\u0020les\u0020employ\u00E9s\u0020d\u0027une\u0020entreprise",
-            "url": "namespaces/default.html#function_getCompanyEmployees"
-        },                {
-            "fqsen": "\\addCompanyEmployee\u0028\u0029",
-            "name": "addCompanyEmployee",
-            "summary": "Ajoute\u0020un\u0020employ\u00E9\u0020\u00E0\u0020une\u0020entreprise",
-            "url": "namespaces/default.html#function_addCompanyEmployee"
-        },                {
-            "fqsen": "\\getCompanyStats\u0028\u0029",
-            "name": "getCompanyStats",
-            "summary": "R\u00E9cup\u00E8re\u0020les\u0020statistiques\u0020d\u0027utilisation\u0020d\u0027une\u0020entreprise",
-            "url": "namespaces/default.html#function_getCompanyStats"
         },                {
             "fqsen": "\\getCompanyRecentActivity\u0028\u0029",
             "name": "getCompanyRecentActivity",
@@ -638,7 +988,7 @@ Search.appendIndex(
         },                {
             "fqsen": "\\getCompanyInvoices\u0028\u0029",
             "name": "getCompanyInvoices",
-            "summary": "R\u00E9cup\u00E8re\u0020les\u0020factures\u0020d\u0027une\u0020entreprise",
+            "summary": "R\u00E9cup\u00E8re\u0020les\u0020factures\u0020d\u0027une\u0020entreprise\u0020avec\u0020pagination\u0020et\u0020filtres\u0020de\u0020date.",
             "url": "namespaces/default.html#function_getCompanyInvoices"
         },                {
             "fqsen": "\\addCompanyContract\u0028\u0029",
@@ -646,10 +996,100 @@ Search.appendIndex(
             "summary": "Ajoute\u0020un\u0020nouveau\u0020contrat\u0020pour\u0020une\u0020entreprise",
             "url": "namespaces/default.html#function_addCompanyContract"
         },                {
-            "fqsen": "\\updateCompanyStatus\u0028\u0029",
-            "name": "updateCompanyStatus",
-            "summary": "Met\u0020\u00E0\u0020jour\u0020le\u0020statut\u0020d\u0027une\u0020entreprise",
-            "url": "namespaces/default.html#function_updateCompanyStatus"
+            "fqsen": "\\getCompanyContractDetails\u0028\u0029",
+            "name": "getCompanyContractDetails",
+            "summary": "R\u00E9cup\u00E8re\u0020les\u0020d\u00E9tails\u0020complets\u0020d\u0027un\u0020contrat\u0020pour\u0020une\u0020entreprise\u0020donn\u00E9e,\nincluant\u0020les\u0020informations\u0020de\u0020l\u0027entreprise\u0020et\u0020les\u0020services\u0020associ\u00E9s.",
+            "url": "namespaces/default.html#function_getCompanyContractDetails"
+        },                {
+            "fqsen": "\\getContractInvoices\u0028\u0029",
+            "name": "getContractInvoices",
+            "summary": "R\u00E9cup\u00E8re\u0020les\u0020factures\u0020li\u00E9es\u0020\u00E0\u0020un\u0020contrat\u0020\u0028via\u0020l\u0027entreprise,\u0020car\u0020pas\u0020de\u0020lien\u0020direct\u0029",
+            "url": "namespaces/default.html#function_getContractInvoices"
+        },                {
+            "fqsen": "\\getContractHistory\u0028\u0029",
+            "name": "getContractHistory",
+            "summary": "R\u00E9cup\u00E8re\u0020l\u0027historique\u0020d\u0027un\u0020contrat",
+            "url": "namespaces/default.html#function_getContractHistory"
+        },                {
+            "fqsen": "\\requestContractRenewal\u0028\u0029",
+            "name": "requestContractRenewal",
+            "summary": "Enregistre\u0020une\u0020demande\u0020de\u0020renouvellement\u0020d\u0027un\u0020contrat\u0020et\u0020notifie\u0020les\u0020admins.",
+            "url": "namespaces/default.html#function_requestContractRenewal"
+        },                {
+            "fqsen": "\\notifyAdminsNewRenewalRequest\u0028\u0029",
+            "name": "notifyAdminsNewRenewalRequest",
+            "summary": "Notifie\u0020les\u0020administrateurs\u0020d\u0027une\u0020nouvelle\u0020demande\u0020de\u0020renouvellement.",
+            "url": "namespaces/default.html#function_notifyAdminsNewRenewalRequest"
+        },                {
+            "fqsen": "\\requestCompanyQuote\u0028\u0029",
+            "name": "requestCompanyQuote",
+            "summary": "Traite\u0020une\u0020demande\u0020de\u0020devis\u0020d\u0027une\u0020entreprise",
+            "url": "namespaces/default.html#function_requestCompanyQuote"
+        },                {
+            "fqsen": "\\notifyAdminsNewQuoteRequest\u0028\u0029",
+            "name": "notifyAdminsNewQuoteRequest",
+            "summary": "Notifie\u0020les\u0020administrateurs\u0020d\u0027une\u0020nouvelle\u0020demande\u0020de\u0020devis\n\u0028Fonction\u0020placeholder\u0020\u00E0\u0020impl\u00E9menter\u0020correctement\u0029",
+            "url": "namespaces/default.html#function_notifyAdminsNewQuoteRequest"
+        },                {
+            "fqsen": "\\getInvoiceDetailsForCompany\u0028\u0029",
+            "name": "getInvoiceDetailsForCompany",
+            "summary": "R\u00E9cup\u00E8re\u0020les\u0020d\u00E9tails\u0020d\u0027une\u0020facture\u0020sp\u00E9cifique\u0020pour\u0020une\u0020entreprise\u0020donn\u00E9e.",
+            "url": "namespaces/default.html#function_getInvoiceDetailsForCompany"
+        },                {
+            "fqsen": "\\getCompanyEmployeeDetails\u0028\u0029",
+            "name": "getCompanyEmployeeDetails",
+            "summary": "R\u00E9cup\u00E8re\u0020les\u0020d\u00E9tails\u0020d\u0027un\u0020employ\u00E9\u0020sp\u00E9cifique\u0020d\u0027une\u0020entreprise.",
+            "url": "namespaces/default.html#function_getCompanyEmployeeDetails"
+        },                {
+            "fqsen": "\\updateCompanyEmployee\u0028\u0029",
+            "name": "updateCompanyEmployee",
+            "summary": "Met\u0020\u00E0\u0020jour\u0020les\u0020informations\u0020d\u0027un\u0020employ\u00E9\u0020sp\u00E9cifique\u0020d\u0027une\u0020entreprise.",
+            "url": "namespaces/default.html#function_updateCompanyEmployee"
+        },                {
+            "fqsen": "\\deleteCompanyEmployee\u0028\u0029",
+            "name": "deleteCompanyEmployee",
+            "summary": "Supprime\u0020un\u0020employ\u00E9\u0020sp\u00E9cifique\u0020d\u0027une\u0020entreprise.",
+            "url": "namespaces/default.html#function_deleteCompanyEmployee"
+        },                {
+            "fqsen": "\\reactivateCompanyEmployee\u0028\u0029",
+            "name": "reactivateCompanyEmployee",
+            "summary": "R\u00E9active\u0020un\u0020employ\u00E9\u0020sp\u00E9cifique\u0020d\u0027une\u0020entreprise\u0020\u0028annule\u0020la\u0020suppression\u0020logique\u0029.",
+            "url": "namespaces/default.html#function_reactivateCompanyEmployee"
+        },                {
+            "fqsen": "\\getUserById\u0028\u0029",
+            "name": "getUserById",
+            "summary": "R\u00E9cup\u00E8re\u0020les\u0020informations\u0020d\u0027un\u0020utilisateur\u0020par\u0020son\u0020ID.",
+            "url": "namespaces/default.html#function_getUserById"
+        },                {
+            "fqsen": "\\updateUserProfile\u0028\u0029",
+            "name": "updateUserProfile",
+            "summary": "Met\u0020\u00E0\u0020jour\u0020le\u0020profil\u0020d\u0027un\u0020utilisateur\u0020\u0028nom,\u0020email\u0029.",
+            "url": "namespaces/default.html#function_updateUserProfile"
+        },                {
+            "fqsen": "\\changeUserPassword\u0028\u0029",
+            "name": "changeUserPassword",
+            "summary": "Change\u0020le\u0020mot\u0020de\u0020passe\u0020d\u0027un\u0020utilisateur\u0020apr\u00E8s\u0020v\u00E9rification\u0020de\u0020l\u0027actuel.",
+            "url": "namespaces/default.html#function_changeUserPassword"
+        },                {
+            "fqsen": "\\addCompanyEmployee\u0028\u0029",
+            "name": "addCompanyEmployee",
+            "summary": "",
+            "url": "namespaces/default.html#function_addCompanyEmployee"
+        },                {
+            "fqsen": "\\getCompanyUsageStatistics\u0028\u0029",
+            "name": "getCompanyUsageStatistics",
+            "summary": "R\u00E9cup\u00E8re\u0020les\u0020statistiques\u0020d\u0027utilisation\u0020d\u0027une\u0020entreprise",
+            "url": "namespaces/default.html#function_getCompanyUsageStatistics"
+        },                {
+            "fqsen": "\\getCompanyEmployees\u0028\u0029",
+            "name": "getCompanyEmployees",
+            "summary": "R\u00E9cup\u00E8re\u0020les\u0020employ\u00E9s\u0020d\u0027une\u0020entreprise\u0020avec\u0020pagination\u0020et\u0020filtres.",
+            "url": "namespaces/default.html#function_getCompanyEmployees"
+        },                {
+            "fqsen": "\\getCompanyContracts\u0028\u0029",
+            "name": "getCompanyContracts",
+            "summary": "R\u00E9cup\u00E8re\u0020les\u0020contrats\u0020d\u0027une\u0020entreprise\u0020avec\u0020pagination.",
+            "url": "namespaces/default.html#function_getCompanyContracts"
         },                {
             "fqsen": "\\getEmployeesList\u0028\u0029",
             "name": "getEmployeesList",

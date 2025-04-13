@@ -7,16 +7,16 @@ $pageTitle = "Ajouter un contrat";
 $errors = [];
 $contractData = [
     'entreprise_id' => '',
-    'type_contrat' => '',
+    'service_id' => '',
     'date_debut' => '',
     'date_fin' => '',
-    'montant_mensuel' => '',
     'nombre_salaries' => '',
     'statut' => DEFAULT_CONTRACT_STATUS, 
     'conditions_particulieres' => ''
 ];
 
 $entreprises = contractsGetEntreprises();
+$services = contractsGetServices();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!validateToken($_POST['csrf_token'] ?? '')) {
@@ -79,16 +79,16 @@ include '../../templates/header.php';
                         </div>
 
                         <div class="mb-3">
-                            <label for="type_contrat" class="form-label">Type de contrat <span class="text-danger">*</span></label>
-                            <select class="form-select <?php echo isset($errors['type_contrat']) ? 'is-invalid' : ''; ?>" id="type_contrat" name="type_contrat" required>
-                                <option value="">-- Sélectionner un type --</option>
-                                <?php foreach (CONTRACT_TYPES as $type): ?>
-                                <option value="<?php echo $type; ?>" <?php echo ($contractData['type_contrat'] == $type) ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars(ucfirst($type)); ?>
+                            <label for="service_id" class="form-label">Service (Type de contrat) <span class="text-danger">*</span></label>
+                            <select class="form-select <?php echo isset($errors['service_id']) ? 'is-invalid' : ''; ?>" id="service_id" name="service_id" required>
+                                <option value="">-- Sélectionner un service --</option>
+                                <?php foreach ($services as $service): ?>
+                                <option value="<?php echo $service['id']; ?>" <?php echo ($contractData['service_id'] == $service['id']) ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($service['nom']); ?>
                                 </option>
                                 <?php endforeach; ?>
                             </select>
-                             <?php if (isset($errors['type_contrat'])) { echo '<div class="invalid-feedback">'.htmlspecialchars($errors['type_contrat']).'</div>'; } ?>
+                             <?php if (isset($errors['service_id'])) { echo '<div class="invalid-feedback">'.htmlspecialchars($errors['service_id']).'</div>'; } ?>
                         </div>
 
                          <div class="row">
@@ -105,11 +105,6 @@ include '../../templates/header.php';
                         </div>
                         
                          <div class="row">
-                             <div class="col-md-6 mb-3">
-                                <label for="montant_mensuel" class="form-label">Montant mensuel (€)</label>
-                                <input type="number" step="0.01" min="0" class="form-control <?php echo isset($errors['montant_mensuel']) ? 'is-invalid' : ''; ?>" id="montant_mensuel" name="montant_mensuel" placeholder="1500.00" value="<?php echo htmlspecialchars($contractData['montant_mensuel']); ?>">
-                                 <?php if (isset($errors['montant_mensuel'])) { echo '<div class="invalid-feedback">'.htmlspecialchars($errors['montant_mensuel']).'</div>'; } ?>
-                            </div>
                              <div class="col-md-6 mb-3">
                                 <label for="nombre_salaries" class="form-label">Nombre de salariés couverts</label>
                                 <input type="number" min="0" class="form-control <?php echo isset($errors['nombre_salaries']) ? 'is-invalid' : ''; ?>" id="nombre_salaries" name="nombre_salaries" placeholder="50" value="<?php echo htmlspecialchars($contractData['nombre_salaries']); ?>">
@@ -151,4 +146,4 @@ include '../../templates/header.php';
     </div>
 </div>
 
-</rewritten_file>
+

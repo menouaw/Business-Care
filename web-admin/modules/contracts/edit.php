@@ -17,6 +17,7 @@ if (!$contract) {
 }
 
 $entreprises = contractsGetEntreprises(); 
+$services = contractsGetServices();
 
 $errors = [];
 $formData = $contract;
@@ -54,7 +55,7 @@ include '../../templates/header.php';
             <?php echo displayFlashMessages(); ?>
 
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h2"><?php echo $pageTitle; ?> : <?php echo htmlspecialchars($contract['nom_entreprise']); ?></h1>
+                <h1 class="h2"><?php echo $pageTitle; ?></h1>
                 <div class="btn-toolbar mb-2 mb-md-0">
                     <a href="<?php echo WEBADMIN_URL; ?>/modules/contracts/view.php?id=<?php echo $id; ?>" class="btn btn-sm btn-outline-secondary me-2" data-bs-toggle="tooltip" title="Voir le contrat">
                         <i class="fas fa-eye"></i> Voir
@@ -85,16 +86,16 @@ include '../../templates/header.php';
                                 <?php if (isset($errors['entreprise_id'])) { echo '<div class="invalid-feedback">' . htmlspecialchars($errors['entreprise_id']) . '</div>'; } ?>
                             </div>
                             <div class="col-md-6">
-                                <label for="type_contrat" class="form-label">Type de contrat <span class="text-danger">*</span></label>
-                                <select class="form-select <?php echo isset($errors['type_contrat']) ? 'is-invalid' : ''; ?>" id="type_contrat" name="type_contrat" required>
-                                    <option value="">Selectionnez un type...</option>
-                                    <?php foreach (CONTRACT_TYPES as $t): ?>
-                                        <option value="<?php echo $t; ?>" <?php echo (isset($formData['type_contrat']) && $formData['type_contrat'] === $t) ? 'selected' : ''; ?>>
-                                            <?php echo ucfirst(htmlspecialchars($t)); ?>
+                                <label for="service_id" class="form-label">Service (Type de contrat) <span class="text-danger">*</span></label>
+                                <select class="form-select <?php echo isset($errors['service_id']) ? 'is-invalid' : ''; ?>" id="service_id" name="service_id" required>
+                                    <option value="">Selectionnez un service...</option>
+                                    <?php foreach ($services as $s): ?>
+                                        <option value="<?php echo $s['id']; ?>" <?php echo (isset($formData['service_id']) && $formData['service_id'] == $s['id']) ? 'selected' : ''; ?>>
+                                            <?php echo htmlspecialchars($s['type']); ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
-                                <?php if (isset($errors['type_contrat'])) { echo '<div class="invalid-feedback">' . htmlspecialchars($errors['type_contrat']) . '</div>'; } ?>
+                                <?php if (isset($errors['service_id'])) { echo '<div class="invalid-feedback">' . htmlspecialchars($errors['service_id']) . '</div>'; } ?>
                             </div>
                         </div>
                         
@@ -112,11 +113,6 @@ include '../../templates/header.php';
                         </div>
                         
                         <div class="row mb-3">
-                            <div class="col-md-4">
-                                <label for="montant_mensuel" class="form-label">Montant mensuel (€)</label>
-                                <input type="number" step="0.01" min="0" class="form-control <?php echo isset($errors['montant_mensuel']) ? 'is-invalid' : ''; ?>" id="montant_mensuel" name="montant_mensuel" value="<?php echo htmlspecialchars($formData['montant_mensuel'] ?? ''); ?>">
-                                <?php if (isset($errors['montant_mensuel'])) { echo '<div class="invalid-feedback">' . htmlspecialchars($errors['montant_mensuel']) . '</div>'; } ?>
-                            </div>
                             <div class="col-md-4">
                                 <label for="nombre_salaries" class="form-label">Nombre de salariés (contractuel)</label>
                                 <input type="number" min="0" class="form-control <?php echo isset($errors['nombre_salaries']) ? 'is-invalid' : ''; ?>" id="nombre_salaries" name="nombre_salaries" value="<?php echo htmlspecialchars($formData['nombre_salaries'] ?? ''); ?>">
@@ -156,4 +152,4 @@ include '../../templates/header.php';
     </div>
 </div>
 
-</rewritten_file>
+

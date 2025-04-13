@@ -275,9 +275,9 @@ include '../../templates/header.php';
                                 <tr>
                                     <th>Date</th>
                                     <th>Type</th>
-                                    <th>Détail</th>
-                                    <th>Montant</th>
+                                    <th>Détail / Montant</th>
                                     <th>Statut</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                              <tbody>
@@ -285,9 +285,27 @@ include '../../templates/header.php';
                                 <tr>
                                     <td><?php echo formatDate($don['date_don'], 'd/m/Y'); ?></td>
                                     <td><?php echo ucfirst(htmlspecialchars($don['type'])); ?></td>
-                                    <td><?php echo $don['type'] == 'materiel' ? htmlspecialchars($don['description'] ?? '-') : '-'; ?></td>
-                                    <td><?php echo $don['type'] == 'financier' ? formatMoney($don['montant'] ?? 0) : '-'; ?></td>
+                                    <td>
+                                        <?php if ($don['type'] == 'materiel'): ?>
+                                            <?php echo htmlspecialchars(substr($don['description'] ?? '-', 0, 50)) . (strlen($don['description'] ?? '') > 50 ? '...' : ''); ?>
+                                        <?php elseif ($don['type'] == 'financier'): ?>
+                                            <?php echo formatMoney($don['montant'] ?? 0); ?>
+                                        <?php else: ?>
+                                            -
+                                        <?php endif; ?>
+                                    </td>
                                     <td><?php echo getStatusBadge($don['statut']); ?></td>
+                                     <td class="table-actions">
+                                        <a href="<?php echo WEBADMIN_URL; ?>/modules/donations/view.php?id=<?php echo $don['id']; ?>" class="btn btn-sm btn-info" data-bs-toggle="tooltip" title="Voir le don">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <?php if ($don['statut'] == 'en_attente'): ?>
+                                            <a href="<?php echo WEBADMIN_URL; ?>/modules/donations/edit.php?id=<?php echo $don['id']; ?>" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="Modifier le don">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        <?php endif; ?>
+                                    </td>
+                                
                                 </tr>
                                 <?php endforeach; ?>
                             </tbody>
@@ -296,7 +314,7 @@ include '../../templates/header.php';
                     <?php endif; ?>
                 </div>
                  <div class="card-footer text-muted small">
-                    Affichage des 10 derniers dons enregistrés.
+                    Affichage des 10 derniers dons enregistrés. Seuls les dons 'en attente' peuvent être modifiés.
                 </div>
             </div>
             <?php endif; ?>
