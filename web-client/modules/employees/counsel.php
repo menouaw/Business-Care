@@ -7,8 +7,7 @@ requireRole(ROLE_SALARIE);
 $counselTopics = [];
 $dbError = null;
 try {
-    $counselTopics = fetchAll('conseils', '', 'titre ASC'); 
-
+    $counselTopics = fetchAll('conseils', 'statut = :statut', 'titre ASC', [':statut' => 'actif']);
 } catch (Exception $e) {
     error_log("Error fetching counsel topics: " . $e->getMessage());
     $dbError = "Impossible de charger les conseils pour le moment. Veuillez réessayer plus tard.";

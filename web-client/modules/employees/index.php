@@ -225,7 +225,7 @@ include_once __DIR__ . '/../../templates/header.php';
                                                     <i class="fas fa-map-marker-alt me-1"></i> <?= htmlspecialchars($event['lieu'] ?? 'Lieu à confirmer') ?>
                                                 </p>
                                             </div>
-                                            <a href="<?= WEBCLIENT_URL ?>/events.php?id=<?= $event['id'] ?? '' ?>" class="btn btn-sm btn-outline-success">Voir détails</a>
+                                            <a href="<?= WEBCLIENT_URL ?>/events.php?id=<?= $event['id'] ?>" class="btn btn-sm btn-outline-success">Voir détails</a>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>

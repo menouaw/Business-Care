@@ -559,66 +559,59 @@ function manageEmployeeDonations($employee_id, $donation_data)
     }
 }
 
-function getEmployeeEvents($employee_id, $event_type = 'all', $page = 1, $limit = 9)
+function getEmployeeEvents($employee_id, $event_type = 'all')
 {
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
     if (!$employee_id) {
         flashMessage("ID employé invalide pour récupérer les événements.", "danger");
-        return [
-            'items' => [],
-            'pagination_html' => '',
-        ];
+        return [];
     }
 
     $event_type = sanitizeInput($event_type);
     $validEventTypes = EVENT_TYPES;
-    $page = max(1, (int)$page);
-    $limit = max(3, (int)$limit);
-    $offset = ($page - 1) * $limit;
 
-    $baseQuery = "FROM evenements e";
-    $whereClause = " WHERE e.date_debut >= CURDATE()";
+    $query = "SELECT e.id, e.titre, e.description, e.date_debut, e.date_fin, e.lieu, e.type, 
+                     e.capacite_max, e.niveau_difficulte
+              FROM evenements e
+              WHERE e.date_debut >= CURDATE()";
     $params = [];
 
     if ($event_type !== 'all' && in_array($event_type, $validEventTypes)) {
-        $whereClause .= " AND e.type = :event_type";
+        $query .= " AND e.type = :event_type";
         $params[':event_type'] = $event_type;
     }
 
-    $countQuery = "SELECT COUNT(e.id) " . $baseQuery . $whereClause;
-    $dataQuery = "SELECT e.id, e.titre, e.description, e.date_debut, e.date_fin, e.lieu, e.type, 
-                     e.capacite_max, e.niveau_difficulte " . $baseQuery . $whereClause;
-
-    $dataQuery .= " ORDER BY e.date_debut ASC, e.titre ASC LIMIT :limit OFFSET :offset";
-    $dataParams = $params;
-    $dataParams[':limit'] = $limit;
-    $dataParams[':offset'] = $offset;
+    $query .= " ORDER BY e.date_debut ASC, e.titre ASC";
 
     try {
-        $totalStmt = executeQuery($countQuery, $params);
-        $totalItems = (int)$totalStmt->fetchColumn();
+        error_log("[DEBUG] getEmployeeEvents - Query: " . $query);
+        error_log("[DEBUG] getEmployeeEvents - Params: " . json_encode($params));
 
-        $events = executeQuery($dataQuery, $dataParams)->fetchAll();
+        $events = executeQuery($query, $params)->fetchAll();
 
+        error_log("[DEBUG] getEmployeeEvents - Fetched events count: " . count($events));
 
-        $eventIds = array_map(fn($e) => $e['id'], $events);
-        $inscriptionCounts = [];
-        $userRegistrations = [];
+        $eventIds = array_map(function ($e) {
+            return $e['id'];
+        }, $events);
 
         if (!empty($eventIds)) {
-            $placeholders = implode(',', array_fill(0, count($eventIds), '?'));
+            $inscriptionCounts = [];
             $sqlCounts = "SELECT evenement_id, COUNT(id) as count 
                           FROM evenement_inscriptions 
-                          WHERE evenement_id IN ($placeholders) AND statut = 'inscrit' 
+                          WHERE evenement_id IN (" . implode(',', array_fill(0, count($eventIds), '?')) . ") 
+                          AND statut = 'inscrit' 
                           GROUP BY evenement_id";
             $stmtCounts = executeQuery($sqlCounts, $eventIds);
             while ($row = $stmtCounts->fetch()) {
                 $inscriptionCounts[$row['evenement_id']] = $row['count'];
             }
 
+            $userRegistrations = [];
             $sqlUserReg = "SELECT evenement_id 
                            FROM evenement_inscriptions 
-                           WHERE personne_id = ? AND statut = 'inscrit' AND evenement_id IN ($placeholders)";
+                           WHERE personne_id = ? AND statut = 'inscrit' 
+                           AND evenement_id IN (" . implode(',', array_fill(0, count($eventIds), '?')) . ")";
             $paramsUserReg = array_merge([$employee_id], $eventIds);
             $stmtUserReg = executeQuery($sqlUserReg, $paramsUserReg);
             while ($row = $stmtUserReg->fetch()) {
@@ -629,6 +622,7 @@ function getEmployeeEvents($employee_id, $event_type = 'all', $page = 1, $limit 
         foreach ($events as &$event) {
             $event['date_debut_formatee'] = isset($event['date_debut']) ? formatDate($event['date_debut'], 'd/m/Y H:i') : 'N/A';
             $event['date_fin_formatee'] = isset($event['date_fin']) ? formatDate($event['date_fin'], 'd/m/Y H:i') : 'N/A';
+
             $registeredCount = $inscriptionCounts[$event['id']] ?? 0;
             if (isset($event['capacite_max']) && $event['capacite_max'] !== null) {
                 $event['places_restantes'] = max(0, $event['capacite_max'] - $registeredCount);
@@ -637,41 +631,25 @@ function getEmployeeEvents($employee_id, $event_type = 'all', $page = 1, $limit 
                 $event['places_restantes'] = null;
                 $event['est_complet'] = false;
             }
+
             $event['est_inscrit'] = isset($userRegistrations[$event['id']]);
         }
 
-        $totalPages = ($limit > 0 && $totalItems > 0) ? ceil($totalItems / $limit) : 0;
-        $paginationData = [
-            'currentPage' => $page,
-            'totalPages' => $totalPages,
-            'totalItems' => $totalItems,
-            'perPage' => $limit
-        ];
-        $urlParams = [];
-        if ($event_type !== 'all') {
-            $urlParams['type'] = $event_type;
-        }
-        $urlPattern = "?" . http_build_query($urlParams) . "&page={page}";
-
-        return [
-            'items' => $events,
-            'pagination_html' => renderPagination($paginationData, $urlPattern),
-        ];
+        return $events;
     } catch (Exception $e) {
         logSystemActivity('error', "Erreur récupération événements pour employé #$employee_id: " . $e->getMessage());
         flashMessage("Impossible de charger la liste des événements.", "danger");
-        return [
-            'items' => [],
-            'pagination_html' => '',
-        ];
+        return [];
     }
 }
 
 function updateEmployeeSettings($employee_id, $settings)
 {
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
-    if (!$employee_id) {
-        error_log("updateEmployeeSettings: ID salarié invalide.");
+    $settings = sanitizeInput($settings);
+
+    if (!$employee_id || empty($settings)) {
+        flashMessage("ID de salarié invalide ou paramètres manquants", "danger");
         return false;
     }
 
@@ -692,41 +670,40 @@ function updateEmployeeSettings($employee_id, $settings)
     }
 
     if (empty($filteredSettings)) {
-        flashMessage("Aucun paramètre valide fourni pour la mise à jour.", "warning");
+        flashMessage("Aucun paramètre valide à mettre à jour", "warning");
         return false;
     }
 
     try {
-        $exists = fetchOne(TABLE_USER_PREFERENCES, "personne_id = :id", [':id' => $employee_id]);
+        $exists = fetchOne('preferences_utilisateurs', "personne_id = $employee_id");
 
-        $success = false;
+        $result = false;
 
         if ($exists) {
-            $affectedRows = updateRow(
-                TABLE_USER_PREFERENCES,
+            $result = updateRow(
+                'preferences_utilisateurs',
                 $filteredSettings,
                 'personne_id = :personne_id',
                 ['personne_id' => $employee_id]
             );
-            $success = ($affectedRows !== false);
         } else {
             $filteredSettings['personne_id'] = $employee_id;
-            $insertId = insertRow(TABLE_USER_PREFERENCES, $filteredSettings);
-            $success = ($insertId !== false);
+            $result = insertRow('preferences_utilisateurs', $filteredSettings) ? true : false;
         }
 
-        if ($success) {
-            if (isset($_SESSION['user_id']) && $_SESSION['user_id'] == $employee_id) {
-                if (isset($filteredSettings['langue'])) {
-                    $_SESSION['user_language'] = $filteredSettings['langue'];
-                }
+        if ($result) {
+            logBusinessOperation($employee_id, 'update_preferences', "Mise à jour des préférences utilisateur");
+            flashMessage("Vos préférences ont été mises à jour", "success");
+
+            if (isset($_SESSION['user_id']) && $_SESSION['user_id'] == $employee_id && isset($filteredSettings['langue'])) {
+                $_SESSION['user_language'] = $filteredSettings['langue'];
             }
         }
 
-        return $success;
+        return $result;
     } catch (Exception $e) {
-        logSystemActivity('error', "Erreur mise à jour préférences salarié #$employee_id: " . $e->getMessage());
-        flashMessage("Une erreur technique est survenue lors de la mise à jour des préférences.", "danger");
+        logSystemActivity('error', "Erreur mise à jour préférences: " . $e->getMessage());
+        flashMessage("Une erreur est survenue lors de la mise à jour des préférences", "danger");
         return false;
     }
 }
@@ -934,13 +911,9 @@ function displayEmployeeEventsPage()
 
     $filters = getQueryData();
     $typeFilter = $filters['type'] ?? 'all';
-    $page = isset($filters['page']) ? (int)$filters['page'] : 1;
 
     $data = [];
-    $paginationResult = getEmployeeEvents($employee_id, $typeFilter, $page, 9);
-
-    $data['events'] = $paginationResult['items'];
-    $data['pagination_html'] = $paginationResult['pagination_html'];
+    $data['events'] = getEmployeeEvents($employee_id, $typeFilter);
     $data['currentTypeFilter'] = $typeFilter;
     $data['eventTypes'] = EVENT_TYPES;
     $data['csrf_token'] = $_SESSION['csrf_token'];
@@ -1042,24 +1015,43 @@ function handleUpdateEmployeeSettings()
             'prenom' => $formData['prenom'] ?? null,
             'telephone' => $formData['telephone'] ?? null
         ];
+        $profileData = array_filter($profileData, function ($value) {
+            return $value !== null;
+        });
 
         $settingsData = [
             'langue' => $formData['langue'] ?? null,
             'notif_email' => isset($formData['notif_email']) ? 1 : 0
         ];
+        $settingsData = array_filter($settingsData, function ($value) {
+            return $value !== null;
+        });
 
-        $profileUpdateResult = updateEmployeeProfile($employee_id, $profileData);
+        $profileUpdateResult = false;
+        $settingsUpdateResult = false;
+        $profileChanged = false;
+        $settingsChanged = false;
 
-        $settingsUpdateResult = updateEmployeeSettings($employee_id, $settingsData);
+        if (!empty($profileData)) {
+            $profileUpdateResult = updateEmployeeProfile($employee_id, $profileData);
+            $profileChanged = ($profileUpdateResult !== false && $profileUpdateResult > 0);
+        }
+
+        if (!empty($settingsData)) {
+            $settingsUpdateResult = updateEmployeeSettings($employee_id, $settingsData);
+            $settingsChanged = ($settingsUpdateResult === true);
+        }
 
         if ($profileUpdateResult !== false && $settingsUpdateResult !== false) {
-            if (($profileUpdateResult !== false && $profileUpdateResult > 0) || $settingsUpdateResult === true) {
+            if ($profileChanged || $settingsChanged) {
                 logBusinessOperation($employee_id, 'update_preferences_profile', "Profil/Préférences mis à jour par l'employé via settings.php");
                 flashMessage("Vos informations ont été enregistrées avec succès.", "success");
-            } else if ($profileUpdateResult === 0 && $settingsUpdateResult === true) {
-            } else if ($profileUpdateResult > 0 && $settingsUpdateResult === false && !fetchOne(TABLE_USER_PREFERENCES, "personne_id = :id", [':id' => $employee_id])) {
-            } else if ($profileUpdateResult === 0 && $settingsUpdateResult === false && fetchOne(TABLE_USER_PREFERENCES, "personne_id = :id", [':id' => $employee_id])) {
-                flashMessage("Aucune modification détectée.", "info");
+            } else if ($profileUpdateResult === 0 && ($settingsUpdateResult === false || $settingsUpdateResult === true)) {
+                $existingSettings = fetchOne(TABLE_USER_PREFERENCES, "personne_id = :id", [':id' => $employee_id]);
+                if ($settingsUpdateResult === true || $existingSettings) {
+                    flashMessage("Aucune modification détectée.", "info");
+                }
+            } else {
             }
         }
 
@@ -1101,7 +1093,7 @@ function displayServiceCatalog()
         $typeFilter = $filters['type'] ?? '';
         $categoryFilter = $filters['categorie'] ?? '';
 
-        $paginationResult = getPrestations($typeFilter, $categoryFilter, $page, 3);
+        $paginationResult = getPrestations($typeFilter, $categoryFilter, $page, 12);
 
         $data['services'] = $paginationResult['items'];
         $data['pagination_html'] = renderPagination($paginationResult, "?type=$typeFilter&categorie=$categoryFilter&page={page}");
@@ -1172,13 +1164,18 @@ function handleReservationRequest()
             'praticien_id' => $formData['praticien_id'] ?? null
         ];
 
+        if (empty($appointmentData['prestation_id']) || empty($appointmentData['date_rdv']) || empty($appointmentData['duree'])) {
+            flashMessage("Informations de réservation incomplètes.", "warning");
+            redirectTo($_SERVER['HTTP_REFERER'] ?? WEBCLIENT_URL . '/catalogue.php');
+            return;
+        }
+
         $appointmentId = bookEmployeeAppointment($employee_id, $appointmentData);
 
         if ($appointmentId) {
             flashMessage("Votre réservation a été enregistrée avec succès (ID: $appointmentId).", "success");
             redirectTo(WEBCLIENT_URL . '/mon-planning.php');
         } else {
-
             redirectTo($_SERVER['HTTP_REFERER'] ?? WEBCLIENT_URL . '/catalogue.php');
         }
     } else {
@@ -1213,6 +1210,7 @@ function handleCancelReservation($reservation_id)
         $rdvTime = new DateTime($reservation['date_rdv']);
         $interval = $now->diff($rdvTime);
         if ($now >= $rdvTime || ($interval->days == 0 && $interval->h < 24)) {
+
         }
 
         $updated = updateRow(
@@ -1279,7 +1277,7 @@ function handleMarkNotificationRead($notification_id)
         );
         return $updated > 0;
     }
-    return false;
+    return false; 
 }
 
 
@@ -1287,7 +1285,6 @@ function handleMarkAllNotificationsRead()
 {
     requireRole(ROLE_SALARIE);
     $employee_id = $_SESSION['user_id'];
-
 
     try {
         $updated = updateRow(
@@ -1299,7 +1296,7 @@ function handleMarkAllNotificationsRead()
         if ($updated !== false) {
             flashMessage("Toutes les notifications ont été marquées comme lues.", "success");
         } else {
-            flashMessage("Erreur lors de la mise à jour des notifications.", "danger");
+            flashMessage("Aucune nouvelle notification à marquer comme lue.", "info");
         }
     } catch (Exception $e) {
         logSystemActivity('error', "Erreur markAllNotificationsRead pour user #$employee_id: " . $e->getMessage());
@@ -1324,7 +1321,7 @@ function displayCommunityDetailsPageData($community_id)
     if (!$community_id) {
         flashMessage("ID de communauté invalide.", "danger");
         redirectTo(WEBCLIENT_URL . '/modules/employees/communities.php');
-        return $data;
+        return $data; 
     }
 
     $data['community'] = fetchOne(TABLE_COMMUNAUTES, "id = :id", [':id' => $community_id], '');
@@ -1332,7 +1329,7 @@ function displayCommunityDetailsPageData($community_id)
     if (!$data['community']) {
         flashMessage("Communauté non trouvée.", "warning");
         redirectTo(WEBCLIENT_URL . '/modules/employees/communities.php');
-        return $data;
+        return $data; 
     }
 
     $query = "SELECT cm.*, p.prenom, p.nom 
@@ -1396,13 +1393,14 @@ function handleNewCommunityPost($community_id, $employee_id, $message)
     }
 }
 
+
 function getActiveAssociations()
 {
     try {
         if (!defined('TABLE_ASSOCIATIONS')) {
             define('TABLE_ASSOCIATIONS', 'associations');
         }
-        return fetchAll(TABLE_ASSOCIATIONS, '1=1', 'nom ASC');
+        return fetchAll(TABLE_ASSOCIATIONS, 'statut = :status', 'nom ASC', [':status' => 'actif']);
     } catch (Exception $e) {
         logSystemActivity('error', "Erreur récupération des associations: " . $e->getMessage());
         return [];
@@ -1444,7 +1442,7 @@ function handleRegisterForEvent($employee_id, $event_id)
     );
     if ($existingRegistration) {
         flashMessage("Vous êtes déjà inscrit à cet événement.", "info");
-        return true;
+        return true; 
     }
 
     if (isset($event['capacite_max']) && $event['capacite_max'] !== null) {
@@ -1535,30 +1533,19 @@ function handleUnregisterFromEvent($employee_id, $event_id)
         return false;
     }
 
-    $params_exist = [':pid' => $employee_id, ':eid' => $event_id, ':statut' => 'inscrit'];
-    $existingRegistration = fetchOne(
-        'evenement_inscriptions',
-        'personne_id = :pid AND evenement_id = :eid AND statut = :statut',
-        $params_exist
-    );
-
-    if (!$existingRegistration) {
-        $params_cancelled = [':pid' => $employee_id, ':eid' => $event_id, ':statut' => 'annule'];
-        $cancelledRegistration = fetchOne(
-            'evenement_inscriptions',
-            'personne_id = :pid AND evenement_id = :eid AND statut = :statut',
-            $params_cancelled
-        );
-        if ($cancelledRegistration) {
-            flashMessage("Vous êtes déjà désinscrit de cet événement.", "info");
-        } else {
-            flashMessage("Vous n'étiez pas inscrit à cet événement.", "warning");
-        }
-        return true;
-    }
-
     try {
         beginTransaction();
+
+        $params_exist = [':pid' => $employee_id, ':eid' => $event_id, ':statut' => 'inscrit'];
+        $existingRegistration = fetchOne(
+            'evenement_inscriptions',
+            'personne_id = :pid AND evenement_id = :eid AND statut = :statut',
+            $params_exist
+        );
+
+        if (!$existingRegistration) {
+            return true;
+        }
 
         $updated = updateRow(
             'evenement_inscriptions',
@@ -1587,7 +1574,6 @@ function handleUnregisterFromEvent($employee_id, $event_id)
         return false;
     }
 }
-
 
 function getEventIcon($eventType)
 {
@@ -1642,7 +1628,6 @@ function handleChangePassword($employee_id, $current_password, $new_password, $c
             return false;
         }
 
-
         $user = fetchOne(TABLE_USERS, 'id = :id', '', [':id' => $employee_id]);
 
         if (!$user) {
@@ -1664,11 +1649,6 @@ function handleChangePassword($employee_id, $current_password, $new_password, $c
         $whereClause = 'id = :id';
         $whereParams = [':id' => $employee_id];
 
-        error_log("[DEBUG] handleChangePassword - Calling updateRow with:");
-        error_log("[DEBUG] Table: " . TABLE_USERS);
-        error_log("[DEBUG] Data: " . json_encode($updateData));
-        error_log("[DEBUG] Where: " . $whereClause);
-        error_log("[DEBUG] Where Params: " . json_encode($whereParams));
 
         $updated = updateRow(
             TABLE_USERS,
