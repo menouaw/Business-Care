@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../../includes/init.php';
-require_once __DIR__ . '/../../includes/page_functions/modules/companies.php'; 
+require_once __DIR__ . '/../../includes/page_functions/modules/companies.php';
 
 requireRole(ROLE_ENTREPRISE);
 
@@ -19,11 +19,11 @@ $statusFilter = isset($_GET['statut']) ? sanitizeInput($_GET['statut']) : 'actif
 
 $employee = null;
 $errors = [];
-$submittedData = $_SESSION['submitted_data'] ?? []; 
-unset($_SESSION['submitted_data']); 
+$submittedData = $_SESSION['submitted_data'] ?? [];
+unset($_SESSION['submitted_data']);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $postResult = handleCompanyEmployeePostRequest($_POST, $entrepriseId); 
+    $postResult = handleCompanyEmployeePostRequest($_POST, $entrepriseId);
 
     if (isset($postResult['redirectUrl'])) {
         redirectTo($postResult['redirectUrl']);
@@ -34,7 +34,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $employeeId = $postResult['employeeId'] ?? null;
 }
 
-$viewData = prepareCompanyEmployeeViewData($action, $entrepriseId, $employeeId, $page, $search, $statusFilter, $submittedData); 
+$employeesResult = getCompanyEmployees($entrepriseId, $page, 6, $search, $statusFilter);
+
+$viewData = prepareCompanyEmployeeViewData($action, $entrepriseId, $employeeId, $page, $search, $statusFilter, $submittedData);
 
 if (isset($viewData['redirectUrl'])) {
     redirectTo($viewData['redirectUrl']);
@@ -214,7 +216,7 @@ include_once __DIR__ . '/../../templates/header.php';
                         <input type="hidden" name="employee_id" value="<?= $employeeId ?>">
                     <?php endif; ?>
 
-                    <?php 
+                    <?php
                     if (!empty($errors)): ?>
                         <div class="alert alert-danger">
                             <strong>Erreur(s) :</strong><br>

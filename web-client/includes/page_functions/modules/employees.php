@@ -1678,10 +1678,6 @@ function handleAnonymousReport($sujet, $description)
     $sujet = trim(sanitizeInput($sujet));
     $description = trim(sanitizeInput($description));
 
-    if (mb_strlen($sujet) > 255) {
-        error_log("[WARNING] handleAnonymousReport: Sujet trop long.");
-        return false;
-    }
 
     $dataToInsert = [
         'sujet' => !empty($sujet) ? $sujet : null,

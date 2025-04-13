@@ -253,7 +253,7 @@ function getCompanyRecentActivity($company_id, $limit = 10)
     }
 }
 
-    
+
 function getCompanyInvoices($company_id, $page = 1, $limit = 5, $start_date = null, $end_date = null, $status = null)
 {
 
@@ -1928,7 +1928,7 @@ function prepareCompanyEmployeeViewData(string $action, int $entrepriseId, ?int 
         default:
             $viewData['action'] = 'list';
             $viewData['pageTitle'] = "Liste des Salariés";
-            $employeesResult = getCompanyEmployees($entrepriseId, $page, DEFAULT_ITEMS_PER_PAGE, $search, $statusFilter);
+            $employeesResult = getCompanyEmployees($entrepriseId, $page, 6, $search, $statusFilter); // Utiliser 6 au lieu de DEFAULT_ITEMS_PER_PAGE
             $viewData['employeesData'] = $employeesResult['employees'];
             $viewData['paginationHtml'] = $employeesResult['pagination_html'];
             break;
@@ -2208,7 +2208,7 @@ function prepareSettingsViewData(int $companyId, int $userId, array $submittedPr
     if (!$viewData['currentUser']) {
         flashMessage("Impossible de récupérer les informations de l'utilisateur.", 'danger');
         $viewData['redirectUrl'] = 'index.php';
-        return $viewData; 
+        return $viewData;
     }
 
     $viewData['profileSubmittedData'] = ! empty($submittedProfileData) ? $submittedProfileData : [
