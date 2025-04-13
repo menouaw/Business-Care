@@ -307,19 +307,19 @@ CREATE TABLE evenement_inscriptions (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (personne_id) REFERENCES personnes(id) ON DELETE CASCADE,
     FOREIGN KEY (evenement_id) REFERENCES evenements(id) ON DELETE CASCADE,
-    UNIQUE KEY unique_inscription (personne_id, evenement_id), -- Empêche un utilisateur de s'inscrire deux fois au même événement
+    UNIQUE KEY unique_inscription (personne_id, evenement_id), 
     INDEX idx_statut (statut)
 );
 
 CREATE TABLE signalements (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    sujet VARCHAR(255) NULL, -- Sujet optionnel
-    description TEXT NOT NULL, -- Description obligatoire
-    statut ENUM('nouveau', 'en_cours', 'resolu', 'clos') DEFAULT 'nouveau', -- Statut du traitement
+    sujet VARCHAR(255) NULL, 
+    description TEXT NOT NULL, 
+    statut ENUM('nouveau', 'en_cours', 'resolu', 'clos') DEFAULT 'nouveau', 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    -- PAS DE colonne personne_id pour garantir l'anonymat
     INDEX idx_statut (statut)
+);
 
 CREATE TABLE conseils (
     id INT PRIMARY KEY AUTO_INCREMENT,
