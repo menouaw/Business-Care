@@ -1210,7 +1210,6 @@ function handleCancelReservation($reservation_id)
         $rdvTime = new DateTime($reservation['date_rdv']);
         $interval = $now->diff($rdvTime);
         if ($now >= $rdvTime || ($interval->days == 0 && $interval->h < 24)) {
-
         }
 
         $updated = updateRow(
@@ -1277,7 +1276,7 @@ function handleMarkNotificationRead($notification_id)
         );
         return $updated > 0;
     }
-    return false; 
+    return false;
 }
 
 
@@ -1321,7 +1320,7 @@ function displayCommunityDetailsPageData($community_id)
     if (!$community_id) {
         flashMessage("ID de communauté invalide.", "danger");
         redirectTo(WEBCLIENT_URL . '/modules/employees/communities.php');
-        return $data; 
+        return $data;
     }
 
     $data['community'] = fetchOne(TABLE_COMMUNAUTES, "id = :id", [':id' => $community_id], '');
@@ -1329,7 +1328,7 @@ function displayCommunityDetailsPageData($community_id)
     if (!$data['community']) {
         flashMessage("Communauté non trouvée.", "warning");
         redirectTo(WEBCLIENT_URL . '/modules/employees/communities.php');
-        return $data; 
+        return $data;
     }
 
     $query = "SELECT cm.*, p.prenom, p.nom 
@@ -1442,7 +1441,7 @@ function handleRegisterForEvent($employee_id, $event_id)
     );
     if ($existingRegistration) {
         flashMessage("Vous êtes déjà inscrit à cet événement.", "info");
-        return true; 
+        return true;
     }
 
     if (isset($event['capacite_max']) && $event['capacite_max'] !== null) {
@@ -1733,4 +1732,233 @@ function processAppointmentCancellationRequest($postData)
     $currentFilterForRedirect = isset($_GET['filter']) ? sanitizeInput($_GET['filter']) : 'upcoming';
     redirectTo(WEBCLIENT_URL . '/modules/employees/appointments.php?filter=' . $currentFilterForRedirect);
     exit;
+}
+
+
+function getCommunityIcon($type)
+{
+    $type = strtolower(trim($type ?? ''));
+    switch ($type) {
+        case 'sport':
+            return 'fas fa-futbol';
+        case 'bien_etre':
+            return 'fas fa-spa';
+        case 'sante':
+            return 'fas fa-heartbeat';
+
+        default:
+            return 'fas fa-users';
+    }
+}
+
+function handleJoinCommunityRequest($employee_id, $community_id)
+{
+    if (!$employee_id || !$community_id) {
+        flashMessage("ID de communauté ou d'employé manquant pour rejoindre.", "danger");
+        return;
+    }
+
+    logActivity($employee_id, 'community_join_attempt', "Tentative de rejoindre la communauté ID: $community_id");
+
+    $alreadyMember = false;
+    $joinSuccess = false;
+
+    if ($alreadyMember) {
+        flashMessage("Vous êtes déjà membre de cette communauté.", "info");
+    } else {
+        $joinSuccess = true;
+        if ($joinSuccess) {
+            flashMessage("Vous avez rejoint la communauté " . htmlspecialchars($community_id) . " (Simulation).", "success");
+        } else {
+            flashMessage("Impossible de rejoindre la communauté " . htmlspecialchars($community_id) . ".", "danger");
+        }
+    }
+}
+
+function handleDonationSubmission($postData, $employee_id)
+{
+    $submitted_csrf_token = $postData['csrf_token'] ?? null;
+
+    if (!validateToken($submitted_csrf_token)) {
+        logSecurityEvent($employee_id, 'csrf_failure', '[SECURITY FAILURE] Tentative POST avec jeton invalide sur donations.php');
+        flashMessage("Erreur de sécurité (jeton invalide).", "danger");
+        return;
+    }
+
+    requireRole(ROLE_SALARIE);
+
+    $donationData = [
+        'association_id' => $postData['association_id'] ?? null,
+        'type' => $postData['type'] ?? null,
+        'montant' => $postData['montant'] ?? null,
+        'description' => $postData['description'] ?? null
+    ];
+
+    $donationId = manageEmployeeDonations($employee_id, $donationData);
+}
+
+function handleEventActionRequest($postData, $employee_id)
+{
+    $csrf_token = $postData['csrf_token'] ?? null;
+    $event_id = filter_var($postData['event_id'] ?? null, FILTER_VALIDATE_INT);
+    $action = $postData['action'] ?? '';
+
+    if (!validateToken($csrf_token)) {
+        logSecurityEvent($employee_id, 'csrf_failure', "[SECURITY FAILURE] Tentative POST événement avec jeton invalide via handleEventActionRequest");
+        flashMessage("Erreur de sécurité (jeton invalide).", "danger");
+        return;
+    }
+
+    requireRole(ROLE_SALARIE);
+
+    if (!$event_id) {
+        flashMessage("ID d'événement invalide.", "danger");
+        return;
+    }
+
+    if ($action === 'register_event') {
+        handleRegisterForEvent($employee_id, $event_id);
+    } elseif ($action === 'unregister_event') {
+        handleUnregisterFromEvent($employee_id, $event_id);
+    } else {
+        flashMessage("Action invalide.", "danger");
+    }
+}
+
+function handleServiceReservationRequest($postData, $employee_id)
+{
+    $csrf_token = $postData['csrf_token'] ?? null;
+    $prestation_id = filter_var($postData['prestation_id'] ?? null, FILTER_VALIDATE_INT);
+
+    if (!validateToken($csrf_token)) {
+        logSecurityEvent($employee_id, 'csrf_failure', "[SECURITY FAILURE] Tentative POST service reservation avec jeton invalide via handleServiceReservationRequest");
+        flashMessage("Erreur de sécurité (jeton invalide).", "danger");
+        return false;
+    }
+
+    requireRole(ROLE_SALARIE);
+
+    if (!$prestation_id) {
+        flashMessage("ID de prestation invalide.", "danger");
+        return false;
+    }
+
+    $appointment_data = [
+        'prestation_id' => $prestation_id,
+        'date_rdv'      => date('Y-m-d H:i:s', strtotime('+1 day')),
+        'duree'         => 60,
+        'type_rdv'      => 'visio',
+        'notes'         => 'Réservation rapide depuis catalogue.'
+    ];
+
+    $result = bookEmployeeAppointment($employee_id, $appointment_data);
+
+    if ($result) {
+        flashMessage("La prestation a bien été réservée (ID: $result). Un créneau par défaut a été assigné. Vous pourrez le modifier depuis votre planning.", "success");
+        return true;
+    } else {
+        if (!isset($_SESSION['flash_messages'])) {
+            flashMessage("Erreur lors de la tentative de réservation.", "danger");
+        }
+        return false;
+    }
+}
+
+function handlePasswordChangeRequest($postData, $employee_id)
+{
+    requireRole(ROLE_SALARIE);
+
+    $current_password = $postData['current_password'] ?? '';
+    $new_password = $postData['new_password'] ?? '';
+    $confirm_password = $postData['confirm_password'] ?? '';
+
+    handleChangePassword($employee_id, $current_password, $new_password, $confirm_password);
+}
+
+function processSignalementSubmission($postData)
+{
+    $errors = [];
+    $submittedData = [
+        'sujet' => $postData['sujet'] ?? '',
+        'description' => $postData['description'] ?? ''
+    ];
+
+    if (!isset($postData['csrf_token']) || !validateToken($postData['csrf_token'])) {
+        logSystemActivity('csrf_failure_anonymous_report', '[SECURITY FAILURE] Tentative signalement anonyme avec jeton invalide.');
+        flashMessage("Erreur de sécurité (jeton invalide). Veuillez réessayer.", "danger");
+        return ['csrf' => 'Jeton invalide'];
+    }
+
+    $sujet = $submittedData['sujet'];
+    $description = $submittedData['description'];
+
+    if (empty(trim($description))) {
+        $errors['description'] = 'La description détaillée est obligatoire.';
+    }
+
+    if (mb_strlen($sujet) > 255) {
+        $errors['sujet'] = 'Le sujet ne doit pas dépasser 255 caractères.';
+    }
+
+    if (empty($errors)) {
+        $success = handleAnonymousReport($sujet, $description);
+
+        if ($success) {
+            logSystemActivity('anonymous_report_submitted', 'Nouveau signalement anonyme reçu.');
+            flashMessage("Votre signalement a été transmis de manière anonyme. Merci pour votre vigilance.", "success");
+            return [];
+        } else {
+            flashMessage("Une erreur technique est survenue lors de la transmission de votre signalement. Veuillez réessayer.", "danger");
+            $errors['general'] = "Erreur de transmission.";
+            return $errors;
+        }
+    } else {
+        flashMessage("Veuillez corriger les erreurs indiquées.", "warning");
+        return $errors;
+    }
+}
+
+function displayCounselPageData()
+{
+    $counselTopics = [];
+    $dbError = null;
+
+    if (!isset($_SESSION['user_id'])) {
+        return ['counselTopics' => [], 'dbError' => 'Utilisateur non authentifié pour récupérer les conseils personnalisés.'];
+    }
+    $userId = $_SESSION['user_id'];
+
+    try {
+        $preferredCategoriesResult = fetchAll('utilisateur_interets_conseils', 'personne_id = :user_id', '', 0, 0, [':user_id' => $userId]);
+
+        $params = [];
+        $sql = "SELECT id, titre, icone, resume, categorie, contenu FROM conseils"; // Select from 'conseils' table
+
+        if (!empty($preferredCategoriesResult)) {
+            $categories = array_column($preferredCategoriesResult, 'categorie_conseil');
+            $categoryPlaceholders = [];
+            foreach ($categories as $index => $category) {
+                $placeholder = ':cat' . $index;
+                $categoryPlaceholders[] = $placeholder;
+                $params[$placeholder] = $category;
+            }
+            if (!empty($categoryPlaceholders)) {
+                $sql .= " WHERE categorie IN (" . implode(', ', $categoryPlaceholders) . ")";
+            }
+        }
+
+        $sql .= " ORDER BY categorie, titre"; // Optional ordering
+
+        $stmt = executeQuery($sql, $params);
+        $counselTopics = $stmt->fetchAll();
+    } catch (PDOException $e) {
+        error_log("Error fetching counsel topics for user $userId: " . $e->getMessage());
+        $dbError = "Une erreur est survenue lors de la récupération des conseils.";
+    } catch (Exception $e) {
+        error_log("General error in displayCounselPageData for user $userId: " . $e->getMessage());
+        $dbError = "Une erreur générale est survenue.";
+    }
+
+
+    return ['counselTopics' => $counselTopics, 'dbError' => $dbError];
 }

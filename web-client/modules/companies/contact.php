@@ -9,9 +9,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $submittedData = $_SESSION['contact_form_data'] ?? [];
-if (!empty($submittedData)) {
-    unset($_SESSION['contact_form_data']);
-}
 
 $csrfToken = generateToken();
 

@@ -74,13 +74,19 @@ CREATE TABLE prestations (
 
 CREATE TABLE services (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    nom VARCHAR(100) NOT NULL UNIQUE,
+    type ENUM('Starter Pack', 'Basic Pack', 'Premium Pack') NOT NULL UNIQUE,
     description TEXT,
     actif BOOLEAN DEFAULT TRUE,
     ordre INT DEFAULT 0,
+    max_effectif_inferieur_egal INT NULL,
+    activites_incluses INT NOT NULL DEFAULT 0,
+    rdv_medicaux_inclus INT NOT NULL DEFAULT 0,
+    chatbot_questions_limite INT NULL,
+    conseils_hebdo_personnalises BOOLEAN DEFAULT FALSE,
+    tarif_annuel_par_salarie DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_nom (nom),
+    INDEX idx_type (type),
     INDEX idx_actif (actif)
 );
 

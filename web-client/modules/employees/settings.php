@@ -19,12 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'update_settings') {
         handleUpdateEmployeeSettings();
     } elseif ($action === 'change_password') {
-        $current_password = $_POST['current_password'] ?? '';
-        $new_password = $_POST['new_password'] ?? '';
-        $confirm_password = $_POST['confirm_password'] ?? '';
-        $employee_id = $_SESSION['user_id'] ?? null;
-
-        handleChangePassword($employee_id, $current_password, $new_password, $confirm_password);
+        handlePasswordChangeRequest($_POST, $_SESSION['user_id']);
     }
     redirectTo(WEBCLIENT_URL . '/modules/employees/settings.php');
     exit;

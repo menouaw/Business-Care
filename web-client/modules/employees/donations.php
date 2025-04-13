@@ -5,26 +5,9 @@ require_once __DIR__ . '/../../includes/page_functions/modules/employees.php';
 $current_employee_id = $_SESSION['user_id'] ?? null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $submitted_csrf_token = $_POST['csrf_token'] ?? null;
+    handleDonationSubmission($_POST, $current_employee_id);
+
     $redirectUrl = WEBCLIENT_URL . '/modules/employees/donations.php';
-
-    if (!validateToken($submitted_csrf_token)) {
-        logSecurityEvent($current_employee_id, 'csrf_failure', '[SECURITY FAILURE] Tentative POST avec jeton invalide sur donations.php');
-        flashMessage("Erreur de sécurité (jeton invalide).", "danger");
-    } else {
-        requireRole(ROLE_SALARIE);
-
-        $donationData = [
-            'association_id' => $_POST['association_id'] ?? null,
-            'type' => $_POST['type'] ?? null,
-            'montant' => $_POST['montant'] ?? null,
-            'description' => $_POST['description'] ?? null
-        ];
-
-
-        $donationId = manageEmployeeDonations($current_employee_id, $donationData);
-    }
-
     redirectTo($redirectUrl);
     exit;
 }

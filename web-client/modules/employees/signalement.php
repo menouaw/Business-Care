@@ -5,37 +5,21 @@ require_once __DIR__ . '/../../includes/page_functions/modules/employees.php';
 requireRole(ROLE_SALARIE);
 
 $errors = [];
-$submittedData = [];
+$submittedData = [
+    'sujet' => $_POST['sujet'] ?? '',
+    'description' => $_POST['description'] ?? ''
+];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!isset($_POST['csrf_token']) || !validateToken($_POST['csrf_token'])) {
-        logSystemActivity('csrf_failure_anonymous_report', '[SECURITY FAILURE] Tentative signalement anonyme avec jeton invalide.');
-        flashMessage("Erreur de sécurité (jeton invalide). Veuillez réessayer.", "danger");
+    $errors = processSignalementSubmission($_POST);
+
+    if (isset($errors['csrf'])) {
         redirectTo(WEBCLIENT_URL . '/modules/employees/signalement.php');
         exit;
     }
 
-    $sujet = $_POST['sujet'] ?? '';
-    $description = $_POST['description'] ?? '';
-
-    if (empty(trim($description))) {
-        $errors['description'] = 'La description détaillée est obligatoire.';
-    }
-
-    if (mb_strlen($sujet) > 255) {
-        $errors['sujet'] = 'Le sujet ne doit pas dépasser 255 caractères.';
-    }
-
     if (empty($errors)) {
-        $success = handleAnonymousReport($sujet, $description);
-
-        if ($success) {
-            logSystemActivity('anonymous_report_submitted', 'Nouveau signalement anonyme reçu.');
-            flashMessage("Votre signalement a été transmis de manière anonyme. Merci pour votre vigilance.", "success");
-            $submittedData = [];
-        } else {
-            flashMessage("Une erreur technique est survenue lors de la transmission de votre signalement. Veuillez réessayer.", "danger");
-        }
+        $submittedData = [];
     }
 }
 

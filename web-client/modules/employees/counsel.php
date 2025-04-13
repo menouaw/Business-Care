@@ -4,14 +4,9 @@ require_once __DIR__ . '/../../includes/page_functions/modules/employees.php';
 
 requireRole(ROLE_SALARIE);
 
-$counselTopics = [];
-$dbError = null;
-try {
-    $counselTopics = fetchAll('conseils', 'statut = :statut', 'titre ASC', [':statut' => 'actif']);
-} catch (Exception $e) {
-    error_log("Error fetching counsel topics: " . $e->getMessage());
-    $dbError = "Impossible de charger les conseils pour le moment. Veuillez réessayer plus tard.";
-}
+$pageData = displayCounselPageData();
+$counselTopics = $pageData['counselTopics'];
+$dbError = $pageData['dbError'];
 
 $pageTitle = "Conseils Bien-être - Espace Salarié";
 

@@ -6,20 +6,6 @@ $community_id = isset($_GET['id']) ? filter_var($_GET['id'], FILTER_VALIDATE_INT
 $current_employee_id = $_SESSION['user_id'] ?? null;
 $csrfToken = $_SESSION['csrf_token'] ?? '';
 
-function getCommunityIcon($type)
-{
-    switch ($type) {
-        case 'sport':
-            return 'fas fa-futbol';
-        case 'bien_etre':
-            return 'fas fa-spa';
-        case 'sante':
-            return 'fas fa-heartbeat';
-        default:
-            return 'fas fa-users';
-    }
-}
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? null;
     $posted_community_id = isset($_POST['community_id']) ? filter_var($_POST['community_id'], FILTER_VALIDATE_INT) : null;
@@ -38,18 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         switch ($action) {
             case 'join_community':
-                if ($posted_community_id) {
-                    logActivity($current_employee_id, 'community_join_attempt', "Tentative de rejoindre la communauté ID: $posted_community_id");
-
-                    $joined = true;
-                    if ($joined) {
-                        flashMessage("Vous avez rejoint la communauté #" . htmlspecialchars($posted_community_id) . " (Simulation).", "info");
-                    } else {
-                        flashMessage("Impossible de rejoindre la communauté #" . htmlspecialchars($posted_community_id) . ".", "danger");
-                    }
-                } else {
-                    flashMessage("ID de communauté manquant pour rejoindre.", "danger");
-                }
+                handleJoinCommunityRequest($current_employee_id, $posted_community_id);
                 break;
 
             case 'post_message':
