@@ -280,7 +280,7 @@ CREATE TABLE contrats_prestations (
     FOREIGN KEY (prestation_id) REFERENCES prestations(id) ON DELETE CASCADE
 );
 
-/*
+
 CREATE TABLE communaute_messages (
     id INT PRIMARY KEY AUTO_INCREMENT,
     communaute_id INT NOT NULL,
@@ -338,4 +338,3 @@ CREATE TABLE utilisateur_interets_conseils (
 );
 
 
-*/
