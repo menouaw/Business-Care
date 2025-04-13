@@ -15,9 +15,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    $submittedData = getFormData();
-    $sujet = $submittedData['sujet'] ?? '';
-    $description = $submittedData['description'] ?? '';
+    $sujet = $_POST['sujet'] ?? '';
+    $description = $_POST['description'] ?? '';
 
     if (empty(trim($description))) {
         $errors['description'] = 'La description détaillée est obligatoire.';
