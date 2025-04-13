@@ -58,13 +58,13 @@ function deleteProvider($provider_id)
         return ['success' => false, 'message' => 'ID de prestataire invalide.'];
     }
 
-    // Vérifier les dépendances avant de tenter la suppression
+    
     $donationCount = fetchOne(TABLE_DONATIONS, 'personne_id = :id', '', [':id' => $provider_id]);
     if ($donationCount) {
          return ['success' => false, 'message' => 'Impossible de supprimer ce prestataire car il est lié à des dons existants.'];
     }
 
-    // Vérifier les rendez-vous futurs ou actifs où le prestataire est praticien
+    
     $appointmentCount = fetchOne(
         TABLE_APPOINTMENTS, 
         'praticien_id = :id AND statut IN (:status_planifie, :status_confirme)', 
@@ -73,19 +73,19 @@ function deleteProvider($provider_id)
             ':id' => $provider_id, 
             ':status_planifie' => 'planifie',
             ':status_confirme' => 'confirme'
-            // On pourrait aussi vérifier date_rdv >= NOW()
+            
         ]
     );
     if ($appointmentCount) {
          return ['success' => false, 'message' => 'Impossible de supprimer ce prestataire car il est assigné à des rendez-vous futurs ou confirmés.'];
     }
     
-    // Optionnel: Vérifier d'autres dépendances (ex: logs ?)
+    
 
     try {
         beginTransaction();
         
-        // Supprimer les préférences utilisateur associées
+        
         deleteRow(TABLE_USER_PREFERENCES, 'personne_id = :id', [':id' => $provider_id]);
         
         
@@ -102,18 +102,18 @@ function deleteProvider($provider_id)
 
         if ($affectedRows > 0) {
             commitTransaction();
-            logBusinessOperation($_SESSION['user_id'] ?? 0, 'provider_delete', 
+            logBusinessOperation($_SESSION['user_id'] ?? 0, ':provider_delete', 
                 "[SUCCESS] Prestataire ID: {$provider_id} supprimé.");
             return ['success' => true, 'message' => 'Le prestataire a été supprimé avec succès.'];
         } else {
             rollbackTransaction();
-            logBusinessOperation($_SESSION['user_id'] ?? 0, 'provider_delete_fail', 
+            logBusinessOperation($_SESSION['user_id'] ?? 0, ':provider_delete_fail', 
                 "[FAILURE] Tentative de suppression du prestataire ID: {$provider_id}, non trouvé ou rôle incorrect.");
             return ['success' => false, 'message' => 'Impossible de supprimer le prestataire (peut-être déjà supprimé ou rôle incorrect).'];
         }
     } catch (Exception $e) {
         rollbackTransaction();
-        logSecurityEvent($_SESSION['user_id'] ?? 0, 'provider_delete_error', 
+        logSecurityEvent($_SESSION['user_id'] ?? 0, ':provider_delete_error', 
             "[ERROR] Erreur lors de la suppression du prestataire ID: {$provider_id} - " . $e->getMessage());
         return ['success' => false, 'message' => 'Une erreur est survenue lors de la suppression du prestataire. ' . $e->getMessage()];
     }
@@ -151,6 +151,45 @@ function addProviderHabilitation($provider_id, $habilitation_data)
     }
     
     return $newId;
+}
+
+/**
+ * Met à jour une habilitation existante pour un prestataire.
+ *
+ * @param int $habilitation_id L'ID de l'habilitation à mettre à jour.
+ * @param array $data Tableau associatif des nouvelles données de l'habilitation.
+ * @return int Nombre de lignes affectées.
+ */
+function updateProviderHabilitation($habilitation_id, $data)
+{
+    
+    $allowed_fields = ['type', 'nom_document', 'document_url', 'organisme_emission', 'date_obtention', 'date_expiration', 'statut', 'notes'];
+    $update_data = array_intersect_key($data, array_flip($allowed_fields));
+
+    if (empty($update_data)) {
+        throw new InvalidArgumentException("Aucune donnée valide fournie pour la mise à jour de l\'habilitation.");
+    }
+
+    
+    if (isset($update_data['statut']) && !in_array($update_data['statut'], HABILITATION_STATUSES)) {
+        throw new InvalidArgumentException("Statut d\'habilitation invalide fourni.");
+    }
+    
+    
+    foreach (['date_obtention', 'date_expiration'] as $date_field) {
+        if (isset($update_data[$date_field]) && empty($update_data[$date_field])) {
+            $update_data[$date_field] = null;
+        }
+    }
+
+    $affectedRows = updateRow(TABLE_HABILITATIONS, $update_data, 'id = :id', [':id' => $habilitation_id]);
+
+    if ($affectedRows > 0) {
+        logBusinessOperation($_SESSION['user_id'] ?? 0, 'habilitation_update', 
+            "[SUCCESS] Habilitation ID: {$habilitation_id} mise à jour.");
+    }
+
+    return $affectedRows;
 }
 
 /**
@@ -197,7 +236,16 @@ function deleteProviderHabilitation($habilitation_id)
     return $affectedRows;
 }
 
-
+/**
+ * Récupère les détails d'une habilitation spécifique.
+ *
+ * @param int $habilitation_id L'ID de l'habilitation.
+ * @return array|false Détails de l'habilitation ou false si non trouvée.
+ */
+function getHabilitationDetails($habilitation_id)
+{
+    return fetchOne(TABLE_HABILITATIONS, 'id = :id', '', [':id' => $habilitation_id]);
+}
 
 /**
  * Liste les prestations spécifiques qu'un prestataire est autorisé à délivrer.

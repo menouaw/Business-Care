@@ -58,7 +58,7 @@ include_once '../../templates/header.php';
                 <div class="nav nav-tabs" id="providerTab" role="tablist">
                     <button class="nav-link <?php echo ($tab === 'details') ? 'active' : ''; ?>" id="nav-details-tab" data-bs-toggle="tab" data-bs-target="#nav-details" type="button" role="tab" aria-controls="nav-details" aria-selected="<?php echo ($tab === 'details') ? 'true' : 'false'; ?>">Détails</button>
                     <button class="nav-link <?php echo ($tab === 'habilitations') ? 'active' : ''; ?>" id="nav-habilitations-tab" data-bs-toggle="tab" data-bs-target="#nav-habilitations" type="button" role="tab" aria-controls="nav-habilitations" aria-selected="<?php echo ($tab === 'habilitations') ? 'true' : 'false'; ?>">Habilitations</button>
-                    <button class="nav-link <?php echo ($tab === 'prestations') ? 'active' : ''; ?>" id="nav-prestations-tab" data-bs-toggle="tab" data-bs-target="#nav-prestations" type="button" role="tab" aria-controls="nav-prestations" aria-selected="<?php echo ($tab === 'prestations') ? 'true' : 'false'; ?>">Prestations Assignées</button>
+                    <button class="nav-link <?php echo ($tab === 'prestations') ? 'active' : ''; ?>" id="nav-prestations-tab" data-bs-toggle="tab" data-bs-target="#nav-prestations" type="button" role="tab" aria-controls="nav-prestations" aria-selected="<?php echo ($tab === 'prestations') ? 'true' : 'false'; ?>">Prestations</button>
                     <button class="nav-link <?php echo ($tab === 'evaluations') ? 'active' : ''; ?>" id="nav-evaluations-tab" data-bs-toggle="tab" data-bs-target="#nav-evaluations" type="button" role="tab" aria-controls="nav-evaluations" aria-selected="<?php echo ($tab === 'evaluations') ? 'true' : 'false'; ?>">Évaluations</button>
                     <button class="nav-link <?php echo ($tab === 'calendar') ? 'active' : ''; ?>" id="nav-calendar-tab" data-bs-toggle="tab" data-bs-target="#nav-calendar" type="button" role="tab" aria-controls="nav-calendar" aria-selected="<?php echo ($tab === 'calendar') ? 'true' : 'false'; ?>">Calendrier</button>
                     <button class="nav-link <?php echo ($tab === 'appointments') ? 'active' : ''; ?>" id="nav-appointments-tab" data-bs-toggle="tab" data-bs-target="#nav-appointments" type="button" role="tab" aria-controls="nav-appointments" aria-selected="<?php echo ($tab === 'appointments') ? 'true' : 'false'; ?>">Rendez-vous</button>
@@ -71,13 +71,13 @@ include_once '../../templates/header.php';
                 <div class="tab-pane fade <?php echo ($tab === 'details') ? 'show active' : ''; ?>" id="nav-details" role="tabpanel" aria-labelledby="nav-details-tab">
                      <div class="card mb-4">
                         <div class="card-header">
-                           <i class="fas fa-info-circle me-1"></i> Informations Générales
+                           <i class="fas fa-info-circle me-1"></i> Détails
                         </div>
                         <div class="card-body">
                              <div class="row">
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <small class="text-muted d-block">Nom Complet</small>
+                                        <small class="text-muted d-block">Nom</small>
                                         <strong><?php echo htmlspecialchars($provider['prenom'] . ' ' . $provider['nom']); ?></strong>
                                     </div>
                                     <div class="mb-3">
@@ -88,15 +88,19 @@ include_once '../../templates/header.php';
                                         <small class="text-muted d-block">Téléphone</small>
                                         <strong><?php echo htmlspecialchars($provider['telephone'] ?: '-'); ?></strong>
                                     </div>
+                                    <div class="mb-3">
+                                        <small class="text-muted d-block">Date de naissance</small>
+                                        <strong><?php echo $provider['date_naissance'] ? formatDate($provider['date_naissance'], 'd/m/Y') : '-'; ?></strong>
+                                    </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <small class="text-muted d-block">Rôle</small>
-                                        <strong><?php echo htmlspecialchars(ucfirst($provider['role_name'])); ?></strong>
-                                    </div>
-                                    <div class="mb-3">
                                         <small class="text-muted d-block">Statut</small>
                                         <?php echo getStatusBadge($provider['statut']); ?>
+                                    </div>
+                                    <div class="mb-3">
+                                        <small class="text-muted d-block">Genre</small>
+                                        <strong><?php echo htmlspecialchars($provider['genre'] ?: 'Non spécifié'); ?></strong>
                                     </div>
                                     <div class="mb-3">
                                         <small class="text-muted d-block">Membre depuis</small>
@@ -116,7 +120,7 @@ include_once '../../templates/header.php';
                 <div class="tab-pane fade <?php echo ($tab === 'habilitations') ? 'show active' : ''; ?>" id="nav-habilitations" role="tabpanel" aria-labelledby="nav-habilitations-tab">
                      <div class="card mb-4">
                         <div class="card-header">
-                            <i class="fas fa-certificate me-1"></i> Gestion des Habilitations
+                            <i class="fas fa-certificate me-1"></i> Habilitations
                             <button type="button" class="btn btn-sm btn-outline-primary float-end" data-bs-toggle="modal" data-bs-target="#addHabilitationModal">
                                 <i class="fas fa-plus"></i> Ajouter
                             </button>
@@ -149,13 +153,31 @@ include_once '../../templates/header.php';
                                             <td><?php echo htmlspecialchars($hab['organisme_emission'] ?: '-'); ?></td>
                                             <td><?php echo $hab['date_expiration'] ? formatDate($hab['date_expiration'], 'd/m/Y') : 'N/A'; ?></td>
                                             <td><?php echo getStatusBadge($hab['statut']); ?></td>
-                                            <td class="table-actions">
+                                            <td class="table-actions d-flex flex-nowrap">
                                                 <?php if ($hab['statut'] === HABILITATION_STATUS_PENDING): ?>
-                                                    <button class="btn btn-sm btn-success btn-action" data-action="verify-habilitation" data-id="<?php echo $hab['id']; ?>" data-csrf="<?php echo generateToken(); ?>" data-bs-toggle="tooltip" title="Valider"><i class="fas fa-check"></i></button>
-                                                    <button class="btn btn-sm btn-warning btn-action" data-action="reject-habilitation" data-id="<?php echo $hab['id']; ?>" data-csrf="<?php echo generateToken(); ?>" data-bs-toggle="tooltip" title="Rejeter"><i class="fas fa-times"></i></button>
+                                                    <form action="<?php echo WEBADMIN_URL; ?>/modules/providers/actions.php" method="POST" class="d-inline me-1"> 
+                                                        <input type="hidden" name="action" value="verify_habilitation">
+                                                        <input type="hidden" name="id" value="<?php echo $hab['id']; ?>">
+                                                        <input type="hidden" name="provider_id" value="<?php echo $id; ?>">
+                                                        <input type="hidden" name="csrf_token" value="<?php echo generateToken(); ?>">
+                                                        <button type="submit" class="btn btn-sm btn-success" data-bs-toggle="tooltip" title="Valider"><i class="fas fa-check"></i></button>
+                                                    </form>
+                                                    <form action="<?php echo WEBADMIN_URL; ?>/modules/providers/actions.php" method="POST" class="d-inline me-1"> 
+                                                        <input type="hidden" name="action" value="reject_habilitation">
+                                                        <input type="hidden" name="id" value="<?php echo $hab['id']; ?>">
+                                                        <input type="hidden" name="provider_id" value="<?php echo $id; ?>">
+                                                        <input type="hidden" name="csrf_token" value="<?php echo generateToken(); ?>">
+                                                        <button type="submit" class="btn btn-sm btn-warning" data-bs-toggle="tooltip" title="Rejeter"><i class="fas fa-times"></i></button>
+                                                    </form>
                                                 <?php endif; ?>
-                                                <button class="btn btn-sm btn-primary btn-edit-habilitation" data-bs-toggle="modal" data-bs-target="#editHabilitationModal" data-habilitation='<?php echo json_encode($hab); ?>' title="Modifier"><i class="fas fa-edit"></i></button>
-                                                <button class="btn btn-sm btn-danger btn-action" data-action="delete-habilitation" data-id="<?php echo $hab['id']; ?>" data-csrf="<?php echo generateToken(); ?>" data-bs-toggle="tooltip" title="Supprimer"><i class="fas fa-trash"></i></button>
+                                                <a href="<?php echo WEBADMIN_URL; ?>/modules/providers/edit_habilitation.php?id=<?php echo $hab['id']; ?>&provider_id=<?php echo $id; ?>" class="btn btn-sm btn-primary me-1" data-bs-toggle="tooltip" title="Modifier"><i class="fas fa-edit"></i></a>
+                                                <form action="<?php echo WEBADMIN_URL; ?>/modules/providers/actions.php" method="POST" class="d-inline btn-delete-form">
+                                                    <input type="hidden" name="action" value="delete_habilitation">
+                                                    <input type="hidden" name="id" value="<?php echo $hab['id']; ?>">
+                                                    <input type="hidden" name="provider_id" value="<?php echo $id; ?>">
+                                                    <input type="hidden" name="csrf_token" value="<?php echo generateToken(); ?>">
+                                                    <button type="submit" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" title="Supprimer" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette habilitation ?');"><i class="fas fa-trash"></i></button>
+                                                </form>
                                             </td>
                                         </tr>
                                         <?php endforeach; ?>
@@ -173,7 +195,7 @@ include_once '../../templates/header.php';
                 <div class="tab-pane fade <?php echo ($tab === 'prestations') ? 'show active' : ''; ?>" id="nav-prestations" role="tabpanel" aria-labelledby="nav-prestations-tab">
                     <div class="card mb-4">
                         <div class="card-header">
-                            <i class="fas fa-concierge-bell me-1"></i> Prestations Assignées
+                            <i class="fas fa-concierge-bell me-1"></i> Prestations
                              <button type="button" class="btn btn-sm btn-outline-primary float-end" data-bs-toggle="modal" data-bs-target="#assignPrestationModal">
                                 <i class="fas fa-plus"></i> Assigner
                             </button>
@@ -184,9 +206,9 @@ include_once '../../templates/header.php';
                                 <table class="table table-sm table-hover">
                                     <thead>
                                         <tr>
-                                            <th>Nom de la Prestation</th>
+                                            <th>Nom</th>
                                             <th>Type</th>
-                                            <th>Prix Standard</th>
+                                            <th>Prix</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
@@ -196,10 +218,16 @@ include_once '../../templates/header.php';
                                             <td><a href="<?php echo WEBADMIN_URL; ?>/modules/services/view.php?id=<?php echo $prest['id']; ?>"><?php echo htmlspecialchars($prest['nom']); ?></a></td>
                                             <td><?php echo htmlspecialchars(ucfirst($prest['type'])); ?></td>
                                             <td><?php echo formatMoney($prest['prix']); ?></td>
-                                            <td>
-                                                 <button class="btn btn-sm btn-danger btn-action" data-action="remove-prestation" data-provider-id="<?php echo $id; ?>" data-prestation-id="<?php echo $prest['id']; ?>" data-csrf="<?php echo generateToken(); ?>" data-bs-toggle="tooltip" title="Retirer l'assignation">
-                                                     <i class="fas fa-unlink"></i>
-                                                </button>
+                                            <td class="table-actions">
+                                                <form action="<?php echo WEBADMIN_URL; ?>/modules/providers/actions.php" method="POST" class="d-inline btn-delete-form">
+                                                    <input type="hidden" name="action" value="remove_prestation">
+                                                    <input type="hidden" name="provider_id" value="<?php echo $id; ?>">
+                                                    <input type="hidden" name="prestation_id" value="<?php echo $prest['id']; ?>">
+                                                    <input type="hidden" name="csrf_token" value="<?php echo generateToken(); ?>">
+                                                    <button type="submit" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" title="Retirer l'assignation" onclick="return confirm('Êtes-vous sûr de vouloir retirer cette prestation du prestataire ?');">
+                                                         <i class="fas fa-unlink"></i>
+                                                    </button>
+                                                </form>
                                             </td>
                                         </tr>
                                         <?php endforeach; ?>
@@ -217,20 +245,20 @@ include_once '../../templates/header.php';
                 <div class="tab-pane fade <?php echo ($tab === 'evaluations') ? 'show active' : ''; ?>" id="nav-evaluations" role="tabpanel" aria-labelledby="nav-evaluations-tab">
                     <div class="card mb-4">
                         <div class="card-header">
-                            <i class="fas fa-star me-1"></i> Évaluations Récentes
+                            <i class="fas fa-star me-1"></i> Évaluations
                         </div>
                         <div class="card-body">
                              <div class="row mb-3 text-center">
                                 <div class="col-md-6">
                                     <div class="stat-box border rounded p-3">
                                         <div class="fs-4 fw-bold"><?php echo $evaluationData['average_score'] ?? 'N/A'; ?> / 5</div>
-                                        <div class="text-muted">Note Moyenne (sur <?php echo $evaluationData['total_evaluations']; ?> éval.)</div>
+                                        <div class="text-muted">Note</div>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                      <div class="stat-box border rounded p-3">
                                         <div class="fs-4 fw-bold"><?php echo $evaluationData['total_evaluations']; ?></div>
-                                        <div class="text-muted">Total Évaluations Reçues</div>
+                                        <div class="text-muted">Total</div>
                                     </div>
                                 </div>
                             </div>
@@ -264,13 +292,13 @@ include_once '../../templates/header.php';
                 <div class="tab-pane fade <?php echo ($tab === 'calendar') ? 'show active' : ''; ?>" id="nav-calendar" role="tabpanel" aria-labelledby="nav-calendar-tab">
                      <div class="card mb-4">
                         <div class="card-header">
-                            <i class="fas fa-calendar-alt me-1"></i> Calendrier des Disponibilités
+                            <i class="fas fa-calendar-alt me-1"></i> Calendrier
                             
                         </div>
                         <div class="card-body">
                            
                            <div id="provider-calendar"></div>
-                           <p class="text-center text-muted mt-3">[Intégration du calendrier des disponibilités ici - nécessite JavaScript]</p>
+                           <p class="text-center text-muted mt-3">TODO: Calendrier</p>
                            
                         </div>
                     </div>
@@ -280,7 +308,7 @@ include_once '../../templates/header.php';
                 <div class="tab-pane fade <?php echo ($tab === 'appointments') ? 'show active' : ''; ?>" id="nav-appointments" role="tabpanel" aria-labelledby="nav-appointments-tab">
                     <div class="card mb-4">
                         <div class="card-header">
-                            <i class="fas fa-calendar-check me-1"></i> Rendez-vous Récents/Prochains
+                            <i class="fas fa-calendar-check me-1"></i> Rendez-vous
                         </div>
                         <div class="card-body">
                              <?php if (!empty($appointments['items'])): ?>
@@ -288,7 +316,7 @@ include_once '../../templates/header.php';
                                 <table class="table table-sm table-hover">
                                     <thead>
                                         <tr>
-                                            <th>Date/Heure</th>
+                                            <th>Date</th>
                                             <th>Client</th>
                                             <th>Prestation</th>
                                             <th>Statut</th>
@@ -323,10 +351,6 @@ include_once '../../templates/header.php';
                                         <?php endforeach; ?>
                                     </tbody>
                                 </table>
-                                
-                                <div class="text-center mt-2">
-                                     <a href="<?php echo WEBADMIN_URL; ?>/modules/appointments/index.php?praticien_id=<?php echo $id; ?>" class="btn btn-sm btn-outline-secondary">Voir tous les rendez-vous</a>
-                                </div>
                              </div>
                             <?php else: ?>
                                 <p class="text-center text-muted">Aucun rendez-vous récent trouvé pour ce prestataire.</p>
@@ -386,7 +410,7 @@ include_once '../../templates/header.php';
           </div>
            <div class="mb-3">
             <label for="add_hab_document_url" class="form-label">URL Document (Scan)</label>
-            <input type="url" class="form-control" id="add_hab_document_url" name="document_url" placeholder="https:
+            <input type="url" class="form-control" id="add_hab_document_url" name="document_url">
           </div>
            <div class="mb-3">
             <label for="add_hab_notes" class="form-label">Notes</label>
@@ -405,74 +429,6 @@ include_once '../../templates/header.php';
           <button type="submit" class="btn btn-primary">Ajouter</button>
         </div>
       </form>
-    </div>
-  </div>
-</div>
-
-
-<div class="modal fade" id="editHabilitationModal" tabindex="-1" aria-labelledby="editHabilitationModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-       <div class="modal-header">
-        <h5 class="modal-title" id="editHabilitationModalLabel">Modifier une Habilitation</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-        <form id="editHabilitationForm" method="post" action="<?php echo WEBADMIN_URL; ?>/modules/providers/actions.php"> 
-            <input type="hidden" name="action" value="edit_habilitation"> 
-            <input type="hidden" id="edit_hab_id" name="habilitation_id" value="">
-            <input type="hidden" name="provider_id" value="<?php echo $id; ?>">
-            <input type="hidden" name="csrf_token" value="<?php echo generateToken(); ?>">
-            <div class="modal-body">
-                 <div class="mb-3">
-                    <label for="edit_hab_type" class="form-label">Type</label>
-                    <select class="form-select" id="edit_hab_type" name="type" required>
-                      <option value="" disabled>Sélectionner...</option>
-                      <option value="diplome">Diplôme</option>
-                      <option value="certification">Certification</option>
-                      <option value="agrement">Agrément</option>
-                      <option value="autre">Autre</option>
-                    </select>
-                  </div>
-                  <div class="mb-3">
-                    <label for="edit_hab_nom_document" class="form-label">Nom du Document/Diplôme</label>
-                    <input type="text" class="form-control" id="edit_hab_nom_document" name="nom_document">
-                  </div>
-                  <div class="mb-3">
-                    <label for="edit_hab_organisme" class="form-label">Organisme Émetteur</label>
-                    <input type="text" class="form-control" id="edit_hab_organisme" name="organisme_emission">
-                  </div>
-                  <div class="row">
-                      <div class="col-md-6 mb-3">
-                        <label for="edit_hab_date_obtention" class="form-label">Date Obtention</label>
-                        <input type="date" class="form-control" id="edit_hab_date_obtention" name="date_obtention">
-                      </div>
-                      <div class="col-md-6 mb-3">
-                        <label for="edit_hab_date_expiration" class="form-label">Date Expiration (si applicable)</label>
-                        <input type="date" class="form-control" id="edit_hab_date_expiration" name="date_expiration">
-                      </div>
-                  </div>
-                   <div class="mb-3">
-                    <label for="edit_hab_document_url" class="form-label">URL Document (Scan)</label>
-                    <input type="url" class="form-control" id="edit_hab_document_url" name="document_url" placeholder="https:
-                  </div>
-                   <div class="mb-3">
-                    <label for="edit_hab_notes" class="form-label">Notes</label>
-                    <textarea class="form-control" id="edit_hab_notes" name="notes" rows="2"></textarea>
-                  </div>
-                  <div class="mb-3">
-                     <label for="edit_hab_statut" class="form-label">Statut</label>
-                     <select class="form-select" id="edit_hab_statut" name="statut">
-                         <?php foreach (HABILITATION_STATUSES as $stat): ?>
-                             <option value="<?php echo $stat; ?>"><?php echo ucfirst(str_replace('_', ' ', $stat)); ?></option>
-                         <?php endforeach; ?>
-                     </select>
-                  </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-              <button type="submit" class="btn btn-primary">Enregistrer</button>
-            </div>
-        </form>
     </div>
   </div>
 </div>
@@ -517,5 +473,3 @@ include_once '../../templates/header.php';
     </div>
   </div>
 </div>
-
-</rewritten_file>

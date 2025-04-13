@@ -337,7 +337,7 @@ function usersSave($data, $id = 0) {
             $newId = insertRow('personnes', $dbData);
             
             if ($newId) {
-                logBusinessOperation($_SESSION['user_id'], 'user_create',
+                logBusinessOperation($_SESSION['user_id'], ':user_create',
                     "[SUCCESS] Création utilisateur: {$dbData['prenom']} {$dbData['nom']} (ID: $newId), role: {$dbData['role_id']}, statut: {$dbData['statut']}");
                 logSecurityEvent($_SESSION['user_id'], 'account_creation',
                     "[SUCCESS] Création compte pour {$dbData['email']} (ID: $newId, role: {$dbData['role_id']}) par admin ID: {$_SESSION['user_id']}");
