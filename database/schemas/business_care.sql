@@ -330,5 +330,12 @@ CREATE TABLE conseils (
     contenu LONGTEXT NOT NULL
 );
 
+CREATE TABLE utilisateur_interets_conseils (
+    personne_id INT NOT NULL,                          
+    categorie_conseil VARCHAR(100) NOT NULL,            
+    PRIMARY KEY (personne_id, categorie_conseil),
+    FOREIGN KEY (personne_id) REFERENCES personnes(id) ON DELETE CASCADE
 );
+
+
 */

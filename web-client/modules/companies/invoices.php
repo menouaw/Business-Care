@@ -1,11 +1,7 @@
 <?php
 
-/**
- * Affichage des factures pour l'espace entreprise.
- * Gère la vue liste (par défaut) et la vue détaillée d'une facture.
- */
 
-require_once __DIR__ . '/../../includes/init.php'; 
+require_once __DIR__ . '/../../includes/init.php';
 require_once __DIR__ . '/../../includes/page_functions/modules/companies.php';
 
 requireRole(ROLE_ENTREPRISE);
@@ -29,15 +25,15 @@ if ($action === 'view' && $invoiceId) {
         redirectTo('invoices.php');
     }
     $pageTitle = "Détails Facture " . ($invoiceToView['numero_facture_complet'] ?? $invoiceId) . " - Espace Entreprise";
-} else { 
-   
+} else {
+
     $currentStatus = ['en_attente', 'retard', 'impayee'];
     $currentInvoicesData = getCompanyInvoices($entrepriseId, 1, 999, null, null, $currentStatus);
     $currentFactures = $currentInvoicesData['invoices'] ?? [];
 
     $historicalStatus = ['payee', 'annulee'];
     $historicalInvoicesData = getCompanyInvoices($entrepriseId, 1, 999, null, null, $historicalStatus);
-    $historicalFactures = $historicalInvoicesData['invoices'] ?? []; 
+    $historicalFactures = $historicalInvoicesData['invoices'] ?? [];
     $pageTitle = "Mes Factures - Espace Entreprise";
 }
 
@@ -119,7 +115,7 @@ include_once __DIR__ . '/../../templates/header.php';
                             </tr>
                         </thead>
                         <tbody>
-                            <?php if (empty($invoiceToView['lignes'])): 
+                            <?php if (empty($invoiceToView['lignes'])):
                             ?>
                                 <tr>
                                     <td>Prestations Business Care (Période concernée)</td>
@@ -174,7 +170,7 @@ include_once __DIR__ . '/../../templates/header.php';
         </div>
 
     <?php
-    else: 
+    else:
     ?>
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="mb-0">Mes Factures</h1>
@@ -268,7 +264,6 @@ include_once __DIR__ . '/../../templates/header.php';
                                             <a href="invoices.php?action=view&id=<?= $facture['id'] ?>" class="btn btn-sm btn-outline-primary" title="Voir la facture">
                                                 <i class="fas fa-eye"></i>
                                             </a>
-                                            {/* No Pay button for history */}
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -279,7 +274,7 @@ include_once __DIR__ . '/../../templates/header.php';
             </div>
         </div>
     <?php endif;
-    
+
     ?>
 </main>
 

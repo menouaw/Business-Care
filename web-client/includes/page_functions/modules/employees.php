@@ -844,16 +844,16 @@ function displayEmployeeDashboard()
         redirectTo(WEBCLIENT_URL . '/connexion.php');
     }
 
-    $appointmentsResult = getEmployeeAppointments($employee_id, 'upcoming', 1, 3); 
-    $data['upcoming_appointments'] = $appointmentsResult; 
+    $appointmentsResult = getEmployeeAppointments($employee_id, 'upcoming', 1, 3);
+    $data['upcoming_appointments'] = $appointmentsResult;
 
     $eventsResult = getEmployeeEvents($employee_id, 'all', 1, 3);
-    $data['upcoming_events'] = $eventsResult['items'] ?? [];    
+    $data['upcoming_events'] = $eventsResult['items'] ?? [];
 
     $data['unread_notifications'] = fetchAll(TABLE_NOTIFICATIONS, 'personne_id = :id AND lu = 0', 'created_at DESC', 5, 0, ['id' => $employee_id]);
 
-    $activityResult = getEmployeeActivityHistory($employee_id, 1, 5); 
-    $data['recent_activity'] = $activityResult; 
+    $activityResult = getEmployeeActivityHistory($employee_id, 1, 5);
+    $data['recent_activity'] = $activityResult;
 
 
     return $data;
@@ -1729,4 +1729,28 @@ function handleAnonymousReport($sujet, $description)
         logSystemActivity('anonymous_report_exception', "Exception lors de l'enregistrement du signalement anonyme: " . $e->getMessage());
         return false;
     }
+}
+
+
+
+function processAppointmentCancellationRequest($postData)
+{
+    $message = '';
+    $messageType = 'danger';
+    $userIdForLog = $_SESSION['user_id'] ?? null;
+
+    if (!isset($postData['csrf_token']) || !validateToken($postData['csrf_token'])) {
+        logSecurityEvent($userIdForLog, 'csrf_failure', "[SECURITY FAILURE] Tentative d'annulation via POST avec jeton invalide sur appointments.php");
+        flashMessage('Erreur de sécurité. Impossible de traiter votre demande.', 'danger');
+    } else {
+        $reservation_id = isset($postData['reservation_id']) ? filter_var($postData['reservation_id'], FILTER_VALIDATE_INT) : false;
+        if (!$reservation_id) {
+            flashMessage("ID de réservation invalide pour l'annulation.", 'danger');
+        } else {
+            handleCancelReservation($reservation_id);
+        }
+    }
+    $currentFilterForRedirect = isset($_GET['filter']) ? sanitizeInput($_GET['filter']) : 'upcoming';
+    redirectTo(WEBCLIENT_URL . '/modules/employees/appointments.php?filter=' . $currentFilterForRedirect);
+    exit;
 }

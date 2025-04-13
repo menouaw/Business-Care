@@ -1,33 +1,9 @@
 <?php
-
-
+require_once __DIR__ . '/../../includes/init.php';
 require_once __DIR__ . '/../../includes/page_functions/modules/employees.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $message = '';
-    $messageType = 'danger';
-    $redirect = true;
-    if (!isset($_POST['csrf_token']) || !validateToken($_POST['csrf_token'])) {
-        $userIdForLog = $_SESSION['user_id'] ?? null;
-        logSecurityEvent($userIdForLog, 'csrf_failure', "[SECURITY FAILURE] Tentative d'annulation via POST avec jeton invalide sur appointments.php");
-    } else {
-        $reservation_id = isset($_POST['reservation_id']) ? filter_var($_POST['reservation_id'], FILTER_VALIDATE_INT) : false;
-        if (!$reservation_id) {
-            $message = "ID de réservation invalide pour l'annulation.";
-        } else {
-
-            handleCancelReservation($reservation_id);
-        }
-    }
-
-    if (!empty($message)) {
-        flashMessage($message, $messageType);
-    }
-
-
-    $currentFilterForRedirect = isset($_GET['filter']) ? sanitizeInput($_GET['filter']) : 'upcoming';
-    redirectTo(WEBCLIENT_URL . '/modules/employees/appointments.php?filter=' . $currentFilterForRedirect);
-    exit;
+    processAppointmentCancellationRequest($_POST);
 }
 
 $pageData = displayEmployeeAppointmentsPage();
@@ -70,7 +46,6 @@ include_once __DIR__ . '/../../templates/header.php';
             </div>
         </div>
 
-        <!-- Liste des rendez-vous -->
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white">
                 <h5 class="card-title mb-0">

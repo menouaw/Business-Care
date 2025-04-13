@@ -1,15 +1,19 @@
 <?php
 require_once __DIR__ . '/../../includes/init.php';
+require_once __DIR__ . '/../../includes/page_functions/modules/companies.php';
 
 $pageTitle = "Nous Contacter - Business Care";
 
-$formMessage = '';
-$formMessageType = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $formMessage = "Votre message a bien été envoyé. Nous vous répondrons bientôt.";
-    $formMessageType = 'success';
-
+    processContactFormSubmission($_POST);
 }
+
+$submittedData = $_SESSION['contact_form_data'] ?? [];
+if (!empty($submittedData)) {
+    unset($_SESSION['contact_form_data']);
+}
+
+$csrfToken = generateToken();
 
 include_once __DIR__ . '/../../templates/header.php';
 ?>
@@ -18,14 +22,13 @@ include_once __DIR__ . '/../../templates/header.php';
     <div class="d-flex justify-content-between align-items-center mb-5">
         <h1 class="mb-0">Contactez-nous</h1>
         <div>
-            <a href="#" onclick="history.back(); return false;" class="btn btn-sm btn-outline-secondary">
+            <a href="index.php" class="btn btn-sm btn-outline-secondary">
                 <i class="fas fa-arrow-left me-1"></i>Retour
             </a>
         </div>
     </div>
 
     <div class="row g-5">
-        <!-- Colonne Informations de contact -->
         <div class="col-lg-5">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body p-4">
@@ -62,34 +65,31 @@ include_once __DIR__ . '/../../templates/header.php';
             </div>
         </div>
 
-        <!-- Colonne Formulaire de contact -->
         <div class="col-lg-7">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body p-4">
                     <h3 class="card-title mb-4"><i class="fas fa-paper-plane me-2 text-primary"></i>Envoyez-nous un message</h3>
 
-                    <?php if ($formMessage): ?>
-                        <div class="alert alert-<?= htmlspecialchars($formMessageType) ?>" role="alert">
-                            <?= htmlspecialchars($formMessage) ?>
-                        </div>
-                    <?php endif; ?>
+                    <?php echo displayFlashMessages(); // Display confirmation/error messages here 
+                    ?>
 
-                    <form action="contact.php" method="post"> <!-- Soumet à la même page pour l'instant -->
+                    <form action="contact.php" method="post">
+                        <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>"> <!-- Utiliser le jeton généré -->
                         <div class="mb-3">
                             <label for="name" class="form-label">Votre Nom <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="name" name="name" required>
+                            <input type="text" class="form-control" id="name" name="name" value="<?= htmlspecialchars($submittedData['name'] ?? '') ?>" required>
                         </div>
                         <div class="mb-3">
                             <label for="email" class="form-label">Votre Email <span class="text-danger">*</span></label>
-                            <input type="email" class="form-control" id="email" name="email" required>
+                            <input type="email" class="form-control" id="email" name="email" value="<?= htmlspecialchars($submittedData['email'] ?? '') ?>" required>
                         </div>
                         <div class="mb-3">
                             <label for="subject" class="form-label">Sujet <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="subject" name="subject" required>
+                            <input type="text" class="form-control" id="subject" name="subject" value="<?= htmlspecialchars($submittedData['subject'] ?? '') ?>" required>
                         </div>
                         <div class="mb-3">
                             <label for="message" class="form-label">Votre Message <span class="text-danger">*</span></label>
-                            <textarea class="form-control" id="message" name="message" rows="6" required></textarea>
+                            <textarea class="form-control" id="message" name="message" rows="6" required><?= htmlspecialchars($submittedData['message'] ?? '') ?></textarea>
                         </div>
                         <div class="d-grid">
                             <button type="submit" class="btn btn-primary btn-lg">Envoyer le message</button>

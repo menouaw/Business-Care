@@ -373,12 +373,7 @@ function getProviderRatings($provider_id, $page = 1, $limit = 10)
     ];
 }
 
-/**
- * récupère la note moyenne d'un prestataire
- * 
- * @param int $provider_id identifiant du prestataire
- * @return float note moyenne
- */
+
 function getProviderAverageRating($provider_id)
 {
     $provider_id = (int)sanitizeInput($provider_id);
@@ -394,11 +389,7 @@ function getProviderAverageRating($provider_id)
     return $result['moyenne'] ? round($result['moyenne'], 1) : 0;
 }
 
-/**
- * récupère les catégories de prestataires
- * 
- * @return array liste des catégories
- */
+
 function getProviderCategories()
 {
     try {
@@ -416,13 +407,7 @@ function getProviderCategories()
     }
 }
 
-/**
- * récupère les contrats d'un prestataire
- * 
- * @param int $provider_id identifiant du prestataire
- * @param string $status filtre par statut (active, expired, all)
- * @return array liste des contrats
- */
+
 function getProviderContracts($provider_id, $status = 'active')
 {
     $provider_id = (int)sanitizeInput($provider_id);
@@ -470,12 +455,7 @@ function getProviderContracts($provider_id, $status = 'active')
     return $contracts;
 }
 
-/**
- * récupère les services proposés par un prestataire
- * 
- * @param int $provider_id identifiant du prestataire
- * @return array liste des services
- */
+
 function getProviderServices($provider_id)
 {
     $provider_id = (int)sanitizeInput($provider_id);
@@ -504,14 +484,6 @@ function getProviderServices($provider_id)
     return $services;
 }
 
-/**
- * récupère les factures d'un prestataire
- * 
- * @param int $provider_id identifiant du prestataire
- * @param string|null $start_date date de début (format Y-m-d)
- * @param string|null $end_date date de fin (format Y-m-d)
- * @return array liste des factures
- */
 function getProviderInvoices($provider_id, $start_date = null, $end_date = null)
 {
     $provider_id = (int)sanitizeInput($provider_id);

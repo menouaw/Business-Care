@@ -10,18 +10,16 @@ $entreprise = getCompanyDetails($entrepriseId);
 
 error_log("[DEBUG index.php] ID Entreprise utilisé pour contrats: " . $entrepriseId);
 
-$contrats = getCompanyContracts($entrepriseId, 'actif');
+$contrats = getCompanyContracts($entrepriseId, STATUS_ACTIVE);
 
 error_log("[DEBUG index.php] Contenu de \$contrats: " . print_r($contrats, true));
 
 $factures = getCompanyInvoices($entrepriseId);
 
-$employeesData = getCompanyEmployees($entrepriseId, 1, 100);
-$employes = $employeesData['employees'];
+$employeesData = getCompanyEmployees($entrepriseId, 1, 1);
+$totalEmployes = $employeesData['pagination']['total'] ?? 0;
 
-$totalEmployes = count($employes);
-
-$activites = getCompanyRecentActivity($entrepriseId, 5);
+$activites = getCompanyRecentActivity($entrepriseId, DASHBOARD_ITEMS_LIMIT);
 
 $pageTitle = "Tableau de bord - Espace Entreprise";
 
@@ -155,7 +153,7 @@ include_once __DIR__ . '/../../templates/header.php';
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <?php foreach (array_slice($factures['invoices'], 0, 5) as $facture): ?>
+                                        <?php foreach (array_slice($factures['invoices'], 0, DASHBOARD_ITEMS_LIMIT) as $facture): ?>
                                             <tr>
                                                 <td><?= $facture['reference'] ?? $facture['numero_facture'] ?? 'N/A' ?></td>
                                                 <td><?= $facture['date_emission_formatee'] ?? formatDate($facture['date_emission'], 'd/m/Y') ?></td>
