@@ -93,23 +93,28 @@ CREATE TABLE services (
 CREATE TABLE contrats (
     id INT PRIMARY KEY AUTO_INCREMENT,
     entreprise_id INT NOT NULL,
+    service_id INT NOT NULL,
     date_debut DATE NOT NULL,
     date_fin DATE,
-    montant_mensuel DECIMAL(10,2),
     nombre_salaries INT,
-    type_contrat ENUM('standard', 'premium', 'entreprise') NOT NULL,
     statut ENUM('actif', 'expire', 'resilie', 'en_attente') DEFAULT 'actif',
     conditions_particulieres TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (entreprise_id) REFERENCES entreprises(id),
+    FOREIGN KEY (service_id) REFERENCES services(id),
     INDEX idx_dates (date_debut, date_fin),
-    INDEX idx_statut (statut)
+    INDEX idx_statut (statut),
+    INDEX idx_service (service_id)
 );
 
 CREATE TABLE devis (
     id INT PRIMARY KEY AUTO_INCREMENT,
     entreprise_id INT NOT NULL,
+    service_id INT NULL,
+    nombre_salaries_estimes INT NULL,
+    est_personnalise BOOLEAN DEFAULT FALSE,
+    notes_negociation TEXT NULL,
     date_creation DATE NOT NULL,
     date_validite DATE,
     montant_total DECIMAL(10,2) NOT NULL,
@@ -121,8 +126,10 @@ CREATE TABLE devis (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (entreprise_id) REFERENCES entreprises(id),
+    FOREIGN KEY (service_id) REFERENCES services(id),
     INDEX idx_dates (date_creation, date_validite),
-    INDEX idx_statut (statut)
+    INDEX idx_statut (statut),
+    INDEX idx_service (service_id)
 );
 
 CREATE TABLE factures (
@@ -278,12 +285,54 @@ CREATE TABLE preferences_utilisateurs (
     UNIQUE KEY unique_personne_id (personne_id)
 );
 
+CREATE TABLE devis_prestations (
+    devis_id INT NOT NULL,
+    prestation_id INT NOT NULL,
+    quantite INT DEFAULT 1,
+    prix_unitaire_devis DECIMAL(10,2) NOT NULL,
+    description_specifique TEXT,
+    PRIMARY KEY (devis_id, prestation_id),
+    FOREIGN KEY (devis_id) REFERENCES devis(id) ON DELETE CASCADE,
+    FOREIGN KEY (prestation_id) REFERENCES prestations(id) ON DELETE CASCADE
+);
+
 CREATE TABLE contrats_prestations (
     contrat_id INT NOT NULL,
     prestation_id INT NOT NULL,
     PRIMARY KEY (contrat_id, prestation_id),
     FOREIGN KEY (contrat_id) REFERENCES contrats(id) ON DELETE CASCADE,
     FOREIGN KEY (prestation_id) REFERENCES prestations(id) ON DELETE CASCADE
+);
+
+CREATE TABLE factures_prestataires (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    prestataire_id INT NOT NULL,
+    numero_facture VARCHAR(50) UNIQUE,
+    date_facture DATE NOT NULL,
+    periode_debut DATE,
+    periode_fin DATE,
+    montant_total DECIMAL(10,2) NOT NULL,
+    statut ENUM('generation_attendue', 'impayee', 'payee') DEFAULT 'generation_attendue',
+    date_paiement DATETIME NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (prestataire_id) REFERENCES personnes(id) ON DELETE CASCADE,
+    INDEX idx_numero (numero_facture),
+    INDEX idx_periode (periode_debut, periode_fin),
+    INDEX idx_statut (statut),
+    INDEX idx_prestataire (prestataire_id)
+);
+
+CREATE TABLE facture_prestataire_lignes (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    facture_prestataire_id INT NOT NULL,
+    rendez_vous_id INT UNIQUE,
+    description TEXT NOT NULL,
+    montant DECIMAL(10,2) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (facture_prestataire_id) REFERENCES factures_prestataires(id) ON DELETE CASCADE,
+    FOREIGN KEY (rendez_vous_id) REFERENCES rendez_vous(id) ON DELETE SET NULL,
+    INDEX idx_facture_id (facture_prestataire_id)
 );
 
 

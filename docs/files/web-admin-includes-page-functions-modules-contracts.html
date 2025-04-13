@@ -137,6 +137,13 @@
 <dd>Recupere la liste des entreprises pour le formulaire</dd>
 
             <dt class="phpdocumentor-table-of-contents__entry -function -">
+    <a class="" href="namespaces/default.html#function_contractsGetServices">contractsGetServices()</a>
+    <span>
+                                &nbsp;: array&lt;string|int, mixed&gt;    </span>
+</dt>
+<dd>Recupere la liste des services pour le formulaire</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -function -">
     <a class="" href="namespaces/default.html#function_contractsSave">contractsSave()</a>
     <span>
                                 &nbsp;: array&lt;string|int, mixed&gt;    </span>
@@ -149,6 +156,13 @@
                                 &nbsp;: array&lt;string|int, mixed&gt;    </span>
 </dt>
 <dd>Supprime un contrat de la base de données.</dd>
+
+            <dt class="phpdocumentor-table-of-contents__entry -function -">
+    <a class="" href="namespaces/default.html#function_contractsGetActiveUserCountForCompany">contractsGetActiveUserCountForCompany()</a>
+    <span>
+                                &nbsp;: int    </span>
+</dt>
+<dd>Compte le nombre d&#039;utilisateurs actifs associés à une entreprise.</dd>
 
             <dt class="phpdocumentor-table-of-contents__entry -function -">
     <a class="" href="namespaces/default.html#function_contractsUpdateStatus">contractsUpdateStatus()</a>
@@ -187,7 +201,7 @@
     
     <code class="phpdocumentor-code phpdocumentor-signature ">
     <span class="phpdocumentor-signature__visibility"></span>
-                    <span class="phpdocumentor-signature__name">contractsGetList</span><span>(</span><span class="phpdocumentor-signature__argument"><span>[</span><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$page</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">1</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$perPage</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">10</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$search</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">&#039;&#039;</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$statut</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">&#039;&#039;</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$entrepriseId</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">0</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span></code>
+                    <span class="phpdocumentor-signature__name">contractsGetList</span><span>(</span><span class="phpdocumentor-signature__argument"><span>[</span><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$page</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">1</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$perPage</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">DEFAULT_ITEMS_PER_PAGE</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$search</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">&#039;&#039;</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$statut</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">&#039;&#039;</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$serviceId</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">0</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span></code>
 
     
         <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
@@ -204,9 +218,9 @@
                     <dt class="phpdocumentor-argument-list__entry">
                 <span class="phpdocumentor-signature__argument__name">$perPage</span>
                 : <span class="phpdocumentor-signature__argument__return-type">int</span>
-                 = <span class="phpdocumentor-signature__argument__default-value">10</span>            </dt>
+                 = <span class="phpdocumentor-signature__argument__default-value">DEFAULT_ITEMS_PER_PAGE</span>            </dt>
             <dd class="phpdocumentor-argument-list__definition">
-                    <section class="phpdocumentor-description"><p>Nombre d'elements par page</p>
+                    <section class="phpdocumentor-description"><p>Nombre d'elements par page (defaut via constante)</p>
 </section>
 
             </dd>
@@ -229,11 +243,11 @@
 
             </dd>
                     <dt class="phpdocumentor-argument-list__entry">
-                <span class="phpdocumentor-signature__argument__name">$entrepriseId</span>
+                <span class="phpdocumentor-signature__argument__name">$serviceId</span>
                 : <span class="phpdocumentor-signature__argument__return-type">int</span>
                  = <span class="phpdocumentor-signature__argument__default-value">0</span>            </dt>
             <dd class="phpdocumentor-argument-list__definition">
-                    <section class="phpdocumentor-description"><p>Filtre par entreprise</p>
+                    <section class="phpdocumentor-description"><p>Filtre par service</p>
 </section>
 
             </dd>
@@ -260,7 +274,7 @@
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="web-admin/includes/page_functions/modules/contracts.php"><a href="files/web-admin-includes-page-functions-modules-contracts.html"><abbr title="web-admin/includes/page_functions/modules/contracts.php">contracts.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">78</span>
+    <span class="phpdocumentor-element-found-in__line">77</span>
 
     </aside>
 
@@ -306,7 +320,7 @@
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="web-admin/includes/page_functions/modules/contracts.php"><a href="files/web-admin-includes-page-functions-modules-contracts.html"><abbr title="web-admin/includes/page_functions/modules/contracts.php">contracts.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">99</span>
+    <span class="phpdocumentor-element-found-in__line">91</span>
 
     </aside>
 
@@ -332,6 +346,40 @@
 
 </article>
                     <article class="phpdocumentor-element -function - ">
+    <h4 class="phpdocumentor-element__name" id="function_contractsGetServices">
+        contractsGetServices()
+        <a href="namespaces/default.html#function_contractsGetServices" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="web-admin/includes/page_functions/modules/contracts.php"><a href="files/web-admin-includes-page-functions-modules-contracts.html"><abbr title="web-admin/includes/page_functions/modules/contracts.php">contracts.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">100</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Recupere la liste des services pour le formulaire</p>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility"></span>
+                    <span class="phpdocumentor-signature__name">contractsGetServices</span><span>(</span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span></code>
+
+    
+    
+    
+
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>Liste des services (id, nom)</p>
+</section>
+
+            </section>
+
+</article>
+                    <article class="phpdocumentor-element -function - ">
     <h4 class="phpdocumentor-element__name" id="function_contractsSave">
         contractsSave()
         <a href="namespaces/default.html#function_contractsSave" class="headerlink"><i class="fas fa-link"></i></a>
@@ -340,7 +388,7 @@
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="web-admin/includes/page_functions/modules/contracts.php"><a href="files/web-admin-includes-page-functions-modules-contracts.html"><abbr title="web-admin/includes/page_functions/modules/contracts.php">contracts.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">123</span>
+    <span class="phpdocumentor-element-found-in__line">113</span>
 
     </aside>
 
@@ -351,12 +399,7 @@
     <span class="phpdocumentor-signature__visibility"></span>
                     <span class="phpdocumentor-signature__name">contractsSave</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type">array&lt;string|int, mixed&gt;&nbsp;</span><span class="phpdocumentor-signature__argument__name">$data</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$id</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">0</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span></code>
 
-        <section class="phpdocumentor-description"><p>Valide les informations du contrat et vérifie que l'entreprise associée existe. Si le paramètre
-$id est égal à 0, un nouveau contrat est créé. Sinon, le contrat identifié par $id est mis à jour.
-La fonction s'assure que les champs obligatoires (entreprise, date de début, type de contrat) sont fournis
-et que la date de fin, si spécifiée, n'est pas antérieure à la date de début. En cas d'erreur de validation
-ou de problème lors de l'opération en base de données, un tableau contenant des messages d'erreur est
-retourné.</p>
+        <section class="phpdocumentor-description"><p>Utilise insertRow ou updateRow de db.php.</p>
 </section>
 
         <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
@@ -366,8 +409,7 @@ retourné.</p>
                 : <span class="phpdocumentor-signature__argument__return-type">array&lt;string|int, mixed&gt;</span>
                             </dt>
             <dd class="phpdocumentor-argument-list__definition">
-                    <section class="phpdocumentor-description"><p>Données du contrat, comprenant l'identifiant de l'entreprise, les dates de début et fin,
-les informations financières et opérationnelles, le type de contrat, le statut et les conditions particulières.</p>
+                    <section class="phpdocumentor-description"><p>Données du contrat.</p>
 </section>
 
             </dd>
@@ -376,7 +418,7 @@ les informations financières et opérationnelles, le type de contrat, le statut
                 : <span class="phpdocumentor-signature__argument__return-type">int</span>
                  = <span class="phpdocumentor-signature__argument__default-value">0</span>            </dt>
             <dd class="phpdocumentor-argument-list__definition">
-                    <section class="phpdocumentor-description"><p>Identifiant du contrat à mettre à jour (0 pour créer un nouveau contrat).</p>
+                    <section class="phpdocumentor-description"><p>Identifiant du contrat (0 pour création).</p>
 </section>
 
             </dd>
@@ -388,8 +430,7 @@ les informations financières et opérationnelles, le type de contrat, le statut
         <h5 class="phpdocumentor-return-value__heading">Return values</h5>
         <span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span>
                     &mdash;
-                <section class="phpdocumentor-description"><p>Résultat de l'opération. En cas de succès, le tableau contient 'success' à true et un message
-de confirmation. En cas d'erreur, 'success' est false et le tableau contient un ou plusieurs messages d'erreur.</p>
+                <section class="phpdocumentor-description"><p>Résultat ['success' =&gt; bool, 'message' =&gt; string|null, 'errors' =&gt; array|null]</p>
 </section>
 
             </section>
@@ -404,7 +445,7 @@ de confirmation. En cas d'erreur, 'success' est false et le tableau contient un 
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="web-admin/includes/page_functions/modules/contracts.php"><a href="files/web-admin-includes-page-functions-modules-contracts.html"><abbr title="web-admin/includes/page_functions/modules/contracts.php">contracts.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">240</span>
+    <span class="phpdocumentor-element-found-in__line">212</span>
 
     </aside>
 
@@ -415,9 +456,7 @@ de confirmation. En cas d'erreur, 'success' est false et le tableau contient un 
     <span class="phpdocumentor-signature__visibility"></span>
                     <span class="phpdocumentor-signature__name">contractsDelete</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$id</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span></code>
 
-        <section class="phpdocumentor-description"><p>Vérifie l'existence du contrat identifié par l'ID fourni. Si le contrat n'existe pas,
-l'opération est loguée comme une tentative échouée et un message d'erreur est retourné.
-Sinon, le contrat est supprimé, l'opération est loguée, et un message de succès est renvoyé.</p>
+        <section class="phpdocumentor-description"><p>Utilise deleteRow de db.php après vérification.</p>
 </section>
 
         <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
@@ -439,8 +478,53 @@ Sinon, le contrat est supprimé, l'opération est loguée, et un message de succ
         <h5 class="phpdocumentor-return-value__heading">Return values</h5>
         <span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span>
                     &mdash;
-                <section class="phpdocumentor-description"><p>Tableau associatif contenant une clé 'success' (booléen) indiquant le résultat et
-une clé 'message' (chaîne) décrivant le résultat de l'opération.</p>
+                <section class="phpdocumentor-description"><p>Résultat ['success' =&gt; bool, 'message' =&gt; string]</p>
+</section>
+
+            </section>
+
+</article>
+                    <article class="phpdocumentor-element -function - ">
+    <h4 class="phpdocumentor-element__name" id="function_contractsGetActiveUserCountForCompany">
+        contractsGetActiveUserCountForCompany()
+        <a href="namespaces/default.html#function_contractsGetActiveUserCountForCompany" class="headerlink"><i class="fas fa-link"></i></a>
+
+    </h4>
+    <aside class="phpdocumentor-element-found-in">
+    <abbr class="phpdocumentor-element-found-in__file" title="web-admin/includes/page_functions/modules/contracts.php"><a href="files/web-admin-includes-page-functions-modules-contracts.html"><abbr title="web-admin/includes/page_functions/modules/contracts.php">contracts.php</abbr></a></abbr>
+    :
+    <span class="phpdocumentor-element-found-in__line">251</span>
+
+    </aside>
+
+        <p class="phpdocumentor-summary">Compte le nombre d&#039;utilisateurs actifs associés à une entreprise.</p>
+
+    
+    <code class="phpdocumentor-code phpdocumentor-signature ">
+    <span class="phpdocumentor-signature__visibility"></span>
+                    <span class="phpdocumentor-signature__name">contractsGetActiveUserCountForCompany</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$entrepriseId</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">int</span></code>
+
+    
+        <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
+    <dl class="phpdocumentor-argument-list">
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-signature__argument__name">$entrepriseId</span>
+                : <span class="phpdocumentor-signature__argument__return-type">int</span>
+                            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>L'ID de l'entreprise.</p>
+</section>
+
+            </dd>
+            </dl>
+
+    
+
+            <section>
+        <h5 class="phpdocumentor-return-value__heading">Return values</h5>
+        <span class="phpdocumentor-signature__response_type">int</span>
+                    &mdash;
+                <section class="phpdocumentor-description"><p>Le nombre d'utilisateurs actifs.</p>
 </section>
 
             </section>
@@ -455,7 +539,7 @@ une clé 'message' (chaîne) décrivant le résultat de l'opération.</p>
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="web-admin/includes/page_functions/modules/contracts.php"><a href="files/web-admin-includes-page-functions-modules-contracts.html"><abbr title="web-admin/includes/page_functions/modules/contracts.php">contracts.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">279</span>
+    <span class="phpdocumentor-element-found-in__line">276</span>
 
     </aside>
 
@@ -466,8 +550,7 @@ une clé 'message' (chaîne) décrivant le résultat de l'opération.</p>
     <span class="phpdocumentor-signature__visibility"></span>
                     <span class="phpdocumentor-signature__name">contractsUpdateStatus</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$id</span></span><span class="phpdocumentor-signature__argument"><span>, </span><span class="phpdocumentor-signature__argument__return-type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$status</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">bool</span></code>
 
-        <section class="phpdocumentor-description"><p>Vérifie que le nouveau statut est l'une des valeurs autorisées (&quot;actif&quot;, &quot;inactif&quot;, &quot;en_attente&quot;, &quot;suspendu&quot;, &quot;expire&quot;, &quot;resilie&quot;).
-Si le statut est invalide, la mise à jour n'est pas effectuée et l'opération est loguée comme une tentative échouée.</p>
+        <section class="phpdocumentor-description"><p>Utilise updateRow de db.php.</p>
 </section>
 
         <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
@@ -618,9 +701,11 @@ Si le statut est invalide, la mise à jour n'est pas effectuée et l'opération 
                 <li>
                     <ul class="phpdocumentor-list -clean">
                                                     <li class=""><a href="namespaces/default.html#function_contractsDelete">contractsDelete()</a></li>
+                                                    <li class=""><a href="namespaces/default.html#function_contractsGetActiveUserCountForCompany">contractsGetActiveUserCountForCompany()</a></li>
                                                     <li class=""><a href="namespaces/default.html#function_contractsGetDetails">contractsGetDetails()</a></li>
                                                     <li class=""><a href="namespaces/default.html#function_contractsGetEntreprises">contractsGetEntreprises()</a></li>
                                                     <li class=""><a href="namespaces/default.html#function_contractsGetList">contractsGetList()</a></li>
+                                                    <li class=""><a href="namespaces/default.html#function_contractsGetServices">contractsGetServices()</a></li>
                                                     <li class=""><a href="namespaces/default.html#function_contractsSave">contractsSave()</a></li>
                                                     <li class=""><a href="namespaces/default.html#function_contractsUpdateStatus">contractsUpdateStatus()</a></li>
                                             </ul>

@@ -240,6 +240,7 @@ function getEmployeeReservations($employee_id, $status = 'all')
     if ($status !== 'all' && in_array($status, APPOINTMENT_STATUSES)) {
         $query .= " AND r.statut = :status";
         $params[':status'] = $status;
+
     }
 
     $query .= " ORDER BY r.date_rdv DESC";

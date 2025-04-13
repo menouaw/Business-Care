@@ -120,14 +120,14 @@
     <span>
                                 &nbsp;: array&lt;string|int, mixed&gt;    </span>
 </dt>
-<dd>Recupere la liste des utilisateurs avec pagination et filtrage</dd>
+<dd>Récupère une liste paginée d&#039;utilisateurs avec possibilité de filtrer par recherche, rôle, entreprise et statut.</dd>
 
             <dt class="phpdocumentor-table-of-contents__entry -function -">
     <a class="" href="namespaces/default.html#function_usersGetDetails">usersGetDetails()</a>
     <span>
                                 &nbsp;: array&lt;string|int, mixed&gt;|false    </span>
 </dt>
-<dd>Recupere les details d&#039;un utilisateur</dd>
+<dd>Récupère les détails complets d&#039;un utilisateur et des informations complémentaires selon son rôle.</dd>
 
             <dt class="phpdocumentor-table-of-contents__entry -function -">
     <a class="" href="namespaces/default.html#function_usersGetRoles">usersGetRoles()</a>
@@ -148,14 +148,14 @@
     <span>
                                 &nbsp;: array&lt;string|int, mixed&gt;    </span>
 </dt>
-<dd>Crée ou met à jour un utilisateur dans la base de données après validation des données fournies.</dd>
+<dd>Crée ou met à jour un utilisateur dans la base de données.</dd>
 
             <dt class="phpdocumentor-table-of-contents__entry -function -">
     <a class="" href="namespaces/default.html#function_usersDelete">usersDelete()</a>
     <span>
                                 &nbsp;: array&lt;string|int, mixed&gt;    </span>
 </dt>
-<dd>Supprime un utilisateur après vérification de l&#039;absence d&#039;associations.</dd>
+<dd>Supprime un utilisateur en vérifiant l&#039;absence de rendez-vous associés et en empêchant la suppression du compte connecté.</dd>
 
     </dl>
 
@@ -178,18 +178,22 @@
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="web-admin/includes/page_functions/modules/users.php"><a href="files/web-admin-includes-page-functions-modules-users.html"><abbr title="web-admin/includes/page_functions/modules/users.php">users.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">14</span>
+    <span class="phpdocumentor-element-found-in__line">24</span>
 
     </aside>
 
-        <p class="phpdocumentor-summary">Recupere la liste des utilisateurs avec pagination et filtrage</p>
+        <p class="phpdocumentor-summary">Récupère une liste paginée d&#039;utilisateurs avec possibilité de filtrer par recherche, rôle, entreprise et statut.</p>
 
     
     <code class="phpdocumentor-code phpdocumentor-signature ">
     <span class="phpdocumentor-signature__visibility"></span>
-                    <span class="phpdocumentor-signature__name">usersGetList</span><span>(</span><span class="phpdocumentor-signature__argument"><span>[</span><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$page</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">1</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$perPage</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">10</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$search</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">&#039;&#039;</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$roleId</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">0</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$entrepriseId</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">0</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span></code>
+                    <span class="phpdocumentor-signature__name">usersGetList</span><span>(</span><span class="phpdocumentor-signature__argument"><span>[</span><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$page</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">1</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$perPage</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">DEFAULT_ITEMS_PER_PAGE</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$search</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">&#039;&#039;</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$roleId</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">0</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$entrepriseId</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">0</span><span> ]</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">string&nbsp;</span><span class="phpdocumentor-signature__argument__name">$statut</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">&#039;&#039;</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span></code>
 
-    
+        <section class="phpdocumentor-description"><p>La fonction construit dynamiquement une clause SQL en fonction des filtres fournis pour retourner non seulement
+la liste des utilisateurs, mais également les informations de pagination telles que le numéro de page actuel,
+le nombre total de pages, le nombre total d'utilisateurs correspondants aux critères, et le nombre d'éléments par page.</p>
+</section>
+
         <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
     <dl class="phpdocumentor-argument-list">
                     <dt class="phpdocumentor-argument-list__entry">
@@ -197,16 +201,16 @@
                 : <span class="phpdocumentor-signature__argument__return-type">int</span>
                  = <span class="phpdocumentor-signature__argument__default-value">1</span>            </dt>
             <dd class="phpdocumentor-argument-list__definition">
-                    <section class="phpdocumentor-description"><p>Numero de la page</p>
+                    <section class="phpdocumentor-description"><p>Numéro de la page (défaut : 1).</p>
 </section>
 
             </dd>
                     <dt class="phpdocumentor-argument-list__entry">
                 <span class="phpdocumentor-signature__argument__name">$perPage</span>
                 : <span class="phpdocumentor-signature__argument__return-type">int</span>
-                 = <span class="phpdocumentor-signature__argument__default-value">10</span>            </dt>
+                 = <span class="phpdocumentor-signature__argument__default-value">DEFAULT_ITEMS_PER_PAGE</span>            </dt>
             <dd class="phpdocumentor-argument-list__definition">
-                    <section class="phpdocumentor-description"><p>Nombre d'elements par page</p>
+                    <section class="phpdocumentor-description"><p>Nombre d'éléments par page (défaut : 10).</p>
 </section>
 
             </dd>
@@ -215,7 +219,7 @@
                 : <span class="phpdocumentor-signature__argument__return-type">string</span>
                  = <span class="phpdocumentor-signature__argument__default-value">&#039;&#039;</span>            </dt>
             <dd class="phpdocumentor-argument-list__definition">
-                    <section class="phpdocumentor-description"><p>Terme de recherche</p>
+                    <section class="phpdocumentor-description"><p>Terme de recherche utilisé pour filtrer les utilisateurs par nom, prénom ou email.</p>
 </section>
 
             </dd>
@@ -224,7 +228,7 @@
                 : <span class="phpdocumentor-signature__argument__return-type">int</span>
                  = <span class="phpdocumentor-signature__argument__default-value">0</span>            </dt>
             <dd class="phpdocumentor-argument-list__definition">
-                    <section class="phpdocumentor-description"><p>Filtre par role</p>
+                    <section class="phpdocumentor-description"><p>Identifiant du rôle pour filtrer les résultats (0 pour ignorer ce filtre).</p>
 </section>
 
             </dd>
@@ -233,7 +237,16 @@
                 : <span class="phpdocumentor-signature__argument__return-type">int</span>
                  = <span class="phpdocumentor-signature__argument__default-value">0</span>            </dt>
             <dd class="phpdocumentor-argument-list__definition">
-                    <section class="phpdocumentor-description"><p>Filtre par entreprise</p>
+                    <section class="phpdocumentor-description"><p>Identifiant de l'entreprise pour filtrer les résultats (0 pour ignorer ce filtre).</p>
+</section>
+
+            </dd>
+                    <dt class="phpdocumentor-argument-list__entry">
+                <span class="phpdocumentor-signature__argument__name">$statut</span>
+                : <span class="phpdocumentor-signature__argument__return-type">string</span>
+                 = <span class="phpdocumentor-signature__argument__default-value">&#039;&#039;</span>            </dt>
+            <dd class="phpdocumentor-argument-list__definition">
+                    <section class="phpdocumentor-description"><p>Statut de l'utilisateur pour filtrer les résultats (e.g., 'actif', 'inactif', 'en_attente', 'suspendu').</p>
 </section>
 
             </dd>
@@ -245,7 +258,14 @@
         <h5 class="phpdocumentor-return-value__heading">Return values</h5>
         <span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span>
                     &mdash;
-                <section class="phpdocumentor-description"><p>Donnees de pagination et liste des utilisateurs</p>
+                <section class="phpdocumentor-description"><p>Tableau associatif contenant :</p>
+<ul>
+<li>'users': Liste des utilisateurs avec leur rôle et le nom de leur entreprise.</li>
+<li>'currentPage': Numéro de la page courante.</li>
+<li>'totalPages': Nombre total de pages calculé.</li>
+<li>'totalItems': Nombre total d'utilisateurs répondant aux critères de filtrage.</li>
+<li>'perPage': Nombre d'utilisateurs affichés par page.</li>
+</ul>
 </section>
 
             </section>
@@ -260,18 +280,28 @@
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="web-admin/includes/page_functions/modules/users.php"><a href="files/web-admin-includes-page-functions-modules-users.html"><abbr title="web-admin/includes/page_functions/modules/users.php">users.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">80</span>
+    <span class="phpdocumentor-element-found-in__line">92</span>
 
     </aside>
 
-        <p class="phpdocumentor-summary">Recupere les details d&#039;un utilisateur</p>
+        <p class="phpdocumentor-summary">Récupère les détails complets d&#039;un utilisateur et des informations complémentaires selon son rôle.</p>
 
     
     <code class="phpdocumentor-code phpdocumentor-signature ">
     <span class="phpdocumentor-signature__visibility"></span>
                     <span class="phpdocumentor-signature__name">usersGetDetails</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$id</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;|false</span></code>
 
-    
+        <section class="phpdocumentor-description"><p>Cette fonction renvoie les informations personnelles de l'utilisateur, incluant son rôle et le nom de l'entreprise associée le cas échéant,
+ainsi que son historique de connexion. En fonction du rôle de l'utilisateur, des données supplémentaires sont ajoutées :</p>
+<ul>
+<li>Pour un prestataire : les rendez-vous donnés.</li>
+<li>Pour un salarié : les réservations effectuées, les évaluations soumises et les dons réalisés.</li>
+<li>Pour une entreprise : les contrats, factures, employés, devis, ainsi que diverses statistiques (contrat actuel, nombre d'employés actifs,
+réservations récentes, prestations les plus sollicitées et moyenne de satisfaction).</li>
+<li>Pour un administrateur : les actions administratives (hors connexions) et les actions liées à la sécurité.</li>
+</ul>
+</section>
+
         <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
     <dl class="phpdocumentor-argument-list">
                     <dt class="phpdocumentor-argument-list__entry">
@@ -279,7 +309,7 @@
                 : <span class="phpdocumentor-signature__argument__return-type">int</span>
                             </dt>
             <dd class="phpdocumentor-argument-list__definition">
-                    <section class="phpdocumentor-description"><p>Identifiant de l'utilisateur</p>
+                    <section class="phpdocumentor-description"><p>L'identifiant de l'utilisateur.</p>
 </section>
 
             </dd>
@@ -291,7 +321,7 @@
         <h5 class="phpdocumentor-return-value__heading">Return values</h5>
         <span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;|false</span>
                     &mdash;
-                <section class="phpdocumentor-description"><p>Donnees de l'utilisateur ou false si non trouve</p>
+                <section class="phpdocumentor-description"><p>Les données détaillées de l'utilisateur ou false si l'utilisateur n'est pas trouvé.</p>
 </section>
 
             </section>
@@ -306,7 +336,7 @@
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="web-admin/includes/page_functions/modules/users.php"><a href="files/web-admin-includes-page-functions-modules-users.html"><abbr title="web-admin/includes/page_functions/modules/users.php">users.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">133</span>
+    <span class="phpdocumentor-element-found-in__line">217</span>
 
     </aside>
 
@@ -340,7 +370,7 @@
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="web-admin/includes/page_functions/modules/users.php"><a href="files/web-admin-includes-page-functions-modules-users.html"><abbr title="web-admin/includes/page_functions/modules/users.php">users.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">145</span>
+    <span class="phpdocumentor-element-found-in__line">226</span>
 
     </aside>
 
@@ -374,18 +404,23 @@
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="web-admin/includes/page_functions/modules/users.php"><a href="files/web-admin-includes-page-functions-modules-users.html"><abbr title="web-admin/includes/page_functions/modules/users.php">users.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">161</span>
+    <span class="phpdocumentor-element-found-in__line">245</span>
 
     </aside>
 
-        <p class="phpdocumentor-summary">Crée ou met à jour un utilisateur dans la base de données après validation des données fournies.</p>
+        <p class="phpdocumentor-summary">Crée ou met à jour un utilisateur dans la base de données.</p>
 
     
     <code class="phpdocumentor-code phpdocumentor-signature ">
     <span class="phpdocumentor-signature__visibility"></span>
                     <span class="phpdocumentor-signature__name">usersSave</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type">array&lt;string|int, mixed&gt;&nbsp;</span><span class="phpdocumentor-signature__argument__name">$data</span></span><span class="phpdocumentor-signature__argument"><span>[</span><span>, </span><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$id</span><span> = </span><span class="phpdocumentor-signature__argument__default-value">0</span><span> ]</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span></code>
 
-        <section class="phpdocumentor-description"><p>La fonction vérifie d'abord la présence et la validité des champs requis (nom, prénom, email et, pour la création, le mot de passe) et assure l'unicité de l'email. En cas de mise à jour (identifiant &gt; 0), elle actualise les informations utilisateur et, si un nouveau mot de passe est fourni, le modifie en générant un log de sécurité. Pour la création, elle insère un nouvel enregistrement utilisateur et enregistre des événements de création via les systèmes de logging métier et de sécurité. En cas d'erreur de validation ou de défaillance lors de l'exécution de la requête SQL, un tableau d'erreurs est renvoyé.</p>
+        <section class="phpdocumentor-description"><p>Valide les informations fournies dans le tableau de données ($data) pour s'assurer que les champs obligatoires
+(nom, prénom, email, et mot de passe lors de la création) ainsi que le rôle et, le cas échéant, l'entreprise sont corrects.
+Vérifie également l'unicité de l'email avant de procéder à l'insertion ou à la mise à jour dans la table 'personnes'.
+En cas de données invalides, retourne immédiatement un tableau d'erreurs sans modifier la base.
+Si l'opération est réussie, consigne l'action dans les logs business et de sécurité et retourne un tableau indiquant le succès
+de l'opération. Pour une création, le résultat inclut la clé 'newId' correspondant au nouvel identifiant de l'utilisateur.</p>
 </section>
 
         <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
@@ -395,7 +430,8 @@
                 : <span class="phpdocumentor-signature__argument__return-type">array&lt;string|int, mixed&gt;</span>
                             </dt>
             <dd class="phpdocumentor-argument-list__definition">
-                    <section class="phpdocumentor-description"><p>Tableau associatif contenant les informations de l'utilisateur (nom, prénom, email, téléphone, adresse, code postal, ville, role_id, entreprise_id, mot_de_passe, statut).</p>
+                    <section class="phpdocumentor-description"><p>Informations de l'utilisateur incluant au minimum 'nom', 'prenom', 'email', 'mot_de_passe' (lors de la création), 'role_id'
+et éventuellement 'entreprise_id' et 'statut'.</p>
 </section>
 
             </dd>
@@ -404,7 +440,7 @@
                 : <span class="phpdocumentor-signature__argument__return-type">int</span>
                  = <span class="phpdocumentor-signature__argument__default-value">0</span>            </dt>
             <dd class="phpdocumentor-argument-list__definition">
-                    <section class="phpdocumentor-description"><p>Identifiant de l'utilisateur (0 pour création, supérieur à 0 pour une mise à jour).</p>
+                    <section class="phpdocumentor-description"><p>Identifiant de l'utilisateur à mettre à jour ou 0 pour créer un nouvel utilisateur.</p>
 </section>
 
             </dd>
@@ -416,7 +452,7 @@
         <h5 class="phpdocumentor-return-value__heading">Return values</h5>
         <span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span>
                     &mdash;
-                <section class="phpdocumentor-description"><p>Tableau associatif contenant 'success' (booléen) et, selon le résultat, soit 'message' en cas de succès, soit 'errors' listant les erreurs rencontrées.</p>
+                <section class="phpdocumentor-description"><p>Tableau contenant 'success' (bool) et, selon le résultat, 'message' (string|null) ou 'errors' (array|null).</p>
 </section>
 
             </section>
@@ -431,21 +467,19 @@
     <aside class="phpdocumentor-element-found-in">
     <abbr class="phpdocumentor-element-found-in__file" title="web-admin/includes/page_functions/modules/users.php"><a href="files/web-admin-includes-page-functions-modules-users.html"><abbr title="web-admin/includes/page_functions/modules/users.php">users.php</abbr></a></abbr>
     :
-    <span class="phpdocumentor-element-found-in__line">305</span>
+    <span class="phpdocumentor-element-found-in__line">374</span>
 
     </aside>
 
-        <p class="phpdocumentor-summary">Supprime un utilisateur après vérification de l&#039;absence d&#039;associations.</p>
+        <p class="phpdocumentor-summary">Supprime un utilisateur en vérifiant l&#039;absence de rendez-vous associés et en empêchant la suppression du compte connecté.</p>
 
     
     <code class="phpdocumentor-code phpdocumentor-signature ">
     <span class="phpdocumentor-signature__visibility"></span>
                     <span class="phpdocumentor-signature__name">usersDelete</span><span>(</span><span class="phpdocumentor-signature__argument"><span class="phpdocumentor-signature__argument__return-type">int&nbsp;</span><span class="phpdocumentor-signature__argument__name">$id</span></span><span>)</span><span> : </span><span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span></code>
 
-        <section class="phpdocumentor-description"><p>Cette fonction vérifie d'abord que l'utilisateur identifié par son ID n'a ni prestations (pour les praticiens)
-ni réservations (pour les salariés) associées. Si l'une de ces associations existe, la suppression est annulée
-et une tentative échouée est loguée. En l'absence d'associations, les logs liés à l'utilisateur sont supprimés
-puis l'utilisateur est effacé de la base de données, avec enregistrement d'un événement de sécurité.</p>
+        <section class="phpdocumentor-description"><p>La fonction empêche la suppression du compte actuellement connecté et vérifie qu'aucun rendez-vous (en tant que client ou praticien) n'est associé à l'utilisateur.
+Si aucune association n'est détectée, elle supprime l'utilisateur ainsi que ses données liées (logs, tokens de connexion et préférences) à l'aide d'une transaction pour garantir la cohérence des opérations.</p>
 </section>
 
         <h5 class="phpdocumentor-argument-list__heading">Parameters</h5>
@@ -467,7 +501,7 @@ puis l'utilisateur est effacé de la base de données, avec enregistrement d'un 
         <h5 class="phpdocumentor-return-value__heading">Return values</h5>
         <span class="phpdocumentor-signature__response_type">array&lt;string|int, mixed&gt;</span>
                     &mdash;
-                <section class="phpdocumentor-description"><p>Tableau contenant 'success' indiquant le statut de l'opération et 'message' décrivant le résultat.</p>
+                <section class="phpdocumentor-description"><p>Tableau contenant 'success' (booléen indiquant le résultat) et 'message' (description du résultat de l'opération).</p>
 </section>
 
             </section>

@@ -212,7 +212,7 @@ include_once '../../templates/header.php';
                     <?php else:
                         $isFiltering = !empty($search) || !empty($status) || !empty($type) || !empty($prestationId) || !empty($startDate) || !empty($endDate);
                         $message = $isFiltering 
-                            ? "Aucun rendez-vous trouvé correspondant à vos critères."
+                            ? "Aucun rendez-vous trouvé correspondant à vos critères de recherche."
                             : "Aucun rendez-vous trouvé. <a href=\"" . WEBADMIN_URL . "/modules/appointments/add.php\" class=\"alert-link\">Ajouter un rendez-vous</a>";
                         ?>
                         <div class="alert alert-info">
