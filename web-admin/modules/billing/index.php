@@ -30,16 +30,11 @@ $currentStatuses = ($type === 'client') ? $clientStatuses : $providerStatuses;
 
 
 $result = null;
-if ($type === 'client') {
-    $result = billingGetClientInvoicesList($page, DEFAULT_ITEMS_PER_PAGE, $search, $status, $date_from, $date_to);
-} elseif ($type === 'provider') {
-    
-    
+if ($type === 'provider') {
     $result = billingGetProviderInvoicesList($page, DEFAULT_ITEMS_PER_PAGE, $search, $status, 0, $date_from, $date_to);
 } else {
-    
-    flashMessage("Type de facture invalide.", 'danger');
-    $result = ['items' => [], 'totalPages' => 0, 'totalItems' => 0, 'currentPage' => 1, 'perPage' => DEFAULT_ITEMS_PER_PAGE];
+    $type = 'client'; 
+    $result = billingGetClientInvoicesList($page, DEFAULT_ITEMS_PER_PAGE, $search, $status, $date_from, $date_to);
 }
 
 $invoices = $result['items'];
@@ -48,7 +43,7 @@ $totalItems = $result['totalItems'];
 $currentPage = $result['currentPage'];
 $itemsPerPage = $result['perPage'];
 
-$pageTitle = "Gestion de la Facturation";
+$pageTitle = "Gestion de la facturation";
 include '../../templates/header.php';
 ?>
 
