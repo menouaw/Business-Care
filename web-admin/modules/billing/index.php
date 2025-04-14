@@ -143,12 +143,6 @@ include '../../templates/header.php';
                                             <a href="<?php echo WEBADMIN_URL; ?>/modules/billing/view.php?id=<?php echo $invoice['id']; ?>&type=client" class="btn btn-sm btn-info" data-bs-toggle="tooltip" title="Voir">
                                                 <i class="fas fa-eye"></i>
                                             </a>
-                                            <a href="<?php echo WEBADMIN_URL; ?>/modules/billing/edit.php?id=<?php echo $invoice['id']; ?>&type=client" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="Modifier">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <a href="<?php echo WEBADMIN_URL; ?>/modules/billing/delete.php?id=<?php echo $invoice['id']; ?>&type=client&csrf_token=<?php echo generateToken(); ?>" class="btn btn-sm btn-danger btn-delete" data-bs-toggle="tooltip" title="Supprimer" data-invoice-id="<?php echo $invoice['id']; ?>" data-invoice-number="<?php echo htmlspecialchars($invoice['numero_facture']); ?>">
-                                                <i class="fas fa-trash"></i>
-                                            </a>
                                         </td>
                                     </tr>
                                     <?php elseif ($type === 'provider'): ?>
@@ -162,12 +156,6 @@ include '../../templates/header.php';
                                         <td class="table-actions">
                                             <a href="<?php echo WEBADMIN_URL; ?>/modules/billing/view.php?id=<?php echo $invoice['id']; ?>&type=provider" class="btn btn-sm btn-info" data-bs-toggle="tooltip" title="Voir">
                                                 <i class="fas fa-eye"></i>
-                                            </a>
-                                            <a href="<?php echo WEBADMIN_URL; ?>/modules/billing/edit.php?id=<?php echo $invoice['id']; ?>&type=provider" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="Modifier">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                             <a href="<?php echo WEBADMIN_URL; ?>/modules/billing/delete.php?id=<?php echo $invoice['id']; ?>&type=provider&csrf_token=<?php echo generateToken(); ?>" class="btn btn-sm btn-danger btn-delete" data-bs-toggle="tooltip" title="Supprimer" data-invoice-id="<?php echo $invoice['id']; ?>" data-invoice-number="<?php echo htmlspecialchars($invoice['numero_facture']); ?>">
-                                                <i class="fas fa-trash"></i>
                                             </a>
                                         </td>
                                     </tr>

@@ -38,15 +38,6 @@ include_once '../../templates/header.php';
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                 <h1 class="h2"><?php echo htmlspecialchars($pageTitle); ?></h1>
                 <div class="btn-toolbar mb-2 mb-md-0">
-                    <a href="<?php echo WEBADMIN_URL; ?>/modules/billing/edit.php?id=<?php echo $invoice['id']; ?>&type=<?php echo $type; ?>" class="btn btn-sm btn-primary me-2" data-bs-toggle="tooltip" title="Modifier cette facture">
-                        <i class="fas fa-edit"></i> Modifier
-                    </a>
-                     <a href="<?php echo WEBADMIN_URL; ?>/modules/billing/delete.php?id=<?php echo $invoice['id']; ?>&type=<?php echo $type; ?>&csrf_token=<?php echo generateToken(); ?>" 
-                       class="btn btn-sm btn-danger me-2 btn-delete" 
-                       data-bs-toggle="tooltip" title="Supprimer cette facture"
-                       data-invoice-number="<?php echo htmlspecialchars($invoice['numero_facture']); ?>">
-                        <i class="fas fa-trash"></i> Supprimer
-                    </a>
                      <button class="btn btn-sm btn-secondary me-2" onclick="window.print();" data-bs-toggle="tooltip" title="Imprimer / PDF">
                         <i class="fas fa-print"></i> Imprimer / PDF
                     </button>
@@ -161,7 +152,7 @@ include_once '../../templates/header.php';
                             <input type="hidden" name="csrf_token" value="<?php echo generateToken(); ?>">
 
                             <div class="col-md-4">
-                                <label for="payment_mode" class="form-label">Mode de Paiement</label>
+                                <label for="payment_mode" class="form-label">Paiement</label>
                                 <select name="payment_mode" id="payment_mode" class="form-select form-select-sm" required>
                                     <option value="">Choisir...</option>
                                     <?php foreach ($clientPaymentModes as $mode): ?>
@@ -170,7 +161,7 @@ include_once '../../templates/header.php';
                                 </select>
                             </div>
                             <div class="col-md-4">
-                                <button type="submit" class="btn btn-sm btn-success"><i class="fas fa-check"></i> Confirmer Paiement</button>
+                                <button type="submit" class="btn btn-sm btn-success"><i class="fas fa-check"></i> Confirmer</button>
                             </div>
                         </form>
                     <?php elseif ($type === 'provider' && $invoice['statut'] === PRACTITIONER_INVOICE_STATUS_UNPAID):
@@ -204,7 +195,7 @@ include_once '../../templates/header.php';
             <?php if ($type === 'provider' && !empty($invoice['lines'])): ?>
             <div class="card mb-4">
                  <div class="card-header">
-                    <i class="fas fa-list-ul me-1"></i> Lignes de Facture
+                    <i class="fas fa-list-ul me-1"></i> Détails
                 </div>
                 <div class="card-body">
                      <div class="table-responsive">
@@ -212,7 +203,7 @@ include_once '../../templates/header.php';
                             <thead>
                                 <tr>
                                     <th>Description</th>
-                                    <th>Date Prestation</th>
+                                    <th>Date</th>
                                     <th>Prestation</th>
                                     <th class="text-end">Montant</th>
                                 </tr>
@@ -254,19 +245,4 @@ include_once '../../templates/header.php';
 
 
 <script>
-// Handle delete confirmation
-document.addEventListener('DOMContentLoaded', function () {
-    const deleteButtons = document.querySelectorAll('.btn-delete');
-    deleteButtons.forEach(button => {
-        button.addEventListener('click', function (e) {
-            e.preventDefault(); // Stop the link
-            const invoiceNumber = this.getAttribute('data-invoice-number');
-            const confirmation = confirm(`Êtes-vous sûr de vouloir supprimer la facture N° ${invoiceNumber} ? Cette action est généralement irréversible.`);
-            
-            if (confirmation) {
-                window.location.href = this.href; // Proceed with deletion
-            }
-        });
-    });
-});
 </script>

@@ -142,6 +142,7 @@ CREATE TABLE factures (
     tva DECIMAL(5,2),
     statut ENUM('en_attente', 'payee', 'annulee', 'retard', 'impayee') DEFAULT 'en_attente',
     mode_paiement ENUM('virement', 'carte', 'prelevement'),
+    date_paiement DATETIME NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (entreprise_id) REFERENCES entreprises(id),
