@@ -245,7 +245,7 @@ include_once '../../templates/header.php';
                             <?php
                             foreach ($services as $s) {
                                 $selected = ($serviceId == $s['id']) ? 'selected' : '';
-                                echo "<option value=\"{$s['id']}\" $selected>" . htmlspecialchars($s['nom']) . "</option>";
+                                echo "<option value=\"{$s['id']}\" $selected>" . htmlspecialchars($s['type']) . "</option>";
                             }
                             ?>
                         </select>

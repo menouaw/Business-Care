@@ -43,7 +43,7 @@ include '../../templates/header.php';
                     <form action="<?php echo WEBADMIN_URL; ?>/modules/users/index.php" method="get" class="row g-3 align-items-center">
                         <div class="col-md-3">
                             <label for="search" class="visually-hidden">Rechercher</label>
-                            <input type="text" class="form-control form-control-sm" id="search" name="search" value="<?php echo htmlspecialchars($search); ?>" placeholder="Rechercher nom, email...">
+                            <input type="text" class="form-control form-control-sm" id="search" name="search" value="<?php echo htmlspecialchars($search); ?>" placeholder="Rechercher...">
                         </div>
                         <div class="col-md-3">
                             <label for="role" class="visually-hidden">Rôle</label>

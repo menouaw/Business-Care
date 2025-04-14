@@ -22,7 +22,7 @@ function getDbConnection()
         try {
             $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
         } catch (PDOException $e) {
-            die("[FAILURE] Connexion a la base de donnees impossible. Veuillez reessayer plus tard.");
+            die("[FAILURE] Connexion à la base de données impossible. Veuillez réessayer plus tard.");
         }
     }
     return $pdo;
@@ -46,7 +46,8 @@ function validateTableName($table)
 /**
  * Exécute une requête SQL préparée via PDO.
  *
- * Cette fonction prépare la requête SQL fournie et l'exécute avec les paramètres donnés. En cas d'erreur lors de l'exécution, le script est interrompu avec un message d'erreur standardisé.
+ * Cette fonction prépare la requête SQL fournie et l'exécute avec les paramètres donnés. En cas d'erreur lors de l'exécution, 
+ * le script est interrompu avec un message d'erreur standardisé.
  *
  * @param string $sql Requête SQL à préparer et exécuter.
  * @param array $params Valeurs à lier aux paramètres de la requête.
@@ -60,7 +61,7 @@ function executeQuery($sql, $params = [])
         $stmt->execute($params);
         return $stmt;
     } catch (PDOException $e) {
-        die("[FAILURE] Impossible d'executer la requete: " . $e->getMessage());
+        die("[FAILURE] Impossible d'exécuter la requête: " . $e->getMessage());
     }
 }
 
@@ -185,7 +186,10 @@ function insertRow($table, $data)
 /**
  * Met à jour les enregistrements d'une table avec les données fournies.
  *
- * Cette fonction valide le nom de la table, construit dynamiquement la clause SET en encapsulant les noms de colonnes avec des backticks et en utilisant des placeholders préfixés par "set_", puis exécute une requête SQL UPDATE avec une clause WHERE personnalisée. Si le tableau de données est vide, une exception est levée. En cas d'erreur lors de l'exécution de la requête, l'erreur est loguée et une exception PDO est relancée.
+ * Cette fonction valide le nom de la table, construit dynamiquement la clause SET en encapsulant les noms de colonnes 
+ * avec des backticks et en utilisant des placeholders préfixés par "set_", puis exécute une requête SQL UPDATE avec 
+ * une clause WHERE personnalisée. Si le tableau de données est vide, une exception est levée. En cas d'erreur lors de 
+ * l'exécution de la requête, l'erreur est loguée et une exception PDO est relancée.
  * Utilise des placeholders nommés pour les clauses SET et WHERE.
  *
  * @param string $table Nom de la table cible.
@@ -236,7 +240,8 @@ function updateRow($table, $data, $where, $whereParams = [])
 /**
  * Supprime des lignes de la table spécifiée.
  *
- * Valide le nom de la table pour prévenir les injections SQL, puis exécute une requête DELETE en utilisant la clause WHERE et les paramètres indiqués.
+ * Valide le nom de la table pour prévenir les injections SQL, puis exécute une requête DELETE 
+ * en utilisant la clause WHERE et les paramètres indiqués.
  *
  * @param string $table Nom de la table depuis laquelle supprimer les lignes (après validation).
  * @param string $where Clause WHERE déterminant les critères de suppression.

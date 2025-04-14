@@ -156,7 +156,7 @@ function getFlashMessages()
 {
     if (isset($_SESSION['flash_messages']) && is_array($_SESSION['flash_messages'])) {
         $messages = $_SESSION['flash_messages'];
-        unset($_SESSION['flash_messages']); // Clear all messages after retrieval
+        unset($_SESSION['flash_messages']); // Supprime tous les messages après récupération
         return is_array($messages) ? $messages : [];
     }
     return [];
@@ -243,17 +243,17 @@ function getStatusBadge($status)
         'inactif' => 'danger',
         'en_attente' => 'warning',
         'suspendu' => 'secondary',
-        'expire' => 'danger',
-        'resilie' => 'danger',
-        'accepte' => 'success',
-        'refuse' => 'danger',
-        'confirme' => 'success',
-        'annule' => 'danger',
-        'termine' => 'secondary',
-        'planifie' => 'primary',
+        'expiré' => 'danger',
+        'résilié' => 'danger',
+        'accepté' => 'success',
+        'refusé' => 'danger',
+        'confirmé' => 'success',
+        'annulé' => 'danger',
+        'terminé' => 'secondary',
+        'planifié' => 'primary',
         'no_show' => 'danger',
-        'payee' => 'success',
-        'impayee' => 'danger',
+        'payée' => 'success',
+        'impayée' => 'danger',
         'retard' => 'warning'
     ];
 
@@ -290,12 +290,11 @@ function paginateResults($table, $page, $perPage = DEFAULT_ITEMS_PER_PAGE, $wher
     if ($orderBy) {
         if (is_string($orderBy) && !empty(trim($orderBy))) {
             if (!preg_match('/^[a-zA-Z0-9_\.,\s\(\)]+(?:\s+(?:ASC|DESC)(?:\s+NULLS\s+(?:FIRST|LAST))?)?(?:,\s*[a-zA-Z0-9_\.,\s\(\)]+(?:\s+(?:ASC|DESC)(?:\s+NULLS\s+(?:FIRST|LAST))?)?)*$/', $orderBy)) {
-
-                error_log("[WARNING] Invalid characters detected in orderBy clause in paginateResults for table '$table': " . $orderBy);
+                error_log("[WARNING] Caractères invalides détectés dans la clause orderBy pour la table '$table': " . $orderBy);
                 $orderBy = ''; // Réinitialiser orderBy en cas de caractères non valides
             }
         } else {
-            error_log("[WARNING] Invalid type or empty orderBy parameter passed to paginateResults for table '$table'. Expected string, got: " . gettype($orderBy));
+            error_log("[WARNING] Type invalide ou paramètre orderBy vide passé à paginateResults pour la table '$table'. Attendu: string, reçu: " . gettype($orderBy));
             $orderBy = ''; // Réinitialiser orderBy si le type n'est pas une chaîne ou s'il est vide
         }
     }
@@ -331,12 +330,12 @@ function renderPagination($pagination, $urlPattern)
 
     $html = '<nav aria-label="Page navigation"><ul class="pagination">';
 
-    // Previous button
+    // Bouton précédent
     $prevDisabled = $pagination['currentPage'] <= 1 ? ' disabled' : '';
     $prevUrl = str_replace('{page}', $pagination['currentPage'] - 1, $urlPattern);
     $html .= '<li class="page-item' . $prevDisabled . '"><a class="page-link" href="' . $prevUrl . '">Précédent</a></li>';
 
-    // numeros de page
+    // Numéros de page
     $startPage = max(1, $pagination['currentPage'] - 2);
     $endPage = min($pagination['totalPages'], $pagination['currentPage'] + 2);
 
@@ -346,7 +345,7 @@ function renderPagination($pagination, $urlPattern)
         $html .= '<li class="page-item' . $active . '"><a class="page-link" href="' . $url . '">' . $i . '</a></li>';
     }
 
-    // bouton suivant
+    // Bouton suivant
     $nextDisabled = $pagination['currentPage'] >= $pagination['totalPages'] ? ' disabled' : '';
     $nextUrl = str_replace('{page}', $pagination['currentPage'] + 1, $urlPattern);
     $html .= '<li class="page-item' . $nextDisabled . '"><a class="page-link" href="' . $nextUrl . '">Suivant</a></li>';
@@ -431,10 +430,10 @@ function formatDuration($interval) {
 }
 
 /**
- * Genere une URL de referer securisee.
+ * Génère une URL de referer sécurisée.
  * 
- * @param string|null $defaultUrl L'URL par defaut si le referer n'est pas valide ou absent.
- * @param array $allowedHosts Hotes autorises pour le referer.
+ * @param string|null $defaultUrl L'URL par défaut si le referer n'est pas valide ou absent.
+ * @param array $allowedHosts Hôtes autorisés pour le referer.
  * @return string L'URL de redirection.
  */
 function generateSecureReferer($defaultUrl = null, $allowedHosts = []) {
