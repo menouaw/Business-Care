@@ -52,7 +52,7 @@ try {
                     $message = 'Habilitation mise à jour avec succès.';
                 } else {
                     $message = 'Aucune modification détectée ou erreur lors de la mise à jour.';
-                    $success = true; 
+                    $success = false; 
                 }
                 $redirectUrl .= '&tab=habilitations';
             } else {

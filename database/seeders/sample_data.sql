@@ -319,32 +319,32 @@ INSERT INTO habilitations (prestataire_id, type, nom_document, document_url, org
 
 
 INSERT INTO prestataires_prestations (prestataire_id, prestation_id) VALUES
-(6, 1), (6, 8), (6, 12), (6, 21), (6, 22), (Psychologue/Massage/Sophro/Ergo/Qi Gong?)
-(13, 1), (13, 6), (13, 9), (13, 23), (Psychologue/Coach Carriere/RPS/Intel Emotionnelle)
-(16, 2), (16, 17), (16, 22), (Coach Sportif - Yoga/Pilates/Qi Gong)
-(20, 3), (20, 5), (20, 6), (20, 9), (20, 13), (20, 14), (20, 16), (20, 18), (20, 23), (20, 25), (Formateur - divers)
-(24, 7), (24, 11), (24, 24), (Dieteticien)
-(28, 4), (28, 12); (Sophrologue)
+(6, 1), (6, 8), (6, 12), (6, 21), (6, 22), 
+(13, 1), (13, 6), (13, 9), (13, 23), 
+(16, 2), (16, 17), (16, 22), 
+(20, 3), (20, 5), (20, 6), (20, 9), (20, 13), (20, 14), (20, 16), (20, 18), (20, 23), (20, 25), 
+(24, 7), (24, 11), (24, 24), 
+(28, 4), (28, 12); 
 
 
 INSERT INTO prestataires_disponibilites (prestataire_id, type, date_debut, date_fin, heure_debut, heure_fin, jour_semaine, recurrence_fin, notes) VALUES
-(ID 6)
+
 (6, 'recurrente', NULL, NULL, '09:00:00', '12:00:00', 1, NULL, 'Lundi matin'), 
-(6, 'recurrente', NULL, NULL, '14:00:00', '18:00:00', 1, NULL, 'Lundi apres-midi'), -midi
-(6, 'recurrente', NULL, NULL, '09:00:00', '12:00:00', 3, '2024-12-31', 'Mercredi matin (jusqu''a fin 2024)'), (jusqu'a fin 2024) 
+(6, 'recurrente', NULL, NULL, '14:00:00', '18:00:00', 1, NULL, 'Lundi apres-midi'), 
+(6, 'recurrente', NULL, NULL, '09:00:00', '12:00:00', 3, '2024-12-31', 'Mercredi matin (jusqu''a fin 2024)'), 
 (6, 'specifique', '2024-08-01 00:00:00', '2024-08-15 23:59:59', NULL, NULL, NULL, NULL, 'Conges Aout'), 
 (6, 'indisponible', '2024-09-16 09:00:00', '2024-09-16 18:00:00', NULL, NULL, NULL, NULL, 'Formation interne'), 
 
-(ID 13)
+
 (13, 'recurrente', NULL, NULL, '09:00:00', '17:00:00', 2, NULL, 'Mardi'), 
 (13, 'recurrente', NULL, NULL, '09:00:00', '17:00:00', 4, NULL, 'Jeudi'), 
 
-(ID 16)
+
 (16, 'recurrente', NULL, NULL, '12:00:00', '14:00:00', 1, NULL, 'Lundi midi'), 
 (16, 'recurrente', NULL, NULL, '18:00:00', '20:00:00', 3, NULL, 'Mercredi soir'), 
 (16, 'recurrente', NULL, NULL, '12:00:00', '14:00:00', 5, NULL, 'Vendredi midi'), 
 
-(ID 20)
+
 (20, 'recurrente', NULL, NULL, '09:00:00', '18:00:00', 1, NULL, 'Lundi'),
 (20, 'recurrente', NULL, NULL, '09:00:00', '18:00:00', 2, NULL, 'Mardi'),
 (20, 'recurrente', NULL, NULL, '09:00:00', '18:00:00', 3, NULL, 'Mercredi'),
@@ -352,10 +352,8 @@ INSERT INTO prestataires_disponibilites (prestataire_id, type, date_debut, date_
 (20, 'recurrente', NULL, NULL, '09:00:00', '18:00:00', 5, NULL, 'Vendredi'),
 (20, 'indisponible', '2024-10-07 00:00:00', '2024-10-11 23:59:59', NULL, NULL, NULL, NULL, 'Semaine de formation externe'),
 
-(ID 24)
 (24, 'recurrente', NULL, NULL, '10:00:00', '16:00:00', 5, NULL, 'Vendredi'), 
 (24, 'specifique', '2024-11-04 10:00:00', '2024-11-04 12:00:00', NULL, NULL, NULL, NULL, 'Disponible exceptionnellement Lundi 4 Nov matin'), 
 
-(ID 28)
 (28, 'recurrente', NULL, NULL, '17:00:00', '20:00:00', 2, NULL, 'Mardi soir'), 
 (28, 'recurrente', NULL, NULL, '17:00:00', '20:00:00', 4, NULL, 'Jeudi soir'); 

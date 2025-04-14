@@ -110,35 +110,6 @@ DELIMITER ;
 
 DELIMITER //
 
-CREATE TRIGGER after_habilitation_update
-AFTER UPDATE ON habilitations
-FOR EACH ROW
-BEGIN
-    DECLARE notification_title VARCHAR(255);
-    DECLARE notification_message TEXT;
-    DECLARE notification_type ENUM('info', 'success', 'warning', 'error');
-    DECLARE notification_link VARCHAR(255);
-
-    IF NEW.statut != OLD.statut AND (NEW.statut = 'verifiee' OR NEW.statut = 'rejetee') THEN
-
-        SET notification_link = CONCAT('/prestataire/gestion/profil?tab=habilitations'); 
-
-        IF NEW.statut = 'verifiee' THEN
-            SET notification_title = 'Habilitation Verifiee';
-            SET notification_message = CONCAT('Votre habilitation \"', NEW.type, '\" (', IFNULL(NEW.nom_document, 'N/A'), ') a ete verifiee.');
-            SET notification_type = 'success';
-        ELSE 
-            SET notification_title = 'Habilitation Rejetee';
-            SET notification_message = CONCAT('Votre habilitation \"', NEW.type, '\" (', IFNULL(NEW.nom_document, 'N/A'), ') a ete rejetee. Veuillez contacter l\'administration."");
-            SET notification_type = 'warning';
-        END IF;
-
-        INSERT INTO notifications (personne_id, titre, message, type, lien)
-        VALUES (NEW.prestataire_id, notification_title, notification_message, notification_type, notification_link);
-    END IF;
-
-END//
-
 CREATE TRIGGER after_prestataire_prestation_insert
 AFTER INSERT ON prestataires_prestations
 FOR EACH ROW
