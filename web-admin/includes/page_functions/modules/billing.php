@@ -559,5 +559,58 @@ function billingGetProvidersForFilter() {
     return $options;
 }
 
+/**
+ * Génère un badge HTML stylisé avec Bootstrap pour représenter un statut de facture (client ou prestataire).
+ *
+ * @param string $status Statut de la facture.
+ * @param string $type Type de facture ('client' ou 'provider') pour différencier les statuts si nécessaire.
+ * @return string HTML du badge Bootstrap.
+ */
+function billingGetInvoiceStatusBadge($status, $type = 'client') 
+{
+    $badgeClass = 'bg-secondary'; // Default
+    $statusText = ucfirst(str_replace('_', ' ', $status)); // Default text formatting
+
+    if ($type === 'client') {
+        switch ($status) {
+            case INVOICE_STATUS_PAID:
+                $badgeClass = 'bg-success';
+                break;
+            case INVOICE_STATUS_PENDING:
+                $badgeClass = 'bg-warning text-dark';
+                $statusText = 'En attente';
+                break;
+            case INVOICE_STATUS_LATE:
+                $badgeClass = 'bg-danger';
+                $statusText = 'En retard';
+                break;
+             case INVOICE_STATUS_UNPAID:
+                $badgeClass = 'bg-danger';
+                $statusText = 'Impayée';
+                break;
+            case INVOICE_STATUS_CANCELLED:
+                $badgeClass = 'bg-dark';
+                 $statusText = 'Annulée';
+                break;
+        }
+    } elseif ($type === 'provider') {
+         switch ($status) {
+            case PRACTITIONER_INVOICE_STATUS_PAID:
+                $badgeClass = 'bg-success';
+                $statusText = 'Payée';
+                break;
+            case PRACTITIONER_INVOICE_STATUS_UNPAID:
+                $badgeClass = 'bg-warning text-dark';
+                 $statusText = 'Impayée';
+                break;
+            case PRACTITIONER_INVOICE_STATUS_PENDING_GENERATION:
+                 $badgeClass = 'bg-info text-dark';
+                 $statusText = 'Génération attendue';
+                 break;
+        }
+    }
+
+    return '<span class="badge ' . $badgeClass . '">' . htmlspecialchars($statusText) . '</span>';
+}
 
 ?>
