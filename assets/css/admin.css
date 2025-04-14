@@ -1,6 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Text:ital@0;1&family=Markazi+Text:wght@400..700&display=swap');
+
 :root {
   /* variables de couleurs */
-  --color-primary: #4e73df;
+  --color-primary: #102C57;
+  --color-secondary: #DAC0A3;
+  --color-tertiary: #EADBC8;
+  --color-quaternary: #F8F0E5;
   --color-success: #1cc88a;
   --color-info: #36b9cc;
   --color-warning: #f6c23e;
@@ -28,7 +33,8 @@
   * Base et structure
   * ------------------------------------------------ */
   body {
-  font-size: 0.875rem;
+  font-family: 'Markazi Text', serif;
+  font-size: 1rem;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -80,7 +86,7 @@
   }
   
   .sidebar .nav-link.active {
-  color: var(--color-primary);
+  color: var(--color-secondary);
   }
   
   .sidebar .nav-link:hover .feather,
@@ -109,11 +115,12 @@
   }
   
   .navbar-brand {
+  font-family: 'DM Serif Text', serif;
   padding-top: 0.75rem;
   padding-bottom: 0.75rem;
   font-size: 1rem;
-  background-color: rgba(0, 0, 0, 0.25);
-  box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.25);
+  background-color: var(--color-primary);
+  box-shadow: inset -1px 0 0 var(--color-primary);
   }
   
   .navbar .navbar-toggler {
@@ -130,13 +137,13 @@
   
   .form-control-dark {
   color: #fff;
-  background-color: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.1);
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
   }
   
   .form-control-dark:focus {
   border-color: transparent;
-  box-shadow: 0 0 0 0.1875rem rgba(255, 255, 255, 0.25);
+  box-shadow: 0 0 0 0.1875rem var(--color-primary);
   }
   
   /* alignement du header */
@@ -267,12 +274,14 @@
   * ------------------------------------------------ */
   /* page de connexion */
   .login-page {
-  min-height: 100vh;
+  background-color: var(--color-gray-100);
   display: flex;
   align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  padding: var(--spacing-md);
+  padding-top: 2.5rem;
+  padding-bottom: 2.5rem;
+  background-image: url('../images/cover/cucumber.jpg');
+  background-size: cover;
+  background-position: center;
   }
   
   .form-signin {
@@ -312,16 +321,16 @@
   }
   
   .form-signin .btn-primary {
-  background-color: var(--color-primary);
-  border-color: var(--color-primary);
+  background-color: var(--color-secondary);
+  border-color: var(--color-secondary);
   padding: 0.75rem 1rem;
   font-size: 1rem;
   transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
   }
   
   .form-signin .btn-primary:hover {
-  background-color: #3a5ccc;
-  border-color: #3a5ccc;
+  background-color: var(--color-tertiary);
+  border-color: var(--color-tertiary);
   }
   
   .form-signin .checkbox {
@@ -329,7 +338,7 @@
   }
   
   .form-signin p a {
-  color: var(--color-primary);
+  color: var(--color-secondary);
   text-decoration: none;
   }
   
@@ -366,4 +375,12 @@
   .alert {
     margin-bottom: 0;
     border-radius: 0;
-  } 
+  }
+
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+  font-family: 'DM Serif Text', serif;
+}
+
+.form-signin h1 {
+  font-family: 'DM Serif Text', serif;
+} 

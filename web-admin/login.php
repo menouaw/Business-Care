@@ -16,7 +16,6 @@ if ($loginResult['success']) {
     redirectTo($redirectUrl);
 }
 
-// Si l'utilisateur a ete deconnecte pour inactivite
 if (isset($_GET['timeout']) && $_GET['timeout'] == 1) {
     $error = 'Votre session a expire. Veuillez vous reconnecter.';
 } elseif (isset($_GET['error']) && $_GET['error'] == 'permission_denied') {

@@ -2,15 +2,15 @@
 require_once __DIR__ . '/../../init.php';
 
 /**
- * Recupere la liste des factures clients avec pagination et filtrage
+ * Récupère la liste des factures clients avec pagination et filtrage
  * 
- * @param int $page Numero de la page
- * @param int $perPage Nombre d'elements par page
- * @param string $search Terme de recherche (num facture, nom entreprise)
+ * @param int $page Numéro de la page
+ * @param int $perPage Nombre d'éléments par page
+ * @param string $search Terme de recherche (numéro facture, nom entreprise)
  * @param string $status Filtre par statut
- * @param string $date_from Filtre par date d'emission (debut)
- * @param string $date_to Filtre par date d'emission (fin)
- * @return array Donnees de pagination et liste des factures clients
+ * @param string $date_from Filtre par date d'émission (début)
+ * @param string $date_to Filtre par date d'émission (fin)
+ * @return array Données de pagination et liste des factures clients
  */
 function billingGetClientInvoicesList($page = 1, $perPage = DEFAULT_ITEMS_PER_PAGE, $search = '', $status = '', $date_from = '', $date_to = '') {
     $params = [];
@@ -71,10 +71,10 @@ function billingGetClientInvoicesList($page = 1, $perPage = DEFAULT_ITEMS_PER_PA
 }
 
 /**
- * Recupere les details d'une facture client
+ * Récupère les détails d'une facture client
  * 
  * @param int $id Identifiant de la facture
- * @return array|false Donnees de la facture ou false si non trouvee
+ * @return array|false Données de la facture ou false si non trouvée
  */
 function billingGetClientInvoiceDetails($id) {
     $sql = "SELECT f.*, e.nom as nom_entreprise, d.id as devis_associe_id
@@ -86,10 +86,10 @@ function billingGetClientInvoiceDetails($id) {
 }
 
 /**
- * Genere le prochain numero de facture pour un type donne
+ * Génère le prochain numéro de facture pour un type donné
  * 
- * @param string $prefix Prefix ('F' pour client, 'FP' pour prestataire)
- * @return string Le nouveau numero de facture
+ * @param string $prefix Préfixe ('F' pour client, 'FP' pour prestataire)
+ * @return string Le nouveau numéro de facture
  */
 function billingGetNextInvoiceNumber($prefix) {
     $pdo = getDbConnection();
@@ -111,12 +111,11 @@ function billingGetNextInvoiceNumber($prefix) {
     return $prefix . str_pad($nextNumber, 6, '0', STR_PAD_LEFT); 
 }
 
-
 /**
- * Genere une facture client a partir d'un devis accepte
+ * Génère une facture client à partir d'un devis accepté
  * 
  * @param int $quoteId ID du devis
- * @return array Resultat ['success' => bool, 'invoiceId' => int|null, 'message' => string]
+ * @return array Résultat ['success' => bool, 'invoiceId' => int|null, 'message' => string]
  */
 function billingGenerateClientInvoiceFromQuote($quoteId) {
     $quote = fetchOne(TABLE_QUOTES, 'id = ? AND statut = ?', '', [$quoteId, QUOTE_STATUS_ACCEPTED]);
@@ -168,12 +167,12 @@ function billingGenerateClientInvoiceFromQuote($quoteId) {
 }
 
 /**
- * Met a jour le statut d'une facture client
+ * Met à jour le statut d'une facture client
  * 
  * @param int $invoiceId ID de la facture
  * @param string $status Nouveau statut
  * @param string|null $paymentMode Mode de paiement si applicable
- * @return array Resultat ['success' => bool, 'message' => string]
+ * @return array Résultat ['success' => bool, 'message' => string]
  */
 function billingUpdateClientInvoiceStatus($invoiceId, $status, $paymentMode = null) {
     if (!in_array($status, INVOICE_STATUSES)) {
@@ -219,40 +218,34 @@ function billingUpdateClientInvoiceStatus($invoiceId, $status, $paymentMode = nu
 }
 
 /**
- * Recupere les statuts valides pour les factures client
+ * Récupère les statuts valides pour les factures client
  * 
- * @return array
+ * @return array Liste des statuts valides
  */
 function billingGetClientInvoiceStatuses() {
     return INVOICE_STATUSES;
 }
 
 /**
- * Recupere les modes de paiement valides pour les factures client
+ * Récupère les modes de paiement valides pour les factures client
  * 
- * @return array
+ * @return array Liste des modes de paiement valides
  */
 function billingGetClientInvoicePaymentModes() {
     return INVOICE_PAYMENT_MODES;
 }
 
-
-
-
-
-
-
 /**
- * Recupere la liste des factures prestataires avec pagination et filtrage
+ * Récupère la liste des factures prestataires avec pagination et filtrage
  * 
- * @param int $page Numero de la page
- * @param int $perPage Nombre d'elements par page
- * @param string $search Terme de recherche (num facture, nom prestataire)
+ * @param int $page Numéro de la page
+ * @param int $perPage Nombre d'éléments par page
+ * @param string $search Terme de recherche (numéro facture, nom prestataire)
  * @param string $status Filtre par statut
  * @param int $providerId Filtre par ID prestataire
- * @param string $date_from Filtre par date de facture (debut)
- * @param string $date_to Filtre par date de facture (fin)
- * @return array Donnees de pagination et liste des factures prestataires
+ * @param string $date_from Filtre par date d'émission (début)
+ * @param string $date_to Filtre par date d'émission (fin)
+ * @return array Données de pagination et liste des factures prestataires
  */
 function billingGetProviderInvoicesList($page = 1, $perPage = DEFAULT_ITEMS_PER_PAGE, $search = '', $status = '', $providerId = 0, $date_from = '', $date_to = '') {
     $params = [];
@@ -317,11 +310,10 @@ function billingGetProviderInvoicesList($page = 1, $perPage = DEFAULT_ITEMS_PER_
 }
 
 /**
- * Recupere les details d'une facture prestataire incluant les lignes
- * Utilise la vue v_details_facture_prestataire pour plus de simplicité
+ * Récupère les détails d'une facture prestataire
  * 
- * @param int $id Identifiant de la facture prestataire
- * @return array|false Donnees de la facture et ses lignes ou false si non trouvee
+ * @param int $id Identifiant de la facture
+ * @return array|false Données de la facture ou false si non trouvée
  */
 function billingGetProviderInvoiceDetails($id) {
      $sql = "SELECT * FROM v_details_facture_prestataire WHERE facture_id = ?";
@@ -364,11 +356,11 @@ function billingGetProviderInvoiceDetails($id) {
 }
 
 /**
- * Trouve les rendez-vous termines non factures pour une periode donnee
+ * Recherche les rendez-vous non facturés sur une période donnée
  * 
- * @param string $startDate Date de debut (Y-m-d)
+ * @param string $startDate Date de début (Y-m-d)
  * @param string $endDate Date de fin (Y-m-d)
- * @return array Tableau associatif [prestataire_id => [liste_rdv]]
+ * @return array Liste des rendez-vous non facturés
  */
 function billingFindUnbilledAppointments($startDate, $endDate) {
     $sql = "SELECT 
@@ -400,13 +392,12 @@ function billingFindUnbilledAppointments($startDate, $endDate) {
     return $groupedAppointments;
 }
 
-
 /**
- * Genere les factures prestataires pour une periode donnee
+ * Génère les factures prestataires pour une période donnée
  * 
- * @param string $startDate Date de debut (Y-m-d)
+ * @param string $startDate Date de début (Y-m-d)
  * @param string $endDate Date de fin (Y-m-d)
- * @return array Resultat ['success' => bool, 'message' => string, 'generated_count' => int]
+ * @return array Résultat ['success' => bool, 'message' => string, 'invoices' => array]
  */
 function billingGenerateProviderInvoicesForPeriod($startDate, $endDate) {
     $unbilledAppointments = billingFindUnbilledAppointments($startDate, $endDate);
@@ -481,11 +472,11 @@ function billingGenerateProviderInvoicesForPeriod($startDate, $endDate) {
 }
 
 /**
- * Met a jour le statut d'une facture prestataire (ex: marquer comme payee)
+ * Met à jour le statut d'une facture prestataire
  * 
- * @param int $invoiceId ID de la facture prestataire
+ * @param int $invoiceId ID de la facture
  * @param string $status Nouveau statut
- * @return array Resultat ['success' => bool, 'message' => string]
+ * @return array Résultat ['success' => bool, 'message' => string]
  */
 function billingUpdateProviderInvoiceStatus($invoiceId, $status) {
      if (!in_array($status, PRACTITIONER_INVOICE_STATUSES)) {
@@ -519,21 +510,19 @@ function billingUpdateProviderInvoiceStatus($invoiceId, $status) {
     }
 }
 
-
 /**
- * Recupere les statuts valides pour les factures prestataire
+ * Récupère les statuts valides pour les factures prestataire
  * 
- * @return array
+ * @return array Liste des statuts valides
  */
 function billingGetProviderInvoiceStatuses() {
     return PRACTITIONER_INVOICE_STATUSES;
 }
 
 /**
- * Récupère la liste des entreprises pour les filtres de facturation client.
- * (Cette fonction pourrait être factorisée si elle existe déjà ailleurs)
+ * Récupère la liste des entreprises pour le filtre
  * 
- * @return array Liste des entreprises [id => nom].
+ * @return array Liste des entreprises [id => nom]
  */
 function billingGetCompaniesForFilter() {
     $companies = fetchAll(TABLE_COMPANIES, '', 'nom ASC');
@@ -545,10 +534,9 @@ function billingGetCompaniesForFilter() {
 }
 
 /**
- * Récupère la liste des prestataires pour les filtres de facturation prestataire.
- * (Cette fonction pourrait être factorisée si elle existe déjà dans providers.php)
+ * Récupère la liste des prestataires pour le filtre
  * 
- * @return array Liste des prestataires [id => prenom nom].
+ * @return array Liste des prestataires [id => nom]
  */
 function billingGetProvidersForFilter() {
     $providers = fetchAll(TABLE_USERS, 'role_id = ? AND statut = ?', 'nom ASC, prenom ASC', 0, 0, [ROLE_PRESTATAIRE, STATUS_ACTIVE]);
@@ -560,11 +548,11 @@ function billingGetProvidersForFilter() {
 }
 
 /**
- * Génère un badge HTML stylisé avec Bootstrap pour représenter un statut de facture (client ou prestataire).
- *
- * @param string $status Statut de la facture.
- * @param string $type Type de facture ('client' ou 'provider') pour différencier les statuts si nécessaire.
- * @return string HTML du badge Bootstrap.
+ * Génère un badge HTML pour le statut d'une facture
+ * 
+ * @param string $status Statut de la facture
+ * @param string $type Type de facture ('client' ou 'provider')
+ * @return string HTML du badge
  */
 function billingGetInvoiceStatusBadge($status, $type = 'client') 
 {

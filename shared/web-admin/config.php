@@ -1,30 +1,31 @@
 <?php
-// configuration de la base de donnees
+// Configuration de la base de données
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'business_care');
 define('DB_USER', 'business_care_user');
 define('DB_PASS', 'business_care_password');
 define('DB_CHARSET', 'utf8mb4');
 
-// parametres de l'application
+// Paramètres de l'application
 define('APP_NAME', 'Business Care');
-define('APP_VERSION', '0.5.0');
+define('APP_VERSION', '0.6.0');
 
-// url de l'application
+// URLs de l'application
 define('WEBADMIN_URL', 'http://localhost/Business-Care/web-admin');
 define('ROOT_URL', 'http://localhost/Business-Care');
 define('SHARED_URL', ROOT_URL . '/shared');
 define('ASSETS_URL', ROOT_URL . '/assets');
 define('API_URL', ROOT_URL . '/api');
 define('UPLOAD_URL', ROOT_URL . '/uploads/');
+define('JAVA_URL', ROOT_URL . '/java-app');
 
-// constantes pour les roles utilisateurs
+// Constantes pour les rôles utilisateurs
 define('ROLE_ADMIN', 1);
 define('ROLE_SALARIE', 2);
 define('ROLE_PRESTATAIRE', 3);
 define('ROLE_ENTREPRISE', 4);
 
-// constantes pour les tables
+// Constantes pour les tables
 define('TABLE_COMPANIES', 'entreprises');
 define('TABLE_USERS', 'personnes');
 define('TABLE_CONTRACTS', 'contrats');
@@ -44,15 +45,14 @@ define('TABLE_HABILITATIONS', 'habilitations');
 define('TABLE_PROVIDER_SERVICES', 'prestataires_prestations');
 define('TABLE_PROVIDER_AVAILABILITY', 'prestataires_disponibilites');
 
-// constantes pour les devis (quotes)
+// Constantes pour les devis (quotes)
 define('QUOTE_STATUS_PENDING', 'en_attente');
-define('QUOTE_STATUS_ACCEPTED', 'accepte');
-define('QUOTE_STATUS_REFUSED', 'refuse');
-define('QUOTE_STATUS_EXPIRED', 'expire');
+define('QUOTE_STATUS_ACCEPTED', 'accepté');
+define('QUOTE_STATUS_REFUSED', 'refusé');
+define('QUOTE_STATUS_EXPIRED', 'expiré');
 define('QUOTE_STATUSES', [QUOTE_STATUS_PENDING, QUOTE_STATUS_ACCEPTED, QUOTE_STATUS_REFUSED, QUOTE_STATUS_EXPIRED]);
 
-// constantes pour les packs/services principaux
-
+// Constantes pour les packs/services principaux
 define('PACK_STARTER_NAME', 'Starter Pack');
 define('PACK_BASIC_NAME', 'Basic Pack');
 define('PACK_PREMIUM_NAME', 'Premium Pack');
@@ -62,45 +62,45 @@ define('SERVICE_TYPES', [
     PACK_PREMIUM_NAME
 ]);
 
-// taux de tva standard
+// Taux de TVA standard
 define('TVA_RATE', 0.20); // 20%
 
-// duree de vie de la session en secondes (30 minutes)
+// Durée de vie de la session en secondes (30 minutes)
 define('SESSION_LIFETIME', 1800);
 
-// constantes pour les statuts utilisateurs
+// Constantes pour les statuts utilisateurs
 define('USER_STATUSES', ['actif', 'inactif', 'en_attente', 'suspendu']);
 
-// constantes pour les tailles d'entreprise
+// Constantes pour les tailles d'entreprise
 define('COMPANY_SIZES', ['1-10', '11-50', '51-200', '201-500', '500+']);
 
-// constantes pour les contrats
-define('CONTRACT_STATUSES', ['actif', 'expire', 'resilie', 'en_attente']);
+// Constantes pour les contrats
+define('CONTRACT_STATUSES', ['actif', 'expiré', 'résilié', 'en_attente']);
 define('DEFAULT_CONTRACT_STATUS', 'en_attente');
 
-// constantes pour les prestations (services)
-define('PRESTATION_TYPES', ['conference', 'webinar', 'atelier', 'consultation', 'evenement', 'autre']);
-define('PRESTATION_DIFFICULTIES', ['debutant', 'intermediaire', 'avance']);
+// Constantes pour les prestations (services)
+define('PRESTATION_TYPES', ['conférence', 'webinar', 'atelier', 'consultation', 'événement', 'autre']);
+define('PRESTATION_DIFFICULTIES', ['débutant', 'intermédiaire', 'avancé']);
 define('DEFAULT_PRESTATION_STATUS', 'actif'); 
 
-// constantes pour les rendez-vous (appointments)
-define('APPOINTMENT_STATUSES', ['planifie', 'confirme', 'annule', 'termine', 'no_show']);
-define('APPOINTMENT_TYPES', ['presentiel', 'visio', 'telephone']);
+// Constantes pour les rendez-vous (appointments)
+define('APPOINTMENT_STATUSES', ['planifié', 'confirmé', 'annulé', 'terminé', 'no_show']);
+define('APPOINTMENT_TYPES', ['présentiel', 'visio', 'téléphone']);
 
-// constantes pour les dons
-define('DONATION_STATUSES', ['en_attente', 'valide', 'refuse']);
-define('DONATION_TYPES', ['financier', 'materiel']);
+// Constantes pour les dons
+define('DONATION_STATUSES', ['en_attente', 'validé', 'refusé']);
+define('DONATION_TYPES', ['financier', 'matériel']);
 
-// constantes globales de statut
+// Constantes globales de statut
 define('STATUS_ACTIVE', 'actif');
 
-// constantes pour les factures des prestataires
+// Constantes pour les factures des prestataires
 define('TABLE_PRACTITIONER_INVOICES', 'factures_prestataires');
 
-// Statuses for practitioner invoices
-define('PRACTITIONER_INVOICE_STATUS_UNPAID', 'impayee');
-define('PRACTITIONER_INVOICE_STATUS_PAID', 'payee');
-define('PRACTITIONER_INVOICE_STATUS_PENDING_GENERATION', 'generation_attendue');
+// Statuts pour les factures des prestataires
+define('PRACTITIONER_INVOICE_STATUS_UNPAID', 'impayée');
+define('PRACTITIONER_INVOICE_STATUS_PAID', 'payée');
+define('PRACTITIONER_INVOICE_STATUS_PENDING_GENERATION', 'génération_attendue');
 define('PRACTITIONER_INVOICE_STATUSES', [
     PRACTITIONER_INVOICE_STATUS_UNPAID, 
     PRACTITIONER_INVOICE_STATUS_PAID, 
@@ -110,31 +110,31 @@ define('TABLE_PRACTITIONER_INVOICE_LINES', 'facture_prestataire_lignes');
 
 define('PRACTITIONER_INVOICE_PREFIX', 'FP');
 
-// constantes pour les habilitations des prestataires
+// Constantes pour les habilitations des prestataires
 define('HABILITATION_STATUS_PENDING', 'en_attente_validation');
-define('HABILITATION_STATUS_VERIFIED', 'verifiee');
-define('HABILITATION_STATUS_REJECTED', 'rejetee');
-define('HABILITATION_STATUS_EXPIRED', 'expiree');
+define('HABILITATION_STATUS_VERIFIED', 'vérifiée');
+define('HABILITATION_STATUS_REJECTED', 'rejetée');
+define('HABILITATION_STATUS_EXPIRED', 'expirée');
 define('HABILITATION_STATUSES', [HABILITATION_STATUS_PENDING, HABILITATION_STATUS_VERIFIED, HABILITATION_STATUS_REJECTED, HABILITATION_STATUS_EXPIRED]);
 
-// constantes pour la disponibilite des prestataires
-define('AVAILABILITY_TYPE_RECURRING', 'recurrente');
-define('AVAILABILITY_TYPE_SPECIFIC', 'specifique');
+// Constantes pour la disponibilité des prestataires
+define('AVAILABILITY_TYPE_RECURRING', 'récurrente');
+define('AVAILABILITY_TYPE_SPECIFIC', 'spécifique');
 define('AVAILABILITY_TYPE_UNAVAILABLE', 'indisponible');
 define('AVAILABILITY_TYPES', [AVAILABILITY_TYPE_RECURRING, AVAILABILITY_TYPE_SPECIFIC, AVAILABILITY_TYPE_UNAVAILABLE]);
 
-// limites diverses
+// Limites diverses
 define('DASHBOARD_RECENT_ACTIVITIES_LIMIT', 5);
 
-// definit le fuseau horaire
+// Définit le fuseau horaire
 date_default_timezone_set('Europe/Paris');
 
-// constantes pour les factures (clients)
+// Constantes pour les factures (clients)
 define('INVOICE_STATUS_PENDING', 'en_attente');
-define('INVOICE_STATUS_PAID', 'payee');
-define('INVOICE_STATUS_CANCELLED', 'annulee');
+define('INVOICE_STATUS_PAID', 'payée');
+define('INVOICE_STATUS_CANCELLED', 'annulée');
 define('INVOICE_STATUS_LATE', 'retard');
-define('INVOICE_STATUS_UNPAID', 'impayee');
+define('INVOICE_STATUS_UNPAID', 'impayée');
 define('INVOICE_STATUSES', [INVOICE_STATUS_PENDING, INVOICE_STATUS_PAID, INVOICE_STATUS_CANCELLED, INVOICE_STATUS_LATE, INVOICE_STATUS_UNPAID]);
-define('INVOICE_PAYMENT_MODES', ['virement', 'carte', 'prelevement']);
+define('INVOICE_PAYMENT_MODES', ['virement', 'carte', 'prélèvement']);
 define('INVOICE_PREFIX', 'F');

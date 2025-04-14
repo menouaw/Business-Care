@@ -23,8 +23,7 @@ require_once BASE_DIR . 'includes/init.php';
         </button>
         <div class="col-md-9 col-lg-10 ms-sm-auto">
             <div class="d-flex justify-content-between align-items-center">
-                <input class="form-control form-control-white" type="text" placeholder="Rechercher..." aria-label="Search">
-                <div class="navbar-nav flex-row">
+                <div class="navbar-nav flex-row ms-auto">
                     <div class="nav-item text-nowrap">
                         <a class="nav-link px-3" href="<?php echo WEBADMIN_URL; ?>/notifications.php" title="Notifications">
                             <i class="fas fa-bell"></i>
