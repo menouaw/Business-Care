@@ -95,7 +95,7 @@ define('DONATION_TYPES', ['financier', 'materiel']);
 define('STATUS_ACTIVE', 'actif');
 
 // constantes pour les factures des prestataires
-define('TABLE_PRACTITIONER_INVOICES', 'factures_prestataires'); // Or use TABLE_INVOICES if structure allows
+define('TABLE_PRACTITIONER_INVOICES', 'factures_prestataires');
 
 // Statuses for practitioner invoices
 define('PRACTITIONER_INVOICE_STATUS_UNPAID', 'impayee');
@@ -108,8 +108,7 @@ define('PRACTITIONER_INVOICE_STATUSES', [
 ]);
 define('TABLE_PRACTITIONER_INVOICE_LINES', 'facture_prestataire_lignes');
 
-// Prefix for practitioner invoices
-define('PRACTITIONER_INVOICE_PREFIX', 'FP'); 
+define('PRACTITIONER_INVOICE_PREFIX', 'FP');
 
 // constantes pour les habilitations des prestataires
 define('HABILITATION_STATUS_PENDING', 'en_attente_validation');
@@ -129,3 +128,13 @@ define('DASHBOARD_RECENT_ACTIVITIES_LIMIT', 5);
 
 // definit le fuseau horaire
 date_default_timezone_set('Europe/Paris');
+
+// constantes pour les factures (clients)
+define('INVOICE_STATUS_PENDING', 'en_attente');
+define('INVOICE_STATUS_PAID', 'payee');
+define('INVOICE_STATUS_CANCELLED', 'annulee');
+define('INVOICE_STATUS_LATE', 'retard');
+define('INVOICE_STATUS_UNPAID', 'impayee');
+define('INVOICE_STATUSES', [INVOICE_STATUS_PENDING, INVOICE_STATUS_PAID, INVOICE_STATUS_CANCELLED, INVOICE_STATUS_LATE, INVOICE_STATUS_UNPAID]);
+define('INVOICE_PAYMENT_MODES', ['virement', 'carte', 'prelevement']);
+define('INVOICE_PREFIX', 'F');
