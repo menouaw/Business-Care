@@ -106,3 +106,42 @@ BEGIN
 END//
 
 DELIMITER ;
+
+
+DELIMITER //
+
+CREATE TRIGGER after_prestataire_prestation_insert
+AFTER INSERT ON prestataires_prestations
+FOR EACH ROW
+BEGIN
+    DECLARE prestation_nom VARCHAR(255);
+    SELECT nom INTO prestation_nom FROM prestations WHERE id = NEW.prestation_id;
+
+    INSERT INTO notifications (personne_id, titre, message, type, lien)
+    VALUES (
+        NEW.prestataire_id,
+        'Nouvelle Prestation Assignee',
+        CONCAT('Vous pouvez desormais proposer la prestation: ', IFNULL(prestation_nom, 'ID ' + NEW.prestation_id), '.'),
+        'info',
+        '/prestataire/gestion/prestation'
+    );
+END//
+
+CREATE TRIGGER after_prestataire_prestation_delete
+AFTER DELETE ON prestataires_prestations
+FOR EACH ROW
+BEGIN
+    DECLARE prestation_nom VARCHAR(255);
+    SELECT nom INTO prestation_nom FROM prestations WHERE id = OLD.prestation_id;
+
+    INSERT INTO notifications (personne_id, titre, message, type, lien)
+    VALUES (
+        OLD.prestataire_id,
+        'Prestation Retiree',
+        CONCAT('Vous ne proposez plus la prestation: ', IFNULL(prestation_nom, 'ID ' + OLD.prestation_id), '.'),
+        'warning',
+        '/prestataire/gestion/prestation'
+    );
+END//
+
+DELIMITER ;

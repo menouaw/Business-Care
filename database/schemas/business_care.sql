@@ -1,5 +1,3 @@
--- source C:/MAMP/htdocs/Business-Care/database/schemas/business_care.sql
-
 CREATE DATABASE business_care CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE business_care;
 
@@ -330,6 +328,54 @@ CREATE TABLE facture_prestataire_lignes (
     FOREIGN KEY (facture_prestataire_id) REFERENCES factures_prestataires(id) ON DELETE CASCADE,
     FOREIGN KEY (rendez_vous_id) REFERENCES rendez_vous(id) ON DELETE SET NULL,
     INDEX idx_facture_id (facture_prestataire_id)
+);
+
+CREATE TABLE habilitations (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    prestataire_id INT NOT NULL,
+    type ENUM('diplome', 'certification', 'agrement', 'autre') NOT NULL,
+    nom_document VARCHAR(255),
+    document_url VARCHAR(255),
+    organisme_emission VARCHAR(150),
+    date_obtention DATE,
+    date_expiration DATE,
+    statut ENUM('en_attente_validation', 'verifiee', 'rejetee', 'expiree') DEFAULT 'en_attente_validation',
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (prestataire_id) REFERENCES personnes(id) ON DELETE CASCADE,
+    INDEX idx_prestataire_id (prestataire_id),
+    INDEX idx_statut (statut),
+    INDEX idx_date_expiration (date_expiration)
+);
+
+CREATE TABLE prestataires_prestations (
+    prestataire_id INT NOT NULL,
+    prestation_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (prestataire_id, prestation_id),
+    FOREIGN KEY (prestataire_id) REFERENCES personnes(id) ON DELETE CASCADE,
+    FOREIGN KEY (prestation_id) REFERENCES prestations(id) ON DELETE CASCADE
+);
+
+CREATE TABLE prestataires_disponibilites (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    prestataire_id INT NOT NULL,
+    type ENUM('recurrente', 'specifique', 'indisponible') NOT NULL,
+    date_debut DATETIME,
+    date_fin DATETIME,
+    heure_debut TIME,
+    heure_fin TIME,
+    jour_semaine TINYINT,
+    recurrence_fin DATE NULL,
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (prestataire_id) REFERENCES personnes(id) ON DELETE CASCADE,
+    INDEX idx_prestataire_id (prestataire_id),
+    INDEX idx_type (type),
+    INDEX idx_date_debut (date_debut),
+    INDEX idx_jour_semaine (jour_semaine)
 );
 
 

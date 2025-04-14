@@ -104,7 +104,7 @@ function countTableRows($table, $where = '')
  * @param int $offset (Optionnel) Position de départ pour la récupération des enregistrements.
  * @return array Tableau contenant l'ensemble des enregistrements récupérés.
  */
-function fetchAll($table, $where = '', $orderBy = '', $limit = 0, $offset = 0)
+function fetchAll($table, $where = '', $orderBy = '', $limit = 0, $offset = 0, $params = [])
 {
     $table = validateTableName($table);
 
@@ -115,14 +115,16 @@ function fetchAll($table, $where = '', $orderBy = '', $limit = 0, $offset = 0)
     if ($orderBy) {
         $sql .= " ORDER BY $orderBy";
     }
-    if ($limit) {
-        $sql .= " LIMIT $limit";
-        if ($offset) {
-            $sql .= " OFFSET $offset";
+    if ($limit > 0) {
+        $sql .= " LIMIT :limit";
+        $params[':limit'] = (int)$limit;
+        if ($offset >= 0) {
+            $sql .= " OFFSET :offset";
+            $params[':offset'] = (int)$offset;
         }
     }
 
-    $stmt = executeQuery($sql);
+    $stmt = executeQuery($sql, $params);
     return $stmt->fetchAll();
 }
 
