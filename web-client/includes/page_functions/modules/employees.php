@@ -1686,10 +1686,6 @@ function handleAnonymousReport($sujet, $description)
 
     ];
 
-    if (!defined('TABLE_SIGNALEMENTS')) {
-        define('TABLE_SIGNALEMENTS', 'signalements');
-    }
-
     try {
         $insertedId = insertRow(TABLE_SIGNALEMENTS, $dataToInsert);
 
@@ -1890,6 +1886,8 @@ function processSignalementSubmission($postData)
 
     if (empty(trim($description))) {
         $errors['description'] = 'La description détaillée est obligatoire.';
+    } elseif (mb_strlen($description) > 2000) {
+        $errors['description'] = 'La description ne doit pas dépasser 2000 caractères.';
     }
 
     if (mb_strlen($sujet) > 255) {
