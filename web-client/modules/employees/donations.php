@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../../includes/page_functions/modules/employees.php';
 
+session_status() === PHP_SESSION_ACTIVE || session_start();
 $current_employee_id = $_SESSION['user_id'] ?? null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
