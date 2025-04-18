@@ -28,9 +28,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $pageData = displayEmployeeSettings();
 $employee = $pageData['employee'] ?? [];
 $settings = $pageData['settings'] ?? [];
-if (!isset($_SESSION['csrf_token'])) {
-    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-}
 
 $pageTitle = "Mes Paramètres";
 
