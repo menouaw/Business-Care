@@ -72,7 +72,11 @@ include_once __DIR__ . '/../../templates/header.php';
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="telephone" class="form-label">Téléphone</label>
-                            <input type="tel" class="form-control" id="telephone" name="telephone" value="<?= htmlspecialchars($employee['telephone'] ?? '') ?>">
+                            <input type="tel" class="form-control" id="telephone" name="telephone"
+                                pattern="^(\+33|0)[1-9](\d{2}){4}$"
+                                placeholder="0612345678 ou +33612345678"
+                                value="<?= htmlspecialchars($employee['telephone'] ?? '') ?>">
+                            <div class="form-text">Format: 0612345678 ou +33612345678</div>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="email" class="form-label">Email</label>
