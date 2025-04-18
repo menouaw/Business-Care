@@ -145,7 +145,6 @@ function displayFlashMessages()
         return '';
     }
 
-    unset($_SESSION['flash_messages']);
 
     $output = '';
     foreach ($flashMessages as $flashMessage) {
@@ -313,7 +312,7 @@ function getPrestations($type = '', $categorie = '', $page = 1, $perPage = DEFAU
 
     $whereClause = !empty($where) ? implode(' AND ', $where) : '';
 
-    return paginateResults('prestations', $page, $perPage, $whereClause, 'nom ASC');
+    return paginateResults('prestations', $page, $perPage, $whereClause, 'nom ASC', $params);
 }
 
 
