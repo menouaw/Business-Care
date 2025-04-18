@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   
   php:
@@ -7,12 +5,13 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: business_care_php
+    restart: unless-stopped
     environment:
       
       DB_HOST: db
       DB_DATABASE: ${MYSQL_DATABASE:-business_care}
       DB_USERNAME: ${MYSQL_USER:-business_care_user}
-      DB_PASSWORD: ${MYSQL_PASSWORD?Please set MYSQL_PASSWORD in .env file}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
       
       
@@ -28,6 +27,7 @@ services:
   nginx:
     image: nginx:stable-alpine
     container_name: business_care_nginx
+    restart: unless-stopped
     ports:
       
       - "80:80"
@@ -49,8 +49,9 @@ services:
     environment:
       MYSQL_DATABASE: ${MYSQL_DATABASE:-business_care}
       MYSQL_USER: ${MYSQL_USER:-business_care_user}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD?Please set MYSQL_PASSWORD in .env file}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD?Please set MYSQL_ROOT_PASSWORD in .env file}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_BACKUP_PASSWORD: ${MYSQL_BACKUP_PASSWORD}
       
       
     volumes:
