@@ -1628,3 +1628,84 @@ function getCommunityIcon($communityType)
 
     return $iconMap[$communityType] ?? $iconMap['autre'];
 }
+
+/**
+ * Gère la soumission du formulaire de mise à jour des préférences de conseils.
+ *
+ * @param array $postData Données du formulaire POST.
+ * @param int $employee_id ID de l'employé.
+ * @return bool Retourne true si la mise à jour réussit (ou s'il n'y a pas d'erreur majeure), false sinon.
+ */
+function handleCounselPreferencesUpdate(array $postData, int $employee_id): bool
+{
+
+    $selectedCategories = $postData['categories'] ?? [];
+    if (!is_array($selectedCategories)) {
+        $selectedCategories = []; // S'assurer que c'est un tableau
+    }
+    $sanitizedCategories = array_map('sanitizeInput', $selectedCategories);
+
+    try {
+        beginTransaction();
+        // Supprimer les anciennes préférences
+        deleteRow('utilisateur_interets_conseils', 'personne_id = :pid', [':pid' => $employee_id]);
+
+        if (!empty($sanitizedCategories)) {
+            $sqlInsert = "INSERT INTO utilisateur_interets_conseils (personne_id, categorie_conseil) VALUES (:pid, :cat)";
+            $stmt = getDbConnection()->prepare($sqlInsert);
+            foreach ($sanitizedCategories as $category) {
+                $stmt->execute([':pid' => $employee_id, ':cat' => $category]);
+            }
+        }
+        commitTransaction();
+        logActivity($employee_id, 'update_counsel_preferences', 'Préférences de conseils mises à jour.');
+        flashMessage("Vos préférences de conseils ont été mises à jour.", "success");
+        return true;
+    } catch (Exception $e) {
+        if (getDbConnection()->inTransaction()) {
+            rollbackTransaction();
+        }
+        logSystemActivity('error', "Erreur MAJ préférences conseils pour user #$employee_id: " . $e->getMessage());
+        flashMessage("Une erreur technique est survenue lors de la mise à jour de vos préférences.", "danger");
+        return false;
+    }
+}
+
+
+function getCounselPageData(int $employee_id): array
+{
+    $data = [
+        'personalizedTopics' => [],
+        'generalTopics' => [],
+        'availableCategories' => [],
+        'userPreferences' => [],
+        'dbError' => null
+    ];
+
+    try {
+        $catQuery = "SELECT DISTINCT categorie FROM conseils WHERE categorie IS NOT NULL AND categorie != '' ORDER BY categorie ASC";
+        $data['availableCategories'] = executeQuery($catQuery)->fetchAll(PDO::FETCH_COLUMN);
+
+        $prefQuery = "SELECT categorie_conseil FROM utilisateur_interets_conseils WHERE personne_id = :pid";
+        $data['userPreferences'] = executeQuery($prefQuery, [':pid' => $employee_id])->fetchAll(PDO::FETCH_COLUMN);
+        
+        $allTopics = fetchAll('conseils', '', 'categorie ASC, titre ASC');
+
+        if (!empty($data['userPreferences'])) {
+            foreach ($allTopics as $topic) {
+                if (isset($topic['categorie']) && in_array($topic['categorie'], $data['userPreferences'])) {
+                    $data['personalizedTopics'][] = $topic;
+                } else {
+                    $data['generalTopics'][] = $topic;
+                }
+            }
+        } else {
+            $data['generalTopics'] = $allTopics;
+        }
+    } catch (Exception $e) {
+        error_log("Error fetching data for counsel page (user #$employee_id): " . $e->getMessage());
+        $data['dbError'] = "Impossible de charger les données des conseils pour le moment. Veuillez réessayer plus tard.";
+    }
+
+    return $data;
+}
