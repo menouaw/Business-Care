@@ -3,27 +3,17 @@ require_once '../../includes/page_functions/modules/quotes.php';
 
 requireRole(ROLE_ADMIN);
 
-$filterData = getQueryData([
-    'page' => 1, 
-    'search' => '', 
-    'status' => '', 
-    'sector' => '',
-    'startDate' => '', 
-    'endDate' => '', 
-    'serviceId' => 0, 
-    'action' => '', 
-    'id' => 0
-]);
+$queryData = getQueryData();
 
-$page = $filterData['page'];
-$search = $filterData['search'];
-$status = $filterData['status'];
-$sector = $filterData['sector'];
-$startDate = $filterData['startDate'];
-$endDate = $filterData['endDate'];
-$serviceId = $filterData['serviceId'];
-$action = $filterData['action'];
-$id = $filterData['id'];
+$page = $queryData['page'] ?? 1;
+$search = $queryData['search'] ?? '';
+$status = $queryData['status'] ?? '';
+$sector = $queryData['sector'] ?? '';
+$startDate = $queryData['startDate'] ?? '';
+$endDate = $queryData['endDate'] ?? '';
+$serviceId = $queryData['serviceId'] ?? 0;
+$action = $queryData['action'] ?? '';
+$id = $queryData['id'] ?? 0;
 
 $result = quotesGetList($page, DEFAULT_ITEMS_PER_PAGE, $search, $status, $sector, $startDate, $endDate, $serviceId);
 $quotes = $result['items'];
@@ -166,7 +156,7 @@ include_once '../../templates/header.php';
                             'totalItems' => $totalItems,
                             'itemsPerPage' => $itemsPerPage
                         ];
-                        $urlParams = $filterData; 
+                        $urlParams = $queryData; 
                         unset($urlParams['page'], $urlParams['action'], $urlParams['id']);
                         $urlPattern = WEBADMIN_URL . '/modules/quotes/index.php?' . http_build_query(array_filter($urlParams)) . '&page={page}';
                         ?>

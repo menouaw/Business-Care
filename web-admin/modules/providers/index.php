@@ -5,15 +5,10 @@ require_once '../../includes/page_functions/modules/users.php';
 requireRole(ROLE_ADMIN);
 
 
-$filterData = getQueryData([
-    'page' => 1, 
-    'search' => '', 
-    'status' => '', 
-    'entreprise_id' => 0
-]);
-$page = $filterData['page'];
-$search = $filterData['search'];
-$status = $filterData['status'];
+$queryData = getQueryData();
+$page = $queryData['page'] ?? 1;
+$search = $queryData['search'] ?? '';
+$status = $queryData['status'] ?? '';
 
 
 $listResult = usersGetList(

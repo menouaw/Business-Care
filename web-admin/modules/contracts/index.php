@@ -3,13 +3,13 @@ require_once '../../includes/page_functions/modules/contracts.php';
 
 requireRole(ROLE_ADMIN);
 
-$filterData = getQueryData(['page' => 1, 'search' => '', 'statut' => '', 'service_id' => 0, 'action' => '', 'id' => 0]);
-$page = $filterData['page'];
-$search = $filterData['search'];
-$statut = $filterData['statut'];
-$serviceId = $filterData['service_id'];
-$action = $filterData['action'];
-$id = $filterData['id'];
+$queryData = getQueryData();
+$page = $queryData['page'] ?? 1;
+$search = $queryData['search'] ?? '';
+$statut = $queryData['statut'] ?? '';
+$serviceId = $queryData['service_id'] ?? 0;
+$action = $queryData['action'] ?? '';
+$id = $queryData['id'] ?? 0;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = [
