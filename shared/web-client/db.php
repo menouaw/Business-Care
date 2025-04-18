@@ -110,7 +110,9 @@ function fetchOne($table, $where, $params = [], $orderBy = '')
     }
     $sql .= " LIMIT 1";
 
-    error_log("[DEBUG] fetchOne called for table: $table | WHERE: $where | Params: " . json_encode($params) . " | SQL: $sql");
+    if (defined('DEBUG_MODE') && DEBUG_MODE) {
+        error_log("[DEBUG] fetchOne called for table: $table | WHERE: $where | SQL: $sql");
+    }
 
     $stmt = executeQuery($sql, $params);
 
