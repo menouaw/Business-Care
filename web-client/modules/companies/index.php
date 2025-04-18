@@ -92,6 +92,31 @@ include_once __DIR__ . '/../../templates/header.php';
                     </div>
                 </div>
             </div>
+
+            <div class="col-md-6 col-lg-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-box bg-warning bg-opacity-10 text-warning rounded p-3 me-3">
+                                <i class="fas fa-star fa-2x"></i>
+                            </div>
+                            <div>
+                                <h6 class="card-subtitle text-muted mb-1">Abonnement Actuel</h6>
+                                <?php
+                                $abonnementActuel = 'Aucun';
+                                if (!empty($contrats['contracts'][0]) && isset($contrats['contracts'][0]['service_nom'])) {
+                                    $abonnementActuel = $contrats['contracts'][0]['service_nom'];
+                                }
+                                ?>
+                                <p class="card-text fw-bold mb-0"><?= htmlspecialchars($abonnementActuel) ?></p>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <a href="contracts.php" class="btn btn-sm btn-outline-warning">Détails</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="row g-4">

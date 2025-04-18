@@ -608,6 +608,7 @@ function getContractInvoices($contract_id)
             'pagination' => [
                 'current' => 1,
                 'limit' => 5,
+                'total' => 0,
                 'totalPages' => 0
             ],
             'pagination_html' => ''
@@ -1370,8 +1371,9 @@ function getCompanyContracts($company_id, $status = null, $page = 1, $limit = 10
         $page = max(1, min($page, $totalPages > 0 ? $totalPages : 1));
         $offset = ($page - 1) * $limit;
 
-        $query = "SELECT c.* 
+        $query = "SELECT c.id, c.entreprise_id, c.service_id, c.date_debut, c.date_fin, c.nombre_salaries, c.statut, c.conditions_particulieres, c.created_at, c.updated_at, s.nom AS service_nom
                   FROM contrats c 
+                  LEFT JOIN services s ON c.service_id = s.id
                   WHERE " . $where . "
                   ORDER BY c.date_debut DESC 
                   LIMIT :limit OFFSET :offset";
@@ -1409,10 +1411,10 @@ function getCompanyContracts($company_id, $status = null, $page = 1, $limit = 10
         ];
     } catch (PDOException $e) {
         logSystemActivity('error', "PDO Error in getCompanyContracts: " . $e->getMessage() . " | Query: " . ($query ?? 'N/A') . " | Params: " . print_r($params, true));
-        flashMessage("Une erreur de base de données est survenue lors de la récupération des contrats.", "danger");
+        flashMessage("Erreur BDD Contrats: " . $e->getMessage(), "danger");
     } catch (Exception $e) {
         logSystemActivity('error', "General Error in getCompanyContracts: " . $e->getMessage());
-        flashMessage("Une erreur générale est survenue lors de la récupération des contrats.", "danger");
+        flashMessage("Erreur Générale Contrats: " . $e->getMessage(), "danger");
     }
 
     return [
