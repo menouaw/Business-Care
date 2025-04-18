@@ -1,3 +1,4 @@
+#!/bin/bash
 set -e
 
 MYSQL_CMD="mysql -u root -p$MYSQL_ROOT_PASSWORD"
