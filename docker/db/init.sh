@@ -6,7 +6,7 @@ MYSQL_CMD="mysql -u root -p$MYSQL_ROOT_PASSWORD"
 echo "Initialisation de la base de données..."
 
 echo "Sélection de la base de données ${MYSQL_DATABASE}..."
-$MYSQL_CMD -e "USE ${MYSQL_DATABASE};"
+$MYSQL_CMD -e "USE ${MYSQL_DATABASE};" || {echo "Erreur: la base de données ${MYSQL_DATABASE} n'existe pas"; exit 1;}
 
 echo "Importation du schéma dans ${MYSQL_DATABASE}..."
 $MYSQL_CMD ${MYSQL_DATABASE} < /docker-entrypoint-initdb.d/schemas/business_care.sql
