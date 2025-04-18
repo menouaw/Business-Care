@@ -24,6 +24,9 @@ TRUNCATE TABLE contrats_prestations;
 TRUNCATE TABLE services;
 TRUNCATE TABLE factures_prestataires;
 TRUNCATE TABLE facture_prestataire_lignes;
+TRUNCATE TABLE habilitations;
+TRUNCATE TABLE prestataires_prestations;
+TRUNCATE TABLE prestataires_disponibilites;
 SET FOREIGN_KEY_CHECKS = 1;
 
 INSERT INTO roles (nom, description) VALUES
@@ -304,3 +307,57 @@ INSERT INTO facture_prestataire_lignes (facture_prestataire_id, rendez_vous_id, 
 (4, 21, 'RDV - Webinar Communication Non Violente (CNV)', 160.00),
 (4, 22, 'RDV - Atelier Gestion du Temps', 140.00),
 (4, 26, 'RDV - Coaching Prise de Parole', 120.00);
+
+
+INSERT INTO habilitations (prestataire_id, type, nom_document, document_url, organisme_emission, date_obtention, date_expiration, statut, notes) VALUES
+(6, 'diplome', 'Master Psychologie Clinique', '/docs/habilitations/sophie_durand_master_psy.pdf', 'Universite Paris V', '2012-06-20', NULL, 'verifiee', 'Diplome valide'),
+(6, 'certification', 'Certification Massage Amma', '/docs/habilitations/sophie_durand_certif_amma.pdf', 'Ecole Zen Attitude', '2018-03-10', '2026-03-09', 'verifiee', 'Certificat a renouveler'),
+(13, 'diplome', 'Doctorat en Psychologie du Travail', '/docs/habilitations/laura_petit_doctorat.pdf', 'Universite Lyon II', '2008-09-15', NULL, 'verifiee', NULL),
+(16, 'certification', 'BEES Metiers de la Forme', '/docs/habilitations/nicolas_moreau_bees.pdf', 'CREPS IDF', '2005-05-30', NULL, 'verifiee', 'Equivalent BPJEPS AF'),
+(16, 'certification', 'Certification Pilates Matwork I & II', '/docs/habilitations/nicolas_moreau_pilates.pdf', 'Balanced Body', '2015-11-10', '2025-11-09', 'verifiee', NULL),
+(20, 'diplome', 'Master Ressources Humaines', '/docs/habilitations/antoine_lefevre_master_rh.pdf', 'IAE Paris', '2002-07-01', NULL, 'verifiee', NULL),
+(20, 'certification', 'Formateur Professionnel d\'Adultes (FPA)', '/docs/habilitations/antoine_lefevre_fpa.pdf', 'AFPA', '2010-12-15', NULL, 'verifiee', NULL),
+(24, 'diplome', 'BTS Dietetique', '/docs/habilitations/lucas_girard_bts.pdf', 'Lycee Rabelais', '2009-06-25', NULL, 'en_attente_validation', 'Document en attente de validation'),
+(28, 'certification', 'Certification Sophrologue RNCP', '/docs/habilitations/maxime_roux_rncp.pdf', 'Institut de Formation a la Sophrologie', '2014-09-01', '2024-08-31', 'expiree', 'Certification expirée, demande de renouvellement en cours');
+
+
+
+INSERT INTO prestataires_prestations (prestataire_id, prestation_id) VALUES
+(6, 1), (6, 8), (6, 12), (6, 21), (6, 22), 
+(13, 1), (13, 6), (13, 9), (13, 23), 
+(16, 2), (16, 17), (16, 22), 
+(20, 3), (20, 5), (20, 6), (20, 9), (20, 13), (20, 14), (20, 16), (20, 18), (20, 23), (20, 25), 
+(24, 7), (24, 11), (24, 24), 
+(28, 4), (28, 12); 
+
+
+INSERT INTO prestataires_disponibilites (prestataire_id, type, date_debut, date_fin, heure_debut, heure_fin, jour_semaine, recurrence_fin, notes) VALUES
+
+(6, 'recurrente', NULL, NULL, '09:00:00', '12:00:00', 1, NULL, 'Lundi matin'), 
+(6, 'recurrente', NULL, NULL, '14:00:00', '18:00:00', 1, NULL, 'Lundi apres-midi'), 
+(6, 'recurrente', NULL, NULL, '09:00:00', '12:00:00', 3, '2024-12-31', 'Mercredi matin (jusqu''a fin 2024)'), 
+(6, 'specifique', '2024-08-01 00:00:00', '2024-08-15 23:59:59', NULL, NULL, NULL, NULL, 'Conges Aout'), 
+(6, 'indisponible', '2024-09-16 09:00:00', '2024-09-16 18:00:00', NULL, NULL, NULL, NULL, 'Formation interne'), 
+
+
+(13, 'recurrente', NULL, NULL, '09:00:00', '17:00:00', 2, NULL, 'Mardi'), 
+(13, 'recurrente', NULL, NULL, '09:00:00', '17:00:00', 4, NULL, 'Jeudi'), 
+
+
+(16, 'recurrente', NULL, NULL, '12:00:00', '14:00:00', 1, NULL, 'Lundi midi'), 
+(16, 'recurrente', NULL, NULL, '18:00:00', '20:00:00', 3, NULL, 'Mercredi soir'), 
+(16, 'recurrente', NULL, NULL, '12:00:00', '14:00:00', 5, NULL, 'Vendredi midi'), 
+
+
+(20, 'recurrente', NULL, NULL, '09:00:00', '18:00:00', 1, NULL, 'Lundi'),
+(20, 'recurrente', NULL, NULL, '09:00:00', '18:00:00', 2, NULL, 'Mardi'),
+(20, 'recurrente', NULL, NULL, '09:00:00', '18:00:00', 3, NULL, 'Mercredi'),
+(20, 'recurrente', NULL, NULL, '09:00:00', '18:00:00', 4, NULL, 'Jeudi'),
+(20, 'recurrente', NULL, NULL, '09:00:00', '18:00:00', 5, NULL, 'Vendredi'),
+(20, 'indisponible', '2024-10-07 00:00:00', '2024-10-11 23:59:59', NULL, NULL, NULL, NULL, 'Semaine de formation externe'),
+
+(24, 'recurrente', NULL, NULL, '10:00:00', '16:00:00', 5, NULL, 'Vendredi'), 
+(24, 'specifique', '2024-11-04 10:00:00', '2024-11-04 12:00:00', NULL, NULL, NULL, NULL, 'Disponible exceptionnellement Lundi 4 Nov matin'), 
+
+(28, 'recurrente', NULL, NULL, '17:00:00', '20:00:00', 2, NULL, 'Mardi soir'), 
+(28, 'recurrente', NULL, NULL, '17:00:00', '20:00:00', 4, NULL, 'Jeudi soir'); 

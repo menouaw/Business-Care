@@ -1,14 +1,15 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Text:ital@0;1&family=Markazi+Text:wght@400..700&display=swap');
+
 :root {
   /* variables de couleurs */
-  --color-primary: #4e73df;
+  --color-primary: #102C57;
+  --color-secondary: #DAC0A3;
+  --color-tertiary: #EADBC8;
+  --color-quaternary: #F8F0E5;
   --color-success: #1cc88a;
   --color-info: #36b9cc;
   --color-warning: #f6c23e;
   --color-danger: #e74a3b;
-  --color-gray-100: #f8f9fc;
-  --color-gray-300: #dddfeb;
-  --color-gray-500: #aaaaaa;
-  --color-gray-800: #5a5c69;
   --color-text-muted: #6c757d;
   
   /* variables d'espacement */
@@ -28,7 +29,8 @@
   * Base et structure
   * ------------------------------------------------ */
   body {
-  font-size: 0.875rem;
+  font-family: 'Markazi Text', serif;
+  font-size: 1rem;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -76,11 +78,11 @@
   
   .sidebar .nav-link .feather {
   margin-right: 0.25rem;
-  color: var(--color-gray-500);
+  color: var(--color-text-muted);
   }
   
   .sidebar .nav-link.active {
-  color: var(--color-primary);
+  color: var(--color-secondary);
   }
   
   .sidebar .nav-link:hover .feather,
@@ -106,14 +108,21 @@
   z-index: 1030;
   position: relative;
   width: 100%;
+  background-image: url('../images/cover/peach.jpg');
+  background-size: cover;
+  background-position: center;
+  }
+  
+  .navbar .nav-link {
+  color: var(--color-primary);
   }
   
   .navbar-brand {
+  font-family: 'DM Serif Text', serif;
   padding-top: 0.75rem;
   padding-bottom: 0.75rem;
   font-size: 1rem;
-  background-color: rgba(0, 0, 0, 0.25);
-  box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.25);
+  color: var(--color-primary);
   }
   
   .navbar .navbar-toggler {
@@ -130,13 +139,13 @@
   
   .form-control-dark {
   color: #fff;
-  background-color: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.1);
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
   }
   
   .form-control-dark:focus {
   border-color: transparent;
-  box-shadow: 0 0 0 0.1875rem rgba(255, 255, 255, 0.25);
+  box-shadow: 0 0 0 0.1875rem var(--color-primary);
   }
   
   /* alignement du header */
@@ -229,11 +238,11 @@
   * utilitaires
   * ------------------------------------------------ */
   .text-gray-300 {
-  color: var(--color-gray-300) !important;
+  color: var(--color-tertiary) !important;
   }
   
   .text-gray-800 {
-  color: var(--color-gray-800) !important;
+  color: var(--color-primary) !important;
   }
   
   .font-weight-bold {
@@ -267,12 +276,14 @@
   * ------------------------------------------------ */
   /* page de connexion */
   .login-page {
-  min-height: 100vh;
+  background-color: var(--color-quaternary);
   display: flex;
   align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  padding: var(--spacing-md);
+  padding-top: 2.5rem;
+  padding-bottom: 2.5rem;
+  background-image: url('../images/cover/cucumber.jpg');
+  background-size: cover;
+  background-position: center;
   }
   
   .form-signin {
@@ -312,16 +323,16 @@
   }
   
   .form-signin .btn-primary {
-  background-color: var(--color-primary);
-  border-color: var(--color-primary);
+  background-color: var(--color-secondary);
+  border-color: var(--color-secondary);
   padding: 0.75rem 1rem;
   font-size: 1rem;
   transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
   }
   
   .form-signin .btn-primary:hover {
-  background-color: #3a5ccc;
-  border-color: #3a5ccc;
+  background-color: var(--color-tertiary);
+  border-color: var(--color-tertiary);
   }
   
   .form-signin .checkbox {
@@ -329,7 +340,7 @@
   }
   
   .form-signin p a {
-  color: var(--color-primary);
+  color: var(--color-secondary);
   text-decoration: none;
   }
   
@@ -338,13 +349,13 @@
   }
   
   .form-signin .text-muted {
-  color: var(--color-gray-500) !important;
+  color: var(--color-text-muted) !important;
   font-size: 0.8rem;
   }
   
   /* page d'installation de l'admin */
   .install-page {
-    background-color: #f5f5f5;
+    background-color: var(--color-quaternary);
     padding-top: 2.5rem;
     padding-bottom: 2.5rem;
   }
@@ -366,4 +377,115 @@
   .alert {
     margin-bottom: 0;
     border-radius: 0;
-  } 
+  }
+
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+  font-family: 'DM Serif Text', serif;
+}
+
+.form-signin h1 {
+  font-family: 'DM Serif Text', serif;
+}
+
+/*
+ * Boutons Bootstrap surcharges
+ * ------------------------------------------------ */
+.btn-primary {
+    background-color: var(--color-secondary);
+    border-color: var(--color-secondary);
+    color: #fff;
+}
+.btn-primary:hover {
+    background-color: #c9a98b; 
+    border-color: #c9a98b;
+    color: #fff;
+}
+
+.btn-secondary {
+    background-color: var(--color-tertiary);
+    border-color: var(--color-tertiary);
+    color: var(--color-primary);
+}
+.btn-secondary:hover {
+    background-color: #d9cbbb;
+    border-color: #d9cbbb;
+    color: var(--color-primary);
+}
+
+.btn-success {
+    background-color: var(--color-success);
+    border-color: var(--color-success);
+    color: #fff;
+}
+.btn-success:hover {
+    background-color: #19a67c; 
+    border-color: #19a67c;
+    color: #fff;
+}
+
+.btn-info {
+    background-color: var(--color-info);
+    border-color: var(--color-info);
+    color: #fff;
+}
+.btn-info:hover {
+    background-color: #2fa6b9; 
+    border-color: #2fa6b9;
+    color: #fff;
+}
+
+.btn-warning {
+    background-color: var(--color-warning);
+    border-color: var(--color-warning);
+    color: #fff;
+}
+.btn-warning:hover {
+    background-color: #e6b234; 
+    border-color: #e6b234;
+    color: #fff;
+}
+
+.btn-danger {
+    background-color: var(--color-danger);
+    border-color: var(--color-danger);
+    color: #fff;
+}
+.btn-danger:hover {
+    background-color: #d53a2a; 
+    border-color: #d53a2a;
+    color: #fff;
+}
+
+/* Styles spécifiques aux boutons de suppression pour confirmation */
+.btn-delete:focus, .btn-delete:active {
+    box-shadow: 0 0 0 0.25rem rgba(var(--bs-danger-rgb), .5) !important;
+}
+
+/*
+ * Styles pour la pagination Bootstrap
+ * ------------------------------------------------ */
+.page-link {
+    color: var(--color-primary);
+    background-color: var(--color-tertiary);
+    border-color: var(--color-secondary);
+}
+
+.page-link:hover {
+    color: var(--color-primary);
+    background-color: #e4d4c3; 
+    border-color: #c9a98b; 
+}
+
+.page-item.active .page-link {
+    z-index: 3;
+    color: #fff;
+    background-color: var(--color-secondary);
+    border-color: var(--color-secondary);
+}
+
+.page-item.disabled .page-link {
+    color: var(--color-text-muted);
+    pointer-events: none;
+    background-color: var(--color-quaternary);
+    border-color: var(--color-tertiary);
+} 
