@@ -1,9 +1,9 @@
 <?php
 // Configuration de la base de données
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'business_care');
-define('DB_USER', 'business_care_user');
-define('DB_PASS', 'business_care_password');
+define('DB_HOST', getenv('DB_HOST') ?: 'db');
+define('DB_NAME', getenv('DB_DATABASE') ?: 'business_care');
+define('DB_USER', getenv('DB_USERNAME') ?: 'business_care_user');
+define('DB_PASS', getenv('DB_PASSWORD') ?: '');
 define('DB_CHARSET', 'utf8mb4');
 
 // Paramètres de l'application
@@ -11,8 +11,9 @@ define('APP_NAME', 'Business Care');
 define('APP_VERSION', '0.6.0');
 
 // URLs de l'application
-define('WEBADMIN_URL', 'http://localhost/Business-Care/web-admin');
-define('ROOT_URL', 'http://localhost/Business-Care');
+define('ROOT_URL', 'http://localhost');
+define('WEBADMIN_URL', ROOT_URL . '/admin');
+
 define('SHARED_URL', ROOT_URL . '/shared');
 define('ASSETS_URL', ROOT_URL . '/assets');
 define('API_URL', ROOT_URL . '/api');
