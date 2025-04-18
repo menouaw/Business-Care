@@ -42,7 +42,15 @@ Le projet est organisé dans les répertoires principaux suivants :
     *   Optionnellement, exécuter les seeders depuis `database/seeders/`.
 5.  **Configurer la connexion à la base de données:** Mettre à jour les identifiants de la base de données dans `shared/web-admin/config.php` et `shared/web-client/config.php`.
 6.  **Configurer votre serveur web:** Définir la racine des documents (document root) de vos hôtes virtuels pour pointer respectivement vers les répertoires `web-admin` et `web-client`. Assurez-vous que la réécriture d'URL (mod_rewrite pour Apache) est activée, en particulier pour l'API.
-7.  **(Configuration Docker - Bientôt disponible):** Les instructions pour exécuter l'application avec Docker seront ajoutées ici.
+7.  **(Configuration Docker):** Les instructions ci-dessous expliquent comment exécuter l'application avec Docker.
+    *   **Créer un `Dockerfile`:** Définir l'environnement PHP (avec les extensions nécessaires comme `pdo_mysql`), installer Composer et copier le code de l'application.
+    *   **Configurer le serveur Web (Nginx):** Créer un fichier de configuration Nginx pour servir l'application, gérer les assets statiques et transmettre les requêtes PHP au service PHP-FPM.
+    *   **Créer `docker-compose.yml`:** Orchestrer les services requis :
+        *   `php`: Le conteneur PHP-FPM basé sur le `Dockerfile`.
+        *   `nginx`: Le conteneur du serveur web Nginx.
+        *   `db`: Le conteneur de la base de données MySQL.
+    *   **Construire et Lancer:** Utiliser `docker compose up --build -d` pour construire les images et démarrer les conteneurs.
+    *   **Initialiser la Base de Données:** Se connecter au conteneur `db` ou utiliser un outil client pour exécuter le script `database/setup.sql`.
 
 ## Utilisation
 
