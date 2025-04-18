@@ -3,11 +3,11 @@ require_once '../../includes/page_functions/modules/users.php';
 
 requireRole(ROLE_ADMIN);
 
-$queryData = getQueryData(['page' => 1, 'search' => '', 'role' => 0, 'statut' => '']); 
-$page = $queryData['page'];
-$search = $queryData['search'];
-$role = $queryData['role'];
-$statut = $queryData['statut'];
+$queryData = getQueryData(); 
+$page = $queryData['page'] ?? 1; 
+$search = $queryData['search'] ?? ''; 
+$role = $queryData['role'] ?? 0; 
+$statut = $queryData['statut'] ?? ''; 
 
 $result = usersGetList($page, DEFAULT_ITEMS_PER_PAGE, $search, $role, 0, $statut);
 $roles = usersGetRoles();
