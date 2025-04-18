@@ -1,26 +1,17 @@
 <?php
-require_once '../../includes/init.php'; 
 require_once '../../includes/page_functions/modules/billing.php';
 
 
 requireRole(ROLE_ADMIN);
 
 
-$queryData = getQueryData([
-    'page' => 1, 
-    'search' => '', 
-    'status' => '', 
-    'type' => 'client', 
-    'date_from' => '', 
-    'date_to' => ''
-]);
-
-$page = (int)$queryData['page'];
-$search = $queryData['search'];
-$status = $queryData['status'];
-$type = $queryData['type'];
-$date_from = $queryData['date_from'];
-$date_to = $queryData['date_to'];
+$queryData = getQueryData();
+$page = (int)($queryData['page'] ?? 1);
+$search = $queryData['search'] ?? '';
+$status = $queryData['status'] ?? '';
+$type = $queryData['type'] ?? 'client';
+$date_from = $queryData['date_from'] ?? '';
+$date_to = $queryData['date_to'] ?? '';
 
 
 $clientStatuses = billingGetClientInvoiceStatuses();

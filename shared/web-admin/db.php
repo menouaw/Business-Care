@@ -22,7 +22,7 @@ function getDbConnection()
         try {
             $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
         } catch (PDOException $e) {
-            die("[FAILURE] Connexion à la base de données impossible. Veuillez réessayer plus tard.");
+            die("[FAILURE] Connexion à la base de données impossible. Veuillez réessayer plus tard. ERREUR: " . $e->getMessage());
         }
     }
     return $pdo;

@@ -3,11 +3,11 @@ require_once '../../includes/page_functions/modules/services.php';
 
 requireRole(ROLE_ADMIN);
 
-$filterData = getQueryData(['page' => 1, 'search' => '', 'type' => '', 'category' => '']);
-$page = $filterData['page'];
-$search = $filterData['search'];
-$type = $filterData['type'];
-$category = $filterData['category'];
+$queryData = getQueryData();
+$page = $queryData['page'] ?? 1;
+$search = $queryData['search'] ?? '';
+$type = $queryData['type'] ?? '';
+$category = $queryData['category'] ?? '';
 
 $listResult = servicesGetList($page, 10, $search, $type, $category);
 $services = $listResult['services'];
