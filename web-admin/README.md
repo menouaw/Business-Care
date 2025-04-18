@@ -26,7 +26,7 @@ web-admin/
 └── install-admin.php   # Script d'installation
 ```
 
-**Fichiers Partagés :** La configuration (`config.php`), les fonctions BDD (`db.php`), authentification (`auth.php`), utilitaires (`functions.php`) et logs (`logging.php`) sont dans `/shared/web-admin/`.
+**Fichiers Partagés :** Les fichiers essentiels partagés se trouvent dans `/shared/web-admin/` et incluent typiquement `config.php` (configuration), `db.php` (connexion BDD), `auth.php` (authentification), `functions.php` (utilitaires), et `logging.php` (journalisation).
 
 ## API REST
 
@@ -39,7 +39,7 @@ _(Voir la section détaillée plus bas pour les endpoints spécifiques)_.
 **Prérequis :**
 - PHP >= 7.4
 - MySQL >= 5.7
-- Serveur web (Apache avec mod_rewrite recommandé)
+- Serveur web
 - Composer
 
 **Installation :**
@@ -48,15 +48,17 @@ _(Voir la section détaillée plus bas pour les endpoints spécifiques)_.
 3.  Importer `/database/schemas/business_care.sql`.
 4.  Configurer la connexion BDD dans `/shared/web-admin/config.php`.
 5.  Exécuter `composer install` à la racine du projet (si applicable).
-6.  Accéder à `/web-admin/install-admin.php` via le navigateur pour finaliser.
 
-## Fonctionnalités Clés
+## Fonctionnalités Clefs
 
 - Tableau de bord
 - Gestion Utilisateurs (admins, prestataires, salariés)
 - Gestion Entreprises & Contrats
+- Gestion Prestataires
 - Gestion Services & Prestations
-- Suivi Événements & Réservations
+- Gestion Devis
+- Gestion Dons
+- Suivi Rendez-vous & Événements
 - Gestion Financière (facturation, paiements)
 - Rapports & Statistiques
 - Journalisation des activités
@@ -71,9 +73,8 @@ _(Voir la section détaillée plus bas pour les endpoints spécifiques)_.
 
 **Ajouter un Module :**
 1.  Créer un dossier `/modules/nouveau_module/`.
-2.  Créer les fichiers de vue (ex: `list.php`, `edit.php`) dans ce dossier.
-3.  Créer le fichier de fonctions `/includes/page_functions/modules/nouveau_module.php`.
-4.  Préfixer les fonctions avec le nom du module (ex: `nouveauModuleGetDetails()`).
+2.  Créer le fichier de fonctions `/includes/page_functions/modules/nouveau_module.php`.
+3.  Créer les fichiers de vue (ex: `list.php`, `edit.php`) dans ce dossier.
 5.  Appeler les fonctions depuis les fichiers de vue.
 
 **Journalisation :**
@@ -97,9 +98,11 @@ Utiliser les fonctions de `/shared/web-admin/logging.php` :
 
 ---
 
-## Détail API Endpoints
+## Détail API Endpoints (API Principale)
 
 *(Cette section détaille les points d'entrée mentionnés plus haut)*
+
+*(Note: Ces endpoints font référence à l'API REST principale du projet (située dans /api/), que ce panneau d'administration peut consommer, et non à des endpoints servis directement par ce panneau.)*
 
 ### Gestion des utilisateurs
 - `GET /api/admin/users`

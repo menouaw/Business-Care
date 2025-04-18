@@ -22,7 +22,7 @@ function getDbConnection()
         try {
             $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
         } catch (PDOException $e) {
-            die("[FAILURE] Connexion a la base de donnees impossible. Veuillez reessayer plus tard.");
+            die("[FAILURE] Connexion à la base de données impossible. Veuillez réessayer plus tard.");
         }
     }
     return $pdo;
@@ -46,7 +46,8 @@ function validateTableName($table)
 /**
  * Exécute une requête SQL préparée via PDO.
  *
- * Cette fonction prépare la requête SQL fournie et l'exécute avec les paramètres donnés. En cas d'erreur lors de l'exécution, le script est interrompu avec un message d'erreur standardisé.
+ * Cette fonction prépare la requête SQL fournie et l'exécute avec les paramètres donnés. En cas d'erreur lors de l'exécution, 
+ * le script est interrompu avec un message d'erreur standardisé.
  *
  * @param string $sql Requête SQL à préparer et exécuter.
  * @param array $params Valeurs à lier aux paramètres de la requête.
@@ -60,7 +61,7 @@ function executeQuery($sql, $params = [])
         $stmt->execute($params);
         return $stmt;
     } catch (PDOException $e) {
-        die("[FAILURE] Impossible d'executer la requete: " . $e->getMessage());
+        die("[FAILURE] Impossible d'exécuter la requête: " . $e->getMessage());
     }
 }
 
@@ -104,7 +105,7 @@ function countTableRows($table, $where = '')
  * @param int $offset (Optionnel) Position de départ pour la récupération des enregistrements.
  * @return array Tableau contenant l'ensemble des enregistrements récupérés.
  */
-function fetchAll($table, $where = '', $orderBy = '', $limit = 0, $offset = 0)
+function fetchAll($table, $where = '', $orderBy = '', $limit = 0, $offset = 0, $params = [])
 {
     $table = validateTableName($table);
 
@@ -115,14 +116,16 @@ function fetchAll($table, $where = '', $orderBy = '', $limit = 0, $offset = 0)
     if ($orderBy) {
         $sql .= " ORDER BY $orderBy";
     }
-    if ($limit) {
-        $sql .= " LIMIT $limit";
-        if ($offset) {
-            $sql .= " OFFSET $offset";
+    if ($limit > 0) {
+        $sql .= " LIMIT :limit";
+        $params[':limit'] = (int)$limit;
+        if ($offset >= 0) {
+            $sql .= " OFFSET :offset";
+            $params[':offset'] = (int)$offset;
         }
     }
 
-    $stmt = executeQuery($sql);
+    $stmt = executeQuery($sql, $params);
     return $stmt->fetchAll();
 }
 
@@ -157,6 +160,24 @@ function insertRow($table, $data)
 }
 
 
+/**
+ * Met à jour les enregistrements d'une table avec les données fournies.
+ *
+ * Cette fonction valide le nom de la table, construit dynamiquement la clause SET en encapsulant les noms de colonnes 
+ * avec des backticks et en utilisant des placeholders préfixés par "set_", puis exécute une requête SQL UPDATE avec 
+ * une clause WHERE personnalisée. Si le tableau de données est vide, une exception est levée. En cas d'erreur lors de 
+ * l'exécution de la requête, l'erreur est loguée et une exception PDO est relancée.
+ * Utilise des placeholders nommés pour les clauses SET et WHERE.
+ *
+ * @param string $table Nom de la table cible.
+ * @param array $data Tableau associatif contenant les colonnes et leurs nouvelles valeurs (pour SET).
+ * @param string $where Clause SQL WHERE avec des placeholders nommés (ex: "id = :where_id").
+ * @param array $whereParams Tableau associatif des valeurs pour les placeholders de la clause WHERE (ex: [':where_id' => 1]).
+ * @return int Nombre d'enregistrements mis à jour.
+ *
+ * @throws Exception Si le tableau $data est vide.
+ * @throws PDOException Si une erreur survient lors de l'exécution de la requête.
+ */
 function updateRow($table, $data, $where, $whereParams = [])
 {
     $table = validateTableName($table);
@@ -194,6 +215,17 @@ function updateRow($table, $data, $where, $whereParams = [])
 }
 
 
+/**
+ * Supprime des lignes de la table spécifiée.
+ *
+ * Valide le nom de la table pour prévenir les injections SQL, puis exécute une requête DELETE 
+ * en utilisant la clause WHERE et les paramètres indiqués.
+ *
+ * @param string $table Nom de la table depuis laquelle supprimer les lignes (après validation).
+ * @param string $where Clause WHERE déterminant les critères de suppression.
+ * @param array $params Valeurs associées à la clause WHERE.
+ * @return int Le nombre de lignes supprimées.
+ */
 function deleteRow($table, $where, $params = [])
 {
     $table = validateTableName($table);

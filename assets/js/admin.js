@@ -3,46 +3,18 @@
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-    // cache les alertes apres 5 secondes
-    autoHideAlerts();
-    
-    // confirme les actions de suppression
     setupDeleteConfirmation();
     
-    // active le menu lateral sur mobile
     setupSidebarToggle();
     
-    // gere les elements dynamiques du formulaire
     setupDynamicFormFields();
-    
-    // initialise les datepickers si disponibles
-    initDatepickers();
-    
-    // initialise les dropdowns select2 si disponibles
-    initSelect2();
-    
-    // initialise les icones feather
-    initFeatherIcons();
-    
-    // initialise les tooltips
-    initTooltips();
 });
-
-function autoHideAlerts() {
-    const alerts = document.querySelectorAll('.alert:not(.alert-permanent)');
-    alerts.forEach(function(alert) {
-        setTimeout(function() {
-            const bsAlert = new bootstrap.Alert(alert);
-            bsAlert.close();
-        }, 5000);
-    });
-}
 
 function setupDeleteConfirmation() {
     const deleteButtons = document.querySelectorAll('.btn-delete');
     deleteButtons.forEach(function(button) {
         button.addEventListener('click', function(e) {
-            if (!confirm('Etes-vous sûr de vouloir supprimer cet element ? Cette action ne peut pas etre annulee.')) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer cet élément ? Cette action ne peut pas être annulée.')) {
                 e.preventDefault();
             }
         });
@@ -78,36 +50,5 @@ function setupDynamicFormFields() {
                 });
             }
         });
-    });
-}
-
-function initDatepickers() {
-    if (typeof flatpickr !== 'undefined') {
-        flatpickr('.datepicker', {
-            dateFormat: 'd/m/Y',
-            locale: 'fr'
-        });
-    }
-}
-
-function initSelect2() {
-    if (typeof $.fn.select2 !== 'undefined') {
-        $('.select2').select2({
-            theme: 'bootstrap-5',
-            width: '100%'
-        });
-    }
-}
-
-function initFeatherIcons() {
-    if (typeof feather !== 'undefined') {
-        feather.replace();
-    }
-}
-
-function initTooltips() {
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.map(function(tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
     });
 } 
