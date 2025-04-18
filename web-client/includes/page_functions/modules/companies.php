@@ -1189,6 +1189,7 @@ function addCompanyEmployee($company_id, $employee_data)
     } catch (Exception $e) {
         $errorMessage = "Erreur technique inattendue lors de l'ajout de l'employé.";
         error_log("Erreur dans addCompanyEmployee : " . $e->getMessage());
+        error_log("Trace de l'erreur : " . $e->getTraceAsString()); // Ajout de la trace
         error_log("Données employé : " . print_r($employee_data, true));
 
         return ['success' => false, 'errors' => [$errorMessage]];
