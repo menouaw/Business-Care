@@ -28,8 +28,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $pageData = displayEmployeeSettings();
 $employee = $pageData['employee'] ?? [];
 $settings = $pageData['settings'] ?? [];
-$csrfToken = generateToken();
-$_SESSION['csrf_token'] = $csrfToken;
+if (!isset($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
 
 $pageTitle = "Mes Paramètres";
 
@@ -60,7 +61,7 @@ include_once __DIR__ . '/../../templates/header.php';
             <div class="card-body">
                 <form action="<?= WEBCLIENT_URL ?>/modules/employees/settings.php" method="POST">
                     <input type="hidden" name="action" value="update_settings">
-                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
 
                     <h6>Informations Personnelles</h6>
                     <div class="row">
@@ -78,8 +79,11 @@ include_once __DIR__ . '/../../templates/header.php';
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" name="email" value="<?= htmlspecialchars($employee['email'] ?? '') ?>" disabled>
-                            <small class="text-muted">L'email ne peut pas être modifié ici.</small>
+                            <div class="input-group">
+                                <input type="email" class="form-control" id="email" name="email" value="<?= htmlspecialchars($employee['email'] ?? '') ?>" disabled>
+                                <a href="<?= WEBCLIENT_URL ?>/modules/employees/email-change-request.php" class="btn btn-outline-secondary">Demander modification</a>
+                            </div>
+                            <small class="text-muted">Pour des raisons de sécurité, la modification d'email nécessite une vérification spécifique.</small>
                         </div>
                     </div>
 
@@ -116,7 +120,7 @@ include_once __DIR__ . '/../../templates/header.php';
             <div class="card-body">
                 <form action="<?= WEBCLIENT_URL ?>/modules/employees/settings.php" method="POST">
                     <input type="hidden" name="action" value="change_password">
-                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
 
                     <div class="mb-3">
                         <label for="current_password" class="form-label">Mot de passe actuel <span class="text-danger">*</span></label>
