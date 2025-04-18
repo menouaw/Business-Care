@@ -51,7 +51,7 @@ include_once __DIR__ . '/../../templates/header.php';
                     </div>
                     <div class="card-body">
                         <form id="donation-form" action="<?= WEBCLIENT_URL ?>/modules/employees/donations.php" method="POST">
-                            <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
+                            <input type="hidden" name="csrf_token" value="<?= $csrfToken ?? '' ?>">
 
                             <div class="mb-3">
                                 <label for="association-id" class="form-label">Association <span class="text-danger">*</span></label>

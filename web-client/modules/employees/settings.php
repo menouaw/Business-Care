@@ -133,9 +133,6 @@ include_once __DIR__ . '/../../templates/header.php';
                             required aria-describedby="passwordHelp">
                         <div id="passwordHelp" class="form-text">
                             Doit comporter au moins 8 caractères, dont une majuscule, une minuscule, un chiffre et un caractère spécial (@$!%*?&).
-                            <div class="progress mt-2" style="height: 5px;">
-                                <div id="password-strength" class="progress-bar" role="progressbar" style="width: 0%"></div>
-                            </div>
                         </div>
                     </div>
                     <div class="mb-3">
