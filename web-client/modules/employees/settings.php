@@ -124,8 +124,15 @@ include_once __DIR__ . '/../../templates/header.php';
                     </div>
                     <div class="mb-3">
                         <label for="new_password" class="form-label">Nouveau mot de passe <span class="text-danger">*</span></label>
-                        <input type="password" class="form-control" id="new_password" name="new_password" required aria-describedby="passwordHelp">
-                        <div id="passwordHelp" class="form-text">Doit comporter au moins 8 caractères.</div>
+                        <input type="password" class="form-control" id="new_password" name="new_password"
+                            pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
+                            required aria-describedby="passwordHelp">
+                        <div id="passwordHelp" class="form-text">
+                            Doit comporter au moins 8 caractères, dont une majuscule, une minuscule, un chiffre et un caractère spécial (@$!%*?&).
+                            <div class="progress mt-2" style="height: 5px;">
+                                <div id="password-strength" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                            </div>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label for="confirm_password" class="form-label">Confirmer le nouveau mot de passe <span class="text-danger">*</span></label>

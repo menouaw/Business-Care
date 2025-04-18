@@ -6,7 +6,29 @@ require_once __DIR__ . '/../../includes/page_functions/modules/employees.php';
 requireRole(ROLE_SALARIE);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    handleEventActionRequest($_POST, $_SESSION['user_id']);
+    $employee_id = $_SESSION['user_id'];
+    $event_id = filter_input(INPUT_POST, 'event_id', FILTER_VALIDATE_INT);
+    $csrf_token = $_POST['csrf_token'] ?? '';
+    $action = $_POST['action'] ?? '';
+
+    if (!validateToken($csrf_token)) {
+        logSecurityEvent($employee_id, 'csrf_failure', "[SECURITY FAILURE] Tentative POST événement avec jeton invalide");
+        flashMessage("Erreur de sécurité (jeton invalide). Veuillez réessayer.", "danger");
+        redirectTo(WEBCLIENT_URL . '/modules/employees/events.php');
+        exit;
+    }
+
+    if ($event_id) {
+        if ($action === 'register_event') {
+            handleRegisterForEvent($employee_id, $event_id);
+        } elseif ($action === 'unregister_event') {
+            handleUnregisterFromEvent($employee_id, $event_id);
+        } else {
+            flashMessage("Action invalide.", "danger");
+        }
+    } else {
+        flashMessage("ID d'événement invalide.", "danger");
+    }
 
     redirectTo(WEBCLIENT_URL . '/modules/employees/events.php');
     exit;
