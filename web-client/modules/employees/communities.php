@@ -138,8 +138,12 @@ include_once __DIR__ . '/../../templates/header.php';
                                         <small class="text-muted" title="<?= htmlspecialchars($post['created_at'] ?? '') ?>"><?= htmlspecialchars($post['created_at_formatted'] ?? 'Date inconnue') ?></small>
                                     </div>
                                     <p class="mb-1 ms-4"><?= nl2br(htmlspecialchars($post['message'] ?? '')) ?></p>
-                                    <?php if (($post['personne_id'] ?? null) === $current_employee_id):
-                                    ?>
+                                    <?php if (($post['personne_id'] ?? null) === $current_employee_id): ?>
+                                        <div class="mt-1 text-end">
+                                            <button class="btn btn-sm btn-outline-secondary" title="Modifier votre message">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                        </div>
                                     <?php endif; ?>
                                 </div>
                             <?php endforeach; ?>

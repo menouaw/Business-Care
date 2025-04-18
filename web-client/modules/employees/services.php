@@ -51,6 +51,7 @@ $csrfToken = $_SESSION['csrf_token'] ?? '';
         <?php
         if (!$hasActiveContract && !isset($_SESSION['flash_messages_displayed_once'])) :
             echo '<div class="alert alert-warning">Votre entreprise n\'a pas de contrat actif pour accéder aux services.</div>';
+            $_SESSION['flash_messages_displayed_once'] = true;
         endif;
         ?>
 

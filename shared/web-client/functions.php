@@ -423,3 +423,4 @@ function handleClientCsrfFailureRedirect($actionDescription = 'action', $redirec
     );
     redirectTo($redirectUrl);
 }
+
