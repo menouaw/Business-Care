@@ -3,19 +3,7 @@
 require_once __DIR__ . '/logging.php';
 require_once __DIR__ . '/functions.php';
 
-/**
- * Authentifie un utilisateur via son adresse email et son mot de passe.
- *
- * Cette méthode vérifie si un utilisateur actif correspondant à l'email fourni existe et valide le mot de passe en le comparant au hash stocké. 
- * En cas de succès, elle initialise la session avec les informations de l'utilisateur et charge ses préférences. 
- * Si l'option de mémorisation est activée, un token "remember me" est généré et stocké dans un cookie sécurisé afin de faciliter une reconnexion ultérieure.
- * Des événements de sécurité sont également enregistrés pour indiquer le résultat de l'opération (succès ou échec).
- *
- * @param string $email Adresse email de l'utilisateur.
- * @param string $password Mot de passe fourni pour l'authentification.
- * @param bool $rememberMe Indique si l'utilisateur doit être mémorisé pour une reconnexion automatique. Par défaut à false.
- * @return bool Retourne true si l'authentification réussit, sinon false.
- */
+
 function login($email, $password, $rememberMe = false)
 {
     $user = fetchOne('personnes', "email = '$email' AND statut = 'actif'");
@@ -50,15 +38,6 @@ function login($email, $password, $rememberMe = false)
     }
 }
 
-/**
- * Déconnecte l'utilisateur en réinitialisant la session et en supprimant le cookie "remember_me".
- *
- * Si l'utilisateur est authentifié, la fonction enregistre un événement de sécurité correspondant à la déconnexion.
- * Elle vérifie également la présence d'un cookie "remember_me" pour supprimer le jeton associé et invalider le cookie.
- * La session est ensuite vidée, détruite et une nouvelle session est démarrée pour assurer une réinitialisation complète.
- *
- * @return bool Vrai si la déconnexion a été effectuée avec succès.
- */
 function logout()
 {
     if (isset($_SESSION['user_id'])) {
@@ -77,16 +56,6 @@ function logout()
     return true;
 }
 
-/**
- * Vérifie si l'utilisateur est authentifié via sa session active ou un token de connexion persistante.
- *
- * La fonction examine d'abord l'existence d'une session utilisateur. Si une session est présente, elle vérifie que le temps écoulé depuis
- * la dernière activité ne dépasse pas la durée définie par SESSION_LIFETIME. En cas d'expiration, la session est invalidée avec une déconnexion,
- * et un événement de session expirée est loggé. Si la session est toujours valide, l'heure de la dernière activité est mise à jour.
- * En l'absence de session active, la fonction tente de valider un token 'remember_me' stocké dans un cookie pour réauthentifier l'utilisateur.
- *
- * @return bool Retourne true si l'utilisateur est authentifié, false sinon.
- */
 function isAuthenticated()
 {
     if (isset($_SESSION['user_id'])) {
@@ -107,11 +76,6 @@ function isAuthenticated()
     return false;
 }
 
-/**
- * Vérifie que l'utilisateur est authentifié et redirige si nécessaire
- *
- * @return void
- */
 function requireAuthentication()
 {
     if (!isAuthenticated()) {
@@ -135,31 +99,18 @@ function hasRole($requiredRole)
     return $_SESSION['user_role'] == $requiredRole;
 }
 
-/**
- * Vérifie si l'utilisateur authentifié est un représentant d'entreprise
- *
- * @return bool Retourne true si l'utilisateur est un représentant d'entreprise
- */
 function isEntrepriseUser()
 {
     return hasRole(ROLE_ENTREPRISE);
 }
 
-/**
- * Vérifie si l'utilisateur authentifié est un salarié
- *
- * @return bool Retourne true si l'utilisateur est un salarié
- */
+
 function isSalarieUser()
 {
     return hasRole(ROLE_SALARIE);
 }
 
-/**
- * Vérifie si l'utilisateur authentifié est un prestataire
- *
- * @return bool Retourne true si l'utilisateur est un prestataire
- */
+
 function isPrestataireUser()
 {
     return hasRole(ROLE_PRESTATAIRE);

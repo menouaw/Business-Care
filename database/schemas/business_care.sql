@@ -434,4 +434,18 @@ CREATE TABLE utilisateur_interets_conseils (
     FOREIGN KEY (personne_id) REFERENCES personnes(id) ON DELETE CASCADE
 );
 
+CREATE TABLE communaute_membres (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    personne_id INT NOT NULL,
+    communaute_id INT NOT NULL,
+    date_adhesion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    statut ENUM('actif', 'inactif', 'banni') DEFAULT 'actif',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (personne_id) REFERENCES personnes(id) ON DELETE CASCADE,
+    FOREIGN KEY (communaute_id) REFERENCES communautes(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_membre (personne_id, communaute_id), 
+    INDEX idx_statut (statut)
+);
+
 

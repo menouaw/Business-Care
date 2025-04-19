@@ -6,15 +6,16 @@ require_once __DIR__ . '/../../includes/page_functions/modules/employees.php';
 requireRole(ROLE_SALARIE);
 
 $employee_id = $_SESSION['user_id'];
-$action = $_GET['action'] ?? 'list';
 
-handleNotificationPageActions($action, $employee_id);
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    handleNotificationPostAction($_POST, $employee_id);
+    exit;
+}
 
-
-$pageData = displayNotifications();
+$pageData = displayNotifications(); 
 $notifications = $pageData['notifications'] ?? [];
 $paginationHtml = $pageData['pagination_html'] ?? '';
-$csrfToken = $_SESSION['csrf_token'] ?? generateToken();
+$csrfToken = $_SESSION['csrf_token'] ?? generateToken(); 
 
 $pageTitle = "Mes Notifications - Espace Salarié";
 

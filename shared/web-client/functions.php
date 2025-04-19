@@ -347,16 +347,7 @@ function isTimeSlotAvailable($dateHeure, $duree, $prestationId)
     return $stmt->fetchColumn() == 0;
 }
 
-/**
- * Génère un numéro de facture unique basé sur la date courante.
- *
- * Le numéro est composé du préfixe configuré (défini par la constante INVOICE_PREFIX),
- * de la date au format YYYYMMDD et d'un identifiant séquentiel sur 4 chiffres. La fonction
- * interroge la base de données pour récupérer le dernier identifiant utilisé pour la date
- * actuelle, puis incrémente cet identifiant pour garantir l'unicité du numéro généré.
- *
- * @return string Le numéro de facture au format INVOICE_PREFIX-YYYYMMDD-XXXX.
- */
+
 function generateInvoiceNumber()
 {
     $date = date('Ymd');
@@ -374,13 +365,7 @@ function generateInvoiceNumber()
     return INVOICE_PREFIX . "-$date-$nextId";
 }
 
-/**
- * Formate un nombre en devise (euros).
- *
- * @param float|null $amount Le montant.
- * @param string $currencySymbol Le symbole de la devise.
- * @return string Le montant formaté ou 'N/A' si null.
- */
+
 function formatCurrency($amount, $currencySymbol = '€')
 {
     if ($amount === null || !is_numeric($amount)) {
@@ -404,14 +389,7 @@ function formatDuration($interval)
     return $totalMonths . ' mois';
 }
 
-/**
- * Gère la redirection en cas d'échec de validation CSRF pour le client.
- * Log l'échec, affiche un message flash et redirige vers une page par défaut (ex: index).
- *
- * @param string $actionDescription Description de l'action tentée (ex: 'soumission formulaire').
- * @param string $redirectUrl URL de redirection par défaut.
- * @return void
- */
+
 function handleClientCsrfFailureRedirect($actionDescription = 'action', $redirectUrl = null)
 {
     $redirectUrl = $redirectUrl ?? WEBCLIENT_URL . '/index.php';
@@ -424,3 +402,4 @@ function handleClientCsrfFailureRedirect($actionDescription = 'action', $redirec
     );
     redirectTo($redirectUrl);
 }
+
