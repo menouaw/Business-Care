@@ -1606,7 +1606,7 @@ function getActiveServices(): array
 {
     $available_services = [];
     $tableName = defined('TABLE_SERVICES') ? TABLE_SERVICES : 'services';
-    $query = "SELECT id, nom, description FROM {$tableName} WHERE actif = 1 ORDER BY ordre";
+    $query = "SELECT id, type, description FROM {$tableName} WHERE actif = 1 ORDER BY ordre, type";
 
     try {
         $stmt = executeQuery($query);
@@ -1614,7 +1614,7 @@ function getActiveServices(): array
 
         if ($servicesResult) {
             foreach ($servicesResult as $service) {
-                $description = $service['nom'] . (!empty($service['description']) ? ' - ' . $service['description'] : '');
+                $description = $service['type'] . (!empty($service['description']) ? ' - ' . $service['description'] : '');
                 $available_services[$service['id']] = $description;
             }
         }

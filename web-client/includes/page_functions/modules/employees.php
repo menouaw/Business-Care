@@ -39,9 +39,7 @@ function getEmployeesList($company_id = null, $page = 1, $limit = 5, $search = '
         $countParams[':search'] = $searchTerm;
     }
 
-    $query .= " ORDER BY p.nom, p.prenom ASC LIMIT :limit OFFSET :offset";
-    $params[':limit'] = $limit;
-    $params[':offset'] = $offset;
+    $query .= " ORDER BY p.nom, p.prenom ASC LIMIT " . (int)$limit . " OFFSET " . (int)$offset;
 
     $stmt = executeQuery($query, $params);
     $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -1105,7 +1103,7 @@ function displayServiceCatalog()
             $data['categories'] = $stmtCategories->fetchAll(PDO::FETCH_COLUMN, 0);
         } catch (Exception $e) {
             logSystemActivity('error', "Erreur récupération catégories de prestations: " . $e->getMessage());
-            $data['categories'] = []; 
+            $data['categories'] = [];
         }
 
         $data['currentTypeFilter'] = $typeFilter;
@@ -1203,7 +1201,7 @@ function handleCancelReservation($reservation_id)
     $reservation_id = filter_var(sanitizeInput($reservation_id), FILTER_VALIDATE_INT);
     if (!$reservation_id) {
         flashMessage("ID de réservation invalide.", "danger");
-        redirectTo(WEBCLIENT_URL . '/modules/employees/appointments.php'); 
+        redirectTo(WEBCLIENT_URL . '/modules/employees/appointments.php');
     }
 
     try {
@@ -1215,7 +1213,7 @@ function handleCancelReservation($reservation_id)
 
         if (!$reservation) {
             flashMessage("Réservation non trouvée ou non annulable.", "warning");
-            redirectTo(WEBCLIENT_URL . '/modules/employees/appointments.php'); 
+            redirectTo(WEBCLIENT_URL . '/modules/employees/appointments.php');
         }
 
         $now = new DateTime();
@@ -1224,7 +1222,7 @@ function handleCancelReservation($reservation_id)
 
         if ($now >= $rdvTime || ($interval->days == 0 && $interval->h < 24)) {
             flashMessage("Les rendez-vous ne peuvent pas être annulés moins de 24 heures à l'avance.", "warning");
-            redirectTo(WEBCLIENT_URL . '/modules/employees/appointments.php'); 
+            redirectTo(WEBCLIENT_URL . '/modules/employees/appointments.php');
             return;
         }
 

@@ -151,7 +151,7 @@ include_once __DIR__ . '/../../templates/header.php';
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1><?= $pageTitle ?></h1>
             <div>
-                <a href="dashboard.php" class="btn btn-outline-secondary me-2"><i class="fas fa-arrow-left me-1"></i> Retour</a>
+                <a href="employees.php" class="btn btn-outline-secondary me-2"><i class="fas fa-arrow-left me-1"></i> Retour</a>
                 <?php if ($employee['statut'] !== 'supprime'): ?>
                     <a href="?action=edit&id=<?= $employee['id'] ?>" class="btn btn-warning"><i class="fas fa-edit me-1"></i> Modifier</a>
                 <?php endif; ?>
@@ -202,7 +202,7 @@ include_once __DIR__ . '/../../templates/header.php';
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1><?= $pageTitle ?></h1>
             <div>
-                <a href="dashboard.php" class="btn btn-outline-secondary me-2"><i class="fas fa-arrow-left me-1"></i> Retour</a>
+                <a href="employees.php" class="btn btn-outline-secondary me-2"><i class="fas fa-arrow-left me-1"></i> Retour</a>
             </div>
         </div>
 

@@ -64,6 +64,14 @@ function sanitizeInput($input)
 
 function timeAgo($time)
 {
+    if (!is_numeric($time)) {
+        $time = strtotime($time);
+        if ($time === false) {
+            error_log("timeAgo: Impossible de convertir l'entrée en timestamp.");
+            return 'date invalide';
+        }
+    }
+
     $time_difference = time() - $time;
 
     if ($time_difference < 1) {
@@ -142,11 +150,11 @@ function getFlashMessages()
 
 function displayFlashMessages()
 {
-    $flashMessages = $_SESSION['flash_messages'] ?? [];
+    $flashMessages = getFlashMessages();
+
     if (empty($flashMessages)) {
         return '';
     }
-
 
     $output = '';
     foreach ($flashMessages as $flashMessage) {
@@ -402,4 +410,3 @@ function handleClientCsrfFailureRedirect($actionDescription = 'action', $redirec
     );
     redirectTo($redirectUrl);
 }
-

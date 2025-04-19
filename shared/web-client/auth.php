@@ -116,17 +116,7 @@ function isPrestataireUser()
     return hasRole(ROLE_PRESTATAIRE);
 }
 
-/**
- * Vérifie si l'utilisateur authentifié possède le rôle requis et redirige en cas d'accès refusé.
- *
- * La fonction commence par vérifier que l'utilisateur est authentifié. Si l'utilisateur ne dispose pas
- * du rôle spécifié par l'identifiant passé en paramètre, un message d'accès refusé est affiché et il est
- * redirigé vers la page d'accueil.
- *
- * @param int $requiredRole Identifiant numérique du rôle requis.
- *
- * @return void
- */
+
 function requireRole($requiredRole)
 {
     requireAuthentication();
@@ -320,7 +310,7 @@ function userHasPermission($permission)
             return ($role_id == ROLE_PRESTATAIRE);
 
         case 'view_notifications':
-            return true; 
+            return true;
 
         default:
             logSecurityEvent($_SESSION['user_id'] ?? null, 'permission_check_unknown', "[WARNING] Unknown permission checked: $permission");

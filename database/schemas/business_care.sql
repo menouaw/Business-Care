@@ -390,6 +390,7 @@ CREATE TABLE communaute_messages (
     personne_id INT NOT NULL,
     message TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (communaute_id) REFERENCES communautes(id) ON DELETE CASCADE,
     FOREIGN KEY (personne_id) REFERENCES personnes(id) ON DELETE CASCADE,
     INDEX idx_communaute_date (communaute_id, created_at)
@@ -424,7 +425,9 @@ CREATE TABLE conseils (
     icone VARCHAR(50),
     resume TEXT,
     categorie VARCHAR(100),
-    contenu LONGTEXT NOT NULL
+    contenu LONGTEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Ajouté
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP -- Ajouté
 );
 
 CREATE TABLE utilisateur_interets_conseils (
