@@ -1239,7 +1239,7 @@ function displayNotifications()
 
     $data = [];
     $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-    $limit = DEFAULT_ITEMS_PER_PAGE; 
+    $limit = defined('DEFAULT_ITEMS_PER_PAGE') ? DEFAULT_ITEMS_PER_PAGE : 10; // Secure with defined() check and fallback
 
     $where = "personne_id = :id";
     $params = [':id' => $employee_id];
