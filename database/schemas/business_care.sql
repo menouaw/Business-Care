@@ -398,7 +398,7 @@ CREATE TABLE associations (
 );
 
 CREATE TABLE evenement_inscriptions (
-    id INT PRIMARY KEY AUTO_INCREMENT,s
+    id INT PRIMARY KEY AUTO_INCREMENT,
     personne_id INT NOT NULL,
     evenement_id INT NOT NULL,
     statut ENUM('inscrit', 'annule') DEFAULT 'inscrit',

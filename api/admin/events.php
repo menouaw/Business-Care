@@ -2,7 +2,7 @@
 
 
 
-require_once __DIR__ . '/../init.php'; 
+require_once __DIR__ . '/init.php'; 
 
 if (!$isAuthenticated) {
     logSecurityEvent(null, 'api_access_denied', '[FAILURE] Tentative d\'accès à /api/admin/events sans authentification');
@@ -44,8 +44,6 @@ function getAllEvents() {
     global $currentUserId;
     try {
         
-        
-        if (!defined('TABLE_EVENEMENTS')) define('TABLE_EVENEMENTS', 'evenements'); 
         $events = fetchAll(TABLE_EVENEMENTS, '', 'date_debut DESC');
 
         
@@ -70,8 +68,6 @@ function getEventDetails($id) {
     global $currentUserId;
     try {
         
-        if (!defined('TABLE_EVENEMENTS')) define('TABLE_EVENEMENTS', 'evenements');
-        if (!defined('TABLE_EVENEMENT_INSCRIPTIONS')) define('TABLE_EVENEMENT_INSCRIPTIONS', 'evenement_inscriptions');
         
         
 

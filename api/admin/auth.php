@@ -2,7 +2,7 @@
 
 
 
-require_once __DIR__ . '/../init.php';
+require_once __DIR__ . '/init.php';
 
 
 $method = $_SERVER['REQUEST_METHOD'];
@@ -84,7 +84,12 @@ switch ($method) {
                  sendJsonResponse(['error' => false, 'message' => 'Déconnexion réussie'], 200);
             } else {
                  
-                 logSecurityEvent($currentUserId, 'api_logout', '[FAILURE] Échec de la suppression du jeton API lors de la déconnexion (ID: ' . $currentUserId . ', Jeton: ' . substr($bearerToken, 0, 10) . '...)', true);
+                 logSecurityEvent(
+                     $currentUserId, 
+                     'api_logout', 
+                     '[FAILURE] Échec de la suppression du jeton API lors de la déconnexion (ID: ' . $currentUserId . ')', 
+                     true
+                 );
                  sendJsonResponse(['error' => true, 'message' => 'Échec de la déconnexion, le jeton est peut-être invalide'], 400);
             }
         } catch (Exception $e) {

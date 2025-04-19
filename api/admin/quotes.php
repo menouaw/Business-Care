@@ -2,7 +2,7 @@
 
 
 
-require_once __DIR__ . '/../init.php'; 
+require_once __DIR__ . '/init.php'; 
 
 if (!$isAuthenticated) {
     logSecurityEvent(null, 'api_access_denied', '[FAILURE] Tentative d\'accès à /api/admin/quotes sans authentification');
