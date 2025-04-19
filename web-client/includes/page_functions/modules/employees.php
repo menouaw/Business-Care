@@ -1097,7 +1097,19 @@ function displayServiceCatalog()
 
         $data['services'] = $paginationResult['items'];
         $data['pagination_html'] = renderPagination($paginationResult, "?type=$typeFilter&categorie=$categoryFilter&page={page}");
+
         $data['types'] = PRESTATION_TYPES;
+        try {
+            $categoriesQuery = "SELECT DISTINCT categorie FROM " . TABLE_PRESTATIONS . " WHERE categorie IS NOT NULL AND categorie != '' ORDER BY categorie ASC";
+            $stmtCategories = executeQuery($categoriesQuery);
+            $data['categories'] = $stmtCategories->fetchAll(PDO::FETCH_COLUMN, 0);
+        } catch (Exception $e) {
+            logSystemActivity('error', "Erreur récupération catégories de prestations: " . $e->getMessage());
+            $data['categories'] = []; 
+        }
+
+        $data['currentTypeFilter'] = $typeFilter;
+        $data['currentCategoryFilter'] = $categoryFilter;
     }
 
     return $data;
@@ -1174,7 +1186,7 @@ function handleReservationRequest()
 
         if ($appointmentId) {
             flashMessage("Votre réservation a été enregistrée avec succès (ID: $appointmentId).", "success");
-            redirectTo(WEBCLIENT_URL . '/mon-planning.php');
+            redirectTo(WEBCLIENT_URL . '/modules/employees/appointments.php'); // Corrected redirect target
         } else {
             redirectTo($_SERVER['HTTP_REFERER'] ?? WEBCLIENT_URL . '/catalogue.php');
         }
@@ -1191,7 +1203,7 @@ function handleCancelReservation($reservation_id)
     $reservation_id = filter_var(sanitizeInput($reservation_id), FILTER_VALIDATE_INT);
     if (!$reservation_id) {
         flashMessage("ID de réservation invalide.", "danger");
-        redirectTo(WEBCLIENT_URL . '/mon-planning.php');
+        redirectTo(WEBCLIENT_URL . '/modules/employees/appointments.php'); 
     }
 
     try {
@@ -1203,13 +1215,17 @@ function handleCancelReservation($reservation_id)
 
         if (!$reservation) {
             flashMessage("Réservation non trouvée ou non annulable.", "warning");
-            redirectTo(WEBCLIENT_URL . '/mon-planning.php');
+            redirectTo(WEBCLIENT_URL . '/modules/employees/appointments.php'); 
         }
 
         $now = new DateTime();
         $rdvTime = new DateTime($reservation['date_rdv']);
         $interval = $now->diff($rdvTime);
+
         if ($now >= $rdvTime || ($interval->days == 0 && $interval->h < 24)) {
+            flashMessage("Les rendez-vous ne peuvent pas être annulés moins de 24 heures à l'avance.", "warning");
+            redirectTo(WEBCLIENT_URL . '/modules/employees/appointments.php'); 
+            return;
         }
 
         $updated = updateRow(
@@ -1239,7 +1255,7 @@ function displayNotifications()
 
     $data = [];
     $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-    $limit = defined('DEFAULT_ITEMS_PER_PAGE') ? DEFAULT_ITEMS_PER_PAGE : 10; // Secure with defined() check and fallback
+    $limit = defined('DEFAULT_ITEMS_PER_PAGE') ? DEFAULT_ITEMS_PER_PAGE : 10;
 
     $where = "personne_id = :id";
     $params = [':id' => $employee_id];
@@ -1308,8 +1324,8 @@ function handleMarkAllNotificationsRead($employee_id)
     } catch (Exception $e) {
         logSystemActivity('error', "Erreur markAllNotificationsRead pour user #$employee_id: " . $e->getMessage());
         flashMessage("Erreur technique lors de la mise à jour des notifications.", "danger");
+        return false;
     }
-    redirectTo(WEBCLIENT_URL . '/notifications.php');
 }
 
 
@@ -1407,7 +1423,7 @@ function getActiveAssociations()
         if (!defined('TABLE_ASSOCIATIONS')) {
             define('TABLE_ASSOCIATIONS', 'associations');
         }
-        return fetchAll(TABLE_ASSOCIATIONS, 'statut = :status', 'nom ASC', [':status' => 'actif']);
+        return fetchAll(TABLE_ASSOCIATIONS, '1=1', 'nom ASC');
     } catch (Exception $e) {
         logSystemActivity('error', "Erreur récupération des associations: " . $e->getMessage());
         return [];
@@ -1760,17 +1776,43 @@ function handleJoinCommunityRequest($employee_id, $community_id)
 
     logActivity($employee_id, 'community_join_attempt', "Tentative de rejoindre la communauté ID: $community_id");
 
-    $alreadyMember = false;
+    $community = fetchOne(TABLE_COMMUNAUTES, 'id = :id', [':id' => $community_id]);
+    $communityName = $community ? $community['nom'] : 'ID: ' . $community_id; // Use community name for messages
+
+    $alreadyMember = fetchOne(
+        'communaute_membres',
+        'personne_id = :pid AND communaute_id = :cid',
+        [':pid' => $employee_id, ':cid' => $community_id]
+    );
     $joinSuccess = false;
 
     if ($alreadyMember) {
-        flashMessage("Vous êtes déjà membre de cette communauté.", "info");
-    } else {
-        $joinSuccess = true;
-        if ($joinSuccess) {
-            flashMessage("Vous avez rejoint la communauté " . htmlspecialchars($community_id) . " (Simulation).", "success");
+        if ($alreadyMember['statut'] === 'actif') {
+            flashMessage("Vous êtes déjà membre actif de la communauté " . htmlspecialchars($communityName) . ".", "info");
         } else {
-            flashMessage("Impossible de rejoindre la communauté " . htmlspecialchars($community_id) . ".", "danger");
+            flashMessage("Votre statut dans la communauté " . htmlspecialchars($communityName) . " est : " . $alreadyMember['statut'] . ".", "warning");
+        }
+    } else {
+        try {
+            $dataToInsert = [
+                'personne_id' => $employee_id,
+                'communaute_id' => $community_id,
+                'date_adhesion' => date('Y-m-d H:i:s'),
+                'statut' => 'actif' // Default to active status when joining
+            ];
+            $joinSuccess = insertRow('communaute_membres', $dataToInsert);
+
+            if ($joinSuccess) {
+                flashMessage("Vous avez rejoint la communauté " . htmlspecialchars($communityName) . ".", "success");
+                logActivity($employee_id, 'community_join', "A rejoint la communauté: $communityName (ID: $community_id)");
+            } else {
+                logSystemActivity('error', "Échec de l'insertion dans communaute_membres pour user #$employee_id, community #$community_id");
+                flashMessage("Impossible de rejoindre la communauté " . htmlspecialchars($communityName) . " (erreur technique).", "danger");
+            }
+        } catch (Exception $e) {
+            logSystemActivity('error', "Exception lors de l'insertion dans communaute_membres: " . $e->getMessage());
+            flashMessage("Impossible de rejoindre la communauté " . htmlspecialchars($communityName) . " (exception technique).", "danger");
+            $joinSuccess = false;
         }
     }
 }
@@ -1982,44 +2024,39 @@ function getNotificationIcon($type)
     }
 }
 
-
-function handleNotificationPageActions($action, $employee_id)
+function handleNotificationPostAction($postData, $employee_id)
 {
-    $csrfToken = $_GET['csrf_token'] ?? null;
+    $action = $postData['action'] ?? null;
+    $notification_id = isset($postData['id']) ? filter_var($postData['id'], FILTER_VALIDATE_INT) : null;
     $redirectUrl = WEBCLIENT_URL . '/modules/employees/notifications.php';
 
-    if (!validateToken($csrfToken)) {
-        flashMessage("Erreur de sécurité.", "danger");
-        redirectTo($redirectUrl);
-        return;
-    }
 
     switch ($action) {
         case 'mark_read_and_redirect':
-            $notification_id = isset($_GET['id']) ? filter_var($_GET['id'], FILTER_VALIDATE_INT) : null;
             if ($notification_id) {
                 $notification = fetchOne(TABLE_NOTIFICATIONS, 'id = :id AND personne_id = :pid', [':id' => $notification_id, ':pid' => $employee_id]);
                 if ($notification) {
-                    handleMarkNotificationRead($notification_id, $employee_id);
+                    $markedRead = handleMarkNotificationRead($notification_id, $employee_id);
                     if (!empty($notification['lien'])) {
                         redirectTo($notification['lien']);
-                    } else {
-                        redirectTo($redirectUrl);
+                        exit;
                     }
                 } else {
                     flashMessage("Notification non trouvée.", "warning");
-                    redirectTo($redirectUrl);
                 }
             } else {
                 flashMessage("ID de notification manquant.", "danger");
-                redirectTo($redirectUrl);
             }
             break;
 
         case 'mark_all_read':
             handleMarkAllNotificationsRead($employee_id);
-            flashMessage("Toutes les notifications ont été marquées comme lues.", "success");
-            redirectTo($redirectUrl);
+            break;
+
+        default:
+            flashMessage("Action inconnue ou non supportée.", "warning");
             break;
     }
+
+    redirectTo($redirectUrl);
 }
