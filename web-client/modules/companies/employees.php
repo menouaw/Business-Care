@@ -258,10 +258,10 @@ include_once __DIR__ . '/../../templates/header.php';
                             <div class="col-md-6">
                                 <label for="statut" class="form-label">Statut</label>
                                 <select class="form-select" id="statut" name="statut">
-                                    <?php foreach (USER_STATUSES as $status):
-                                        if ($status === 'supprime') continue;
+                                    <?php
+                                    foreach (USER_STATUSES as $status):
                                         $currentStatus = $employee['statut'] ?? 'actif';
-                                        if ($currentStatus === 'supprime' && $status !== 'supprime') continue;
+                                        if ($status === 'supprime' && $currentStatus !== 'supprime') continue;
                                     ?>
                                         <option value="<?= $status ?>" <?= $currentStatus === $status ? 'selected' : '' ?>>
                                             <?= htmlspecialchars(ucfirst($status)) ?>
