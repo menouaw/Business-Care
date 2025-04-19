@@ -104,7 +104,7 @@ include_once __DIR__ . '/../../templates/header.php';
                 </div>
             </div>
 
-            <div class="card border-0 shadow-sm mb-4">
+            <div class="card border-0 shadow-sm mb-4"> 
                 <div class="card-header bg-white">
                     <h5 class="mb-0">Poster un message</h5>
                 </div>
