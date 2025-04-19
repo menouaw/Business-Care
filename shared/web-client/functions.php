@@ -1,10 +1,8 @@
 <?php
-require_once 'config.php';
-require_once 'db.php';
+require_once __DIR__ . '/../../shared/web-client/config.php';
+require_once __DIR__ . '/../../shared/web-client/db.php';
 
 define('DEFAULT_ITEMS_PER_PAGE', 10);
-define('DEFAULT_DATE_FORMAT', 'd/m/Y H:i');
-define('DEFAULT_CURRENCY', '€');
 define('INVOICE_PREFIX', 'F');
 
 

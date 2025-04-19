@@ -1,11 +1,37 @@
 <?php
 
+require_once __DIR__ . '/../../includes/init.php'; // Ensure init is included first
 require_once __DIR__ . '/../../includes/page_functions/modules/employees.php';
+
+if (isset($_GET['action']) && $_GET['action'] === 'cancel') {
+    if (!isset($_GET['csrf_token']) || !validateToken($_GET['csrf_token'])) {
+        handleClientCsrfFailureRedirect('annulation de rendez-vous via URL', WEBCLIENT_URL . '/modules/employees/appointments.php');
+        exit;
+    }
+
+    requireRole(ROLE_SALARIE);
+    $employee_id = $_SESSION['user_id'];
+
+    $reservation_id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
+
+    if (!$reservation_id) {
+        flashMessage('ID de réservation invalide pour l\'annulation.', 'danger');
+    } else {
+        handleCancelReservation($reservation_id);
+    }
+
+    redirectTo(WEBCLIENT_URL . '/modules/employees/appointments.php' . (isset($_GET['filter']) ? '?filter=' . urlencode($_GET['filter']) : ''));
+    exit;
+}
 
 $pageData = displayEmployeeAppointmentsPage();
 $appointments = $pageData['appointments'] ?? [];
 $currentFilter = $pageData['currentFilter'] ?? 'upcoming';
 $csrfToken = $pageData['csrf_token'] ?? '';
+
+if (empty($csrfToken)) {
+    $csrfToken = generateToken();
+}
 
 $pageTitle = "Mes Rendez-vous - Espace Salarié";
 
@@ -22,8 +48,11 @@ include_once __DIR__ . '/../../templates/header.php';
                 <p class="text-muted">Consultez l'historique et les détails de vos consultations.</p>
             </div>
             <div class="col-auto">
-                <a href="<?= WEBCLIENT_URL ?>/modules/employees/index.php" class="btn btn-outline-secondary">
+                <a href="<?= WEBCLIENT_URL ?>/modules/employees/index.php" class="btn btn-outline-secondary me-2">
                     <i class="fas fa-arrow-left me-1"></i> Retour
+                </a>
+                <a href="<?= WEBCLIENT_URL ?>/modules/employees/services.php" class="btn btn-outline-primary">
+                    <i class="fas fa-book-open me-1"></i> Voir le Catalogue
                 </a>
             </div>
         </div>
@@ -40,7 +69,6 @@ include_once __DIR__ . '/../../templates/header.php';
             </div>
         </div>
 
-        <!-- Liste des rendez-vous -->
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white">
                 <h5 class="card-title mb-0">
@@ -111,13 +139,11 @@ include_once __DIR__ . '/../../templates/header.php';
                                     </div>
                                     <div class="col-md-3 col-lg-3 text-md-end">
                                         <?php if (in_array($rdv['statut'], ['planifie', 'confirme'])) : ?>
-                                            <form action="<?= WEBCLIENT_URL ?>/actions/cancel_appointment.php" method="POST" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir annuler ce rendez-vous ?');">
-                                                <input type="hidden" name="reservation_id" value="<?= $rdv['id'] ?>">
-                                                <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
-                                                <button type="submit" class="btn btn-sm btn-outline-danger">
-                                                    <i class="fas fa-times me-1"></i> Annuler
-                                                </button>
-                                            </form>
+                                            <a href="<?= WEBCLIENT_URL ?>/modules/employees/appointments.php?action=cancel&id=<?= $rdv['id'] ?>&csrf_token=<?= $csrfToken ?><?= isset($_GET['filter']) ? '&filter=' . urlencode($_GET['filter']) : '' ?>"
+                                                class="btn btn-sm btn-outline-danger"
+                                                onclick="return confirm('Êtes-vous sûr de vouloir annuler ce rendez-vous ?');">
+                                                <i class="fas fa-times me-1"></i> Annuler
+                                            </a>
                                         <?php elseif ($rdv['statut'] === 'termine') : ?>
                                             <a href="<?= WEBCLIENT_URL ?>/evaluer-prestation.php?prestation_id=<?= $rdv['prestation_id'] ?>&rdv_id=<?= $rdv['id'] ?>" class="btn btn-sm btn-outline-warning">
                                                 <i class="fas fa-star me-1"></i> Évaluer

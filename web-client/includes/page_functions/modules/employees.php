@@ -1191,20 +1191,25 @@ function handleCancelReservation($reservation_id)
     $reservation_id = filter_var(sanitizeInput($reservation_id), FILTER_VALIDATE_INT);
     if (!$reservation_id) {
         flashMessage("ID de réservation invalide.", "danger");
-        redirectTo(WEBCLIENT_URL . '/mon-planning.php');
+        redirectTo(WEBCLIENT_URL . '/modules/employees/appointments.php');
+        exit;
     }
 
+    error_log("[DEBUG] handleCancelReservation: Tentative d'annulation pour employee_id = $employee_id, reservation_id = $reservation_id"); // Log entrée
 
     try {
+        error_log("[DEBUG] handleCancelReservation: Appel de fetchOne avec id=$reservation_id, personne_id=$employee_id, statut IN ('planifie', 'confirme')"); // Log avant fetch
         $reservation = fetchOne(
             TABLE_APPOINTMENTS,
             "id = :id AND personne_id = :employee_id AND statut IN ('planifie', 'confirme')",
             [':id' => $reservation_id, ':employee_id' => $employee_id]
         );
+        error_log("[DEBUG] handleCancelReservation: Résultat de fetchOne: " . print_r($reservation, true)); // Log après fetch
 
         if (!$reservation) {
             flashMessage("Réservation non trouvée ou non annulable.", "warning");
-            redirectTo(WEBCLIENT_URL . '/mon-planning.php');
+            redirectTo(WEBCLIENT_URL . '/modules/employees/appointments.php');
+            exit;
         }
 
         $now = new DateTime();
@@ -1285,9 +1290,8 @@ function handleAnonymousReport($sujet, $description)
     ];
 
     try {
-        if (!defined('TABLE_ANONYMOUS_REPORTS')) define('TABLE_ANONYMOUS_REPORTS', 'signalements_anonymes');
 
-        $insertedId = insertRow(TABLE_ANONYMOUS_REPORTS, $reportData);
+        $insertedId = insertRow(TABLE_SIGNALEMENTS, $reportData);
 
         if ($insertedId) {
             logSystemActivity('anonymous_report_submitted', "Nouveau signalement anonyme soumis (ID: $insertedId)", ['ip' => $reportData['ip_address']]);
@@ -1641,13 +1645,12 @@ function handleCounselPreferencesUpdate(array $postData, int $employee_id): bool
 
     $selectedCategories = $postData['categories'] ?? [];
     if (!is_array($selectedCategories)) {
-        $selectedCategories = []; // S'assurer que c'est un tableau
+        $selectedCategories = [];
     }
     $sanitizedCategories = array_map('sanitizeInput', $selectedCategories);
 
     try {
         beginTransaction();
-        // Supprimer les anciennes préférences
         deleteRow('utilisateur_interets_conseils', 'personne_id = :pid', [':pid' => $employee_id]);
 
         if (!empty($sanitizedCategories)) {
@@ -1688,7 +1691,7 @@ function getCounselPageData(int $employee_id): array
 
         $prefQuery = "SELECT categorie_conseil FROM utilisateur_interets_conseils WHERE personne_id = :pid";
         $data['userPreferences'] = executeQuery($prefQuery, [':pid' => $employee_id])->fetchAll(PDO::FETCH_COLUMN);
-        
+
         $allTopics = fetchAll('conseils', '', 'categorie ASC, titre ASC');
 
         if (!empty($data['userPreferences'])) {
@@ -1705,6 +1708,207 @@ function getCounselPageData(int $employee_id): array
     } catch (Exception $e) {
         error_log("Error fetching data for counsel page (user #$employee_id): " . $e->getMessage());
         $data['dbError'] = "Impossible de charger les données des conseils pour le moment. Veuillez réessayer plus tard.";
+    }
+
+    return $data;
+}
+
+function getAvailableSlotsForDate($prestation_id, $date)
+{
+    error_log("[DEBUG] Placeholder getAvailableSlotsForDate called for prestation $prestation_id on $date");
+    $sql = "SELECT cc.id, cc.start_time, cc.end_time, p.nom as praticien_nom, p.prenom as praticien_prenom
+            FROM consultation_creneaux cc
+            LEFT JOIN personnes p ON cc.praticien_id = p.id
+            WHERE cc.prestation_id = :pid
+            AND DATE(cc.start_time) = :date
+            AND cc.is_booked = FALSE
+            AND cc.start_time > NOW()
+            ORDER BY cc.start_time ASC";
+    try {
+        $slots = executeQuery($sql, [':pid' => $prestation_id, ':date' => $date])->fetchAll();
+        foreach ($slots as &$slot) {
+            $slot['praticien_nom'] = isset($slot['praticien_nom']) ? trim($slot['praticien_prenom'] . ' ' . $slot['praticien_nom']) : null;
+        }
+        return $slots;
+    } catch (Exception $e) {
+        logSystemActivity('error', "Erreur getAvailableSlotsForDate pour prestation #$prestation_id, date $date: " . $e->getMessage());
+        flashMessage("Impossible de récupérer les créneaux pour cette date.", "danger");
+        return [];
+    }
+}
+
+function getAllAvailableSlotsGroupedByDate($prestation_id)
+{
+    $groupedSlots = [];
+    $sql = "SELECT cc.id, cc.start_time, cc.end_time, p.nom as praticien_nom, p.prenom as praticien_prenom
+            FROM consultation_creneaux cc
+            LEFT JOIN personnes p ON cc.praticien_id = p.id
+            WHERE cc.prestation_id = :pid
+            AND cc.is_booked = FALSE
+            AND cc.start_time > NOW()
+            ORDER BY cc.start_time ASC";
+
+    try {
+        $allSlots = executeQuery($sql, [':pid' => $prestation_id])->fetchAll();
+        foreach ($allSlots as $slot) {
+            $date = date('Y-m-d', strtotime($slot['start_time']));
+            if (!isset($groupedSlots[$date])) {
+                $groupedSlots[$date] = [];
+            }
+            $slot['praticien_nom'] = isset($slot['praticien_nom']) ? trim($slot['praticien_prenom'] . ' ' . $slot['praticien_nom']) : null;
+            $groupedSlots[$date][] = $slot;
+        }
+        ksort($groupedSlots); // Sort by date
+        return $groupedSlots;
+    } catch (Exception $e) {
+        logSystemActivity('error', "Erreur getAllAvailableSlotsGroupedByDate pour prestation #$prestation_id: " . $e->getMessage());
+        flashMessage("Impossible de récupérer la liste complète des créneaux.", "danger");
+        return [];
+    }
+}
+
+function processSlotBooking($employee_id, $creneau_id)
+{
+    $employee_id = filter_var($employee_id, FILTER_VALIDATE_INT);
+    $creneau_id = filter_var($creneau_id, FILTER_VALIDATE_INT);
+
+    if (!$employee_id || !$creneau_id) {
+        logSystemActivity('error', "processSlotBooking: ID Salarié ou Créneau invalide.", ['eid' => $employee_id, 'cid' => $creneau_id]);
+        flashMessage("Données invalides pour la réservation.", "danger");
+        return false;
+    }
+
+    try {
+        beginTransaction();
+
+        // 1. Fetch the Slot (Temporarily removing FOR UPDATE for debugging)
+        $slot = fetchOne('consultation_creneaux', "id = :id AND is_booked = FALSE", [':id' => $creneau_id]);
+
+        if (!$slot) {
+            rollbackTransaction();
+            flashMessage("Ce créneau n'est plus disponible ou a déjà été réservé.", "warning");
+            return false;
+        }
+
+        if (strtotime($slot['start_time']) <= time()) {
+            rollbackTransaction();
+            flashMessage("Impossible de réserver un créneau dans le passé.", "warning");
+            return false;
+        }
+
+        $updated = updateRow('consultation_creneaux', ['is_booked' => TRUE], "id = :id", [':id' => $creneau_id]);
+
+        if (!$updated) {
+            rollbackTransaction();
+            logSystemActivity('error', "processSlotBooking: Échec MAJ is_booked pour créneau #$creneau_id");
+            flashMessage("Erreur technique lors de la réservation du créneau (code PB01).", "danger");
+            return false;
+        }
+
+        $prestation = fetchOne('prestations', "id = :id", [':id' => $slot['prestation_id']]);
+        if (!$prestation || !isset($prestation['duree'])) {
+            rollbackTransaction();
+            logSystemActivity('error', "processSlotBooking: Impossible de trouver la durée pour prestation #{$slot['prestation_id']}");
+            flashMessage("Erreur technique lors de la récupération des détails de la prestation (code PB02).", "danger");
+            return false;
+        }
+
+        $rdvData = [
+            'personne_id' => $employee_id,
+            'prestation_id' => $slot['prestation_id'],
+            'praticien_id' => $slot['praticien_id'],
+            'date_rdv' => $slot['start_time'],
+            'duree' => $prestation['duree'],
+            'lieu' => 'À définir',
+            'type_rdv' => 'consultation',
+            'statut' => 'planifie',
+            'notes' => 'Réservé via catalogue de services'
+        ];
+        $appointmentId = insertRow('rendez_vous', $rdvData);
+
+        if (!$appointmentId) {
+            rollbackTransaction();
+            logSystemActivity('error', "processSlotBooking: Échec insertion rendez_vous pour créneau #$creneau_id, user #$employee_id");
+            flashMessage("Erreur technique lors de la création du rendez-vous (code PB03).", "danger");
+            return false;
+        }
+
+        commitTransaction();
+
+        logReservationActivity($employee_id, $slot['prestation_id'], 'creation_via_creneau', "RDV #$appointmentId créé depuis créneau #$creneau_id");
+        flashMessage("Votre rendez-vous pour '" . htmlspecialchars($prestation['nom']) . "' le " . formatDate($slot['start_time']) . " a été réservé avec succès !", "success");
+        return true;
+    } catch (Exception $e) {
+        if (getDbConnection()->inTransaction()) {
+            rollbackTransaction();
+        }
+        // Log the full exception details for better debugging
+        error_log("Full exception details for PB04: " . (string)$e);
+        // Log the system activity as before
+        logSystemActivity('error', "Exception processSlotBooking pour créneau #$creneau_id, user #$employee_id: " . $e->getMessage());
+        flashMessage("Une erreur technique majeure est survenue lors de la réservation (code PB04).", "danger");
+        return false;
+    }
+}
+function getServiceCatalogPageData($action, $selected_prestation_id, $selected_date)
+{
+
+    $data = [
+        'action' => $action,
+        'services' => [],
+        'paginationHtml' => '',
+        'types' => [],
+        'categories' => [],
+        'currentTypeFilter' => $_GET['type'] ?? '',
+        'currentCategoryFilter' => $_GET['categorie'] ?? '',
+        'hasActiveContract' => false,
+        'selected_prestation_id' => $selected_prestation_id,
+        'selected_date' => $selected_date,
+        'prestation_details' => null,
+        'available_slots' => [],
+        'grouped_slots' => [],
+        'pageTitle' => 'Catalogue des Services - Espace Salarié',
+        'csrfToken' => $_SESSION['csrf_token'] ?? generateToken()
+    ];
+
+    requireRole(ROLE_SALARIE);
+    $employee_id = $_SESSION['user_id'];
+    $employee = fetchOne(TABLE_USERS, "id = :id", [':id' => $employee_id]);
+    if (!$employee || !$employee['entreprise_id']) {
+        flashMessage("Accès refusé: informations utilisateur incomplètes.", "danger");
+        redirectTo(WEBCLIENT_URL . '/dashboard.php'); // Should not happen if requireRole works
+        exit;
+    }
+    $activeContract = fetchOne(
+        TABLE_CONTRACTS,
+        "entreprise_id = :company_id AND statut = :status AND (date_fin IS NULL OR date_fin >= CURDATE())",
+        [':company_id' => $employee['entreprise_id'], ':status' => STATUS_ACTIVE]
+    );
+    $data['hasActiveContract'] = (bool)$activeContract;
+
+    if ($action === 'list') {
+        if (!$data['hasActiveContract']) {
+            flashMessage("Votre entreprise n'a pas de contrat actif pour accéder aux services.", "warning");
+            return $data;
+        }
+        $pageDataList = displayServiceCatalog();
+        $data['services'] = $pageDataList['services'] ?? [];
+        $data['paginationHtml'] = $pageDataList['pagination_html'] ?? '';
+        $data['types'] = $pageDataList['types'] ?? [];
+        $data['categories'] = $pageDataList['categories'] ?? [];
+    } elseif (($action === 'select_date' || $action === 'select_slot' || $action === 'book_slot') && $selected_prestation_id) {
+        $data['prestation_details'] = fetchOne('prestations', 'id = :id', [':id' => $selected_prestation_id]);
+        if (!$data['prestation_details']) {
+            flashMessage("Prestation non trouvée.", "danger");
+            redirectTo(WEBCLIENT_URL . '/modules/employees/services.php');
+            exit;
+        }
+        $data['pageTitle'] = 'Réserver : ' . htmlspecialchars($data['prestation_details']['nom']);
+
+        if ($action === 'select_date') {
+            $data['grouped_slots'] = getAllAvailableSlotsGroupedByDate($selected_prestation_id);
+            $data['pageTitle'] = 'Choisir un créneau pour : ' . htmlspecialchars($data['prestation_details']['nom']);
+        }
     }
 
     return $data;

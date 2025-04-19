@@ -1,21 +1,13 @@
 <?php
 
-/**
- * tableau de bord - salariés
- *
- * page d'accueil du module salariés
- */
+
 
 require_once __DIR__ . '/../../includes/page_functions/modules/employees.php';
 
-// Appeler la fonction pour récupérer toutes les données du tableau de bord
-// requireRole() est déjà appelé à l'intérieur de displayEmployeeDashboard()
 $dashboardData = displayEmployeeDashboard();
 
-// Définir le titre de la page
 $pageTitle = "Tableau de bord - Espace Salarié";
 
-// Inclure l'en-tête
 include_once __DIR__ . '/../../templates/header.php';
 ?>
 
@@ -103,7 +95,7 @@ include_once __DIR__ . '/../../templates/header.php';
                             </div>
                         </div>
                         <div class="mt-3">
-                            <a href="<?= WEBCLIENT_URL ?>/mon-planning.php" class="btn btn-sm btn-outline-primary">Voir mon planning</a>
+                            <a href="<?= WEBCLIENT_URL ?>/modules/employees/appointments.php" class="btn btn-sm btn-outline-primary">Voir mon planning</a>
                         </div>
                     </div>
                 </div>
@@ -177,7 +169,7 @@ include_once __DIR__ . '/../../templates/header.php';
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0">Prochains rendez-vous</h5>
-                        <a href="<?= WEBCLIENT_URL ?>/mon-planning.php" class="btn btn-sm btn-outline-primary">Voir mon planning</a>
+                        <a href="<?= WEBCLIENT_URL ?>/modules/employees/appointments.php" class="btn btn-sm btn-outline-primary">Voir mon planning</a>
                     </div>
                     <div class="card-body">
                         <?php if (empty($dashboardData['upcoming_appointments']['items'])) : ?>

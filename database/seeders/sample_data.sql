@@ -10,6 +10,7 @@ TRUNCATE TABLE dons;
 TRUNCATE TABLE communautes;
 TRUNCATE TABLE evenements;
 TRUNCATE TABLE rendez_vous;
+TRUNCATE TABLE consultation_creneaux;
 TRUNCATE TABLE factures;
 TRUNCATE TABLE devis;
 TRUNCATE TABLE contrats;
@@ -37,7 +38,8 @@ INSERT INTO entreprises (nom, siret, adresse, code_postal, ville, telephone, ema
 INSERT INTO prestations (nom, description, prix, duree, type, categorie, niveau_difficulte, capacite_max, materiel_necessaire, prerequis) VALUES
 ('Consultation Psychologique', 'Seance individuelle de 45 minutes avec un psychologue qualifie', 80.00, 45, 'consultation', 'Sante mentale', NULL, 1, 'Aucun', 'Aucun'),
 ('Yoga en Entreprise', 'Seance de yoga adaptee au milieu professionnel', 120.00, 60, 'atelier', 'Bien-etre physique', 'debutant', 20, 'Tapis de yoga', 'Aucun'),
-('Webinar Gestion du Stress', 'Formation en ligne sur la gestion du stress', 150.00, 90, 'webinar', 'Formation', 'debutant', 50, 'Ordinateur, connexion internet', 'Aucun');
+('Webinar Gestion du Stress', 'Formation en ligne sur la gestion du stress', 150.00, 90, 'webinar', 'Formation', 'debutant', 50, 'Ordinateur, connexion internet', 'Aucun'),
+('Consultation Nutritionniste', 'Bilan et conseils personnalisés avec un nutritionniste', 90.00, 60, 'consultation', 'Nutrition', NULL, 1, 'Aucun', 'Aucun');
 
 INSERT INTO personnes (nom, prenom, email, mot_de_passe, telephone, date_naissance, genre, photo_url, role_id, entreprise_id, statut, derniere_connexion) VALUES
 ('Admin', 'System', 'admin@businesscare.fr', '$2y$10$CGP1gfg0khtXjAZcJFC6iO3oYisjwlPfkm8tQ8Q/OxWpFdR7tOiqO', '00 00 00 00 00', '1990-01-01', 'Autre', '/photos/admin.jpg', 1, NULL, 'actif', '2026-03-17 18:30:00'),
@@ -278,3 +280,15 @@ INSERT INTO `conseils` (`titre`, `icone`, `resume`, `categorie`, `contenu`) VALU
 ('Améliorer son Sommeil', 'fas fa-moon', 'Des conseils pratiques pour retrouver un sommeil réparateur et améliorer votre énergie.', 'Sommeil', 'Un bon sommeil est crucial. Établissez une routine de coucher régulière, même le week-end. Évitez les écrans (téléphone, tablette, ordinateur) au moins une heure avant de dormir. Créez un environnement sombre, calme et frais dans votre chambre. Limitez la caféine et l'alcool, surtout en fin de journée. Si les problèmes persistent, consultez un professionnel.'),
 ('Alimentation Équilibrée au Bureau', 'fas fa-apple-alt', 'Comment bien manger au travail pour maintenir votre énergie et votre concentration.', 'Nutrition', 'Manger sainement au bureau est possible ! Préparez vos déjeuners à l'avance pour contrôler les ingrédients et les portions. Privilégiez les légumes, les protéines maigres et les grains entiers. Apportez des collations saines comme des fruits, des noix ou du yaourt. Hydratez-vous en buvant de l'eau tout au long de la journée. Évitez les repas trop lourds qui peuvent entraîner une baisse d'énergie l'après-midi.'),
 ('L'Importance de l'Activité Physique', 'fas fa-running', 'Intégrer l'exercice dans votre routine, même avec un emploi du temps chargé.', 'Activité Physique', 'L'activité physique est essentielle. Essayez de marcher ou de faire du vélo pour aller au travail si possible. Prenez les escaliers au lieu de l'ascenseur. Faites de courtes pauses actives toutes les heures pour vous étirer ou marcher un peu. Planifiez des séances d'exercice régulières, même courtes, dans votre semaine. Trouvez une activité que vous aimez pour rester motivé (danse, natation, randonnée, etc.).');
+
+INSERT INTO consultation_creneaux (prestation_id, praticien_id, start_time, end_time, is_booked) VALUES
+(1, 3, DATE_ADD(CURDATE(), INTERVAL 1 DAY) + INTERVAL '09:00' HOUR_MINUTE, DATE_ADD(CURDATE(), INTERVAL 1 DAY) + INTERVAL '09:45' HOUR_MINUTE, FALSE),
+(1, 3, DATE_ADD(CURDATE(), INTERVAL 1 DAY) + INTERVAL '10:00' HOUR_MINUTE, DATE_ADD(CURDATE(), INTERVAL 1 DAY) + INTERVAL '10:45' HOUR_MINUTE, FALSE),
+(1, 3, DATE_ADD(CURDATE(), INTERVAL 1 DAY) + INTERVAL '11:00' HOUR_MINUTE, DATE_ADD(CURDATE(), INTERVAL 1 DAY) + INTERVAL '11:45' HOUR_MINUTE, TRUE), -- Booked slot
+(1, 3, DATE_ADD(CURDATE(), INTERVAL 2 DAY) + INTERVAL '14:00' HOUR_MINUTE, DATE_ADD(CURDATE(), INTERVAL 2 DAY) + INTERVAL '14:45' HOUR_MINUTE, FALSE),
+
+(4, 17, DATE_ADD(CURDATE(), INTERVAL 1 DAY) + INTERVAL '14:00' HOUR_MINUTE, DATE_ADD(CURDATE(), INTERVAL 1 DAY) + INTERVAL '15:00' HOUR_MINUTE, FALSE),
+(4, 17, DATE_ADD(CURDATE(), INTERVAL 1 DAY) + INTERVAL '15:15' HOUR_MINUTE, DATE_ADD(CURDATE(), INTERVAL 1 DAY) + INTERVAL '16:15' HOUR_MINUTE, FALSE),
+(4, 17, DATE_ADD(CURDATE(), INTERVAL 3 DAY) + INTERVAL '09:30' HOUR_MINUTE, DATE_ADD(CURDATE(), INTERVAL 3 DAY) + INTERVAL '10:30' HOUR_MINUTE, FALSE),
+(4, 17, DATE_ADD(CURDATE(), INTERVAL 3 DAY) + INTERVAL '10:45' HOUR_MINUTE, DATE_ADD(CURDATE(), INTERVAL 3 DAY) + INTERVAL '11:45' HOUR_MINUTE, FALSE)
+ON DUPLICATE KEY UPDATE is_booked = VALUES(is_booked);
