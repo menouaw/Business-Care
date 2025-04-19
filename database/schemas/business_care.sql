@@ -188,7 +188,6 @@ CREATE TABLE evenements (
     INDEX idx_type (type)
 );
 
-
 CREATE TABLE communautes (
     id INT PRIMARY KEY AUTO_INCREMENT,
     nom VARCHAR(255) NOT NULL,
@@ -199,6 +198,12 @@ CREATE TABLE communautes (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_type (type)
+);
+
+CREATE TABLE associations (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nom VARCHAR(255) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE dons (
@@ -379,22 +384,16 @@ CREATE TABLE prestataires_disponibilites (
     INDEX idx_jour_semaine (jour_semaine)
 );
 
-
 CREATE TABLE communaute_messages (
     id INT PRIMARY KEY AUTO_INCREMENT,
     communaute_id INT NOT NULL,
     personne_id INT NOT NULL,
     message TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (communaute_id) REFERENCES communautes(id) ON DELETE CASCADE,
     FOREIGN KEY (personne_id) REFERENCES personnes(id) ON DELETE CASCADE,
     INDEX idx_communaute_date (communaute_id, created_at)
-);
-
-CREATE TABLE associations (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    nom VARCHAR(255) NOT NULL UNIQUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE evenement_inscriptions (
@@ -426,7 +425,9 @@ CREATE TABLE conseils (
     icone VARCHAR(50),
     resume TEXT,
     categorie VARCHAR(100),
-    contenu LONGTEXT NOT NULL
+    contenu LONGTEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Ajouté
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP -- Ajouté
 );
 
 CREATE TABLE utilisateur_interets_conseils (
@@ -434,6 +435,20 @@ CREATE TABLE utilisateur_interets_conseils (
     categorie_conseil VARCHAR(100) NOT NULL,            
     PRIMARY KEY (personne_id, categorie_conseil),
     FOREIGN KEY (personne_id) REFERENCES personnes(id) ON DELETE CASCADE
+);
+
+CREATE TABLE communaute_membres (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    personne_id INT NOT NULL,
+    communaute_id INT NOT NULL,
+    date_adhesion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    statut ENUM('actif', 'inactif', 'banni') DEFAULT 'actif',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (personne_id) REFERENCES personnes(id) ON DELETE CASCADE,
+    FOREIGN KEY (communaute_id) REFERENCES communautes(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_membre (personne_id, communaute_id), 
+    INDEX idx_statut (statut)
 );
 
 

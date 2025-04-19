@@ -1,23 +1,17 @@
 <?php
-// API pour la gestion des services côté client
 
-// déterminer l'action à effectuer en fonction de la méthode HTTP
 $method = $_SERVER['REQUEST_METHOD'];
 
 switch ($method) {
     case 'GET':
-        // récupération des services
         if (isset($id)) {
-            // récupérer un service spécifique
             getServiceDetails($id);
         } else {
-            // récupérer tous les services disponibles
             getAvailableServices();
         }
         break;
         
     case 'POST':
-        // authentification requise pour les requêtes de réservation
         if (!$isAuthenticated) {
             http_response_code(401);
             echo json_encode([
@@ -27,7 +21,6 @@ switch ($method) {
             exit;
         }
         
-        // demander un service (créer une réservation)
         requestService();
         break;
         
@@ -40,47 +33,33 @@ switch ($method) {
         break;
 }
 
-/**
- * Récupère tous les services disponibles
- * 
- * Cette fonction renvoie la liste des services disponibles avec possibilité
- * de filtrage par catégorie, type, prix, etc.
- * 
- * @return void Envoie une réponse JSON avec les services disponibles
- */
 function getAvailableServices() {
     $pdo = getDbConnection();
     
     try {
-        // construire la requête avec filtres possibles
         $query = "SELECT * FROM prestations WHERE 1=1";
         $params = [];
         
-        // filtrage par catégorie
         if (isset($_GET['categorie']) && !empty($_GET['categorie'])) {
             $query .= " AND categorie = ?";
             $params[] = $_GET['categorie'];
         }
         
-        // filtrage par type
         if (isset($_GET['type']) && !empty($_GET['type'])) {
             $query .= " AND type = ?";
             $params[] = $_GET['type'];
         }
         
-        // filtrage par prix maximum
         if (isset($_GET['prix_max']) && is_numeric($_GET['prix_max'])) {
             $query .= " AND prix <= ?";
             $params[] = $_GET['prix_max'];
         }
         
-        // filtrage par prix minimum
         if (isset($_GET['prix_min']) && is_numeric($_GET['prix_min'])) {
             $query .= " AND prix >= ?";
             $params[] = $_GET['prix_min'];
         }
         
-        // recherche textuelle
         if (isset($_GET['search']) && !empty($_GET['search'])) {
             $query .= " AND (nom LIKE ? OR description LIKE ?)";
             $searchTerm = "%" . $_GET['search'] . "%";
@@ -88,7 +67,6 @@ function getAvailableServices() {
             $params[] = $searchTerm;
         }
         
-        // tri des résultats
         $sortField = 'nom';
         $sortDirection = 'ASC';
         
@@ -102,22 +80,18 @@ function getAvailableServices() {
         
         $query .= " ORDER BY $sortField $sortDirection";
         
-        // pagination
         $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
         $limit = isset($_GET['limit']) ? min(50, max(1, intval($_GET['limit']))) : 10;
         $offset = ($page - 1) * $limit;
         
-        // ajouter la pagination à la requête
         $query .= " LIMIT ? OFFSET ?";
         $params[] = $limit;
         $params[] = $offset;
         
-        // exécuter la requête
         $stmt = $pdo->prepare($query);
         $stmt->execute($params);
         $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
-        // compter le nombre total de services pour la pagination
         $queryCount = "SELECT COUNT(id) FROM prestations WHERE 1=1";
         $paramsCount = [];
         
@@ -152,10 +126,8 @@ function getAvailableServices() {
         $stmtCount->execute($paramsCount);
         $totalCount = $stmtCount->fetchColumn();
         
-        // calculer le nombre total de pages
         $totalPages = ceil($totalCount / $limit);
         
-        // préparer la réponse
         http_response_code(200);
         echo json_encode([
             'error' => false,
@@ -176,20 +148,10 @@ function getAvailableServices() {
     }
 }
 
-/**
- * Récupère les détails d'un service spécifique
- * 
- * Cette fonction renvoie toutes les informations d'un service identifié par son ID,
- * ainsi que les avis et évaluations associés.
- * 
- * @param int $id L'ID du service à récupérer
- * @return void Envoie une réponse JSON avec les détails du service
- */
 function getServiceDetails($id) {
     $pdo = getDbConnection();
     
     try {
-        // récupérer les détails du service
         $stmt = $pdo->prepare("SELECT * FROM prestations WHERE id = ?");
         $stmt->execute([$id]);
         $service = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -203,7 +165,6 @@ function getServiceDetails($id) {
             return;
         }
         
-        // récupérer les évaluations et avis pour ce service
         $stmt = $pdo->prepare("
             SELECT e.*, p.nom, p.prenom 
             FROM evaluations e
@@ -214,7 +175,6 @@ function getServiceDetails($id) {
         $stmt->execute([$id]);
         $evaluations = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
-        // calculer la note moyenne
         $rating = 0;
         if (count($evaluations) > 0) {
             $sum = 0;
@@ -224,7 +184,6 @@ function getServiceDetails($id) {
             $rating = $sum / count($evaluations);
         }
         
-        // préparer la réponse
         http_response_code(200);
         echo json_encode([
             'error' => false,
@@ -244,22 +203,12 @@ function getServiceDetails($id) {
     }
 }
 
-/**
- * Demande un service (crée une réservation)
- * 
- * Cette fonction permet à un client authentifié de demander un service,
- * ce qui se traduit par la création d'une réservation.
- * 
- * @return void Envoie une réponse JSON indiquant le succès ou l'échec
- */
 function requestService() {
     $pdo = getDbConnection();
     
     try {
-        // récupérer les données de la demande
         $data = json_decode(file_get_contents('php://input'), true);
         
-        // valider les données obligatoires
         if (!isset($data['prestation_id']) || !isset($data['client_id']) || !isset($data['date_demande'])) {
             http_response_code(400);
             echo json_encode([
@@ -269,7 +218,6 @@ function requestService() {
             return;
         }
         
-        // vérifier que le client existe et est bien un client
         $stmt = $pdo->prepare("SELECT id FROM personnes WHERE id = ? AND role_id = 3");
         $stmt->execute([$data['client_id']]);
         
@@ -282,7 +230,6 @@ function requestService() {
             return;
         }
         
-        // vérifier que le service existe
         $stmt = $pdo->prepare("SELECT id, prix FROM prestations WHERE id = ?");
         $stmt->execute([$data['prestation_id']]);
         $service = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -296,7 +243,6 @@ function requestService() {
             return;
         }
         
-        // créer la réservation
         $stmt = $pdo->prepare("
             INSERT INTO rendez_vous (
                 prestation_id, 
@@ -321,12 +267,11 @@ function requestService() {
             $data['heure_fin'] ?? null,
             $data['nb_personnes'] ?? 1,
             $data['note_client'] ?? null,
-            'demande', // statut initial: demande
+            'demande',
         ]);
         
         $reservationId = $pdo->lastInsertId();
         
-        // réponse de succès
         http_response_code(201);
         echo json_encode([
             'error' => false,

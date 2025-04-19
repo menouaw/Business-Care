@@ -143,7 +143,7 @@ include_once __DIR__ . '/../../templates/header.php';
                                     <tbody>
                                         <?php foreach ($contrats['contracts'] as $contrat): ?>
                                             <tr>
-                                                <td><?= ucfirst($contrat['type_contrat']) ?></td>
+                                                <td><?= htmlspecialchars($contrat['prestation_nom'] ?? 'N/A') ?></td>
                                                 <td><?= formatDate($contrat['date_debut'], 'd/m/Y') ?></td>
                                                 <td><?= $contrat['date_fin'] ? formatDate($contrat['date_fin'], 'd/m/Y') : 'Indéterminée' ?></td>
                                                 <td><?= getStatusBadge($contrat['statut']) ?></td>

@@ -105,9 +105,7 @@ include_once __DIR__ . '/templates/header.php';
                                 </div>
                             </div>
 
-                            <!-- Add CSRF Token Field -->
                             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
-                            <!-- End CSRF Token Field -->
 
                             <div class="row mb-4">
                                 <div class="col">

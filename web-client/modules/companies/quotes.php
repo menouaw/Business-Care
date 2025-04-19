@@ -110,8 +110,6 @@ include_once __DIR__ . '/../../templates/header.php';
                                         <td class="text-end">
                                             <a href="?action=view&id=<?= $quote['id'] ?>" class="btn btn-sm btn-outline-info" title="Voir Détails"><i class="fas fa-eye"></i></a>
                                             <?php if ($quote['statut'] === 'en_attente'): ?>
-                                                <!-- Option to cancel quote if needed in the future -->
-                                                <!-- <button class="btn btn-sm btn-outline-danger disabled" title="Annuler (Bientôt disponible)"><i class="fas fa-times-circle"></i></button> -->
                                             <?php endif; ?>
                                         </td>
                                     </tr>
@@ -168,9 +166,7 @@ include_once __DIR__ . '/../../templates/header.php';
             <div class="card-footer bg-white text-end">
                 <a href="?action=list" class="btn btn-secondary">Retour à la Liste</a>
                 <?php if ($quoteDetails['statut'] === 'en_attente'): ?>
-                    <!-- <button class="btn btn-danger disabled">Annuler le devis</button> -->
                 <?php elseif ($quoteDetails['statut'] === 'accepte'): ?>
-                    <!-- <button class="btn btn-success disabled">Voir Contrat Associé</button> -->
                 <?php endif; ?>
             </div>
         </div>
@@ -181,7 +177,7 @@ include_once __DIR__ . '/../../templates/header.php';
                 <h5 class="card-title mb-0">Formuler votre demande</h5>
             </div>
             <div class="card-body">
-                <form method="post" action="quotes.php?action=request"> <!-- Ensure action is set in form URL -->
+                <form method="post" action="quotes.php?action=request">
                     <input type="hidden" name="csrf_token" value="<?= $csrfToken; ?>">
 
                     <div class="row mb-3">

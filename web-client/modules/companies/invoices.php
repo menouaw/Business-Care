@@ -59,7 +59,6 @@ include_once __DIR__ . '/../../templates/header.php';
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="mb-0">Facture <?= htmlspecialchars($invoiceToView['numero_facture_complet'] ?? $invoiceId) ?></h1>
             <div>
-                <!-- Pay Button (if applicable) -->
                 <?php if (($invoiceToView['statut'] === 'en_attente' || $invoiceToView['statut'] === 'retard') && isset($invoiceToView['id'])): ?>
                     <a href="#?id=<?= $invoiceToView['id'] ?>" class="btn btn-success me-2">
                         <i class="fas fa-credit-card"></i> Payer maintenant
@@ -76,7 +75,6 @@ include_once __DIR__ . '/../../templates/header.php';
         <div class="card border-0 shadow-sm">
             <div class="card-body p-4">
                 <div class="row mb-4">
-                    <!-- Client Company Info -->
                     <div class="col-md-6">
                         <h5 class="mb-3">Facturé à :</h5>
                         <p class="mb-1 fw-bold"><?= htmlspecialchars($invoiceToView['entreprise_nom'] ?? 'N/A') ?></p>
@@ -90,7 +88,6 @@ include_once __DIR__ . '/../../templates/header.php';
                             <p class="text-muted mb-0">SIRET : <?= htmlspecialchars($invoiceToView['entreprise_siret']) ?></p>
                         <?php endif; ?>
                     </div>
-                    <!-- Invoice Details -->
                     <div class="col-md-6 text-md-end">
                         <h5 class="mb-3">Détails Facture :</h5>
                         <p class="mb-1"><span class="fw-bold">Numéro :</span> <?= htmlspecialchars($invoiceToView['numero_facture_complet'] ?? 'N/A') ?></p>
@@ -102,7 +99,6 @@ include_once __DIR__ . '/../../templates/header.php';
 
                 <hr class="my-4">
 
-                <!-- Invoice Lines -->
                 <h5 class="mb-3">Résumé :</h5>
                 <div class="table-responsive mb-4">
                     <table class="table">
@@ -125,7 +121,6 @@ include_once __DIR__ . '/../../templates/header.php';
                                 </tr>
                             <?php else: ?>
                                 <?php foreach ($invoiceToView['lignes'] as $ligne): ?>
-                                    <!-- TODO: Iterate over actual lines here if data structure allows -->
                                     <tr>
                                         <td><?= htmlspecialchars($ligne['description'] ?? 'Ligne de facture') ?></td>
                                         <td class="text-end"><?= formatMoney($ligne['montant_ht'] ?? 0) ?></td>
@@ -158,7 +153,6 @@ include_once __DIR__ . '/../../templates/header.php';
                     </table>
                 </div>
 
-                <!-- Notes or Conditions -->
                 <?php if (!empty($invoiceToView['conditions_paiement'])): ?>
                     <div class="bg-light p-3 rounded">
                         <h6 class="mb-2">Conditions de paiement :</h6>

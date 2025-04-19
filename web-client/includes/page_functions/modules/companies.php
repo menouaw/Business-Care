@@ -1371,11 +1371,11 @@ function getCompanyContracts($company_id, $status = null, $page = 1, $limit = 10
         $page = max(1, min($page, $totalPages > 0 ? $totalPages : 1));
         $offset = ($page - 1) * $limit;
 
-        $query = "SELECT c.id, c.entreprise_id, c.service_id, c.date_debut, c.date_fin, c.nombre_salaries, c.statut, c.conditions_particulieres, c.created_at, c.updated_at, s.nom AS service_nom
-                  FROM contrats c 
-                  LEFT JOIN services s ON c.service_id = s.id
+        $query = "SELECT c.id, c.entreprise_id, c.service_id, c.date_debut, c.date_fin, c.nombre_salaries, c.statut, c.conditions_particulieres, c.created_at, c.updated_at, p.nom AS prestation_nom
+                  FROM contrats c
+                  LEFT JOIN prestations p ON c.service_id = p.id
                   WHERE " . $where . "
-                  ORDER BY c.date_debut DESC 
+                  ORDER BY c.date_debut DESC
                   LIMIT :limit OFFSET :offset";
 
         $params[':limit'] = $limit;
@@ -1606,7 +1606,7 @@ function getActiveServices(): array
 {
     $available_services = [];
     $tableName = defined('TABLE_SERVICES') ? TABLE_SERVICES : 'services';
-    $query = "SELECT id, nom, description FROM {$tableName} WHERE actif = 1 ORDER BY ordre";
+    $query = "SELECT id, type, description FROM {$tableName} WHERE actif = 1 ORDER BY ordre, type";
 
     try {
         $stmt = executeQuery($query);
@@ -1614,7 +1614,7 @@ function getActiveServices(): array
 
         if ($servicesResult) {
             foreach ($servicesResult as $service) {
-                $description = $service['nom'] . (!empty($service['description']) ? ' - ' . $service['description'] : '');
+                $description = $service['type'] . (!empty($service['description']) ? ' - ' . $service['description'] : '');
                 $available_services[$service['id']] = $description;
             }
         }

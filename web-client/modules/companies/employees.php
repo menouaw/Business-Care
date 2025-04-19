@@ -68,7 +68,6 @@ include_once __DIR__ . '/../../templates/header.php';
             </div>
         </div>
 
-        <!-- Barre de recherche et filtres -->
         <form method="get" action="employees.php" class="mb-4">
             <input type="hidden" name="action" value="list">
             <div class="row g-2">
@@ -152,7 +151,7 @@ include_once __DIR__ . '/../../templates/header.php';
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1><?= $pageTitle ?></h1>
             <div>
-                <a href="dashboard.php" class="btn btn-outline-secondary me-2"><i class="fas fa-arrow-left me-1"></i> Retour</a>
+                <a href="employees.php" class="btn btn-outline-secondary me-2"><i class="fas fa-arrow-left me-1"></i> Retour</a>
                 <?php if ($employee['statut'] !== 'supprime'): ?>
                     <a href="?action=edit&id=<?= $employee['id'] ?>" class="btn btn-warning"><i class="fas fa-edit me-1"></i> Modifier</a>
                 <?php endif; ?>
@@ -203,7 +202,7 @@ include_once __DIR__ . '/../../templates/header.php';
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1><?= $pageTitle ?></h1>
             <div>
-                <a href="dashboard.php" class="btn btn-outline-secondary me-2"><i class="fas fa-arrow-left me-1"></i> Retour</a>
+                <a href="employees.php" class="btn btn-outline-secondary me-2"><i class="fas fa-arrow-left me-1"></i> Retour</a>
             </div>
         </div>
 
@@ -259,10 +258,10 @@ include_once __DIR__ . '/../../templates/header.php';
                             <div class="col-md-6">
                                 <label for="statut" class="form-label">Statut</label>
                                 <select class="form-select" id="statut" name="statut">
-                                    <?php foreach (USER_STATUSES as $status):
-                                        if ($status === 'supprime') continue;
+                                    <?php
+                                    foreach (USER_STATUSES as $status):
                                         $currentStatus = $employee['statut'] ?? 'actif';
-                                        if ($currentStatus === 'supprime' && $status !== 'supprime') continue;
+                                        if ($status === 'supprime' && $currentStatus !== 'supprime') continue;
                                     ?>
                                         <option value="<?= $status ?>" <?= $currentStatus === $status ? 'selected' : '' ?>>
                                             <?= htmlspecialchars(ucfirst($status)) ?>
