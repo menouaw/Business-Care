@@ -61,7 +61,6 @@ include_once __DIR__ . '/../../templates/header.php';
             </div>
         </div>
 
-        <!-- cartes d'information -->
         <div class="row g-4 mb-4">
             <div class="col-md-6 col-lg-3">
                 <div class="card border-0 shadow-sm h-100">
@@ -141,7 +140,6 @@ include_once __DIR__ . '/../../templates/header.php';
         </div>
 
         <div class="row g-4">
-            <!-- planning des rendez-vous -->
             <div class="col-lg-6">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
@@ -191,7 +189,6 @@ include_once __DIR__ . '/../../templates/header.php';
                 </div>
             </div>
 
-            <!-- dernières évaluations -->
             <div class="col-lg-6">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
@@ -232,7 +229,6 @@ include_once __DIR__ . '/../../templates/header.php';
             </div>
         </div>
 
-        <!-- actions rapides -->
         <div class="row mt-4">
             <div class="col-12">
                 <div class="card border-0 shadow-sm">

@@ -61,7 +61,6 @@ include_once __DIR__ . '/../../templates/header.php';
                                     <i><?= htmlspecialchars(substr($topic['contenu'] ?? '', 0, 150)) . (strlen($topic['contenu'] ?? '') > 150 ? '...' : '') ?></i>
                                 </p>
                                 <div class="mt-auto">
-                                    <!-- Link should eventually go to a detail page, e.g., counsel_detail.php?id=<?= $topic['id'] ?> -->
                                     <a href="#" class="btn btn-sm btn-outline-success disabled">Lire la suite (Bientôt disponible)</a>
                                 </div>
                             </div>

@@ -1239,24 +1239,33 @@ function displayNotifications()
 
     $data = [];
     $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-    $limit = 15;
+    $limit = DEFAULT_ITEMS_PER_PAGE; 
 
     $where = "personne_id = :id";
     $params = [':id' => $employee_id];
     $orderBy = "created_at DESC";
 
-    $paginationResult = paginateResults(TABLE_NOTIFICATIONS, $page, $limit, $where, $orderBy, $params);
+    try {
+        $paginationResult = paginateResults(TABLE_NOTIFICATIONS, $page, $limit, $where, $orderBy, $params);
 
-    $data['notifications'] = $paginationResult['items'];
-    $data['pagination_html'] = renderPagination($paginationResult, "?page={page}");
+        foreach ($paginationResult['items'] as &$notification) {
+        }
+
+        $data['notifications'] = $paginationResult['items'];
+        $data['pagination_html'] = renderPagination($paginationResult, "?page={page}");
+    } catch (Exception $e) {
+        logSystemActivity('error', "Erreur displayNotifications pour user #$employee_id: " . $e->getMessage());
+        flashMessage("Erreur lors du chargement des notifications.", "danger");
+        $data['notifications'] = [];
+        $data['pagination_html'] = '';
+    }
 
     return $data;
 }
 
-function handleMarkNotificationRead($notification_id)
+function handleMarkNotificationRead($notification_id, $employee_id)
 {
     requireRole(ROLE_SALARIE);
-    $employee_id = $_SESSION['user_id'];
 
     $notification_id = filter_var(sanitizeInput($notification_id), FILTER_VALIDATE_INT);
     if (!$notification_id) return false;
@@ -1280,10 +1289,9 @@ function handleMarkNotificationRead($notification_id)
 }
 
 
-function handleMarkAllNotificationsRead()
+function handleMarkAllNotificationsRead($employee_id)
 {
     requireRole(ROLE_SALARIE);
-    $employee_id = $_SESSION['user_id'];
 
     try {
         $updated = updateRow(
@@ -1926,7 +1934,7 @@ function displayCounselPageData()
         $preferredCategoriesResult = fetchAll('utilisateur_interets_conseils', 'personne_id = :user_id', '', 0, 0, [':user_id' => $userId]);
 
         $params = [];
-        $sql = "SELECT id, titre, icone, resume, categorie, contenu FROM conseils"; // Select from 'conseils' table
+        $sql = "SELECT id, titre, icone, resume, categorie, contenu FROM conseils";
 
         if (!empty($preferredCategoriesResult)) {
             $categories = array_column($preferredCategoriesResult, 'categorie_conseil');
@@ -1941,7 +1949,8 @@ function displayCounselPageData()
             }
         }
 
-        $sql .= " ORDER BY categorie, titre"; // Optional ordering
+        $sql .= " ORDER BY categorie, titre";
+
 
         $stmt = executeQuery($sql, $params);
         $counselTopics = $stmt->fetchAll();
@@ -1955,4 +1964,62 @@ function displayCounselPageData()
 
 
     return ['counselTopics' => $counselTopics, 'dbError' => $dbError];
+}
+
+function getNotificationIcon($type)
+{
+    switch ($type) {
+        case 'success':
+            return 'fas fa-check-circle text-success';
+        case 'warning':
+            return 'fas fa-exclamation-triangle text-warning';
+        case 'error':
+        case 'danger':
+            return 'fas fa-times-circle text-danger';
+        case 'info':
+        default:
+            return 'fas fa-info-circle text-info';
+    }
+}
+
+
+function handleNotificationPageActions($action, $employee_id)
+{
+    $csrfToken = $_GET['csrf_token'] ?? null;
+    $redirectUrl = WEBCLIENT_URL . '/modules/employees/notifications.php';
+
+    if (!validateToken($csrfToken)) {
+        flashMessage("Erreur de sécurité.", "danger");
+        redirectTo($redirectUrl);
+        return;
+    }
+
+    switch ($action) {
+        case 'mark_read_and_redirect':
+            $notification_id = isset($_GET['id']) ? filter_var($_GET['id'], FILTER_VALIDATE_INT) : null;
+            if ($notification_id) {
+                $notification = fetchOne(TABLE_NOTIFICATIONS, 'id = :id AND personne_id = :pid', [':id' => $notification_id, ':pid' => $employee_id]);
+                if ($notification) {
+                    handleMarkNotificationRead($notification_id, $employee_id);
+                    if (!empty($notification['lien'])) {
+                        redirectTo($notification['lien']);
+                    } else {
+                        redirectTo($redirectUrl);
+                    }
+                } else {
+                    flashMessage("Notification non trouvée.", "warning");
+                    redirectTo($redirectUrl);
+                }
+            } else {
+                flashMessage("ID de notification manquant.", "danger");
+                redirectTo($redirectUrl);
+            }
+            break;
+
+        case 'mark_all_read':
+            handleMarkAllNotificationsRead($employee_id);
+            flashMessage("Toutes les notifications ont été marquées comme lues.", "success");
+            redirectTo($redirectUrl);
+            break;
+    }
 }

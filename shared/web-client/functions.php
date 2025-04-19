@@ -61,12 +61,36 @@ function sanitizeInput($input)
     return $input;
 }
 
-/**
- * Génère le titre de la page en ajoutant optionnellement un titre spécifique
- * 
- * @param string $title Titre spécifique de la page
- * @return string Titre complet formaté
- */
+
+function timeAgo($time)
+{
+    $time_difference = time() - $time;
+
+    if ($time_difference < 1) {
+        return 'à l\'instant';
+    }
+    $condition = array(
+        12 * 30 * 24 * 60 * 60 =>  'an',
+        30 * 24 * 60 * 60       =>  'mois',
+        24 * 60 * 60            =>  'jour',
+        60 * 60                 =>  'heure',
+        60                      =>  'minute',
+        1                       =>  'seconde'
+    );
+
+    foreach ($condition as $secs => $str) {
+        $d = $time_difference / $secs;
+
+        if ($d >= 1) {
+            $t = round($d);
+            $plural = ($t > 1 && $str !== 'mois') ? 's' : '';
+            return 'il y a ' . $t . ' ' . $str . $plural;
+        }
+    }
+    return 'à l\'instant';
+}
+
+
 function generatePageTitle($title = '')
 {
     if ($title) {
@@ -75,12 +99,6 @@ function generatePageTitle($title = '')
     return APP_NAME;
 }
 
-/**
- * Redirige l'utilisateur vers l'URL spécifiée
- *
- * @param string $url URL de destination
- * @return void
- */
 function redirectTo($url)
 {
     session_write_close();
@@ -89,33 +107,17 @@ function redirectTo($url)
     exit;
 }
 
-/**
- * Récupère les données du formulaire POST avec nettoyage
- * 
- * @return array Données du formulaire nettoyées
- */
 function getFormData()
 {
     return sanitizeInput($_POST);
 }
 
-/**
- * Récupère et nettoie les paramètres de la requête GET
- *
- * @return array Les paramètres GET nettoyés
- */
+
 function getQueryData()
 {
     return sanitizeInput($_GET);
 }
 
-/**
- * Enregistre un ou plusieurs messages temporaires en session
- * 
- * @param string|array $message Contenu du message ou tableau de messages
- * @param string $type Type de message (success, danger, warning, info)
- * @return void
- */
 function flashMessage($message, $type = 'success')
 {
     if (!isset($_SESSION['flash_messages'])) {
@@ -239,7 +241,7 @@ function getServiceIcon($type)
             return 'fas fa-tools';
         case 'consultation':
             return 'fas fa-user-md';
-        case 'evenement': // Keep consistent with the function removed from services.php
+        case 'evenement':
             return 'fas fa-calendar-alt';
         case 'autre':
         default:
@@ -422,4 +424,3 @@ function handleClientCsrfFailureRedirect($actionDescription = 'action', $redirec
     );
     redirectTo($redirectUrl);
 }
-
