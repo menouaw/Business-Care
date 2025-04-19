@@ -1,7 +1,5 @@
 <?php
-// API pour la gestion du profil client
 
-// vérification de l'authentification
 if (!$isAuthenticated) {
     http_response_code(401);
     echo json_encode([
@@ -11,7 +9,6 @@ if (!$isAuthenticated) {
     exit;
 }
 
-// récupérer l'id du client (extrait du jeton JWT en production)
 $clientId = isset($_GET['client_id']) ? intval($_GET['client_id']) : null;
 if (!$clientId) {
     http_response_code(400);
@@ -22,20 +19,16 @@ if (!$clientId) {
     exit;
 }
 
-// determine l'action a effectuer en fonction de la methode HTTP
 switch ($_SERVER['REQUEST_METHOD']) {
     case 'GET':
-        // récupérer le profil du client
         getClientProfile($clientId);
         break;
         
     case 'PUT':
-        // mettre à jour le profil du client
         updateClientProfile($clientId);
         break;
         
     case 'OPTIONS':
-        // répondre aux requêtes OPTIONS (pre-flight CORS)
         http_response_code(200);
         break;
         
@@ -48,20 +41,10 @@ switch ($_SERVER['REQUEST_METHOD']) {
         break;
 }
 
-/**
- * Récupère le profil complet d'un client
- * 
- * Cette fonction renvoie toutes les informations du profil du client, 
- * y compris ses préférences et les informations de son entreprise si applicable.
- * 
- * @param int $clientId L'ID du client dont on récupère le profil
- * @return void Envoie une réponse JSON avec les données du profil
- */
 function getClientProfile($clientId) {
     $pdo = getDbConnection();
     
     try {
-        // Vérifier que la personne est bien un client
         $stmt = $pdo->prepare("SELECT p.*, r.nom as role_nom
                               FROM personnes p 
                               JOIN roles r ON p.role_id = r.id
@@ -78,10 +61,8 @@ function getClientProfile($clientId) {
             return;
         }
         
-        // Masquer le mot de passe
         unset($client['mot_de_passe']);
         
-        // Récupérer les informations de l'entreprise si rattaché
         $company = null;
         if ($client['entreprise_id']) {
             $stmt = $pdo->prepare("SELECT * FROM entreprises WHERE id = ?");
@@ -89,10 +70,8 @@ function getClientProfile($clientId) {
             $company = $stmt->fetch(PDO::FETCH_ASSOC);
         }
         
-        // Récupérer les préférences utilisateur
         $preferences = json_decode($client['preferences'] ?? '{}', true);
         
-        // Construire la réponse
         echo json_encode([
             'error' => false,
             'client' => $client,
@@ -108,20 +87,10 @@ function getClientProfile($clientId) {
     }
 }
 
-/**
- * Met à jour le profil d'un client
- * 
- * Cette fonction permet au client de mettre à jour ses informations personnelles
- * et ses préférences (mais pas son rôle ou son statut).
- * 
- * @param int $clientId L'ID du client dont le profil est mis à jour
- * @return void Envoie une réponse JSON indiquant le succès ou l'échec
- */
 function updateClientProfile($clientId) {
     $pdo = getDbConnection();
     
     try {
-        // vérifier que la personne est bien un client
         $stmt = $pdo->prepare("SELECT id FROM personnes WHERE id = ? AND role_id = 3");
         $stmt->execute([$clientId]);
         
@@ -134,7 +103,6 @@ function updateClientProfile($clientId) {
             return;
         }
         
-        // récupérer les données envoyées
         $data = json_decode(file_get_contents('php://input'), true);
         
         if (empty($data)) {
@@ -146,13 +114,11 @@ function updateClientProfile($clientId) {
             return;
         }
         
-        // champs autorisés à être modifiés par le client
         $allowedFields = [
             'nom', 'prenom', 'email', 'telephone', 'adresse', 
             'code_postal', 'ville', 'photo_url'
         ];
         
-        // construire la requête de mise à jour
         $updateFields = [];
         $params = [];
         
@@ -163,7 +129,6 @@ function updateClientProfile($clientId) {
             }
         }
         
-        // vérifier si une nouvelle adresse email est déjà utilisée
         if (isset($data['email'])) {
             $stmt = $pdo->prepare("SELECT id FROM personnes WHERE email = ? AND id != ?");
             $stmt->execute([$data['email'], $clientId]);
@@ -178,16 +143,13 @@ function updateClientProfile($clientId) {
             }
         }
         
-        // mettre à jour les préférences si elles sont fournies
         if (isset($data['preferences']) && is_array($data['preferences'])) {
             $updateFields[] = "preferences = ?";
             $params[] = json_encode($data['preferences']);
         }
         
-        // ajouter le timestamp de mise à jour
         $updateFields[] = "updated_at = NOW()";
         
-        // s'il n'y a rien à mettre à jour
         if (empty($updateFields)) {
             http_response_code(400);
             echo json_encode([
@@ -197,8 +159,7 @@ function updateClientProfile($clientId) {
             return;
         }
         
-        // exécuter la mise à jour
-        $params[] = $clientId; // pour la clause WHERE
+        $params[] = $clientId;
         $sql = "UPDATE personnes SET " . implode(', ', $updateFields) . " WHERE id = ?";
         $stmt = $pdo->prepare($sql);
         

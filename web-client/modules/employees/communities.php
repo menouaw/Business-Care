@@ -30,6 +30,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             case 'post_message':
                 if ($posted_community_id) {
                     $message_content = $_POST['message'] ?? null;
+                    if (empty(trim($message_content))) {
+                        flashMessage("Le message ne peut pas être vide.", "danger");
+                        break;
+                    }
+                    if (strlen($message_content) > 1000) {
+                        flashMessage("Le message ne peut pas dépasser 1000 caractères.", "danger");
+                        break;
+                    }
                     handleNewCommunityPost($posted_community_id, $current_employee_id, $message_content);
                 } else {
                     flashMessage("ID de communauté manquant pour poster un message.", "danger");
@@ -104,7 +112,7 @@ include_once __DIR__ . '/../../templates/header.php';
                 </div>
             </div>
 
-            <div class="card border-0 shadow-sm mb-4"> 
+            <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-white">
                     <h5 class="mb-0">Poster un message</h5>
                 </div>
@@ -187,7 +195,6 @@ include_once __DIR__ . '/../../templates/header.php';
                                     </div>
                                     <p class="card-text text-muted flex-grow-1"><?= nl2br(htmlspecialchars($community['description'] ?? 'Pas de description.')) ?></p>
                                     <div class="mt-auto d-flex justify-content-between align-items-center">
-                                        <!-- Option 1: Link to detail page -->
                                         <a href="<?= WEBCLIENT_URL ?>/modules/employees/communities.php?id=<?= $community['id'] ?>" class="btn btn-sm btn-outline-primary">
                                             Voir / Rejoindre
                                         </a>

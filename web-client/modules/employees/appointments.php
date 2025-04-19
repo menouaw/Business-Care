@@ -115,7 +115,6 @@ include_once __DIR__ . '/../../templates/header.php';
                                     </div>
                                     <div class="col-md-3 col-lg-3 text-md-end">
                                         <?php if (in_array($rdv['statut'], APPOINTMENT_CANCELABLE_STATUSES)) : ?>
-                                            <!-- Formulaire pour l'annulation -->
                                             <form action="<?= WEBCLIENT_URL ?>/modules/employees/appointments.php" method="POST" class="d-inline">
                                                 <input type="hidden" name="reservation_id" value="<?= $rdv['id'] ?>">
                                                 <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
@@ -124,7 +123,6 @@ include_once __DIR__ . '/../../templates/header.php';
                                                 </button>
                                             </form>
                                         <?php elseif ($rdv['statut'] === 'termine') : ?>
-                                            <!-- Optionnel: Lien pour évaluer la prestation -->
                                             <a href="<?= WEBCLIENT_URL ?>/evaluer-prestation.php?prestation_id=<?= $rdv['prestation_id'] ?>&rdv_id=<?= $rdv['id'] ?>" class="btn btn-sm btn-outline-warning">
                                                 <i class="fas fa-star me-1"></i> Évaluer
                                             </a>

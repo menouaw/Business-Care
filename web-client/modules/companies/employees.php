@@ -68,7 +68,6 @@ include_once __DIR__ . '/../../templates/header.php';
             </div>
         </div>
 
-        <!-- Barre de recherche et filtres -->
         <form method="get" action="employees.php" class="mb-4">
             <input type="hidden" name="action" value="list">
             <div class="row g-2">

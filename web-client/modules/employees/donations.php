@@ -43,7 +43,6 @@ include_once __DIR__ . '/../../templates/header.php';
         <?php echo displayFlashMessages(); ?>
 
         <div class="row g-5">
-            <!-- Formulaire de Don -->
             <div class="col-lg-5">
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-primary text-white">

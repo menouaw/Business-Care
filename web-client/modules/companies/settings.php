@@ -101,7 +101,6 @@ include_once __DIR__ . '/../../templates/header.php';
             </div>
         </div>
 
-        <!-- Section Mon Profil -->
         <div class="col-lg-6">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-header bg-white">
