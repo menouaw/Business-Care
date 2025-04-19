@@ -60,9 +60,14 @@ include_once __DIR__ . '/../../templates/header.php';
                                 <p class="mb-1 ms-4"><?= nl2br(htmlspecialchars($notif['message'] ?? '')) ?></p>
                                 <div class="d-flex justify-content-end align-items-center mt-2">
                                     <?php if (!empty($notif['lien'])) : ?>
-                                        <a href="notifications.php?action=mark_read_and_redirect&id=<?= $notif['id'] ?>&csrf_token=<?= $csrfToken ?>" class="btn btn-sm btn-outline-primary me-2">
-                                            <i class="fas fa-eye me-1"></i> Voir
-                                        </a>
+                                        <form action="notifications.php" method="post" class="d-inline">
+                                            <input type="hidden" name="action" value="mark_read_and_redirect">
+                                            <input type="hidden" name="id" value="<?= $notif['id'] ?>">
+                                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                                            <button type="submit" class="btn btn-sm btn-outline-primary me-2">
+                                                <i class="fas fa-eye me-1"></i> Voir
+                                            </button>
+                                        </form>
                                     <?php endif; ?>
                                     <?php /* if (!$notif['lu']) : ?>
                                     <?php endif; */ ?>
