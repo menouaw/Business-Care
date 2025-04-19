@@ -3,27 +3,17 @@ require_once '../../includes/page_functions/modules/appointments.php';
 
 requireRole(ROLE_ADMIN);
 
-$filterData = getQueryData([
-    'page' => 1, 
-    'search' => '', 
-    'status' => '', 
-    'type' => '', 
-    'prestationId' => 0, 
-    'startDate' => '', 
-    'endDate' => '', 
-    'action' => '', 
-    'id' => 0
-]);
+$queryData = getQueryData();
 
-$page = $filterData['page'];
-$search = $filterData['search'];
-$status = $filterData['status'];
-$type = $filterData['type'];
-$prestationId = $filterData['prestationId'];
-$startDate = $filterData['startDate'];
-$endDate = $filterData['endDate'];
-$action = $filterData['action'];
-$id = $filterData['id'];
+$page = $queryData['page'] ?? 1;
+$search = $queryData['search'] ?? '';
+$status = $queryData['status'] ?? '';
+$type = $queryData['type'] ?? '';
+$prestationId = $queryData['prestationId'] ?? 0;
+$startDate = $queryData['startDate'] ?? '';
+$endDate = $queryData['endDate'] ?? '';
+$action = $queryData['action'] ?? '';
+$id = $queryData['id'] ?? 0;
 
 if ($action === 'delete' && $id > 0) {
     if (!isset($_GET['csrf_token']) || !validateToken($_GET['csrf_token'])) {
@@ -32,7 +22,7 @@ if ($action === 'delete' && $id > 0) {
         $result = appointmentsDelete($id);
         flashMessage($result['message'], $result['success'] ? 'success' : 'danger');
     }
-    $redirectParams = array_filter($filterData, function($key) { 
+    $redirectParams = array_filter($queryData, function($key) { 
         return !in_array($key, ['action', 'id', 'practitionerId', 'personId']);
     }, ARRAY_FILTER_USE_KEY);
     redirectTo(WEBADMIN_URL . '/modules/appointments/' . (!empty($redirectParams) ? '?' . http_build_query($redirectParams) : ''));
@@ -133,7 +123,6 @@ include_once '../../templates/header.php';
                                         <th>Patient</th>
                                         <th>Praticien</th>
                                         <th>Service</th>
-                                        <th>Duree</th>
                                         <th>Type</th>
                                         <th>Lieu</th>
                                         <th>Statut</th>
@@ -171,7 +160,6 @@ include_once '../../templates/header.php';
                                                     N/A
                                                 <?php endif; ?>
                                             </td>
-                                            <td><?php echo htmlspecialchars($appointment['duree']); ?> min</td>
                                             <td><?php echo htmlspecialchars(ucfirst($appointment['type_rdv'])); ?></td>
                                             <td><?php echo htmlspecialchars($appointment['lieu'] ?: '-'); ?></td>
                                             <td><?php echo getStatusBadge($appointment['statut']); ?></td>
@@ -182,7 +170,7 @@ include_once '../../templates/header.php';
                                                 <a href="<?php echo WEBADMIN_URL; ?>/modules/appointments/edit.php?id=<?php echo $appointment['id']; ?>" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="Modifier">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
-                                                <a href="<?php echo WEBADMIN_URL; ?>/modules/appointments/index.php?action=delete&id=<?php echo $appointment['id']; ?>&csrf_token=<?php echo generateToken(); ?>&<?php echo http_build_query(array_filter($filterData, fn($key) => !in_array($key, ['action', 'id', 'practitionerId', 'personId']), ARRAY_FILTER_USE_KEY)); ?>" 
+                                                <a href="<?php echo WEBADMIN_URL; ?>/modules/appointments/index.php?action=delete&id=<?php echo $appointment['id']; ?>&csrf_token=<?php echo generateToken(); ?>&<?php echo http_build_query(array_filter($queryData, fn($key) => !in_array($key, ['action', 'id', 'practitionerId', 'personId']), ARRAY_FILTER_USE_KEY)); ?>" 
                                                    class="btn btn-sm btn-danger btn-delete" 
                                                    data-bs-toggle="tooltip" 
                                                    title="Supprimer">
@@ -202,7 +190,7 @@ include_once '../../templates/header.php';
                             'totalItems' => $totalAppointments,
                             'itemsPerPage' => $itemsPerPage
                         ];
-                        $urlParams = $filterData; 
+                        $urlParams = $queryData; 
                         unset($urlParams['page'], $urlParams['action'], $urlParams['id'], $urlParams['practitionerId'], $urlParams['personId']);
                         $urlPattern = WEBADMIN_URL . '/modules/appointments/index.php?' . http_build_query(array_filter($urlParams)) . '&page={page}';
                         ?>
