@@ -1,20 +1,12 @@
 <?php
 
-/**
- * page d'accueil
- *
- * cette page présente le tableau de bord principal et un aperçu des fonctionnalités principales
- */
 
 require_once __DIR__ . '/includes/init.php';
 
-// vérifier si l'utilisateur est connecté
 $isLoggedIn = isAuthenticated();
 
-// générer le titre de la page
 $pageTitle = "Business Care - Bien-être et cohésion en milieu professionnel";
 
-// déterminer le rôle de l'utilisateur connecté s'il y en a un
 $userRole = null;
 if ($isLoggedIn) {
     if (isEntrepriseUser()) {
@@ -26,7 +18,6 @@ if ($isLoggedIn) {
     }
 }
 
-// Récupérer les services actifs pour la section offres
 $available_services_for_pricing = [];
 try {
     $stmt = executeQuery("SELECT id, nom, description FROM services WHERE actif = 1 ORDER BY ordre");
@@ -52,15 +43,9 @@ $serviceCategories = [
         'description' => 'Formations sur la gestion du stress, le leadership, la communication, l\'ergonomie et autres compétences clés.',
         'icon' => 'fa-chalkboard-teacher'
     ]
-    // Ajouter d'autres catégories ici si nécessaire
-    // [
-    //     'title' => 'Engagement Associatif',
-    //     'description' => 'Facilitez les dons financiers, matériels et le bénévolat de vos salariés auprès de nos associations partenaires.',
-    //     'icon' => 'fa-hand-holding-heart'
-    // ]
+
 ];
 
-// inclure l'en-tête
 include_once __DIR__ . '/templates/header.php';
 ?>
 
@@ -125,11 +110,9 @@ include_once __DIR__ . '/templates/header.php';
                 <?php if (!empty($available_services_for_pricing)): ?>
                     <?php foreach ($available_services_for_pricing as $index => $service): ?>
                         <?php
-                        // Logique simple pour déterminer la carte populaire ou d'autres styles
-                        $isPopular = ($index === 1); // Marquer le deuxième service comme populaire (exemple)
-                        $cardClass = $isPopular ? 'pricing-card border-primary' : 'pricing-card';
-                        $buttonClass = $isPopular ? 'btn btn-primary' : 'btn btn-outline-primary';
-                        $badge = $isPopular ? '<span class="badge bg-warning text-dark">Populaire</span>' : '';
+                        $cardClass = 'pricing-card';
+                        $buttonClass = 'btn btn-outline-primary';
+                        $badge = '';
 
                         // Placeholder pour le prix et les caractéristiques
                         // TODO: Remplacer par une logique de récupération des prix/caractéristiques réels si nécessaire
@@ -173,7 +156,6 @@ include_once __DIR__ . '/templates/header.php';
                             <div class="card h-100 <?php echo $cardClass; ?>">
                                 <div class="card-header text-center bg-primary text-white">
                                     <h3 class="my-0"><?php echo htmlspecialchars($service['nom']); ?></h3>
-                                    <?php echo $badge; ?>
                                 </div>
                                 <div class="card-body d-flex flex-column">
                                     <h4 class="card-title pricing-card-title text-center"><?php echo $pricingText; ?></h4>

@@ -2,12 +2,6 @@
 require_once 'config.php';
 require_once 'db.php';
 
-define('DEFAULT_ITEMS_PER_PAGE', 10);
-define('DEFAULT_DATE_FORMAT', 'd/m/Y H:i');
-define('DEFAULT_CURRENCY', '€');
-define('INVOICE_PREFIX', 'F');
-
-
 /**
  * Formate une date selon un format spécifié.
  *
@@ -89,7 +83,6 @@ function generatePageTitle($title = '')
  */
 function redirectTo($url)
 {
-    // S'assurer que toutes les données de session sont écrites avant de rediriger
     session_write_close();
 
     header('Location: ' . $url);
@@ -126,41 +119,32 @@ function getQueryData()
 function flashMessage($message, $type = 'success')
 {
     if (!isset($_SESSION['flash_messages'])) {
-        $_SESSION['flash_messages'] = []; // Initialise comme tableau s'il n'existe pas
+        $_SESSION['flash_messages'] = [];
     }
-    // Ajoute le nouveau message au tableau
     $_SESSION['flash_messages'][] = [
         'message' => $message,
         'type' => $type
     ];
 }
 
-/**
- * Récupère TOUS les messages flash enregistrés en session et les supprime
- * 
- * @return array Tableau des messages flash ou tableau vide si aucun message
- */
+
 function getFlashMessages()
-{ // Renommée en getFlashMessages (pluriel)
-    $messages = $_SESSION['flash_messages'] ?? []; // Récupère le tableau ou un tableau vide
+{
+    $messages = $_SESSION['flash_messages'] ?? [];
     if (!empty($messages)) {
-        unset($_SESSION['flash_messages']); // Supprime la clé de session
+        unset($_SESSION['flash_messages']);
     }
     return $messages;
 }
 
-/**
- * Affiche les messages flash sous forme d'alertes Bootstrap
- * NOTE: Cette fonction est maintenant redondante si header.php affiche déjà les messages.
- *       Elle est conservée pour compatibilité potentielle mais ne devrait plus être appelée directement.
- * 
- * @return string HTML des alertes ou chaîne vide si aucun message
- */
+
 function displayFlashMessages()
 {
-    // Restaurer le code original pour afficher les messages
-    $flashMessages = getFlashMessages(); // Utilise la nouvelle fonction
-    if (empty($flashMessages)) return '';
+    $flashMessages = $_SESSION['flash_messages'] ?? [];
+    if (empty($flashMessages)) {
+        return '';
+    }
+
 
     $output = '';
     foreach ($flashMessages as $flashMessage) {
@@ -178,7 +162,7 @@ function displayFlashMessages()
         $alertClass = $alertTypes[$type] ?? 'alert-info';
 
         $output .= '<div class="alert ' . $alertClass . ' alert-dismissible fade show" role="alert">'
-            . htmlspecialchars($message) // Sécurité: échapper le message ici
+            . htmlspecialchars($message)
             . '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>'
             . '</div>';
     }
@@ -243,24 +227,34 @@ function getStatusBadge($status)
     return '<span class="badge bg-' . $class . '">' . ucfirst($status) . '</span>';
 }
 
-/**
- * Récupère et pagine les résultats d'une requête sur une table
- *
- * @param string $table Nom de la table à interroger
- * @param int $page Numéro de la page courante
- * @param int $perPage Nombre d'éléments à afficher par page
- * @param string $where Clause WHERE pour filtrer les résultats
- * @param string $orderBy Clause ORDER BY pour trier les résultats
- * @return array Tableau associatif contenant les éléments paginés et les métadonnées
- */
-function paginateResults($table, $page, $perPage = 10, $where = '', $orderBy = '')
+
+function getServiceIcon($type)
 {
-    $totalItems = countTableRows($table, $where);
+    switch (strtolower($type)) {
+        case 'conference':
+            return 'fas fa-chalkboard-teacher';
+        case 'webinar':
+            return 'fas fa-desktop';
+        case 'atelier':
+            return 'fas fa-tools';
+        case 'consultation':
+            return 'fas fa-user-md';
+        case 'evenement': // Keep consistent with the function removed from services.php
+            return 'fas fa-calendar-alt';
+        case 'autre':
+        default:
+            return 'fas fa-concierge-bell';
+    }
+}
+
+function paginateResults($table, $page, $perPage = DEFAULT_ITEMS_PER_PAGE, $where = '', $orderBy = '', $params = [])
+{
+    $totalItems = countTableRows($table, $where, $params);
     $totalPages = ceil($totalItems / $perPage);
     $page = max(1, min($page, $totalPages > 0 ? $totalPages : 1));
     $offset = ($page - 1) * $perPage;
 
-    $items = fetchAll($table, $where, $orderBy, $perPage, $offset);
+    $items = fetchAll($table, $where, $orderBy, $perPage, $offset, $params);
 
     return [
         'items' => $items,
@@ -271,25 +265,17 @@ function paginateResults($table, $page, $perPage = 10, $where = '', $orderBy = '
     ];
 }
 
-/**
- * Génère et renvoie une interface de pagination au format Bootstrap
- *
- * @param array $pagination Tableau associatif issu de paginateResults()
- * @param string $urlPattern Motif d'URL incluant le placeholder "{page}"
- * @return string Le code HTML de l'interface de pagination
- */
+
 function renderPagination($pagination, $urlPattern)
 {
     if ($pagination['totalPages'] <= 1) return '';
 
     $html = '<nav aria-label="Page navigation"><ul class="pagination">';
 
-    // Bouton précédent
     $prevDisabled = $pagination['currentPage'] <= 1 ? ' disabled' : '';
     $prevUrl = str_replace('{page}', $pagination['currentPage'] - 1, $urlPattern);
     $html .= '<li class="page-item' . $prevDisabled . '"><a class="page-link" href="' . $prevUrl . '">Précédent</a></li>';
 
-    // Numéros de page
     $startPage = max(1, $pagination['currentPage'] - 2);
     $endPage = min($pagination['totalPages'], $pagination['currentPage'] + 2);
 
@@ -299,7 +285,6 @@ function renderPagination($pagination, $urlPattern)
         $html .= '<li class="page-item' . $active . '"><a class="page-link" href="' . $url . '">' . $i . '</a></li>';
     }
 
-    // Bouton suivant
     $nextDisabled = $pagination['currentPage'] >= $pagination['totalPages'] ? ' disabled' : '';
     $nextUrl = str_replace('{page}', $pagination['currentPage'] + 1, $urlPattern);
     $html .= '<li class="page-item' . $nextDisabled . '"><a class="page-link" href="' . $nextUrl . '">Suivant</a></li>';
@@ -309,18 +294,7 @@ function renderPagination($pagination, $urlPattern)
     return $html;
 }
 
-/**
- * Récupère et pagine les prestations disponibles.
- *
- * Cette fonction interroge la table "prestations" en appliquant des filtres optionnels sur le type et la catégorie,
- * puis retourne les résultats paginés triés par ordre alphabétique sur le nom.
- *
- * @param string $type Filtre optionnel pour le type de prestation.
- * @param string $categorie Filtre optionnel pour la catégorie de prestation.
- * @param int $page Numéro de la page à récupérer.
- * @param int $perPage Nombre d'éléments par page, par défaut défini par la constante DEFAUT_ITEMS_PER_PAGE.
- * @return array Tableau contenant les prestations paginées ainsi que les informations de pagination.
- */
+
 function getPrestations($type = '', $categorie = '', $page = 1, $perPage = DEFAULT_ITEMS_PER_PAGE)
 {
     $where = [];
@@ -338,36 +312,33 @@ function getPrestations($type = '', $categorie = '', $page = 1, $perPage = DEFAU
 
     $whereClause = !empty($where) ? implode(' AND ', $where) : '';
 
-    return paginateResults('prestations', $page, $perPage, $whereClause, 'nom ASC');
+    return paginateResults('prestations', $page, $perPage, $whereClause, 'nom ASC', $params);
 }
 
-/**
- * Vérifie si une date et heure sont disponibles pour une réservation
- * 
- * @param string $dateHeure Date et heure au format 'Y-m-d H:i:s'
- * @param int $duree Durée en minutes
- * @param int $prestationId ID de la prestation
- * @return bool True si disponible, false sinon
- */
+
 function isTimeSlotAvailable($dateHeure, $duree, $prestationId)
 {
     $finRdv = date('Y-m-d H:i:s', strtotime($dateHeure) + ($duree * 60));
 
     $sql = "SELECT COUNT(id) FROM rendez_vous 
-            WHERE prestation_id = :prestation_id
+            WHERE prestation_id = ?
             AND statut NOT IN ('annule', 'termine')
             AND (
-                (date_rdv <= :debut AND DATE_ADD(date_rdv, INTERVAL duree MINUTE) > :debut)
+                (date_rdv <= ? AND DATE_ADD(date_rdv, INTERVAL duree MINUTE) > ?)
                 OR
-                (date_rdv < :fin AND DATE_ADD(date_rdv, INTERVAL duree MINUTE) >= :fin)
+                (date_rdv < ? AND DATE_ADD(date_rdv, INTERVAL duree MINUTE) >= ?)
                 OR
-                (date_rdv >= :debut AND DATE_ADD(date_rdv, INTERVAL duree MINUTE) <= :fin)
+                (date_rdv >= ? AND DATE_ADD(date_rdv, INTERVAL duree MINUTE) <= ?)
             )";
 
     $params = [
-        'prestation_id' => $prestationId,
-        'debut' => $dateHeure,
-        'fin' => $finRdv
+        $prestationId,
+        $dateHeure,
+        $dateHeure,
+        $finRdv,
+        $finRdv,
+        $dateHeure,
+        $finRdv
     ];
 
     $stmt = executeQuery($sql, $params);
@@ -400,3 +371,55 @@ function generateInvoiceNumber()
 
     return INVOICE_PREFIX . "-$date-$nextId";
 }
+
+/**
+ * Formate un nombre en devise (euros).
+ *
+ * @param float|null $amount Le montant.
+ * @param string $currencySymbol Le symbole de la devise.
+ * @return string Le montant formaté ou 'N/A' si null.
+ */
+function formatCurrency($amount, $currencySymbol = '€')
+{
+    if ($amount === null || !is_numeric($amount)) {
+        return 'N/A';
+    }
+    return number_format($amount, 2, ',', ' ') . ' ' . $currencySymbol;
+}
+
+/**
+ * Formate un objet DateInterval en une chaîne de caractères représentant le nombre total de mois.
+ *
+ * @param DateInterval|null $interval L'intervalle de temps.
+ * @return string La durée formatée en mois (ex: "36 mois") ou "-" si null/invalide.
+ */
+function formatDuration($interval)
+{
+    if (!$interval instanceof DateInterval) {
+        return '-';
+    }
+    $totalMonths = ($interval->y * 12) + $interval->m;
+    return $totalMonths . ' mois';
+}
+
+/**
+ * Gère la redirection en cas d'échec de validation CSRF pour le client.
+ * Log l'échec, affiche un message flash et redirige vers une page par défaut (ex: index).
+ *
+ * @param string $actionDescription Description de l'action tentée (ex: 'soumission formulaire').
+ * @param string $redirectUrl URL de redirection par défaut.
+ * @return void
+ */
+function handleClientCsrfFailureRedirect($actionDescription = 'action', $redirectUrl = null)
+{
+    $redirectUrl = $redirectUrl ?? WEBCLIENT_URL . '/index.php';
+    flashMessage('Jeton de sécurité invalide ou expiré. Veuillez réessayer.', 'danger');
+    $requestMethod = $_SERVER['REQUEST_METHOD'] ?? 'UNKNOWN';
+    logSecurityEvent(
+        $_SESSION['user_id'] ?? null,
+        'csrf_failure',
+        "[SECURITY FAILURE] Tentative de {$actionDescription} avec jeton invalide via {$requestMethod} sur web-client"
+    );
+    redirectTo($redirectUrl);
+}
+

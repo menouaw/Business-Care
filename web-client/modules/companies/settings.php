@@ -8,98 +8,41 @@ requireRole(ROLE_ENTREPRISE);
 $entrepriseId = $_SESSION['user_entreprise'];
 $userId = $_SESSION['user_id'];
 
-$companyDetails = getCompanyDetails($entrepriseId);
-if (!$companyDetails) {
-    flashMessage("Impossible de récupérer les informations de l'entreprise.", 'danger');
-    redirectTo('index.php');
-}
-
-$currentUser = getUserById($userId);
-if (!$currentUser) {
-    flashMessage("Impossible de récupérer les informations de l'utilisateur.", 'danger');
-    redirectTo('index.php'); // Ou une page d'erreur
-}
-
 $profileErrors = [];
 $passwordErrors = [];
-$profileSubmittedData = [
-    'nom' => $currentUser['nom'] ?? '',
-    'prenom' => $currentUser['prenom'] ?? '',
-    'email' => $currentUser['email'] ?? ''
-];
+$profileSubmittedData = [];
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!verifyCsrfToken()) {
-        flashMessage('Erreur de sécurité (jeton CSRF invalide).', 'danger');
-        redirectTo('settings.php'); // Recharger la page pour obtenir un nouveau token
+if (isset($_POST['update_profile'])) {
+    $result = processProfileUpdateRequest($_POST, $userId);
+    if ($result['success']) {
+        $successMessage = urlencode('Profil mis à jour avec succès.');
+        redirectTo('settings.php?profile_success=' . $successMessage);
+        exit;
+    } else {
+        $profileErrors = $result['errors'];
+        $profileSubmittedData = $result['submittedData'];
     }
-
-    if (isset($_POST['update_profile'])) { // Identifier le formulaire soumis
-        $profileSubmittedData = sanitizeInput($_POST);
-
-        // Validation
-        if (empty($profileSubmittedData['nom'])) {
-            $profileErrors[] = "Le nom est obligatoire.";
-        }
-        if (empty($profileSubmittedData['prenom'])) {
-            $profileErrors[] = "Le prénom est obligatoire.";
-        }
-        if (empty($profileSubmittedData['email']) || !filter_var($profileSubmittedData['email'], FILTER_VALIDATE_EMAIL)) {
-            $profileErrors[] = "Une adresse email valide est obligatoire.";
-        }
-
-        if (empty($profileErrors)) {
-            // Préparer les données pour la mise à jour
-            $updateData = [
-                'nom' => $profileSubmittedData['nom'],
-                'prenom' => $profileSubmittedData['prenom'],
-                'email' => $profileSubmittedData['email']
-            ];
-            $updateSuccess = updateUserProfile($userId, $updateData);
-
-            if ($updateSuccess) {
-                $_SESSION['user_name'] = $profileSubmittedData['prenom'] . ' ' . $profileSubmittedData['nom'];
-                $_SESSION['user_email'] = $profileSubmittedData['email'];
-
-                $successMessage = urlencode('Profil mis à jour avec succès.');
-                $redirectUrl = 'settings.php?profile_success=' . $successMessage;
-                redirectTo($redirectUrl);
-            } else {
-                $profileErrors[] = "Erreur lors de la mise à jour du profil.";
-            }
-        }
-    } elseif (isset($_POST['change_password'])) { // Identifier le formulaire soumis
-        $passwordData = sanitizeInput($_POST);
-
-        // Validation
-        if (empty($passwordData['current_password'])) {
-            $passwordErrors[] = "Le mot de passe actuel est obligatoire.";
-        }
-        if (empty($passwordData['new_password'])) {
-            $passwordErrors[] = "Le nouveau mot de passe est obligatoire.";
-        }
-        if ($passwordData['new_password'] !== $passwordData['confirm_password']) {
-            $passwordErrors[] = "Les nouveaux mots de passe ne correspondent pas.";
-        }
-        if ($passwordData['current_password'] === $passwordData['new_password']) {
-            $passwordErrors[] = "Le nouveau mot de passe doit être différent de l'ancien.";
-        }
-
-        if (empty($passwordErrors)) {
-            $changeSuccess = changeUserPassword($userId, $passwordData['current_password'], $passwordData['new_password']);
-
-            if ($changeSuccess) {
-
-                $successMessage = urlencode('Mot de passe modifié avec succès.');
-                $redirectUrl = 'settings.php?password_success=' . $successMessage;
-                redirectTo($redirectUrl);
-            } else {
-
-                $passwordErrors[] = "Le mot de passe actuel fourni est incorrect.";
-            }
-        }
+} elseif (isset($_POST['change_password'])) {
+    $result = processPasswordChangeRequest($_POST, $userId);
+    if ($result['success']) {
+        $successMessage = urlencode('Mot de passe modifié avec succès.');
+        redirectTo('settings.php?password_success=' . $successMessage);
+        exit;
+    } else {
+        $passwordErrors = $result['errors'];
     }
 }
+
+$viewData = prepareSettingsViewData($entrepriseId, $userId, $profileSubmittedData);
+
+if (isset($viewData['redirectUrl'])) {
+    redirectTo($viewData['redirectUrl']);
+    exit;
+}
+
+$companyDetails = $viewData['companyDetails'];
+$currentUser = $viewData['currentUser'];
+$profileSubmittedData = $viewData['profileSubmittedData'];
 
 $pageTitle = "Paramètres - Espace Entreprise";
 include_once __DIR__ . '/../../templates/header.php';
@@ -193,7 +136,6 @@ include_once __DIR__ . '/../../templates/header.php';
             </div>
         </div>
 
-        <!-- Section Changer Mot de Passe -->
         <div class="col-lg-6">
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white">
@@ -237,8 +179,7 @@ include_once __DIR__ . '/../../templates/header.php';
                 </div>
                 <div class="card-body">
                     <p class="text-muted">Section à venir pour les préférences de notification, etc.</p>
-                    <?php // TODO: Ajouter formulaire pour les préférences 
-                    ?>
+
                 </div>
             </div>
         </div>

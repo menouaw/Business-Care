@@ -1,88 +1,65 @@
 <?php
 
-/**
- * fonctions pour la gestion des salariés
- *
- * ce fichier contient les fonctions nécessaires pour gérer les salariés des entreprises clientes
- */
 
 require_once __DIR__ . '/../../../includes/init.php';
 
-/**
- * récupère la liste des salariés avec pagination et recherche
- * 
- * @param int|null $company_id identifiant de l'entreprise (null pour tous)
- * @param int $page numéro de page
- * @param int $limit nombre d'éléments par page
- * @param string $search terme de recherche
- * @return array liste des salariés et informations de pagination
- */
 function getEmployeesList($company_id = null, $page = 1, $limit = 5, $search = '')
 {
-    // Sanitize input parameters
     $company_id = sanitizeInput($company_id);
     if ($company_id !== null) {
         $company_id = filter_var($company_id, FILTER_VALIDATE_INT);
     }
-    $page = (int)sanitizeInput($page);
-    $limit = (int)sanitizeInput($limit);
+    $page = max(1, (int)sanitizeInput($page));
+    $limit = max(1, (int)sanitizeInput($limit));
     $search = sanitizeInput($search);
 
-    // Calcul de l'offset pour la pagination
     $offset = ($page - 1) * $limit;
 
-    // Construction de la requête de base
     $query = "SELECT p.id, p.nom, p.prenom, p.email, p.telephone, p.statut, p.photo_url, 
               p.derniere_connexion, e.nom as entreprise_nom 
               FROM personnes p
               LEFT JOIN entreprises e ON p.entreprise_id = e.id
-              WHERE p.role_id = ?";
-    $countQuery = "SELECT COUNT(id) as total FROM personnes WHERE role_id = ?";
-    $params = [ROLE_SALARIE];
+              WHERE p.role_id = :role_id";
+    $countQuery = "SELECT COUNT(p.id) as total FROM personnes p WHERE p.role_id = :role_id";
+    $params = [':role_id' => ROLE_SALARIE];
+    $countParams = [':role_id' => ROLE_SALARIE];
 
-    // Filtre par entreprise si spécifié
     if ($company_id) {
-        $query .= " AND p.entreprise_id = ?";
-        $countQuery .= " AND entreprise_id = ?";
-        $params[] = $company_id;
+        $query .= " AND p.entreprise_id = :company_id";
+        $countQuery .= " AND p.entreprise_id = :company_id";
+        $params[':company_id'] = $company_id;
+        $countParams[':company_id'] = $company_id;
     }
 
-    // Ajout de la condition de recherche si nécessaire
     if (!empty($search)) {
-        $query .= " AND (p.nom LIKE ? OR p.prenom LIKE ? OR p.email LIKE ?)";
-        $countQuery .= " AND (nom LIKE ? OR prenom LIKE ? OR email LIKE ?)";
+        $query .= " AND (p.nom LIKE :search OR p.prenom LIKE :search OR p.email LIKE :search)";
+        $countQuery .= " AND (p.nom LIKE :search OR p.prenom LIKE :search OR p.email LIKE :search)";
         $searchTerm = '%' . $search . '%';
-        $params = array_merge($params, [$searchTerm, $searchTerm, $searchTerm]);
+        $params[':search'] = $searchTerm;
+        $countParams[':search'] = $searchTerm;
     }
 
-    // Ajout de l'ordre et de la limite
-    $query .= " ORDER BY p.nom, p.prenom ASC LIMIT ? OFFSET ?";
-    $params[] = $limit;
-    $params[] = $offset;
+    $query .= " ORDER BY p.nom, p.prenom ASC LIMIT :limit OFFSET :offset";
+    $params[':limit'] = $limit;
+    $params[':offset'] = $offset;
 
-    // Exécution de la requête principale
     $stmt = executeQuery($query, $params);
     $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Pour chaque employé, ajouter le badge de statut
     foreach ($employees as &$employee) {
         if (isset($employee['statut'])) {
             $employee['statut_badge'] = getStatusBadge($employee['statut']);
         }
-        if (isset($employee['derniere_connexion'])) {
-            $employee['derniere_connexion_formatee'] = formatDate($employee['derniere_connexion']);
-        }
+        $employee['derniere_connexion_formatee'] = isset($employee['derniere_connexion']) ? formatDate($employee['derniere_connexion']) : 'Jamais';
     }
 
-    // Calcul du nombre total pour la pagination
-    $countStmt = executeQuery($countQuery, array_slice($params, 0, -2));
+
+    $countStmt = executeQuery($countQuery, $countParams);
     $countResult = $countStmt->fetch(PDO::FETCH_ASSOC);
-    $total = $countResult['total'];
+    $total = $countResult['total'] ?? 0;
 
-    // Calcul des informations de pagination
-    $totalPages = ceil($total / $limit);
+    $totalPages = ($limit > 0) ? ceil($total / $limit) : 0;
 
-    // Préparer les données pour renderPagination
     $paginationData = [
         'currentPage' => $page,
         'totalPages' => $totalPages,
@@ -90,14 +67,14 @@ function getEmployeesList($company_id = null, $page = 1, $limit = 5, $search = '
         'perPage' => $limit
     ];
 
-    // Construction de l'URL pour la pagination (considérer les filtres existants)
-    $urlPattern = "?page={page}";
+    $urlParams = [];
     if ($company_id) {
-        $urlPattern .= "&company_id=" . urlencode($company_id);
+        $urlParams['company_id'] = $company_id;
     }
     if (!empty($search)) {
-        $urlPattern .= "&search=" . urlencode($search);
+        $urlParams['search'] = $search;
     }
+    $urlPattern = "?" . http_build_query($urlParams) . "&page={page}";
 
     return [
         'employees' => $employees,
@@ -111,107 +88,51 @@ function getEmployeesList($company_id = null, $page = 1, $limit = 5, $search = '
     ];
 }
 
-/**
- * récupère les détails d'un salarié
- * 
- * @param int $employee_id identifiant du salarié
- * @return array|false détails du salarié ou false si non trouvé
- */
 function getEmployeeDetails($employee_id)
 {
-    // Validation de l'ID
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
     if (!$employee_id) {
         flashMessage("ID de salarié invalide", "danger");
         return false;
     }
 
-    // Récupération des informations du salarié avec fetchOne
-    $employee = fetchOne('personnes', "id = $employee_id AND role_id = " . ROLE_SALARIE);
+    $employee = fetchOne(TABLE_USERS, "id = :id AND role_id = :role_id", [
+        ':id' => $employee_id,
+        ':role_id' => ROLE_SALARIE
+    ]);
 
     if (!$employee) {
         flashMessage("Salarié non trouvé", "warning");
         return false;
     }
 
-    // Ajouter le badge de statut
     if (isset($employee['statut'])) {
         $employee['statut_badge'] = getStatusBadge($employee['statut']);
     }
 
-    // Formater les dates
-    if (isset($employee['date_naissance'])) {
-        $employee['date_naissance_formatee'] = formatDate($employee['date_naissance'], 'd/m/Y');
-    }
-    if (isset($employee['derniere_connexion'])) {
-        $employee['derniere_connexion_formatee'] = formatDate($employee['derniere_connexion']);
-    }
+    $employee['date_naissance_formatee'] = isset($employee['date_naissance']) ? formatDate($employee['date_naissance'], 'd/m/Y') : 'N/A';
+    $employee['derniere_connexion_formatee'] = isset($employee['derniere_connexion']) ? formatDate($employee['derniere_connexion']) : 'Jamais';
 
-    // Récupération de l'entreprise associée
     if (!empty($employee['entreprise_id'])) {
-        $entreprise = fetchOne('entreprises', "id = " . $employee['entreprise_id']);
-        if ($entreprise) {
-            $employee['entreprise_nom'] = $entreprise['nom'];
-        }
+        $entreprise = fetchOne(TABLE_COMPANIES, "id = :id", [':id' => $employee['entreprise_id']]);
+        $employee['entreprise_nom'] = $entreprise ? $entreprise['nom'] : 'Inconnue';
     }
 
-    // Récupération des préférences utilisateur
-    $preferences = fetchAll('preferences_utilisateurs', "personne_id = " . $employee_id);
-    if (!empty($preferences)) {
-        $employee['preferences'] = $preferences[0];
-    }
+    $preferences = fetchOne(TABLE_USER_PREFERENCES, "personne_id = :id", [':id' => $employee_id]);
+    $employee['preferences'] = $preferences ?: [];
 
     return $employee;
 }
 
-/**
- * met à jour le profil d'un salarié
- * 
- * @param int $employee_id identifiant du salarié
- * @param array $profile_data données du profil à mettre à jour
- * @return bool résultat de la mise à jour
- */
 function updateEmployeeProfile($employee_id, $profile_data)
 {
-    // Validation and sanitization
-    $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
-    $profile_data = sanitizeInput($profile_data);
 
-    if (!$employee_id || empty($profile_data)) {
-        flashMessage("ID de salarié invalide ou données manquantes", "danger");
+    $employee_id = filter_var($employee_id, FILTER_VALIDATE_INT);
+    if (!$employee_id) {
+        error_log("updateEmployeeProfile: ID salarié invalide.");
         return false;
     }
 
-    $validation_errors = [];
-
-    if (isset($profile_data['email']) && !filter_var($profile_data['email'], FILTER_VALIDATE_EMAIL)) {
-        $validation_errors[] = "Format d'email invalide";
-    }
-
-    if (isset($profile_data['telephone'])) {
-        $phone_to_check = $profile_data['telephone'];
-        $is_match = preg_match('/^(0|\+33)[1-9]([-. ]?[0-9]{2}){4}$/', $phone_to_check);
-
-        error_log("Vérification Tel: '$phone_to_check' - Match: " . ($is_match ? 'Oui' : 'Non'));
-
-        if (!$is_match) {
-            $validation_errors[] = "Format de téléphone invalide";
-        }
-    }
-
-    if (isset($profile_data['genre']) && !in_array($profile_data['genre'], ['F', 'M'])) {
-        $validation_errors[] = "La valeur pour le genre doit être 'F' ou 'M'";
-    }
-
-    error_log("Validation errors after checks: " . print_r($validation_errors, true));
-
-    if (!empty($validation_errors)) {
-        error_log("Validation errors detected. Stopping update."); // Log avant arrêt
-        flashMessage("Erreurs de validation: " . implode(", ", $validation_errors), "danger");
-        return false;
-    }
-
-    // Liste des champs autorisés
     $allowedFields = [
         'nom',
         'prenom',
@@ -222,90 +143,75 @@ function updateEmployeeProfile($employee_id, $profile_data)
         'photo_url'
     ];
 
-    // Filtrage des paramètres
     $filteredData = array_intersect_key($profile_data, array_flip($allowedFields));
 
     if (empty($filteredData)) {
-        flashMessage("Aucun champ valide trouvé pour la mise à jour", "warning");
-        return false;
+        error_log("updateEmployeeProfile: Aucune donnée valide fournie pour la mise à jour.");
+        return 0;
+    }
+
+    if (isset($filteredData['email'])) {
+        $existingUser = fetchOne(TABLE_USERS, 'email = :email AND id != :id', [
+            ':email' => $filteredData['email'],
+            ':id' => $employee_id
+        ]);
+        if ($existingUser) {
+            error_log("updateEmployeeProfile: Tentative de mise à jour avec un email déjà utilisé.");
+            flashMessage("L'adresse email fournie est déjà utilisée par un autre compte.", "danger");
+            return false;
+        }
     }
 
     try {
-        // Utilisation de updateRow pour la mise à jour
+        $filteredData['updated_at'] = date('Y-m-d H:i:s');
+
         $result = updateRow(
-            'personnes',
-            array_merge($filteredData, ['updated_at' => date('Y-m-d H:i:s')]),
+            TABLE_USERS,
+            $filteredData,
             "id = :id AND role_id = :role_id",
             ['id' => $employee_id, 'role_id' => ROLE_SALARIE]
         );
 
-        if ($result) {
-            logBusinessOperation($_SESSION['user_id'] ?? null, 'update_employee', "Mise à jour profil salarié #$employee_id");
-            flashMessage("Le profil a été mis à jour avec succès", "success");
-        } else {
-            flashMessage("Aucune mise à jour n'a été effectuée", "info");
-        }
-
         return $result;
     } catch (Exception $e) {
-        logSystemActivity('error', "Erreur mise à jour profil: " . $e->getMessage());
-        flashMessage("Une erreur est survenue lors de la mise à jour du profil", "danger");
+        logSystemActivity('error', "Erreur mise à jour profil salarié #$employee_id: " . $e->getMessage());
+        flashMessage("Une erreur technique est survenue lors de la mise à jour du profil.", "danger");
         return false;
     }
 }
 
-/**
- * récupère les services disponibles pour un salarié
- * 
- * @param int $employee_id identifiant du salarié
- * @return array liste des services disponibles
- */
+
 function getEmployeeAvailableServices($employee_id)
 {
-    // Validation de l'ID
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
-    if (!$employee_id) {
-        return [];
-    }
+    if (!$employee_id) return [];
 
-    // Récupération de l'entreprise du salarié
-    $employee = fetchOne('personnes', "id = $employee_id AND role_id = " . ROLE_SALARIE);
+    $employee = fetchOne(TABLE_USERS, "id = :id AND role_id = :role_id", [
+        ':id' => $employee_id,
+        ':role_id' => ROLE_SALARIE
+    ]);
 
-    if (!$employee || empty($employee['entreprise_id'])) {
-        return [];
-    }
+    if (!$employee || empty($employee['entreprise_id'])) return [];
 
     $company_id = $employee['entreprise_id'];
 
-    // Vérification des contrats actifs de l'entreprise
-    $contractsCount = executeQuery(
-        "SELECT COUNT(*) as count FROM contrats 
-         WHERE entreprise_id = ? AND statut = 'actif'
-         AND (date_fin IS NULL OR date_fin >= CURDATE())",
-        [$company_id]
-    )->fetch()['count'];
+    $activeContract = fetchOne(
+        TABLE_CONTRACTS,
+        "entreprise_id = :company_id AND statut = :status AND (date_fin IS NULL OR date_fin >= CURDATE())",
+        [':company_id' => $company_id, ':status' => STATUS_ACTIVE]
+    );
 
-    if ($contractsCount == 0) {
+    if ($activeContract === false) {
         return [];
     }
 
-    // Récupération des services disponibles
     $query = "SELECT id, nom, description, type, categorie, 
-              niveau_difficulte, duree, capacite_max 
-              FROM prestations 
-              WHERE id IN (
-                  SELECT DISTINCT prestation_id 
-                  FROM rendez_vous 
-                  WHERE personne_id IN (
-                      SELECT id FROM personnes 
-                      WHERE entreprise_id = ? AND role_id = ?
-                  )
-              ) OR type IN ('conference', 'webinar', 'atelier', 'evenement')
+              niveau_difficulte, duree, capacite_max, prix 
+              FROM " . TABLE_PRESTATIONS . "
               ORDER BY type, nom";
 
-    $services = executeQuery($query, [$company_id, ROLE_SALARIE])->fetchAll();
+    $services = executeQuery($query)->fetchAll();
 
-    // Formater les prix des services si présents
     foreach ($services as &$service) {
         if (isset($service['prix'])) {
             $service['prix_formate'] = formatMoney($service['prix']);
@@ -315,403 +221,430 @@ function getEmployeeAvailableServices($employee_id)
     return $services;
 }
 
-/**
- * récupère les réservations d'un salarié
- * 
- * @param int $employee_id identifiant du salarié
- * @param string $status filtre par statut (all, planifie, confirme, annule, termine)
- * @return array liste des réservations
- */
 function getEmployeeReservations($employee_id, $status = 'all')
 {
-    // Validation de l'ID
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
-    if (!$employee_id) {
-        return [];
-    }
+    if (!$employee_id) return [];
 
-    // Construction de la requête
-    $query = "SELECT r.*, p.nom as prestation_nom, p.type as prestation_type, 
-              CONCAT(pers.prenom, ' ', pers.type) as prestataire_nom
-              FROM rendez_vous r
-              JOIN prestations p ON r.prestation_id = p.id
-              JOIN personnes pers ON r.personne_id = pers.id
-              WHERE r.personne_id = ?";
-    $params = [$employee_id];
+    $status = sanitizeInput($status);
 
-    // Filtre par statut si différent de 'all'
-    if ($status !== 'all') {
-        $query .= " AND r.statut = ?";
-        $params[] = $status;
+    $query = "SELECT r.id, r.date_rdv, r.duree, r.lieu, r.type_rdv, r.statut, r.prestation_id,
+              p.nom as prestation_nom, p.type as prestation_type,
+              prat.nom as praticien_nom, prat.prenom as praticien_prenom
+              FROM " . TABLE_APPOINTMENTS . " r
+              JOIN " . TABLE_PRESTATIONS . " p ON r.prestation_id = p.id
+              LEFT JOIN " . TABLE_USERS . " prat ON r.praticien_id = prat.id 
+              WHERE r.personne_id = :employee_id";
+    $params = [':employee_id' => $employee_id];
+
+    if ($status !== 'all' && in_array($status, APPOINTMENT_STATUSES)) {
+        $query .= " AND r.statut = :status";
+        $params[':status'] = $status;
     }
 
     $query .= " ORDER BY r.date_rdv DESC";
 
     $reservations = executeQuery($query, $params)->fetchAll();
 
-    // Formater les dates et ajouter les badges de statut
     foreach ($reservations as &$reservation) {
-        if (isset($reservation['date_rdv'])) {
-            $reservation['date_rdv_formatee'] = formatDate($reservation['date_rdv'], 'd/m/Y H:i');
-        }
-        if (isset($reservation['statut'])) {
-            $reservation['statut_badge'] = getStatusBadge($reservation['statut']);
-        }
+        $reservation['date_rdv_formatee'] = isset($reservation['date_rdv']) ? formatDate($reservation['date_rdv'], 'd/m/Y H:i') : 'N/A';
+        $reservation['statut_badge'] = isset($reservation['statut']) ? getStatusBadge($reservation['statut']) : '';
+        $reservation['praticien_complet'] = isset($reservation['praticien_nom']) ? trim($reservation['praticien_prenom'] . ' ' . $reservation['praticien_nom']) : 'Non assigné';
     }
 
     return $reservations;
 }
 
-/**
- * récupère les rendez-vous médicaux d'un salarié
- * 
- * @param int $employee_id identifiant du salarié
- * @param string $status filtre par statut (upcoming, past, all)
- * @return array liste des rendez-vous médicaux
- */
-function getEmployeeAppointments($employee_id, $status = 'upcoming')
+
+function getEmployeeAppointments($employee_id, $filter = 'upcoming', $page = 1, $limit = 10)
 {
-    // Validation de l'ID
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
-    if (!$employee_id) {
-        return [];
+    if (!$employee_id) return [
+        'items' => [],
+        'pagination_html' => '',
+    ];
+
+    $filter = sanitizeInput($filter);
+    $page = max(1, (int)$page);
+    $limit = max(5, (int)$limit);
+    $offset = ($page - 1) * $limit;
+
+    $baseQuery = "FROM " . TABLE_APPOINTMENTS . " r
+                  JOIN " . TABLE_PRESTATIONS . " p ON r.prestation_id = p.id
+                  LEFT JOIN " . TABLE_USERS . " prat ON r.praticien_id = prat.id -- Restore LEFT JOIN
+                  WHERE r.personne_id = :employee_id";
+
+    $countQuery = "SELECT COUNT(r.id) " . $baseQuery;
+    $dataQuery = "SELECT r.id, r.date_rdv, r.duree, r.lieu, r.type_rdv, r.statut,
+                         p.nom as prestation_nom,
+                         prat.nom as praticien_nom, prat.prenom as praticien_prenom -- Restore practitioner fields
+                         " . $baseQuery;
+
+    $params = [':employee_id' => $employee_id];
+    $whereClause = '';
+
+    $orderByDirection = 'DESC';
+    if ($filter === 'upcoming') {
+        $whereClause .= " AND r.date_rdv >= NOW() AND r.statut NOT IN ('annule', 'termine', 'no_show')";
+        $orderByDirection = 'ASC';
+    } else if ($filter === 'past') {
+        $whereClause .= " AND (r.date_rdv < NOW() OR r.statut IN ('termine', 'no_show')) AND r.statut != 'annule'";
+    } else if ($filter === 'annule') {
+        $whereClause .= " AND r.statut = 'annule'";
     }
 
-    // Construction de la requête
-    $query = "SELECT r.id, r.date_rdv, r.duree, r.lieu, r.type_rdv, r.statut,
-              p.nom as prestation_nom
-              FROM rendez_vous r
-              JOIN prestations p ON r.prestation_id = p.id
-              WHERE r.personne_id = ? AND p.type = 'consultation'";
-    $params = [$employee_id];
+    $countQuery .= $whereClause;
+    $dataQuery .= $whereClause;
 
-    // Filtre par statut
-    if ($status === 'upcoming') {
-        $query .= " AND r.date_rdv >= CURDATE() AND r.statut NOT IN ('annule', 'termine')";
-    } else if ($status === 'past') {
-        $query .= " AND (r.date_rdv < CURDATE() OR r.statut = 'termine')";
-    }
+    $dataQuery .= " ORDER BY r.date_rdv $orderByDirection LIMIT :limit OFFSET :offset";
+    $dataParams = $params;
+    $dataParams[':limit'] = $limit;
+    $dataParams[':offset'] = $offset;
 
-    $query .= " ORDER BY r.date_rdv";
-    if ($status === 'upcoming') {
-        $query .= " ASC";
-    } else {
-        $query .= " DESC";
-    }
+    try {
 
-    $appointments = executeQuery($query, $params)->fetchAll();
+        $totalStmt = executeQuery($countQuery, $params);
+        $totalItems = (int)$totalStmt->fetchColumn();
 
-    // Formater les dates et ajouter les badges de statut
-    foreach ($appointments as &$appointment) {
-        if (isset($appointment['date_rdv'])) {
-            $appointment['date_rdv_formatee'] = formatDate($appointment['date_rdv'], 'd/m/Y H:i');
+        $appointments = executeQuery($dataQuery, $dataParams)->fetchAll();
+
+
+
+        foreach ($appointments as &$appointment) {
+            $appointment['date_rdv_formatee'] = isset($appointment['date_rdv']) ? formatDate($appointment['date_rdv'], 'd/m/Y H:i') : 'N/A';
+            $appointment['statut_badge'] = isset($appointment['statut']) ? getStatusBadge($appointment['statut']) : '';
+            $appointment['praticien_complet'] = isset($appointment['praticien_nom']) ? trim($appointment['praticien_prenom'] . ' ' . $appointment['praticien_nom']) : 'Non assigné';
         }
-        if (isset($appointment['statut'])) {
-            $appointment['statut_badge'] = getStatusBadge($appointment['statut']);
-        }
-    }
 
-    return $appointments;
+        $totalPages = ($limit > 0 && $totalItems > 0) ? ceil($totalItems / $limit) : 0;
+        $paginationData = [
+            'currentPage' => $page,
+            'totalPages' => $totalPages,
+            'totalItems' => $totalItems,
+            'perPage' => $limit
+        ];
+        $urlPattern = "?filter=$filter&page={page}";
+
+
+        return [
+            'items' => $appointments,
+            'pagination_html' => renderPagination($paginationData, $urlPattern),
+            'pagination_data' => $paginationData
+        ];
+    } catch (Exception $e) {
+        logSystemActivity('error', "Erreur getEmployeeAppointments pour employé #$employee_id: " . $e->getMessage());
+        flashMessage("Erreur lors du chargement des rendez-vous.", "danger");
+        return [
+            'items' => [],
+            'pagination_html' => '',
+        ];
+    }
 }
 
-/**
- * récupère l'historique d'activités d'un salarié
- * 
- * @param int $employee_id identifiant du salarié
- * @param int $page numéro de page
- * @param int $limit nombre d'éléments par page
- * @return array historique d'activités et informations de pagination
- */
-function getEmployeeActivityHistory($employee_id, $page = 1, $limit = 5)
+
+function getEmployeeActivityHistory($employee_id, $page = 1, $limit = 10)
 {
-    // Validation de l'ID
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
-    $page = (int)sanitizeInput($page);
-    $limit = (int)sanitizeInput($limit);
+    $page = max(1, (int)sanitizeInput($page));
+    $limit = max(1, (int)sanitizeInput($limit));
+
+    $defaultResult = [
+        'activities' => [],
+        'pagination' => [
+            'current' => $page,
+            'limit' => $limit,
+            'total' => 0,
+            'totalPages' => 0
+        ],
+        'pagination_html' => ''
+    ];
 
     if (!$employee_id) {
         flashMessage("ID de salarié invalide", "danger");
-        return [
-            'activities' => [],
-            'pagination' => [
-                'current' => $page,
-                'limit' => $limit,
-                'total' => 0,
-                'totalPages' => 0
-            ]
-        ];
+        return $defaultResult;
     }
 
     try {
-        // Utilisation de la structure de pagination commune
-        $where = "personne_id = " . $employee_id;
+        $where = "personne_id = :employee_id";
+        $params = [':employee_id' => $employee_id];
         $orderBy = "created_at DESC";
 
-        // Exécution de la requête principale avec pagination
-        $pagination = paginateResults('logs', $page, $limit, $where, $orderBy);
+        $totalItems = countTableRows(TABLE_LOGS, $where, $params);
+        $totalPages = ($limit > 0) ? ceil($totalItems / $limit) : 0;
+        $page = max(1, min($page, $totalPages));
+        $offset = ($page - 1) * $limit;
 
-        // Formatage spécifique pour l'historique d'activités
-        foreach ($pagination['items'] as &$activity) {
-            // Formatage de la date
-            $activity['created_at_formatted'] = formatDate($activity['created_at']);
-            // Ajout d'une icône en fonction de l'action
-            $activity['icon'] = getActivityIcon($activity['action']);
+        $activities = fetchAll(TABLE_LOGS, $where, $orderBy, $limit, $offset, $params);
+
+        foreach ($activities as &$activity) {
+            $activity['created_at_formatted'] = isset($activity['created_at']) ? formatDate($activity['created_at']) : 'N/A';
+            $actionParts = explode(':', $activity['action'], 2);
+            $mainAction = count($actionParts) > 1 ? trim($actionParts[1]) : trim($actionParts[0]);
+            $activity['icon'] = getActivityIcon($mainAction);
         }
 
-        // Préparer les données pour renderPagination
         $paginationData = [
-            'currentPage' => $pagination['currentPage'],
-            'totalPages' => $pagination['totalPages'],
-            'totalItems' => $pagination['totalItems'],
-            'perPage' => $pagination['perPage']
+            'currentPage' => $page,
+            'totalPages' => $totalPages,
+            'totalItems' => $totalItems,
+            'perPage' => $limit
         ];
 
-        // Construction de l'URL pattern pour la pagination
-        $urlPattern = "?employee_id=$employee_id&page={page}";
+        $urlPattern = "?page={page}";
 
         return [
-            'activities' => $pagination['items'],
+            'activities' => $activities,
             'pagination' => [
-                'current' => $pagination['currentPage'],
-                'limit' => $pagination['perPage'],
-                'total' => $pagination['totalItems'],
-                'totalPages' => $pagination['totalPages']
+                'current' => $page,
+                'limit' => $limit,
+                'total' => $totalItems,
+                'totalPages' => $totalPages
             ],
             'pagination_html' => renderPagination($paginationData, $urlPattern)
         ];
     } catch (Exception $e) {
-        logSystemActivity('error', "Erreur récupération historique activités: " . $e->getMessage());
+        logSystemActivity('error', "Erreur récupération historique activités salarié #$employee_id: " . $e->getMessage());
         flashMessage("Une erreur est survenue lors de la récupération de l'historique d'activités", "danger");
-        return [
-            'activities' => [],
-            'pagination' => [
-                'current' => $page,
-                'limit' => $limit,
-                'total' => 0,
-                'totalPages' => 0
-            ]
-        ];
+        return $defaultResult;
     }
 }
 
-/**
- * Obtient une icône correspondant à un type d'activité
- * 
- * @param string $action type d'action
- * @return string classe CSS de l'icône
- */
+
 function getActivityIcon($action)
 {
+    $keyAction = strtolower(trim(substr($action, strrpos($action, ':') + 1)));
+
     $iconMap = [
-        'login' => 'fas fa-sign-in-alt',
-        'logout' => 'fas fa-sign-out-alt',
-        'update_profile' => 'fas fa-user-edit',
-        'reservation' => 'fas fa-calendar-check',
-        'evaluation' => 'fas fa-star',
-        'don' => 'fas fa-hand-holding-heart',
-        'inscription' => 'fas fa-user-plus',
-        'paiement' => 'fas fa-credit-card'
+        'login' => 'fas fa-sign-in-alt text-success',
+        'logout' => 'fas fa-sign-out-alt text-warning',
+        'auto_login' => 'fas fa-key text-info',
+        'session_timeout' => 'fas fa-clock text-muted',
+        'password_reset' => 'fas fa-unlock-alt text-info',
+        'update_profile' => 'fas fa-user-edit text-primary',
+        'update_preferences' => 'fas fa-cog text-secondary',
+        'reservation:creation' => 'fas fa-calendar-plus text-success',
+        'reservation:modification' => 'fas fa-calendar-day text-info',
+        'reservation:annulation' => 'fas fa-calendar-times text-danger',
+        'evaluation_creation' => 'fas fa-star text-warning',
+        'don_creation' => 'fas fa-hand-holding-heart text-info',
+        'community_post' => 'fas fa-comments text-primary',
+        'anonymous_report' => 'fas fa-user-secret text-danger',
+        'login_failure' => 'fas fa-exclamation-triangle text-danger',
+        'csrf_failure' => 'fas fa-shield-alt text-danger',
+        'permission_denied' => 'fas fa-ban text-danger',
+        'remember_token' => 'fas fa-cookie-bite text-info',
+        'default' => 'fas fa-history text-muted'
     ];
 
-    return $iconMap[$action] ?? 'fas fa-history';
+    if (isset($iconMap[$action])) return $iconMap[$action];
+    if (isset($iconMap[$keyAction])) return $iconMap[$keyAction];
+    if (strpos($action, 'reservation:') === 0) return 'fas fa-calendar-alt text-info';
+    if (strpos($action, 'don:') === 0) return 'fas fa-gift text-info';
+    if (strpos($action, 'paiement:') === 0) return 'fas fa-credit-card text-success';
+
+    return $iconMap['default'];
 }
 
-/**
- * récupère les communautés accessibles à un salarié
- * 
- * @param int $employee_id identifiant du salarié
- * @return array liste des communautés
- */
+
 function getEmployeeCommunities($employee_id)
 {
-    // Validation de l'ID
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
-    if (!$employee_id) {
+
+    try {
+        $communities = fetchAll(TABLE_COMMUNAUTES, '1=1', 'type, nom');
+        return $communities;
+    } catch (Exception $e) {
+        logSystemActivity('error', "Erreur récupération communautés: " . $e->getMessage());
+        flashMessage("Impossible de charger la liste des communautés.", "danger");
         return [];
     }
-
-    // Récupération des communautés - utiliser fetchAll au lieu de PDO directement
-    $communities = fetchAll('communautes', '1=1', 'type, nom');
-
-    return $communities;
 }
 
-/**
- * gère les dons d'un salarié
- * 
- * @param int $employee_id identifiant du salarié
- * @param array $donation_data données du don
- * @return int|false ID du don créé ou false en cas d'erreur
- */
 function manageEmployeeDonations($employee_id, $donation_data)
 {
-    // Validation des paramètres
-    $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
-    $donation_data = sanitizeInput($donation_data);
-
-    if (!$employee_id || empty($donation_data)) {
-        flashMessage("Paramètres invalides pour le don", "danger");
+    $employee_id = filter_var($employee_id, FILTER_VALIDATE_INT);
+    if (!$employee_id) {
+        error_log("manageEmployeeDonations: ID salarié invalide.");
         return false;
     }
 
-    // Vérification des données requises
-    if (
-        empty($donation_data['type']) ||
-        ($donation_data['type'] == 'financier' && empty($donation_data['montant'])) ||
-        ($donation_data['type'] == 'materiel' && empty($donation_data['description']))
-    ) {
-        flashMessage("Veuillez remplir tous les champs obligatoires", "warning");
+    $association_id = isset($donation_data['association_id']) ? filter_var($donation_data['association_id'], FILTER_VALIDATE_INT) : null;
+    if ($association_id === null) {
+        flashMessage("Veuillez sélectionner une association.", "warning");
         return false;
     }
 
-    // Validation supplémentaire pour les montants financiers
-    if ($donation_data['type'] == 'financier') {
+    if ($association_id) {
+        if (!defined('TABLE_ASSOCIATIONS')) define('TABLE_ASSOCIATIONS', 'associations');
+        $association_exists = fetchOne(TABLE_ASSOCIATIONS, "id = :id", [':id' => $association_id]);
+        if (!$association_exists) {
+            flashMessage("L'association sélectionnée est invalide.", "danger");
+            return false;
+        }
+    }
+
+    $donation_data['type'] = $donation_data['type'] ?? null;
+    $donation_data['montant'] = $donation_data['montant'] ?? null;
+    $donation_data['description'] = $donation_data['description'] ?? null;
+
+    if (!in_array($donation_data['type'], DONATION_TYPES)) {
+        flashMessage("Type de don invalide.", "warning");
+        return false;
+    }
+
+    if ($donation_data['type'] == DONATION_TYPES[0]) {
         $montant = filter_var($donation_data['montant'], FILTER_VALIDATE_FLOAT);
         if ($montant === false || $montant <= 0) {
-            flashMessage("Le montant du don doit être un nombre positif", "warning");
+            flashMessage("Le montant du don financier doit être un nombre positif.", "warning");
             return false;
         }
         $donation_data['montant'] = $montant;
+        $donation_data['description'] = null;
+    } elseif ($donation_data['type'] == DONATION_TYPES[1]) {
+        if (empty(trim($donation_data['description']))) {
+            flashMessage("La description est obligatoire pour un don matériel.", "warning");
+            return false;
+        }
+        $donation_data['montant'] = null;
     }
 
     try {
-        // Vérifier que le salarié existe et est actif
-        $employee = fetchOne('personnes', "id = $employee_id AND role_id = " . ROLE_SALARIE . " AND statut = 'actif'");
+        $employee = fetchOne(TABLE_USERS, "id = :id AND role_id = :role_id AND statut = :status", [
+            ':id' => $employee_id,
+            ':role_id' => ROLE_SALARIE,
+            ':status' => STATUS_ACTIVE
+        ]);
         if (!$employee) {
-            flashMessage("Le salarié n'existe pas ou n'est pas actif", "danger");
+            flashMessage("Impossible de traiter le don: Salarié non trouvé ou inactif.", "danger");
             return false;
         }
 
-        // Début de transaction
-        beginTransaction();
-
-        // Préparation des données pour insertion
         $donData = [
             'personne_id' => $employee_id,
-            'montant' => $donation_data['type'] == 'financier' ? $donation_data['montant'] : null,
+            'association_id' => $association_id,
+            'montant' => $donation_data['type'] == DONATION_TYPES[0] ? $donation_data['montant'] : null,
             'type' => $donation_data['type'],
-            'description' => $donation_data['description'] ?? null,
+            'description' => $donation_data['type'] == DONATION_TYPES[1] ? trim($donation_data['description']) : null,
             'date_don' => date('Y-m-d'),
-            'statut' => 'en_attente'
+            'statut' => DEFAULT_DONATION_STATUS
         ];
 
-        // Insertion du don
-        $donationId = insertRow('dons', $donData);
+        beginTransaction();
+
+        $donationId = insertRow(TABLE_DONATIONS, $donData);
 
         if (!$donationId) {
             rollbackTransaction();
-            flashMessage("Impossible d'enregistrer votre don", "danger");
+            logSystemActivity('error', "manageEmployeeDonations: Échec de l'insertion dans la table dons pour user #$employee_id");
+            flashMessage("Une erreur technique est survenue lors de l'enregistrement de votre don (code 1).", "danger");
             return false;
         }
 
-        // Si c'est un don financier et qu'il y a un montant, créer une entrée dans les transactions
-        if ($donation_data['type'] == 'financier' && !empty($donation_data['montant'])) {
-            $transactionData = [
-                'personne_id' => $employee_id,
-                'montant' => $donation_data['montant'],
-                'type' => 'don',
-                'reference' => 'DON-' . $donationId,
-                'date_transaction' => date('Y-m-d H:i:s'),
-                'statut' => 'en_attente'
-            ];
-
-            $transactionId = insertRow('transactions', $transactionData);
-            if (!$transactionId) {
-                rollbackTransaction();
-                flashMessage("Erreur lors de l'enregistrement de la transaction", "danger");
-                return false;
-            }
-
-            // Mettre à jour le numéro de référence avec l'ID de transaction
-            updateRow(
-                'dons',
-                ['reference' => 'DON-' . $donationId . '-TR' . $transactionId],
-                'id = :id',
-                ['id' => $donationId]
-            );
-        }
-
-        // Validation de la transaction
         commitTransaction();
 
-        // Journalisation
-        logBusinessOperation($employee_id, 'don_creation', "Don #{$donationId} créé, type: {$donation_data['type']}");
-
-        // Notification utilisateur
-        if ($donation_data['type'] == 'financier') {
-            $montantFormatted = formatMoney($donation_data['montant']);
-            flashMessage("Votre don financier de {$montantFormatted} a été enregistré et est en attente de traitement", "success");
-        } else {
-            flashMessage("Votre don matériel a été enregistré. Nous vous contacterons pour organiser la collecte", "success");
+        $assoc_name = 'Inconnue';
+        if (isset($association_exists) && $association_exists) {
+            $assoc_name = $association_exists['nom'];
         }
+        logBusinessOperation($employee_id, 'don_creation', "Don #{$donationId} créé, type: {$donation_data['type']} pour association: {$assoc_name}");
 
         return $donationId;
     } catch (Exception $e) {
-        // S'assurer que la transaction est annulée en cas d'erreur
-        if (isset($transactionStarted) && $transactionStarted) {
+        if (getDbConnection()->inTransaction()) {
             rollbackTransaction();
         }
-        logSystemActivity('error', "Erreur création don: " . $e->getMessage());
-        flashMessage("Une erreur est survenue lors de l'enregistrement de votre don", "danger");
+        logSystemActivity('error', "Erreur création don pour user #$employee_id: " . $e->getMessage());
+        flashMessage("Une erreur technique est survenue lors de l'enregistrement de votre don (code 2).", "danger");
         return false;
     }
 }
 
-/**
- * récupère les événements et défis disponibles pour un salarié
- * 
- * @param int $employee_id identifiant du salarié
- * @param string $event_type filtre par type d'événement (all, conference, webinar, atelier, defi_sportif)
- * @return array liste des événements
- */
 function getEmployeeEvents($employee_id, $event_type = 'all')
 {
-    // Validation de l'ID
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
     if (!$employee_id) {
+        flashMessage("ID employé invalide pour récupérer les événements.", "danger");
         return [];
     }
 
-    // Construction de la requête
-    $query = "SELECT id, titre, description, date_debut, date_fin, lieu, type, 
-              capacite_max, niveau_difficulte 
-              FROM evenements 
-              WHERE date_debut >= CURDATE()";
+    $event_type = sanitizeInput($event_type);
+    $validEventTypes = EVENT_TYPES;
+
+    $query = "SELECT e.id, e.titre, e.description, e.date_debut, e.date_fin, e.lieu, e.type, 
+                     e.capacite_max, e.niveau_difficulte
+              FROM evenements e
+              WHERE e.date_debut >= CURDATE()";
     $params = [];
 
-    // Filtre par type si différent de 'all'
-    if ($event_type !== 'all') {
-        $query .= " AND type = ?";
-        $params[] = $event_type;
+    if ($event_type !== 'all' && in_array($event_type, $validEventTypes)) {
+        $query .= " AND e.type = :event_type";
+        $params[':event_type'] = $event_type;
     }
 
-    $query .= " ORDER BY date_debut, titre";
+    $query .= " ORDER BY e.date_debut ASC, e.titre ASC";
 
-    $events = executeQuery($query, $params)->fetchAll();
+    try {
+        error_log("[DEBUG] getEmployeeEvents - Query: " . $query);
+        error_log("[DEBUG] getEmployeeEvents - Params: " . json_encode($params));
 
-    // Formater les dates
-    foreach ($events as &$event) {
-        if (isset($event['date_debut'])) {
-            $event['date_debut_formatee'] = formatDate($event['date_debut'], 'd/m/Y');
+        $events = executeQuery($query, $params)->fetchAll();
+
+        error_log("[DEBUG] getEmployeeEvents - Fetched events count: " . count($events));
+
+        $eventIds = array_map(function ($e) {
+            return $e['id'];
+        }, $events);
+
+        if (!empty($eventIds)) {
+            $inscriptionCounts = [];
+            $sqlCounts = "SELECT evenement_id, COUNT(id) as count 
+                          FROM evenement_inscriptions 
+                          WHERE evenement_id IN (" . implode(',', array_fill(0, count($eventIds), '?')) . ") 
+                          AND statut = 'inscrit' 
+                          GROUP BY evenement_id";
+            $stmtCounts = executeQuery($sqlCounts, $eventIds);
+            while ($row = $stmtCounts->fetch()) {
+                $inscriptionCounts[$row['evenement_id']] = $row['count'];
+            }
+
+            $userRegistrations = [];
+            $sqlUserReg = "SELECT evenement_id 
+                           FROM evenement_inscriptions 
+                           WHERE personne_id = ? AND statut = 'inscrit' 
+                           AND evenement_id IN (" . implode(',', array_fill(0, count($eventIds), '?')) . ")";
+            $paramsUserReg = array_merge([$employee_id], $eventIds);
+            $stmtUserReg = executeQuery($sqlUserReg, $paramsUserReg);
+            while ($row = $stmtUserReg->fetch()) {
+                $userRegistrations[$row['evenement_id']] = true;
+            }
         }
-        if (isset($event['date_fin'])) {
-            $event['date_fin_formatee'] = formatDate($event['date_fin'], 'd/m/Y');
+
+        foreach ($events as &$event) {
+            $event['date_debut_formatee'] = isset($event['date_debut']) ? formatDate($event['date_debut'], 'd/m/Y H:i') : 'N/A';
+            $event['date_fin_formatee'] = isset($event['date_fin']) ? formatDate($event['date_fin'], 'd/m/Y H:i') : 'N/A';
+
+            $registeredCount = $inscriptionCounts[$event['id']] ?? 0;
+            if (isset($event['capacite_max']) && $event['capacite_max'] !== null) {
+                $event['places_restantes'] = max(0, $event['capacite_max'] - $registeredCount);
+                $event['est_complet'] = ($event['places_restantes'] <= 0);
+            } else {
+                $event['places_restantes'] = null;
+                $event['est_complet'] = false;
+            }
+
+            $event['est_inscrit'] = isset($userRegistrations[$event['id']]);
         }
+
+        return $events;
+    } catch (Exception $e) {
+        logSystemActivity('error', "Erreur récupération événements pour employé #$employee_id: " . $e->getMessage());
+        flashMessage("Impossible de charger la liste des événements.", "danger");
+        return [];
     }
-
-    return $events;
 }
 
-/**
- * met à jour les préférences d'un salarié
- * 
- * @param int $employee_id identifiant du salarié
- * @param array $settings paramètres à mettre à jour
- * @return bool résultat de la mise à jour
- */
 function updateEmployeeSettings($employee_id, $settings)
 {
-    // Validation de l'ID
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
     $settings = sanitizeInput($settings);
 
@@ -720,11 +653,21 @@ function updateEmployeeSettings($employee_id, $settings)
         return false;
     }
 
-    // Liste des champs autorisés
-    $allowedFields = ['langue', 'notif_email', 'theme'];
+    $allowedFields = [
+        'langue' => ['fr', 'en'],
+        'notif_email' => [0, 1]
+    ];
 
-    // Filtrage des paramètres
-    $filteredSettings = array_intersect_key($settings, array_flip($allowedFields));
+    $filteredSettings = [];
+    foreach ($settings as $key => $value) {
+        if (array_key_exists($key, $allowedFields)) {
+            if ($key === 'notif_email') {
+                $filteredSettings[$key] = filter_var($value, FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
+            } elseif (in_array($value, $allowedFields[$key])) {
+                $filteredSettings[$key] = $value;
+            }
+        }
+    }
 
     if (empty($filteredSettings)) {
         flashMessage("Aucun paramètre valide à mettre à jour", "warning");
@@ -732,13 +675,11 @@ function updateEmployeeSettings($employee_id, $settings)
     }
 
     try {
-        // Vérification de l'existence des préférences
         $exists = fetchOne('preferences_utilisateurs', "personne_id = $employee_id");
 
         $result = false;
 
         if ($exists) {
-            // Mise à jour
             $result = updateRow(
                 'preferences_utilisateurs',
                 $filteredSettings,
@@ -746,7 +687,6 @@ function updateEmployeeSettings($employee_id, $settings)
                 ['personne_id' => $employee_id]
             );
         } else {
-            // Insertion
             $filteredSettings['personne_id'] = $employee_id;
             $result = insertRow('preferences_utilisateurs', $filteredSettings) ? true : false;
         }
@@ -755,7 +695,6 @@ function updateEmployeeSettings($employee_id, $settings)
             logBusinessOperation($employee_id, 'update_preferences', "Mise à jour des préférences utilisateur");
             flashMessage("Vos préférences ont été mises à jour", "success");
 
-            // Mise à jour de la session si c'est l'utilisateur courant
             if (isset($_SESSION['user_id']) && $_SESSION['user_id'] == $employee_id && isset($filteredSettings['langue'])) {
                 $_SESSION['user_language'] = $filteredSettings['langue'];
             }
@@ -769,98 +708,1251 @@ function updateEmployeeSettings($employee_id, $settings)
     }
 }
 
-/**
- * réserve un rendez-vous pour un salarié
- * 
- * @param int $employee_id identifiant du salarié
- * @param array $appointment_data données du rendez-vous
- * @return int|false ID du rendez-vous créé ou false en cas d'erreur
- */
+
 function bookEmployeeAppointment($employee_id, $appointment_data)
 {
-    // Validation de l'ID et des données
-    $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
-    $appointment_data = sanitizeInput($appointment_data);
-
-    if (!$employee_id || empty($appointment_data)) {
-        flashMessage("Données de rendez-vous invalides", "danger");
+    $employee_id = filter_var($employee_id, FILTER_VALIDATE_INT);
+    if (!$employee_id) {
+        error_log("bookEmployeeAppointment: ID salarié invalide.");
         return false;
     }
 
-    // Vérification des données requises
     $requiredFields = ['prestation_id', 'date_rdv', 'duree', 'type_rdv'];
     foreach ($requiredFields as $field) {
         if (empty($appointment_data[$field])) {
-            flashMessage("Des champs obligatoires sont manquants", "danger");
+            flashMessage("Le champ '$field' est obligatoire pour la réservation.", "danger");
             return false;
         }
     }
 
-    // Vérification de la disponibilité du créneau
     $prestation_id = filter_var($appointment_data['prestation_id'], FILTER_VALIDATE_INT);
-    $dateHeure = $appointment_data['date_rdv'];
     $duree = filter_var($appointment_data['duree'], FILTER_VALIDATE_INT);
+    $type_rdv = $appointment_data['type_rdv'];
+    $praticien_id = isset($appointment_data['praticien_id']) ? filter_var($appointment_data['praticien_id'], FILTER_VALIDATE_INT) : null;
+
+    $dateHeure = date('Y-m-d H:i:s', strtotime($appointment_data['date_rdv']));
+    if (!$prestation_id || !$duree || $duree <= 0 || !$dateHeure || !in_array($type_rdv, APPOINTMENT_TYPES)) {
+        flashMessage("Données de rendez-vous invalides (format, type ou durée).", "danger");
+        return false;
+    }
+    if ($dateHeure < date('Y-m-d H:i:s')) {
+        flashMessage("Vous ne pouvez pas réserver un rendez-vous dans le passé.", "warning");
+        return false;
+    }
 
     if (!isTimeSlotAvailable($dateHeure, $duree, $prestation_id)) {
-        flashMessage("Ce créneau horaire n'est pas disponible", "warning");
+        flashMessage("Ce créneau horaire n'est pas disponible pour cette prestation.", "warning");
         return false;
     }
 
     try {
-        // Début de transaction
+        $employee = fetchOne(TABLE_USERS, "id = :id AND role_id = :role_id AND statut = :status", [
+            ':id' => $employee_id,
+            ':role_id' => ROLE_SALARIE,
+            ':status' => STATUS_ACTIVE
+        ]);
+        $prestation = fetchOne(TABLE_PRESTATIONS, "id = :id", [':id' => $prestation_id]);
+
+        if (!$employee) {
+            flashMessage("Salarié non trouvé ou inactif.", "danger");
+            return false;
+        }
+        if (!$prestation) {
+            flashMessage("La prestation demandée n'existe pas.", "danger");
+            return false;
+        }
+
         beginTransaction();
 
-        // Préparation des données pour insertion
         $rdvData = [
             'personne_id' => $employee_id,
             'prestation_id' => $prestation_id,
+            'praticien_id' => $praticien_id,
             'date_rdv' => $dateHeure,
             'duree' => $duree,
             'lieu' => $appointment_data['lieu'] ?? null,
-            'type_rdv' => $appointment_data['type_rdv'],
+            'type_rdv' => $type_rdv,
             'statut' => 'planifie',
             'notes' => $appointment_data['notes'] ?? null
         ];
 
-        // Insertion du rendez-vous
-        $appointmentId = insertRow('rendez_vous', $rdvData);
+        $appointmentId = insertRow(TABLE_APPOINTMENTS, $rdvData);
 
         if (!$appointmentId) {
             rollbackTransaction();
-            flashMessage("Impossible de créer le rendez-vous", "danger");
+            logSystemActivity('error', "bookEmployeeAppointment: Échec insertion RDV pour user #$employee_id, prestation #$prestation_id");
+            flashMessage("Une erreur technique est survenue lors de la création du rendez-vous (code 1).", "danger");
             return false;
         }
 
-        // Ajout d'une notification si nécessaire
-        if (!empty($appointment_data['notifier']) && $appointment_data['notifier'] === true) {
-            $notifData = [
-                'personne_id' => $employee_id,
-                'titre' => 'Nouveau rendez-vous confirmé',
-                'message' => 'Votre rendez-vous du ' . formatDate($dateHeure) . ' a été confirmé.',
-                'type' => 'info',
-                'lien' => '/rendez-vous/' . $appointmentId
-            ];
+        $notifData = [
+            'personne_id' => $employee_id,
+            'titre' => 'Nouveau rendez-vous planifié',
+            'message' => 'Votre rendez-vous pour \'' . sanitizeInput($prestation['nom']) . '\' le ' . formatDate($dateHeure) . ' a été planifié.',
+            'type' => 'info',
+            'lien' => WEBCLIENT_URL . '/mon-planning?rdv=' . $appointmentId
+        ];
+        insertRow(TABLE_NOTIFICATIONS, $notifData);
 
-            try {
-                insertRow('notifications', $notifData);
-            } catch (Exception $notifError) {
-                // Une erreur sur la notification ne doit pas annuler le rendez-vous
-                logSystemActivity('warning', "Erreur création notification pour RDV #$appointmentId: " . $notifError->getMessage());
-            }
-        }
-
-        // Validation de la transaction
         commitTransaction();
 
-        // Journalisation
         logReservationActivity($employee_id, $prestation_id, 'creation', "RDV #$appointmentId créé");
-        flashMessage("Votre rendez-vous a été réservé avec succès", "success");
 
         return $appointmentId;
     } catch (Exception $e) {
-        rollbackTransaction();
-        logSystemActivity('error', "Erreur création rendez-vous: " . $e->getMessage());
-        flashMessage("Une erreur est survenue lors de la création du rendez-vous", "danger");
+        if (getDbConnection()->inTransaction()) {
+            rollbackTransaction();
+        }
+        logSystemActivity('error', "Erreur création rendez-vous pour user #$employee_id: " . $e->getMessage());
+        flashMessage("Une erreur technique est survenue lors de la création du rendez-vous (code 2).", "danger");
         return false;
     }
+}
+
+function displayEmployeeDashboard()
+{
+    requireRole(ROLE_SALARIE);
+    $employee_id = $_SESSION['user_id'];
+
+    $data = [];
+    $data['user'] = getUserInfo($employee_id);
+    if (!$data['user']) {
+        flashMessage("Impossible de récupérer les informations utilisateur.", "danger");
+        redirectTo(WEBCLIENT_URL . '/connexion.php');
+    }
+
+    $appointmentsResult = getEmployeeAppointments($employee_id, 'upcoming', 1, 3);
+    $data['upcoming_appointments'] = $appointmentsResult;
+
+    $eventsResult = getEmployeeEvents($employee_id, 'all', 1, 3);
+    $data['upcoming_events'] = $eventsResult['items'] ?? [];
+
+    $data['unread_notifications'] = fetchAll(TABLE_NOTIFICATIONS, 'personne_id = :id AND lu = 0', 'created_at DESC', 5, 0, ['id' => $employee_id]);
+
+    $activityResult = getEmployeeActivityHistory($employee_id, 1, 5);
+    $data['recent_activity'] = $activityResult;
+
+
+    return $data;
+}
+
+
+function displayEmployeeAppointmentsPage()
+{
+    requireRole(ROLE_SALARIE);
+    $employee_id = $_SESSION['user_id'];
+
+    $data = [];
+    $filters = getQueryData();
+    $filter = $filters['filter'] ?? 'upcoming';
+    $page = isset($filters['page']) ? (int)$filters['page'] : 1;
+
+    $validFilters = ['upcoming', 'past', 'all', 'annule'];
+    if (!in_array($filter, $validFilters)) {
+        $filter = 'upcoming';
+    }
+
+    $paginationResult = getEmployeeAppointments($employee_id, $filter, $page, 10);
+
+    $data['appointments'] = $paginationResult['items'];
+    $data['pagination_html'] = $paginationResult['pagination_html'];
+    $data['currentFilter'] = $filter;
+    $data['csrf_token'] = $_SESSION['csrf_token'];
+
+    return $data;
+}
+
+function displayEmployeeCommunitiesPage()
+{
+    requireRole(ROLE_SALARIE);
+    $employee_id = $_SESSION['user_id'];
+
+    $data = [];
+    $data['communities'] = getEmployeeCommunities($employee_id);
+
+    return $data;
+}
+
+
+function displayEmployeeDonationsPage()
+{
+    requireRole(ROLE_SALARIE);
+    $employee_id = $_SESSION['user_id'];
+
+    $data = [];
+    $query = "SELECT d.*, a.nom as association_nom
+              FROM " . TABLE_DONATIONS . " d
+              LEFT JOIN associations a ON d.association_id = a.id
+              WHERE d.personne_id = :employee_id
+              ORDER BY d.date_don DESC, d.created_at DESC";
+
+    $data['donations'] = executeQuery($query, [':employee_id' => $employee_id])->fetchAll();
+
+    foreach ($data['donations'] as &$don) {
+        $don['date_don_formatee'] = isset($don['date_don']) ? formatDate($don['date_don'], 'd/m/Y') : 'N/A';
+        $don['statut_badge'] = isset($don['statut']) ? getStatusBadge($don['statut']) : '';
+        if ($don['type'] === DONATION_TYPES[0] && isset($don['montant'])) {
+            $don['montant_formate'] = formatMoney($don['montant']);
+        }
+        $don['association_nom'] = $don['association_nom'] ?? 'Non spécifiée';
+    }
+
+    $data['associations'] = getActiveAssociations();
+
+    $data['csrf_token'] = $_SESSION['csrf_token'];
+
+    return $data;
+}
+
+function displayEmployeeEventsPage()
+{
+    requireRole(ROLE_SALARIE);
+    $employee_id = $_SESSION['user_id'];
+
+    $filters = getQueryData();
+    $typeFilter = $filters['type'] ?? 'all';
+
+    $data = [];
+    $data['events'] = getEmployeeEvents($employee_id, $typeFilter);
+    $data['currentTypeFilter'] = $typeFilter;
+    $data['eventTypes'] = EVENT_TYPES;
+    $data['csrf_token'] = $_SESSION['csrf_token'];
+
+    return $data;
+}
+
+function displayEmployeeProfile()
+{
+    requireRole(ROLE_SALARIE);
+    $employee_id = $_SESSION['user_id'];
+
+    $data = [];
+    $data['employee'] = getEmployeeDetails($employee_id);
+    if (!$data['employee']) {
+        flashMessage("Impossible d'afficher le profil.", "danger");
+        redirectTo(WEBCLIENT_URL . '/dashboard.php');
+    }
+    $data['csrf_token'] = $_SESSION['csrf_token'];
+
+    return $data;
+}
+
+
+function handleUpdateEmployeeProfile()
+{
+    requireRole(ROLE_SALARIE);
+    $employee_id = $_SESSION['user_id'];
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        verifyCsrfToken();
+
+        $formData = getFormData();
+
+        $validation_errors = [];
+        if (isset($formData['email']) && !filter_var($formData['email'], FILTER_VALIDATE_EMAIL)) {
+            $validation_errors[] = "Format d'email invalide";
+        }
+        if (isset($formData['telephone']) && !empty($formData['telephone']) && !preg_match('/^(0|\+33)[1-9]([-. ]?[0-9]{2}){4}$/', $formData['telephone'])) {
+            $validation_errors[] = "Format de téléphone invalide (ex: 0123456789 ou +33123456789)";
+        }
+        if (isset($formData['genre']) && !empty($formData['genre']) && !in_array($formData['genre'], ['M', 'F', 'Autre'])) {
+            $validation_errors[] = "Genre invalide.";
+        }
+
+        if (!empty($validation_errors)) {
+            flashMessage("Erreurs de validation: " . implode(", ", $validation_errors), "danger");
+        } else {
+            $result = updateEmployeeProfile($employee_id, $formData);
+
+            if ($result !== false) {
+                if ($result > 0) {
+                    logBusinessOperation($employee_id, 'update_profile', "Profil mis à jour par l'employé");
+                    flashMessage("Votre profil a été mis à jour avec succès.", "success");
+                } else {
+                    flashMessage("Aucune modification détectée sur votre profil.", "info");
+                }
+            }
+        }
+        redirectTo(WEBCLIENT_URL . '/mon-profil.php');
+    } else {
+        redirectTo(WEBCLIENT_URL . '/mon-profil.php');
+    }
+}
+function displayEmployeeSettings()
+{
+    requireRole(ROLE_SALARIE);
+    $employee_id = $_SESSION['user_id'];
+
+    $data = [];
+    $data['employee'] = getEmployeeDetails($employee_id);
+    if (!$data['employee']) {
+    }
+
+    $data['settings'] = fetchOne(TABLE_USER_PREFERENCES, "personne_id = :id", [':id' => $employee_id]);
+    if (!$data['settings']) {
+        $data['settings'] = [
+            'langue' => 'fr',
+            'notif_email' => 1
+        ];
+    }
+    $data['csrf_token'] = $_SESSION['csrf_token'];
+
+    return $data;
+}
+
+
+function handleUpdateEmployeeSettings()
+{
+    requireRole(ROLE_SALARIE);
+    $employee_id = $_SESSION['user_id'];
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        verifyCsrfToken();
+        $formData = getFormData();
+
+        $profileData = [
+            'nom' => $formData['nom'] ?? null,
+            'prenom' => $formData['prenom'] ?? null,
+            'telephone' => $formData['telephone'] ?? null
+        ];
+        $profileData = array_filter($profileData, function ($value) {
+            return $value !== null;
+        });
+
+        $settingsData = [
+            'langue' => $formData['langue'] ?? null,
+            'notif_email' => isset($formData['notif_email']) ? 1 : 0
+        ];
+        $settingsData = array_filter($settingsData, function ($value) {
+            return $value !== null;
+        });
+
+        $profileUpdateResult = false;
+        $settingsUpdateResult = false;
+        $profileChanged = false;
+        $settingsChanged = false;
+
+        if (!empty($profileData)) {
+            $profileUpdateResult = updateEmployeeProfile($employee_id, $profileData);
+            $profileChanged = ($profileUpdateResult !== false && $profileUpdateResult > 0);
+        }
+
+        if (!empty($settingsData)) {
+            $settingsUpdateResult = updateEmployeeSettings($employee_id, $settingsData);
+            $settingsChanged = ($settingsUpdateResult === true);
+        }
+
+        if ($profileUpdateResult !== false && $settingsUpdateResult !== false) {
+            if ($profileChanged || $settingsChanged) {
+                logBusinessOperation($employee_id, 'update_preferences_profile', "Profil/Préférences mis à jour par l'employé via settings.php");
+                flashMessage("Vos informations ont été enregistrées avec succès.", "success");
+            } else if ($profileUpdateResult === 0 && ($settingsUpdateResult === false || $settingsUpdateResult === true)) {
+                $existingSettings = fetchOne(TABLE_USER_PREFERENCES, "personne_id = :id", [':id' => $employee_id]);
+                if ($settingsUpdateResult === true || $existingSettings) {
+                    flashMessage("Aucune modification détectée.", "info");
+                }
+            } else {
+            }
+        }
+
+        redirectTo(WEBCLIENT_URL . '/modules/employees/settings.php');
+    } else {
+        redirectTo(WEBCLIENT_URL . '/modules/employees/settings.php');
+    }
+}
+
+
+function displayServiceCatalog()
+{
+    requireRole(ROLE_SALARIE);
+    $employee_id = $_SESSION['user_id'];
+
+    $data = [];
+    $employee = fetchOne(TABLE_USERS, "id = :id", [':id' => $employee_id]);
+    if (!$employee || !$employee['entreprise_id']) {
+        flashMessage("Accès refusé: informations utilisateur incomplètes.", "danger");
+        redirectTo(WEBCLIENT_URL . '/dashboard.php');
+    }
+
+    $activeContract = fetchOne(
+        TABLE_CONTRACTS,
+        "entreprise_id = :company_id AND statut = :status AND (date_fin IS NULL OR date_fin >= CURDATE())",
+        [':company_id' => $employee['entreprise_id'], ':status' => STATUS_ACTIVE]
+    );
+
+    if ($activeContract === false) {
+        $data['services'] = [];
+        $data['pagination_html'] = '';
+        $data['hasActiveContract'] = false;
+        flashMessage("Votre entreprise n'a pas de contrat actif pour accéder aux services.", "warning");
+    } else {
+        $data['hasActiveContract'] = true;
+
+        $filters = getQueryData();
+        $page = isset($filters['page']) ? (int)$filters['page'] : 1;
+        $typeFilter = $filters['type'] ?? '';
+        $categoryFilter = $filters['categorie'] ?? '';
+
+        $paginationResult = getPrestations($typeFilter, $categoryFilter, $page, 12);
+
+        $data['services'] = $paginationResult['items'];
+        $data['pagination_html'] = renderPagination($paginationResult, "?type=$typeFilter&categorie=$categoryFilter&page={page}");
+        $data['types'] = PRESTATION_TYPES;
+    }
+
+    return $data;
+}
+
+function displayServiceDetails($service_id)
+{
+    requireRole(ROLE_SALARIE);
+
+    $service_id = filter_var(sanitizeInput($service_id), FILTER_VALIDATE_INT);
+    if (!$service_id) {
+        flashMessage("ID de service invalide.", "danger");
+        redirectTo(WEBCLIENT_URL . '/catalogue.php');
+    }
+
+    $data = [];
+    $data['service'] = fetchOne(TABLE_PRESTATIONS, "id = :id", [':id' => $service_id]);
+
+    if (!$data['service']) {
+        flashMessage("Service non trouvé.", "warning");
+        redirectTo(WEBCLIENT_URL . '/catalogue.php');
+    }
+
+    if (isset($data['service']['prix'])) {
+        $data['service']['prix_formate'] = formatMoney($data['service']['prix']);
+    }
+    $data['csrf_token'] = $_SESSION['csrf_token'];
+
+    return $data;
+}
+
+function displayEmployeeSchedule()
+{
+    requireRole(ROLE_SALARIE);
+    $employee_id = $_SESSION['user_id'];
+
+    $data = [];
+    $filter = $_GET['filter'] ?? 'upcoming';
+
+    $data['reservations'] = getEmployeeReservations($employee_id, $filter);
+
+    $data['event_registrations'] = [];
+
+    $data['filter'] = $filter;
+
+    return $data;
+}
+function handleReservationRequest()
+{
+    requireRole(ROLE_SALARIE);
+    $employee_id = $_SESSION['user_id'];
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        verifyCsrfToken();
+        $formData = getFormData();
+
+        $appointmentData = [
+            'prestation_id' => $formData['prestation_id'] ?? null,
+            'date_rdv' => $formData['date_rdv'] ?? null,
+            'duree' => $formData['duree'] ?? null,
+            'type_rdv' => $formData['type_rdv'] ?? null,
+            'lieu' => $formData['lieu'] ?? null,
+            'notes' => $formData['notes'] ?? null,
+            'praticien_id' => $formData['praticien_id'] ?? null
+        ];
+
+        if (empty($appointmentData['prestation_id']) || empty($appointmentData['date_rdv']) || empty($appointmentData['duree'])) {
+            flashMessage("Informations de réservation incomplètes.", "warning");
+            redirectTo($_SERVER['HTTP_REFERER'] ?? WEBCLIENT_URL . '/catalogue.php');
+            return;
+        }
+
+        $appointmentId = bookEmployeeAppointment($employee_id, $appointmentData);
+
+        if ($appointmentId) {
+            flashMessage("Votre réservation a été enregistrée avec succès (ID: $appointmentId).", "success");
+            redirectTo(WEBCLIENT_URL . '/mon-planning.php');
+        } else {
+            redirectTo($_SERVER['HTTP_REFERER'] ?? WEBCLIENT_URL . '/catalogue.php');
+        }
+    } else {
+        redirectTo(WEBCLIENT_URL . '/catalogue.php');
+    }
+}
+
+function handleCancelReservation($reservation_id)
+{
+    requireRole(ROLE_SALARIE);
+    $employee_id = $_SESSION['user_id'];
+
+    $reservation_id = filter_var(sanitizeInput($reservation_id), FILTER_VALIDATE_INT);
+    if (!$reservation_id) {
+        flashMessage("ID de réservation invalide.", "danger");
+        redirectTo(WEBCLIENT_URL . '/mon-planning.php');
+    }
+
+    try {
+        $reservation = fetchOne(
+            TABLE_APPOINTMENTS,
+            "id = :id AND personne_id = :employee_id AND statut IN ('planifie', 'confirme')",
+            [':id' => $reservation_id, ':employee_id' => $employee_id]
+        );
+
+        if (!$reservation) {
+            flashMessage("Réservation non trouvée ou non annulable.", "warning");
+            redirectTo(WEBCLIENT_URL . '/mon-planning.php');
+        }
+
+        $now = new DateTime();
+        $rdvTime = new DateTime($reservation['date_rdv']);
+        $interval = $now->diff($rdvTime);
+        if ($now >= $rdvTime || ($interval->days == 0 && $interval->h < 24)) {
+        }
+
+        $updated = updateRow(
+            TABLE_APPOINTMENTS,
+            ['statut' => 'annule'],
+            "id = :id",
+            [':id' => $reservation_id]
+        );
+
+        if ($updated) {
+            logReservationActivity($employee_id, $reservation['prestation_id'], 'annulation', "RDV #$reservation_id annulé par l'employé");
+            flashMessage("Votre réservation a été annulée.", "success");
+        } else {
+            flashMessage("Impossible d'annuler la réservation.", "danger");
+        }
+    } catch (Exception $e) {
+        logSystemActivity('error', "Erreur annulation RDV #$reservation_id pour user #$employee_id: " . $e->getMessage());
+        flashMessage("Une erreur technique est survenue lors de l'annulation.", "danger");
+    }
+}
+
+
+function displayNotifications()
+{
+    requireRole(ROLE_SALARIE);
+    $employee_id = $_SESSION['user_id'];
+
+    $data = [];
+    $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+    $limit = 15;
+
+    $where = "personne_id = :id";
+    $params = [':id' => $employee_id];
+    $orderBy = "created_at DESC";
+
+    $paginationResult = paginateResults(TABLE_NOTIFICATIONS, $page, $limit, $where, $orderBy, $params);
+
+    $data['notifications'] = $paginationResult['items'];
+    $data['pagination_html'] = renderPagination($paginationResult, "?page={page}");
+
+    return $data;
+}
+
+function handleMarkNotificationRead($notification_id)
+{
+    requireRole(ROLE_SALARIE);
+    $employee_id = $_SESSION['user_id'];
+
+    $notification_id = filter_var(sanitizeInput($notification_id), FILTER_VALIDATE_INT);
+    if (!$notification_id) return false;
+
+    $notif = fetchOne(
+        TABLE_NOTIFICATIONS,
+        "id = :id AND personne_id = :employee_id",
+        [':id' => $notification_id, ':employee_id' => $employee_id]
+    );
+
+    if ($notif && $notif['lu'] == 0) {
+        $updated = updateRow(
+            TABLE_NOTIFICATIONS,
+            ['lu' => 1, 'date_lecture' => date('Y-m-d H:i:s')],
+            "id = :id",
+            [':id' => $notification_id]
+        );
+        return $updated > 0;
+    }
+    return false;
+}
+
+
+function handleMarkAllNotificationsRead()
+{
+    requireRole(ROLE_SALARIE);
+    $employee_id = $_SESSION['user_id'];
+
+    try {
+        $updated = updateRow(
+            TABLE_NOTIFICATIONS,
+            ['lu' => 1, 'date_lecture' => date('Y-m-d H:i:s')],
+            "personne_id = :employee_id AND lu = 0",
+            [':employee_id' => $employee_id]
+        );
+        if ($updated !== false) {
+            flashMessage("Toutes les notifications ont été marquées comme lues.", "success");
+        } else {
+            flashMessage("Aucune nouvelle notification à marquer comme lue.", "info");
+        }
+    } catch (Exception $e) {
+        logSystemActivity('error', "Erreur markAllNotificationsRead pour user #$employee_id: " . $e->getMessage());
+        flashMessage("Erreur technique lors de la mise à jour des notifications.", "danger");
+    }
+    redirectTo(WEBCLIENT_URL . '/notifications.php');
+}
+
+
+function displayCommunityDetailsPageData($community_id)
+{
+    requireRole(ROLE_SALARIE);
+    $employee_id = $_SESSION['user_id'];
+
+    $data = [
+        'community' => null,
+        'posts' => [],
+        'csrf_token' => $_SESSION['csrf_token'] ?? ''
+    ];
+
+    $community_id = filter_var($community_id, FILTER_VALIDATE_INT);
+    if (!$community_id) {
+        flashMessage("ID de communauté invalide.", "danger");
+        redirectTo(WEBCLIENT_URL . '/modules/employees/communities.php');
+        return $data;
+    }
+
+    $data['community'] = fetchOne(TABLE_COMMUNAUTES, "id = :id", [':id' => $community_id], '');
+
+    if (!$data['community']) {
+        flashMessage("Communauté non trouvée.", "warning");
+        redirectTo(WEBCLIENT_URL . '/modules/employees/communities.php');
+        return $data;
+    }
+
+    $query = "SELECT cm.*, p.prenom, p.nom 
+              FROM communaute_messages cm
+              JOIN personnes p ON cm.personne_id = p.id
+              WHERE cm.communaute_id = :community_id
+              ORDER BY cm.created_at ASC";
+    try {
+        $stmt = executeQuery($query, [':community_id' => $community_id]);
+        $posts = $stmt->fetchAll();
+
+        foreach ($posts as &$post) {
+            $post['auteur_nom'] = trim(($post['prenom'] ?? '') . ' ' . ($post['nom'] ?? 'Inconnu'));
+            if ($post['personne_id'] === $employee_id) {
+                $post['auteur_nom'] = 'Vous';
+            }
+            $post['created_at_formatted'] = isset($post['created_at']) ? formatDate($post['created_at'], 'd/m/Y H:i') : 'Date inconnue';
+        }
+        $data['posts'] = $posts;
+    } catch (Exception $e) {
+        logSystemActivity('error', "Erreur lors de la récupération des messages pour la communauté ID: $community_id: " . $e->getMessage());
+        flashMessage("Erreur lors du chargement des messages.", "danger");
+    }
+
+    return $data;
+}
+
+function handleNewCommunityPost($community_id, $employee_id, $message)
+{
+    if (empty(trim($message))) {
+        flashMessage("Le message ne peut pas être vide.", "warning");
+        return false;
+    }
+    if (!filter_var($community_id, FILTER_VALIDATE_INT) || !filter_var($employee_id, FILTER_VALIDATE_INT)) {
+        flashMessage("ID invalide.", "danger");
+        return false;
+    }
+
+    $dataToInsert = [
+        'communaute_id' => $community_id,
+        'personne_id' => $employee_id,
+        'message' => $message,
+    ];
+
+    try {
+        $insertedId = insertRow('communaute_messages', $dataToInsert);
+
+        if ($insertedId) {
+            logActivity($employee_id, 'community_post', "Nouveau message posté dans la communauté ID: $community_id (Msg ID: $insertedId)");
+            flashMessage("Votre message a été ajouté.", "success");
+            return true;
+        } else {
+            logSystemActivity('error', "Échec de l'insertion du message pour la communauté ID: $community_id par l'employé ID: $employee_id");
+            flashMessage("Erreur technique lors de l'ajout de votre message.", "danger");
+            return false;
+        }
+    } catch (Exception $e) {
+        logSystemActivity('error', "Exception lors de l'ajout du message pour la communauté ID: $community_id: " . $e->getMessage());
+        flashMessage("Erreur technique lors de l'ajout de votre message.", "danger");
+        return false;
+    }
+}
+
+
+function getActiveAssociations()
+{
+    try {
+        if (!defined('TABLE_ASSOCIATIONS')) {
+            define('TABLE_ASSOCIATIONS', 'associations');
+        }
+        return fetchAll(TABLE_ASSOCIATIONS, 'statut = :status', 'nom ASC', [':status' => 'actif']);
+    } catch (Exception $e) {
+        logSystemActivity('error', "Erreur récupération des associations: " . $e->getMessage());
+        return [];
+    }
+}
+
+function handleRegisterForEvent($employee_id, $event_id)
+{
+    requireRole(ROLE_SALARIE);
+
+    $employee_id = filter_var($employee_id, FILTER_VALIDATE_INT);
+    $event_id = filter_var($event_id, FILTER_VALIDATE_INT);
+
+    if (!$employee_id || !$event_id) {
+        flashMessage("Informations invalides pour l'inscription.", "danger");
+        return false;
+    }
+
+    $event_params = [$event_id];
+    $event = fetchOne('evenements', 'id = ?', $event_params);
+
+    if (!$event) {
+        flashMessage("L'événement demandé n'existe pas.", "warning");
+        return false;
+    }
+
+    $eventStartDate = new DateTime($event['date_debut']);
+    $now = new DateTime();
+    if ($now >= $eventStartDate) {
+        flashMessage("Cet événement est déjà passé ou en cours, inscription impossible.", "warning");
+        return false;
+    }
+
+    $params_exist = [':pid' => $employee_id, ':eid' => $event_id, ':statut' => 'inscrit'];
+    $existingRegistration = fetchOne(
+        'evenement_inscriptions',
+        'personne_id = :pid AND evenement_id = :eid AND statut = :statut',
+        $params_exist
+    );
+    if ($existingRegistration) {
+        flashMessage("Vous êtes déjà inscrit à cet événement.", "info");
+        return true;
+    }
+
+    if (isset($event['capacite_max']) && $event['capacite_max'] !== null) {
+        $params_count = [':eid' => $event_id, ':statut' => 'inscrit'];
+        $registeredCount = countTableRows(
+            'evenement_inscriptions',
+            'evenement_id = :eid AND statut = :statut',
+            $params_count
+        );
+
+        if ($registeredCount >= $event['capacite_max']) {
+            flashMessage("Désolé, cet événement est complet.", "warning");
+            return false;
+        }
+    }
+
+    try {
+        beginTransaction();
+
+        $params_cancel = [':pid' => $employee_id, ':eid' => $event_id, ':statut' => 'annule'];
+        $cancelledRegistration = fetchOne(
+            'evenement_inscriptions',
+            'personne_id = :pid AND evenement_id = :eid AND statut = :statut',
+            $params_cancel
+        );
+
+        if ($cancelledRegistration) {
+            $updated = updateRow(
+                'evenement_inscriptions',
+                ['statut' => 'inscrit', 'updated_at' => date('Y-m-d H:i:s')],
+                'id = :id',
+                [':id' => $cancelledRegistration['id']]
+            );
+            $success = ($updated > 0);
+        } else {
+            $dataToInsert = [
+                'personne_id' => $employee_id,
+                'evenement_id' => $event_id,
+                'statut' => 'inscrit',
+            ];
+            $insertedId = insertRow('evenement_inscriptions', $dataToInsert);
+            $success = ($insertedId !== false);
+        }
+
+        if ($success) {
+            commitTransaction();
+            logActivity($employee_id, 'event_registration', "Inscription à l'événement ID: $event_id réussie.");
+            flashMessage("Inscription à l'événement réussie !", "success");
+            return true;
+        } else {
+            rollbackTransaction();
+            logSystemActivity('error', "Échec de l'inscription à l'événement ID: $event_id pour l'employé ID: $employee_id");
+            flashMessage("Erreur technique lors de l'inscription.", "danger");
+            return false;
+        }
+    } catch (Exception $e) {
+        if (getDbConnection()->inTransaction()) {
+            rollbackTransaction();
+        }
+        logSystemActivity('error', "Exception lors de l'inscription à l'événement ID: $event_id: " . $e->getMessage());
+        flashMessage("Erreur technique lors de l'inscription.", "danger");
+        return false;
+    }
+}
+
+function handleUnregisterFromEvent($employee_id, $event_id)
+{
+    requireRole(ROLE_SALARIE);
+
+    $employee_id = filter_var($employee_id, FILTER_VALIDATE_INT);
+    $event_id = filter_var($event_id, FILTER_VALIDATE_INT);
+
+    if (!$employee_id || !$event_id) {
+        flashMessage("Informations invalides pour la désinscription.", "danger");
+        return false;
+    }
+
+    $event = fetchOne('evenements', 'id = ?', [$event_id]);
+    if (!$event) {
+        flashMessage("L'événement demandé n'existe pas.", "warning");
+        return false;
+    }
+
+    $eventStartDate = new DateTime($event['date_debut']);
+    $now = new DateTime();
+    if ($now >= $eventStartDate) {
+        flashMessage("Cet événement est déjà passé ou en cours, désinscription impossible.", "warning");
+        return false;
+    }
+
+    try {
+        beginTransaction();
+
+        $params_exist = [':pid' => $employee_id, ':eid' => $event_id, ':statut' => 'inscrit'];
+        $existingRegistration = fetchOne(
+            'evenement_inscriptions',
+            'personne_id = :pid AND evenement_id = :eid AND statut = :statut',
+            $params_exist
+        );
+
+        if (!$existingRegistration) {
+            return true;
+        }
+
+        $updated = updateRow(
+            'evenement_inscriptions',
+            ['statut' => 'annule', 'updated_at' => date('Y-m-d H:i:s')],
+            'id = :id',
+            [':id' => $existingRegistration['id']]
+        );
+
+        if ($updated > 0) {
+            commitTransaction();
+            logActivity($employee_id, 'event_unregistration', "Désinscription de l'événement ID: $event_id réussie.");
+            flashMessage("Désinscription de l'événement réussie.", "success");
+            return true;
+        } else {
+            rollbackTransaction();
+            logSystemActivity('error', "Échec de la désinscription de l'événement ID: $event_id pour l'employé ID: $employee_id");
+            flashMessage("Erreur technique lors de la désinscription.", "danger");
+            return false;
+        }
+    } catch (Exception $e) {
+        if (getDbConnection()->inTransaction()) {
+            rollbackTransaction();
+        }
+        logSystemActivity('error', "Exception lors de la désinscription de l'événement ID: $event_id: " . $e->getMessage());
+        flashMessage("Erreur technique lors de la désinscription.", "danger");
+        return false;
+    }
+}
+
+function getEventIcon($eventType)
+{
+    $eventType = strtolower(trim($eventType));
+
+    $iconMap = [
+        'conference' => 'fas fa-chalkboard-teacher',
+        'webinar' => 'fas fa-desktop',
+        'atelier' => 'fas fa-tools',
+        'defi_sportif' => 'fas fa-running',
+        'consultation' => 'fas fa-user-md',
+        'autre' => 'fas fa-calendar-day',
+        'default' => 'fas fa-calendar-alt'
+    ];
+
+    return $iconMap[$eventType] ?? $iconMap['default'];
+}
+
+function handleChangePassword($employee_id, $current_password, $new_password, $confirm_password)
+{
+    if (!$employee_id) {
+        flashMessage("Impossible d'identifier l'utilisateur. Veuillez vous reconnecter.", "danger");
+        return false;
+    }
+
+    if (!defined('MIN_PASSWORD_LENGTH')) {
+        define('MIN_PASSWORD_LENGTH', 8);
+        error_log("Warning: MIN_PASSWORD_LENGTH was not defined. Using default value 8.");
+    }
+
+
+    if (empty($current_password) || empty($new_password) || empty($confirm_password)) {
+        flashMessage("Tous les champs de mot de passe sont obligatoires.", "warning");
+        return false;
+    }
+
+    if ($new_password !== $confirm_password) {
+        flashMessage("Le nouveau mot de passe et sa confirmation ne correspondent pas.", "warning");
+        return false;
+    }
+
+    if (strlen($new_password) < MIN_PASSWORD_LENGTH) {
+        flashMessage("Le nouveau mot de passe doit comporter au moins " . MIN_PASSWORD_LENGTH . " caractères.", "warning");
+        return false;
+    }
+
+    try {
+        requireRole(ROLE_SALARIE);
+        if ($_SESSION['user_id'] != $employee_id) {
+            logSecurityEvent($employee_id, 'password_change_forbidden', "[SECURITY] Tentative de changement de mot de passe pour un autre utilisateur (demandeur: {$_SESSION['user_id']})");
+            flashMessage("Vous ne pouvez modifier que votre propre mot de passe.", "danger");
+            return false;
+        }
+
+        $user = fetchOne(TABLE_USERS, 'id = :id', '', [':id' => $employee_id]);
+
+        if (!$user) {
+            flashMessage("Utilisateur non trouvé.", "danger");
+            session_unset();
+            session_destroy();
+            return false;
+        }
+
+        if (!password_verify($current_password, $user['mot_de_passe'])) {
+            logSecurityEvent($employee_id, 'password_change_fail', "[SECURITY] Tentative de changement de mot de passe échouée (mot de passe actuel incorrect)");
+            flashMessage("Le mot de passe actuel est incorrect.", "danger");
+            return false;
+        }
+
+        $newPasswordHash = password_hash($new_password, PASSWORD_DEFAULT);
+
+        $updateData = ['mot_de_passe' => $newPasswordHash, 'updated_at' => date('Y-m-d H:i:s')];
+        $whereClause = 'id = :id';
+        $whereParams = [':id' => $employee_id];
+
+
+        $updated = updateRow(
+            TABLE_USERS,
+            $updateData,
+            $whereClause,
+            $whereParams
+        );
+
+        if ($updated > 0) {
+            logBusinessOperation($employee_id, 'password_change_success', "Mot de passe modifié avec succès par l'employé.");
+            deleteRow(TABLE_REMEMBER_ME, 'user_id = :user_id', [':user_id' => $employee_id]);
+            flashMessage("Votre mot de passe a été modifié avec succès.", "success");
+            return true;
+        } else {
+            logSystemActivity('error', "Échec de la mise à jour du mot de passe pour l'employé ID: $employee_id (DB update returned 0 rows)");
+            flashMessage("Erreur technique lors de la modification du mot de passe (code 1).", "danger");
+            return false;
+        }
+    } catch (Exception $e) {
+        logSystemActivity('error', "Exception lors du changement de mot de passe pour l'employé ID: $employee_id: " . $e->getMessage());
+        flashMessage("Erreur technique lors de la modification du mot de passe (code 2).", "danger");
+        return false;
+    }
+}
+
+function handleAnonymousReport($sujet, $description)
+{
+    $sujet = trim(sanitizeInput($sujet));
+    $description = trim(sanitizeInput($description));
+
+
+    $dataToInsert = [
+        'sujet' => !empty($sujet) ? $sujet : null,
+        'description' => $description,
+        'statut' => 'nouveau'
+
+    ];
+
+    try {
+        $insertedId = insertRow(TABLE_SIGNALEMENTS, $dataToInsert);
+
+        if ($insertedId) {
+            logSystemActivity('anonymous_report_success', "Signalement anonyme ID: $insertedId enregistré avec succès.");
+            return true;
+        } else {
+            logSystemActivity('anonymous_report_failure', "Échec de l'insertion du signalement anonyme en BDD.");
+            return false;
+        }
+    } catch (Exception $e) {
+        logSystemActivity('anonymous_report_exception', "Exception lors de l'enregistrement du signalement anonyme: " . $e->getMessage());
+        return false;
+    }
+}
+
+
+
+function processAppointmentCancellationRequest($postData)
+{
+    $message = '';
+    $messageType = 'danger';
+    $userIdForLog = $_SESSION['user_id'] ?? null;
+
+    if (!isset($postData['csrf_token']) || !validateToken($postData['csrf_token'])) {
+        logSecurityEvent($userIdForLog, 'csrf_failure', "[SECURITY FAILURE] Tentative d'annulation via POST avec jeton invalide sur appointments.php");
+        flashMessage('Erreur de sécurité. Impossible de traiter votre demande.', 'danger');
+    } else {
+        $reservation_id = isset($postData['reservation_id']) ? filter_var($postData['reservation_id'], FILTER_VALIDATE_INT) : false;
+        if (!$reservation_id) {
+            flashMessage("ID de réservation invalide pour l'annulation.", 'danger');
+        } else {
+            handleCancelReservation($reservation_id);
+        }
+    }
+    $currentFilterForRedirect = isset($_GET['filter']) ? sanitizeInput($_GET['filter']) : 'upcoming';
+    redirectTo(WEBCLIENT_URL . '/modules/employees/appointments.php?filter=' . $currentFilterForRedirect);
+    exit;
+}
+
+
+function getCommunityIcon($type)
+{
+    $type = strtolower(trim($type ?? ''));
+    switch ($type) {
+        case 'sport':
+            return 'fas fa-futbol';
+        case 'bien_etre':
+            return 'fas fa-spa';
+        case 'sante':
+            return 'fas fa-heartbeat';
+
+        default:
+            return 'fas fa-users';
+    }
+}
+
+function handleJoinCommunityRequest($employee_id, $community_id)
+{
+    if (!$employee_id || !$community_id) {
+        flashMessage("ID de communauté ou d'employé manquant pour rejoindre.", "danger");
+        return;
+    }
+
+    logActivity($employee_id, 'community_join_attempt', "Tentative de rejoindre la communauté ID: $community_id");
+
+    $alreadyMember = false;
+    $joinSuccess = false;
+
+    if ($alreadyMember) {
+        flashMessage("Vous êtes déjà membre de cette communauté.", "info");
+    } else {
+        $joinSuccess = true;
+        if ($joinSuccess) {
+            flashMessage("Vous avez rejoint la communauté " . htmlspecialchars($community_id) . " (Simulation).", "success");
+        } else {
+            flashMessage("Impossible de rejoindre la communauté " . htmlspecialchars($community_id) . ".", "danger");
+        }
+    }
+}
+
+function handleDonationSubmission($postData, $employee_id)
+{
+    $submitted_csrf_token = $postData['csrf_token'] ?? null;
+
+    if (!validateToken($submitted_csrf_token)) {
+        logSecurityEvent($employee_id, 'csrf_failure', '[SECURITY FAILURE] Tentative POST avec jeton invalide sur donations.php');
+        flashMessage("Erreur de sécurité (jeton invalide).", "danger");
+        return;
+    }
+
+    requireRole(ROLE_SALARIE);
+
+    $donationData = [
+        'association_id' => $postData['association_id'] ?? null,
+        'type' => $postData['type'] ?? null,
+        'montant' => $postData['montant'] ?? null,
+        'description' => $postData['description'] ?? null
+    ];
+
+    $donationId = manageEmployeeDonations($employee_id, $donationData);
+}
+
+function handleEventActionRequest($postData, $employee_id)
+{
+    $csrf_token = $postData['csrf_token'] ?? null;
+    $event_id = filter_var($postData['event_id'] ?? null, FILTER_VALIDATE_INT);
+    $action = $postData['action'] ?? '';
+
+    if (!validateToken($csrf_token)) {
+        logSecurityEvent($employee_id, 'csrf_failure', "[SECURITY FAILURE] Tentative POST événement avec jeton invalide via handleEventActionRequest");
+        flashMessage("Erreur de sécurité (jeton invalide).", "danger");
+        return;
+    }
+
+    requireRole(ROLE_SALARIE);
+
+    if (!$event_id) {
+        flashMessage("ID d'événement invalide.", "danger");
+        return;
+    }
+
+    if ($action === 'register_event') {
+        handleRegisterForEvent($employee_id, $event_id);
+    } elseif ($action === 'unregister_event') {
+        handleUnregisterFromEvent($employee_id, $event_id);
+    } else {
+        flashMessage("Action invalide.", "danger");
+    }
+}
+
+function handleServiceReservationRequest($postData, $employee_id)
+{
+    $csrf_token = $postData['csrf_token'] ?? null;
+    $prestation_id = filter_var($postData['prestation_id'] ?? null, FILTER_VALIDATE_INT);
+
+    if (!validateToken($csrf_token)) {
+        logSecurityEvent($employee_id, 'csrf_failure', "[SECURITY FAILURE] Tentative POST service reservation avec jeton invalide via handleServiceReservationRequest");
+        flashMessage("Erreur de sécurité (jeton invalide).", "danger");
+        return false;
+    }
+
+    requireRole(ROLE_SALARIE);
+
+    if (!$prestation_id) {
+        flashMessage("ID de prestation invalide.", "danger");
+        return false;
+    }
+
+    $appointment_data = [
+        'prestation_id' => $prestation_id,
+        'date_rdv'      => date('Y-m-d H:i:s', strtotime('+1 day')),
+        'duree'         => 60,
+        'type_rdv'      => 'visio',
+        'notes'         => 'Réservation rapide depuis catalogue.'
+    ];
+
+    $result = bookEmployeeAppointment($employee_id, $appointment_data);
+
+    if ($result) {
+        flashMessage("La prestation a bien été réservée (ID: $result). Un créneau par défaut a été assigné. Vous pourrez le modifier depuis votre planning.", "success");
+        return true;
+    } else {
+        if (!isset($_SESSION['flash_messages'])) {
+            flashMessage("Erreur lors de la tentative de réservation.", "danger");
+        }
+        return false;
+    }
+}
+
+function handlePasswordChangeRequest($postData, $employee_id)
+{
+    requireRole(ROLE_SALARIE);
+
+    $current_password = $postData['current_password'] ?? '';
+    $new_password = $postData['new_password'] ?? '';
+    $confirm_password = $postData['confirm_password'] ?? '';
+
+    handleChangePassword($employee_id, $current_password, $new_password, $confirm_password);
+}
+
+function processSignalementSubmission($postData)
+{
+    $errors = [];
+    $submittedData = [
+        'sujet' => $postData['sujet'] ?? '',
+        'description' => $postData['description'] ?? ''
+    ];
+
+    if (!isset($postData['csrf_token']) || !validateToken($postData['csrf_token'])) {
+        logSystemActivity('csrf_failure_anonymous_report', '[SECURITY FAILURE] Tentative signalement anonyme avec jeton invalide.');
+        flashMessage("Erreur de sécurité (jeton invalide). Veuillez réessayer.", "danger");
+        return ['csrf' => 'Jeton invalide'];
+    }
+
+    $sujet = $submittedData['sujet'];
+    $description = $submittedData['description'];
+
+    if (empty(trim($description))) {
+        $errors['description'] = 'La description détaillée est obligatoire.';
+    } elseif (mb_strlen($description) > 2000) {
+        $errors['description'] = 'La description ne doit pas dépasser 2000 caractères.';
+    }
+
+    if (mb_strlen($sujet) > 255) {
+        $errors['sujet'] = 'Le sujet ne doit pas dépasser 255 caractères.';
+    }
+
+    if (empty($errors)) {
+        $success = handleAnonymousReport($sujet, $description);
+
+        if ($success) {
+            logSystemActivity('anonymous_report_submitted', 'Nouveau signalement anonyme reçu.');
+            flashMessage("Votre signalement a été transmis de manière anonyme. Merci pour votre vigilance.", "success");
+            return [];
+        } else {
+            flashMessage("Une erreur technique est survenue lors de la transmission de votre signalement. Veuillez réessayer.", "danger");
+            $errors['general'] = "Erreur de transmission.";
+            return $errors;
+        }
+    } else {
+        flashMessage("Veuillez corriger les erreurs indiquées.", "warning");
+        return $errors;
+    }
+}
+
+function displayCounselPageData()
+{
+    $counselTopics = [];
+    $dbError = null;
+
+    if (!isset($_SESSION['user_id'])) {
+        return ['counselTopics' => [], 'dbError' => 'Utilisateur non authentifié pour récupérer les conseils personnalisés.'];
+    }
+    $userId = $_SESSION['user_id'];
+
+    try {
+        $preferredCategoriesResult = fetchAll('utilisateur_interets_conseils', 'personne_id = :user_id', '', 0, 0, [':user_id' => $userId]);
+
+        $params = [];
+        $sql = "SELECT id, titre, icone, resume, categorie, contenu FROM conseils"; // Select from 'conseils' table
+
+        if (!empty($preferredCategoriesResult)) {
+            $categories = array_column($preferredCategoriesResult, 'categorie_conseil');
+            $categoryPlaceholders = [];
+            foreach ($categories as $index => $category) {
+                $placeholder = ':cat' . $index;
+                $categoryPlaceholders[] = $placeholder;
+                $params[$placeholder] = $category;
+            }
+            if (!empty($categoryPlaceholders)) {
+                $sql .= " WHERE categorie IN (" . implode(', ', $categoryPlaceholders) . ")";
+            }
+        }
+
+        $sql .= " ORDER BY categorie, titre"; // Optional ordering
+
+        $stmt = executeQuery($sql, $params);
+        $counselTopics = $stmt->fetchAll();
+    } catch (PDOException $e) {
+        error_log("Error fetching counsel topics for user $userId: " . $e->getMessage());
+        $dbError = "Une erreur est survenue lors de la récupération des conseils.";
+    } catch (Exception $e) {
+        error_log("General error in displayCounselPageData for user $userId: " . $e->getMessage());
+        $dbError = "Une erreur générale est survenue.";
+    }
+
+
+    return ['counselTopics' => $counselTopics, 'dbError' => $dbError];
 }

@@ -63,14 +63,8 @@ La méthode recommandée pour installer et exécuter Business-Care est via Docke
 5.  **Initialisation de la Base de Données:**
     *   Lors du premier démarrage du service `db`, le script `docker/db/init.sh` sera automatiquement exécuté.
     *   Ce script crée la base de données, importe le schéma (`business_care.sql`), les vues (`views.sql`), les triggers (`triggers.sql`), crée les utilisateurs (`business_care_user`, `business_care_backup`) et importe les données d'exemple (`sample_data.sql`) si elles existent.
-+    *   Pour vérifier que l'initialisation s'est correctement déroulée, exécutez :
-+        ```bash
-+        docker compose logs db | grep "Init complete"
-+        ```
-+    *   Si vous ne voyez pas ce message, vérifiez les logs complets pour identifier l'erreur :
-+        ```bash
-+        docker compose logs db
-+        ```
++    *   Pour vérifier que l'initialisation s'est correctement déroulée, exécutez :`docker compose logs db | grep "Init complete"`
++    *   Si vous ne voyez pas ce message, vérifiez les logs complets pour identifier l'erreur : `docker compose logs db`
 6.  **Accéder à l'Application:**
     *   L'application devrait maintenant être accessible dans votre navigateur :
         *   Interface Admin : `http://localhost/admin`
@@ -114,4 +108,3 @@ Une fois l'installation Docker terminée :
 
 *   **Interface Admin:** Accessible via `http://localhost/admin`
 *   **Interface Client:** Accessible via `http://localhost/client`
-

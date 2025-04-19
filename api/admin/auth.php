@@ -1,147 +1,107 @@
 <?php
-// API pour l'authentification
 
-// determine l'action a effectuer en fonction de la methode HTTP
+
+
+require_once __DIR__ . '/init.php';
+
+
 $method = $_SERVER['REQUEST_METHOD'];
 
 switch ($method) {
-    case 'POST':
-        // authentification
-        $data = json_decode(file_get_contents('php://input'), true);
+    case 'POST': 
         
-        // verifier si les identifiants sont fournis
+        $data = json_decode(file_get_contents('php://input'), true);
+
         if (!isset($data['email']) || !isset($data['password'])) {
-            http_response_code(400);
-            echo json_encode([
-                'error' => true,
-                'message' => 'Email et mot de passe requis'
-            ]);
-            exit;
+            sendJsonResponse(['error' => true, 'message' => 'Email et mot de passe requis'], 400);
         }
-        
-        // recuperer l'utilisateur
-        $pdo = getDbConnection();
-        $stmt = $pdo->prepare("SELECT id, nom, prenom, email, mot_de_passe, role_id, photo_url 
-                               FROM personnes WHERE email = ? AND statut = 'actif'");
-        $stmt->execute([$data['email']]);
-        $user = $stmt->fetch();
-        
-        if ($user && password_verify($data['password'], $user['mot_de_passe'])) {
-            // generer un jeton (a remplacer par une implementation JWT correcte)
-            $token = bin2hex(random_bytes(32));
+
+        $email = filter_var($data['email'], FILTER_SANITIZE_EMAIL);
+        $password = $data['password'];
+
+        try {
             
-            // mise a jour du temps de derniere connexion
-            $stmt = $pdo->prepare("UPDATE personnes SET derniere_connexion = NOW() WHERE id = ?");
-            $stmt->execute([$user['id']]);
-            
-            // masquer le mot de passe
-            unset($user['mot_de_passe']);
-            
-            echo json_encode([
-                'error' => false,
-                'message' => 'Authentification reussie',
-                'token' => $token,
-                'user' => $user
-            ]);
-        } else {
-            http_response_code(401);
-            echo json_encode([
-                'error' => true,
-                'message' => 'Email ou mot de passe invalide'
-            ]);
+            $user = fetchOne(TABLE_USERS, "email = ? AND statut = 'actif'", '', [$email]);
+
+            if ($user && password_verify($password, $user['mot_de_passe'])) {
+                
+                
+
+                
+                $apiToken = bin2hex(random_bytes(32));
+                $expires = date('Y-m-d H:i:s', strtotime('+1 hour')); 
+
+                
+                insertRow(TABLE_REMEMBER_ME, [
+                    'user_id' => $user['id'],
+                    'token' => $apiToken,
+                    'expires_at' => $expires,
+                    'created_at' => date('Y-m-d H:i:s') 
+                ]);
+
+                
+                updateRow(TABLE_USERS, ['derniere_connexion' => date('Y-m-d H:i:s')], "id = ?", [$user['id']]);
+
+                
+                logSecurityEvent($user['id'], 'api_login', "[SUCCESS] Utilisateur connecté avec succès via l'API (ID: " . $user['id'] . ")");
+
+                
+                unset($user['mot_de_passe']);
+
+                sendJsonResponse([
+                    'error' => false,
+                    'message' => 'Authentification réussie',
+                    'token' => $apiToken, 
+                    'user' => $user
+                ], 200);
+
+            } else {
+                $logUserId = $user ? $user['id'] : null;
+                logSecurityEvent($logUserId, 'api_login', '[FAILURE] Email ou mot de passe invalide pour tentative de connexion API : ' . $email, true);
+                sendJsonResponse(['error' => true, 'message' => 'Email ou mot de passe invalide'], 401);
+            }
+        } catch (Exception $e) {
+             logSystemActivity('api_login', '[ERROR] Erreur lors de la connexion API : ' . $e->getMessage());
+             
+             sendJsonResponse(['error' => true, 'message' => 'Une erreur interne est survenue lors de la connexion.'], 500);
         }
         break;
+
+    case 'DELETE': 
         
-    case 'PUT':
-        // verifier que l'utilisateur est authentifie
-        if (!$isAuthenticated) {
-            http_response_code(401);
-            echo json_encode([
-                'error' => true,
-                'message' => 'Authentification requise'
-            ]);
-            exit;
+        if (!$isAuthenticated || !$bearerToken) {
+             sendJsonResponse(['error' => true, 'message' => 'Authentification requise'], 401);
         }
-        
-        // modification du mot de passe
-        $data = json_decode(file_get_contents('php://input'), true);
-        
-        if (!isset($data['current_password']) || !isset($data['new_password'])) {
-            http_response_code(400);
-            echo json_encode([
-                'error' => true,
-                'message' => 'Mot de passe actuel et nouveau mot de passe requis'
-            ]);
-            exit;
-        }
-        
-        // recuperer l'ID de l'utilisateur (normalement extrait du token)
-        $userId = $data['user_id'] ?? null;
-        if (!$userId) {
-            http_response_code(400);
-            echo json_encode([
-                'error' => true,
-                'message' => 'ID utilisateur requis'
-            ]);
-            exit;
-        }
-        
-        // recuperer l'utilisateur
--        $user = fetchOne('personnes', "id = $userId");
-+        $user = fetchOne('personnes', "id = ?", '', [$userId]);
-        if (!$user) {
-            http_response_code(404);
-            echo json_encode([
-                'error' => true,
-                'message' => 'Utilisateur non trouve'
-            ]);
-            exit;
-        }
-        
-        // verifier le mot de passe actuel
-        if (!password_verify($data['current_password'], $user['mot_de_passe'])) {
-            http_response_code(400);
-            echo json_encode([
-                'error' => true,
-                'message' => 'Mot de passe actuel incorrect'
-            ]);
-            exit;
-        }
-        
-        // mettre a jour le mot de passe
-        $updatedData = [
-            'mot_de_passe' => password_hash($data['new_password'], PASSWORD_DEFAULT),
-            'updated_at' => date('Y-m-d H:i:s')
-        ];
-        
-        $updated = updateRow('personnes', $updatedData, "id = ?", [$userId]);
-        if ($updated) {
-            echo json_encode([
-                'error' => false,
-                'message' => 'Mot de passe mis a jour avec succes'
-            ]);
-        } else {
-            http_response_code(500);
-            echo json_encode([
-                'error' => true,
-                'message' => 'Erreur lors de la mise a jour du mot de passe'
-            ]);
+
+        try {
+            
+            
+            $deleted = deleteRow(TABLE_REMEMBER_ME, "token = ?", [$bearerToken]);
+
+            if ($deleted > 0) {
+                 
+                 logSecurityEvent($currentUserId, 'api_logout', "[SUCCESS] Utilisateur déconnecté avec succès via l'API (ID: " . $currentUserId . ")");
+                 sendJsonResponse(['error' => false, 'message' => 'Déconnexion réussie'], 200);
+            } else {
+                 
+                 logSecurityEvent(
+                     $currentUserId, 
+                     'api_logout', 
+                     '[FAILURE] Échec de la suppression du jeton API lors de la déconnexion (ID: ' . $currentUserId . ')', 
+                     true
+                 );
+                 sendJsonResponse(['error' => true, 'message' => 'Échec de la déconnexion, le jeton est peut-être invalide'], 400);
+            }
+        } catch (Exception $e) {
+             logSystemActivity('api_logout', '[ERROR] Erreur lors de la déconnexion API : ' . $e->getMessage());
+             
+             sendJsonResponse(['error' => true, 'message' => 'Une erreur interne est survenue lors de la déconnexion.'], 500);
         }
         break;
-        
-    case 'DELETE':
-        // deconnexion (a implementer avec une invalidation du token)
-        echo json_encode([
-            'error' => false,
-            'message' => 'Deconnexion reussie'
-        ]);
-        break;
-        
+
+    
+
     default:
-        http_response_code(405);
-        echo json_encode([
-            'error' => true,
-            'message' => 'Methode non autorisee'
-        ]);
+        sendJsonResponse(['error' => true, 'message' => 'Méthode non autorisée'], 405);
         break;
 } 

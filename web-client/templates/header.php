@@ -1,22 +1,15 @@
 <?php
 
-/**
- * en-tête commun du site
- * 
- * ce fichier contient la partie supérieure commune à toutes les pages
- */
 
-// Définir une valeur par défaut pour le titre de la page
+
 if (!isset($pageTitle)) {
     $pageTitle = "Business Care";
 }
 
-// Vérification de l'authentification, si non déjà fait ailleurs
 if (!isset($isLoggedIn)) {
     $isLoggedIn = isAuthenticated();
 }
 
-// Détermination du rôle de l'utilisateur connecté s'il y a lieu
 if (!isset($userRole) && $isLoggedIn) {
     if (isEntrepriseUser()) {
         $userRole = 'entreprise';
@@ -29,11 +22,8 @@ if (!isset($userRole) && $isLoggedIn) {
     }
 }
 
-// Récupération des notifications de l'utilisateur connecté
 $userNotifications = [];
 if ($isLoggedIn && isset($_SESSION['user_id'])) {
-    // TODO: Récupérer les notifications non lues (à implémenter)
-    // $userNotifications = getUnreadNotifications($_SESSION['user_id']);
 }
 ?>
 <!DOCTYPE html>
@@ -62,12 +52,10 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
 </head>
 
 <body>
-    <!-- Bouton "Retour en haut" -->
     <a id="back-to-top" class="d-none d-lg-block">
         <i class="fas fa-arrow-up"></i>
     </a>
 
-    <!-- Barre de navigation -->
     <nav class="navbar navbar-expand-lg <?= isset($transparentNav) && $transparentNav ? 'navbar-dark' : 'navbar-light bg-white' ?> fixed-top">
         <div class="container">
             <a class="navbar-brand" href="<?= WEBCLIENT_URL ?>">
@@ -80,24 +68,25 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
             </button>
 
             <div class="collapse navbar-collapse" id="navbarMain">
-                <!-- Navigation principale -->
                 <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?= WEBCLIENT_URL ?>">Accueil</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?= WEBCLIENT_URL ?>/index.php#services">Services</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?= WEBCLIENT_URL ?>/index.php#offres">Tarifs</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?= WEBCLIENT_URL ?>/modules/companies/contact.php">Contact</a>
-                    </li>
-
-                    <?php if ($isLoggedIn): ?>
-                        <!-- Menu spécifique selon le rôle -->
+                    <?php if (!$isLoggedIn): ?>
+                        <li class="nav-item">
+                            <a class="nav-link" href="<?= WEBCLIENT_URL ?>">Accueil</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="<?= WEBCLIENT_URL ?>/index.php#services">Services</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="<?= WEBCLIENT_URL ?>/index.php#offres">Tarifs</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="<?= WEBCLIENT_URL ?>/modules/companies/contact.php">Contact</a>
+                        </li>
+                    <?php else: ?>
                         <?php if ($userRole === 'entreprise'): ?>
+                            <li class="nav-item">
+                                <a class="nav-link" href="<?= WEBCLIENT_URL ?>/modules/companies/contact.php">Contact</a>
+                            </li>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     Entreprise
@@ -114,41 +103,64 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
                                 </ul>
                             </li>
                         <?php elseif ($userRole === 'salarie'): ?>
+
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     Salarié
                                 </a>
                                 <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/index.php">Tableau de bord</a></li>
-                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/reservations.php">Réservations</a></li>
-                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/challenges.php">Défis sportifs</a></li>
-                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/communities.php">Communautés</a></li>
+                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/index.php"><i class="fas fa-tachometer-alt me-2"></i>Tableau de bord</a></li>
+                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/appointments.php"><i class="fas fa-calendar-check me-2"></i>Mes Rendez-vous</a></li>
+                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/services.php"><i class="fas fa-concierge-bell me-2"></i>Catalogue Services</a></li>
+                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/communities.php"><i class="fas fa-users me-2"></i>Communautés</a></li>
                                     <li>
                                         <hr class="dropdown-divider">
                                     </li>
-                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/donations.php">Faire un don</a></li>
+                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/counsel.php"><i class="fas fa-heartbeat me-2"></i>Conseils Bien-être</a></li>
+                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/donations.php"><i class="fas fa-hand-holding-heart me-2"></i>Faire un don</a></li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/settings.php"><i class="fas fa-cog me-2"></i>Mes Paramètres</a></li>
                                 </ul>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="<?= WEBCLIENT_URL ?>/modules/companies/contact.php">Contact</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="<?= WEBCLIENT_URL ?>/modules/employees/chatbot.php"><i class="fas fa-robot me-1"></i>Assistance</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="<?= WEBCLIENT_URL ?>/modules/employees/signalement.php"><i class="fas fa-exclamation-triangle me-1"></i>Signalement</a>
+                            </li>
                         <?php elseif ($userRole === 'prestataire'): ?>
+                            <!-- Prestataire Links -->
+                            <li class="nav-item">
+                                <a class="nav-link" href="<?= WEBCLIENT_URL ?>/modules/companies/contact.php"><i class="fas fa-headset me-1"></i>Contact</a>
+                            </li>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    Prestataire
+                                    <i class="fas fa-briefcase me-1"></i>Mon Espace Prestataire
                                 </a>
                                 <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/providers/index.php">Tableau de bord</a></li>
-                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/providers/calendar.php">Calendrier</a></li>
-                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/providers/services.php">Services</a></li>
-                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/providers/invoices.php">Facturation</a></li>
+                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/providers/index.php"><i class="fas fa-tachometer-alt me-2"></i>Tableau de bord</a></li>
+                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/providers/calendar.php"><i class="fas fa-calendar-alt me-2"></i>Mon Calendrier</a></li>
+                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/providers/interventions.php"><i class="fas fa-tasks me-2"></i>Mes Interventions</a></li>
+                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/providers/services.php"><i class="fas fa-concierge-bell me-2"></i>Mes Services</a></li>
+                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/providers/evaluations.php"><i class="fas fa-star-half-alt me-2"></i>Mes Évaluations</a></li>
+                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/providers/invoices.php"><i class="fas fa-file-invoice-dollar me-2"></i>Ma Facturation</a></li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/providers/settings.php"><i class="fas fa-cog me-2"></i>Mes Paramètres</a></li>
                                 </ul>
                             </li>
                         <?php endif; ?>
                     <?php endif; ?>
                 </ul>
 
-                <!-- Partie droite : connexion ou profil/déconnexion -->
                 <ul class="navbar-nav ms-auto">
                     <?php if ($isLoggedIn): ?>
-                        <!-- Notifications -->
                         <li class="nav-item dropdown">
                             <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="fas fa-bell"></i>
@@ -203,18 +215,17 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <?php
-                                // Déterminer le lien des paramètres en fonction du rôle
-                                $settings_link = WEBCLIENT_URL . '/profile.php'; // Lien par défaut si pas de settings spécifique au rôle
+                                $settings_link = WEBCLIENT_URL . '/profile.php';
                                 if (isset($userRole)) {
                                     switch ($userRole) {
                                         case 'entreprise':
                                             $settings_link = WEBCLIENT_URL . '/modules/companies/settings.php';
                                             break;
                                         case 'salarie':
-                                            $settings_link = WEBCLIENT_URL . '/modules/employees/settings.php'; // Supposant que ce fichier existe/existera
+                                            $settings_link = WEBCLIENT_URL . '/modules/employees/settings.php';
                                             break;
                                         case 'prestataire':
-                                            $settings_link = WEBCLIENT_URL . '/modules/providers/settings.php'; // Supposant que ce fichier existe/existera
+                                            $settings_link = WEBCLIENT_URL . '/modules/providers/settings.php';
                                             break;
                                     }
                                 }
@@ -243,8 +254,8 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
         </div>
     </nav>
 
-    <!-- Espace pour la barre de navigation fixe -->
     <div style="padding-top: 76px;"></div>
+
 </body>
 
 </html>

@@ -1,50 +1,39 @@
 <?php
 
-/**
- * Affichage des factures pour l'espace entreprise.
- * Gère la vue liste (par défaut) et la vue détaillée d'une facture.
- */
 
-require_once __DIR__ . '/../../includes/init.php'; // Functions, config, etc.
+require_once __DIR__ . '/../../includes/init.php';
 require_once __DIR__ . '/../../includes/page_functions/modules/companies.php';
 
 requireRole(ROLE_ENTREPRISE);
 
-// Récupération ID entreprise
 $entrepriseId = $_SESSION['user_entreprise'];
 
-// Détermination de l'action (list ou view) et ID facture si view
 $action = isset($_GET['action']) ? sanitizeInput($_GET['action']) : 'list';
 $invoiceId = null;
 if ($action === 'view' && isset($_GET['id'])) {
     $invoiceId = filter_var($_GET['id'], FILTER_VALIDATE_INT);
 }
 
-// Initialisations pour les données
 $invoiceToView = null;
 $currentFactures = [];
 $historicalFactures = [];
 
-// --- Récupération des données en fonction de l'action ---
 
-// Cas: Affichage détail facture
 if ($action === 'view' && $invoiceId) {
     $invoiceToView = getInvoiceDetailsForCompany($entrepriseId, $invoiceId);
     if (!$invoiceToView) {
-        // getInvoiceDetailsForCompany already sets a flash message if needed
         redirectTo('invoices.php');
     }
     $pageTitle = "Détails Facture " . ($invoiceToView['numero_facture_complet'] ?? $invoiceId) . " - Espace Entreprise";
-} else { // Default action: list
-    // Fetch lists of invoices
+} else {
+
     $currentStatus = ['en_attente', 'retard', 'impayee'];
     $currentInvoicesData = getCompanyInvoices($entrepriseId, 1, 999, null, null, $currentStatus);
-    $currentFactures = $currentInvoicesData['invoices'] ?? []; // Use ?? for safety
+    $currentFactures = $currentInvoicesData['invoices'] ?? [];
 
     $historicalStatus = ['payee', 'annulee'];
     $historicalInvoicesData = getCompanyInvoices($entrepriseId, 1, 999, null, null, $historicalStatus);
-    $historicalFactures = $historicalInvoicesData['invoices'] ?? []; // Use ?? for safety
-
+    $historicalFactures = $historicalInvoicesData['invoices'] ?? [];
     $pageTitle = "Mes Factures - Espace Entreprise";
 }
 
@@ -56,10 +45,8 @@ include_once __DIR__ . '/../../templates/header.php';
 
 
     <?php
-    // --- Conditional Display ---
 
     if ($action === 'view' && $invoiceToView):
-        // --- Invoice Details View ---
     ?>
         <nav aria-label="breadcrumb mb-4">
             <ol class="breadcrumb">
@@ -128,7 +115,7 @@ include_once __DIR__ . '/../../templates/header.php';
                             </tr>
                         </thead>
                         <tbody>
-                            <?php if (empty($invoiceToView['lignes'])): // Simplified display if no detailed lines 
+                            <?php if (empty($invoiceToView['lignes'])):
                             ?>
                                 <tr>
                                     <td>Prestations Business Care (Période concernée)</td>
@@ -158,7 +145,6 @@ include_once __DIR__ . '/../../templates/header.php';
                                 <td colspan="2"></td>
                                 <th class="text-end">TVA (<?= $invoiceToView['tva_pourcentage_formate'] ?? 'N/A' ?>) :</th>
                                 <?php
-                                // Simple VAT calculation based on totals (might be imprecise if line details exist but aren't used)
                                 $tva_amount = ($invoiceToView['montant_total'] ?? 0) - ($invoiceToView['montant_ht'] ?? 0);
                                 ?>
                                 <td class="text-end"><?= formatMoney($tva_amount) ?></td>
@@ -184,8 +170,7 @@ include_once __DIR__ . '/../../templates/header.php';
         </div>
 
     <?php
-    else: // ($action === 'list')
-        // --- Invoice List View ---
+    else:
     ?>
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="mb-0">Mes Factures</h1>
@@ -232,11 +217,7 @@ include_once __DIR__ . '/../../templates/header.php';
                                             <a href="invoices.php?action=view&id=<?= $facture['id'] ?>" class="btn btn-sm btn-outline-primary" title="Voir la facture">
                                                 <i class="fas fa-eye"></i>
                                             </a>
-                                            <?php /* // Pay button (commented out) for current invoices
-                                        if (($facture['statut'] === 'en_attente' || $facture['statut'] === 'retard') && isset($facture['id'])) {
-                                            echo '<a href="#?id='.$facture['id'].'" class="btn btn-sm btn-success ms-1" title="Payer la facture"><i class="fas fa-credit-card"></i></a>';
-                                        }
-                                        */ ?>
+                                            <?php  ?>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -283,7 +264,6 @@ include_once __DIR__ . '/../../templates/header.php';
                                             <a href="invoices.php?action=view&id=<?= $facture['id'] ?>" class="btn btn-sm btn-outline-primary" title="Voir la facture">
                                                 <i class="fas fa-eye"></i>
                                             </a>
-                                            {/* No Pay button for history */}
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -293,7 +273,8 @@ include_once __DIR__ . '/../../templates/header.php';
                 <?php endif; ?>
             </div>
         </div>
-    <?php endif; // End conditional display (view vs list) 
+    <?php endif;
+
     ?>
 </main>
 

@@ -172,7 +172,6 @@ function processNewPasswordForm($formData = null) {
         return $result;
     }
     
-    // mettre à jour le mot de passe en utilisant updateRow()
     $hashedPassword = password_hash($formData['password'], PASSWORD_DEFAULT);
     $updated = updateRow('personnes', 
         [

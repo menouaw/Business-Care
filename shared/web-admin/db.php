@@ -129,19 +129,7 @@ function fetchAll($table, $where = '', $orderBy = '', $limit = 0, $offset = 0, $
     return $stmt->fetchAll();
 }
 
-/**
- * Récupère le premier enregistrement d'une table selon une condition donnée.
- *
- * La fonction valide le nom de la table pour éviter les injections SQL, puis construit
- * et exécute une requête SQL avec une clause WHERE et, si spécifiée, une clause ORDER BY.
- * Elle retourne le premier enregistrement trouvé sous forme de tableau associatif ou false si aucun enregistrement ne correspond.
- *
- * @param string $table Nom de la table concernée.
- * @param string $where Condition SQL pour filtrer les enregistrements.
- * @param string $orderBy Clause SQL pour ordonner les résultats (facultative).
- * @param array $params Paramètres à lier à la clause WHERE.
- * @return array|false Tableau associatif représentant l'enregistrement trouvé ou false si aucun enregistrement ne correspond.
- */
+
 function fetchOne($table, $where, $orderBy = '', $params = []) {
     $table = validateTableName($table);
 
@@ -155,19 +143,7 @@ function fetchOne($table, $where, $orderBy = '', $params = []) {
     return $stmt->fetch();
 }
 
-/**
- * Insère une nouvelle ligne dans la table spécifiée.
- *
- * Cette fonction prépare et exécute une requête SQL afin d'insérer les données
- * indiquées dans la table. Le nom de la table est d'abord validé pour éviter toute injection SQL.
- * En cas de succès, elle retourne l'identifiant de la nouvelle ligne insérée, sinon false.
- *
- * @param string $table Nom de la table dans laquelle insérer la nouvelle ligne.
- * @param array $data Tableau associatif des colonnes et valeurs à insérer.
- * @return int|false Identifiant de la ligne insérée ou false si l'insertion échoue.
- *
- * @throws Exception Si la validation du nom de la table échoue ou en cas d'erreur lors de l'exécution de la requête.
- */
+
 function insertRow($table, $data)
 {
     $table = validateTableName($table);
@@ -182,6 +158,7 @@ function insertRow($table, $data)
     $stmt = executeQuery($sql, $data);
     return $stmt->rowCount() > 0 ? getDbConnection()->lastInsertId() : false;
 }
+
 
 /**
  * Met à jour les enregistrements d'une table avec les données fournies.
@@ -237,6 +214,7 @@ function updateRow($table, $data, $where, $whereParams = [])
     }
 }
 
+
 /**
  * Supprime des lignes de la table spécifiée.
  *
@@ -258,31 +236,16 @@ function deleteRow($table, $where, $params = [])
     return $stmt->rowCount();
 }
 
-/**
- * Démarre une transaction SQL
- * 
- * @return void
- */
 function beginTransaction()
 {
     getDbConnection()->beginTransaction();
 }
 
-/**
- * Valide une transaction SQL en cours
- * 
- * @return void
- */
 function commitTransaction()
 {
     getDbConnection()->commit();
 }
 
-/**
- * Annule une transaction SQL en cours
- * 
- * @return void
- */
 function rollbackTransaction()
 {
     getDbConnection()->rollBack();

@@ -270,6 +270,7 @@ INSERT INTO notifications (personne_id, titre, message, type, lien, lu, date_lec
 (5, 'Paiement Reçu', 'Votre paiement a ete reçu avec succes', 'success', '/factures/1', true, '2024-03-17 10:30:00'),
 (6, 'Nouvelle Evaluation', 'Votre evaluation a ete enregistree', 'info', '/evaluations/1', false, NULL);
 
+-- Facture Prestataire 1 (Prestataire 6)
 INSERT INTO factures_prestataires (id, prestataire_id, numero_facture, date_facture, periode_debut, periode_fin, montant_total, statut, date_paiement) VALUES
 (1, 6, 'FP-202404-001', '2024-05-01', '2024-04-01', '2024-04-30', 370.00, 'impayee', NULL);
 
@@ -277,6 +278,7 @@ INSERT INTO facture_prestataire_lignes (facture_prestataire_id, rendez_vous_id, 
 (1, 4, 'RDV - Yoga en Entreprise', 120.00),
 (1, 18, 'RDV - Formation Risques Psycho-sociaux (RPS)', 250.00);
 
+-- Facture Prestataire 2 (Prestataire 13)
 INSERT INTO factures_prestataires (id, prestataire_id, numero_facture, date_facture, periode_debut, periode_fin, montant_total, statut, date_paiement) VALUES
 (2, 13, 'FP-202404-002', '2024-05-01', '2024-04-01', '2024-04-30', 415.00, 'payee', '2024-05-10 14:00:00');
 
@@ -286,6 +288,7 @@ INSERT INTO facture_prestataire_lignes (facture_prestataire_id, rendez_vous_id, 
 (2, 11, 'RDV - Consultation Psychologique', 80.00),
 (2, 27, 'RDV - Webinar Intelligence Emotionnelle', 175.00);
 
+-- Facture Prestataire 3 (Prestataire 20)
 INSERT INTO factures_prestataires (id, prestataire_id, numero_facture, date_facture, periode_debut, periode_fin, montant_total, statut, date_paiement) VALUES
 (3, 20, 'FP-202404-003', '2024-05-01', '2024-04-01', '2024-04-30', 700.00, 'impayee', NULL);
 
@@ -295,6 +298,7 @@ INSERT INTO facture_prestataire_lignes (facture_prestataire_id, rendez_vous_id, 
 (3, 10, 'RDV - Formation Leadership', 200.00),
 (3, 13, 'RDV - Webinar Communication Non Violente (CNV)', 160.00);
 
+-- Facture Prestataire 4 (Prestataire 20)
 INSERT INTO factures_prestataires (id, prestataire_id, numero_facture, date_facture, periode_debut, periode_fin, montant_total, statut, date_paiement) VALUES
 (4, 20, 'FP-202405-001', '2024-06-01', '2024-05-01', '2024-05-31', 540.00, 'impayee', NULL);
 

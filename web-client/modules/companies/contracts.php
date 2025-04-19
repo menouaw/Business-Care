@@ -191,7 +191,7 @@ if ($contractId > 0) {
                                 <?php foreach ($contrats as $contratItem): ?>
                                     <tr>
                                         <td><?= htmlspecialchars($contratItem['reference'] ?? 'N/A') ?></td>
-                                        <td><?= htmlspecialchars(ucfirst($contratItem['type_contrat'])) ?></td>
+                                        <td><?= htmlspecialchars($contratItem['service_nom'] ?? 'N/A') ?></td>
                                         <td><?= formatDate($contratItem['date_debut'], 'd/m/Y') ?></td>
                                         <td><?= $contratItem['date_fin'] ? formatDate($contratItem['date_fin'], 'd/m/Y') : 'Indéterminée' ?></td>
                                         <td><?= getStatusBadge($contratItem['statut']) ?></td>
