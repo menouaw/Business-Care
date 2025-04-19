@@ -1,9 +1,9 @@
 <?php
 // configuration de la base de donnees
 define('DB_HOST', getenv('DB_HOST') ?: 'db');
-define('DB_NAME', getenv('DB_DATABASE') ?: 'business_care');
-define('DB_USER', getenv('DB_USERNAME') ?: 'business_care_user');
-define('DB_PASS', getenv('DB_PASSWORD') ?: ''); // Fallback to empty string if not set
+define('DB_NAME', getenv('MYSQL_DATABASE') ?: 'business_care');
+define('DB_USER', getenv('MYSQL_USER') ?: 'business_care_user');
+define('DB_PASS', getenv('DB_PASSWORD') ?: '');
 define('DB_CHARSET', 'utf8mb4');
 
 // parametres de l'application
@@ -11,13 +11,13 @@ define('APP_NAME', 'Business Care');
 define('APP_VERSION', '0.4.0');
 
 // url de l'application
-define('ROOT_URL', 'http://localhost'); 
-define('WEBCLIENT_URL', ROOT_URL . '/client'); 
+define('ROOT_URL', 'http://localhost');
+define('WEBCLIENT_URL', ROOT_URL . '/client');
 
 define('SHARED_URL', ROOT_URL . '/shared');
-define('ASSETS_URL', ROOT_URL . '/assets'); 
-define('API_URL', ROOT_URL . '/api'); 
-define('UPLOAD_URL', ROOT_URL . '/uploads/'); 
+define('ASSETS_URL', ROOT_URL . '/assets');
+define('API_URL', ROOT_URL . '/api');
+define('UPLOAD_URL', ROOT_URL . '/uploads/');
 
 // constantes pour les roles utilisateurs
 define('ROLE_ADMIN', 1);

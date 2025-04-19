@@ -71,13 +71,6 @@ include_once __DIR__ . '/../../templates/header.php';
             <?php endif; ?>
         </div>
 
-        <!-- Pagination (if needed later) -->
-        <!--
-        <div class="mt-4 d-flex justify-content-center">
-            Pagination HTML here
-        </div>
-        -->
-
     </div>
 </main>
 

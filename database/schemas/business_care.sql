@@ -188,7 +188,6 @@ CREATE TABLE evenements (
     INDEX idx_type (type)
 );
 
-
 CREATE TABLE communautes (
     id INT PRIMARY KEY AUTO_INCREMENT,
     nom VARCHAR(255) NOT NULL,
@@ -199,6 +198,12 @@ CREATE TABLE communautes (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_type (type)
+);
+
+CREATE TABLE associations (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nom VARCHAR(255) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE dons (
@@ -379,7 +384,6 @@ CREATE TABLE prestataires_disponibilites (
     INDEX idx_jour_semaine (jour_semaine)
 );
 
-
 CREATE TABLE communaute_messages (
     id INT PRIMARY KEY AUTO_INCREMENT,
     communaute_id INT NOT NULL,
@@ -391,14 +395,8 @@ CREATE TABLE communaute_messages (
     INDEX idx_communaute_date (communaute_id, created_at)
 );
 
-CREATE TABLE associations (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    nom VARCHAR(255) NOT NULL UNIQUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
 CREATE TABLE evenement_inscriptions (
-    id INT PRIMARY KEY AUTO_INCREMENT,s
+    id INT PRIMARY KEY AUTO_INCREMENT,
     personne_id INT NOT NULL,
     evenement_id INT NOT NULL,
     statut ENUM('inscrit', 'annule') DEFAULT 'inscrit',
