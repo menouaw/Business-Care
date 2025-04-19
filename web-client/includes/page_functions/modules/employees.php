@@ -673,7 +673,11 @@ function updateEmployeeSettings($employee_id, $settings)
     }
 
     try {
-        $exists = fetchOne('preferences_utilisateurs', "personne_id = $employee_id");
+        $exists = fetchOne(
+            'preferences_utilisateurs',
+            'personne_id = :employee_id',
+            [':employee_id' => $employee_id]
+        );
 
         $result = false;
 
