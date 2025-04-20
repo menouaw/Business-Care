@@ -7,12 +7,14 @@ Business-Care est une application web conçue pour gérer les interactions et se
 
 ## Stack Technologique
 
-*   **Backend:** PHP 8.1 (Application principale et API REST distincte dans `/api`)
+*   **Backend (Web & API):** PHP 8.1 (Application principale et API REST distincte dans `/api`)
+*   **Backend (Reporting):** Java 17 (Application autonome dans `/java-app` utilisant Maven, iText, JFreeChart)
 *   **Frontend:** PHP, HTML, CSS, JavaScript (Interfaces séparées pour Admin dans `/web-admin` et Client dans `/web-client`)
 *   **Base de données:** MySQL 8.0 (Schéma, vues, triggers et données initiales dans `/database`)
 *   **Serveur Web:** Nginx (Configuration dans `docker/nginx/default.conf`)
 *   **Dépendances PHP:** Gérées via Composer (`composer.json`)
-*   **Conteneurisation:** Docker & Docker Compose (Configuration dans `Dockerfile`, `docker-compose.yml`, `docker/`)
+*   **Dépendances Java:** Gérées via Maven (`java-app/pom.xml`), utilise `maven-shade-plugin` pour créer un JAR exécutable ("fat JAR").
+*   **Conteneurisation:** Docker & Docker Compose (Configuration dans `Dockerfile`, `java-app/Dockerfile`, `docker-compose.yml`, `docker/`)
 
 ## Structure du Projet
 
@@ -27,7 +29,8 @@ Le projet est organisé dans les répertoires principaux suivants :
 *   `web-client/`: Interface destinée aux clients/employés (application PHP).
 *   `i18n/`: Fichiers d'internationalisation/localisation.
 *   `tests/`: Tests de l'application.
-*   `cloud-services/`, `infrastructure/`, `integrations/`, `java-app/`, `mobile-app/`, `desktop-app/`: Répertoires de placeholders ou sous-projets liés.
+*   `java-app/`: Contient une application Java autonome (basée sur Maven) pour générer des rapports PDF basés sur les données de l'API. Le point d'entrée est `src/main/java/com/businesscare/reporting/main/ReportApplication.java`.
+*   `cloud-services/`, `infrastructure/`, `integrations/`, `mobile-app/`, `desktop-app/`: Répertoires de placeholders ou sous-projets liés.
 
 ## Installation et Configuration (Docker Recommandé)
 
@@ -59,24 +62,29 @@ La méthode recommandée pour installer et exécuter Business-Care est via Docke
         ```bash
         docker compose up --build -d
         ```
-    *   Cette commande va construire l'image PHP, télécharger les images Nginx et MySQL, et démarrer les trois services en arrière-plan (`-d`).
+    *   Cette commande va construire les images nécessaires (PHP, Java via `java-app/Dockerfile`), télécharger les images Nginx et MySQL, et démarrer les services définis dans `docker-compose.yml` en arrière-plan (`-d`).
+    *   Le service `java-app` est configuré pour :
+        *   Compiler l'application Java et créer un JAR exécutable (via `maven-shade-plugin` dans `pom.xml` lors de la construction de l'image `java-app/Dockerfile`).
+        *   Exécuter le JAR (`java -jar /app/app.jar`) au démarrage du conteneur. (Note: La logique de reporting actuelle dans `ReportApplication.java` est un placeholder. La génération périodique n'est pas encore implémentée).
+        *   Utiliser la variable d'environnement `API_BASE_URL=http://nginx/api/admin` (définie dans `docker-compose.yml`) pour potentiellement communiquer avec l'API PHP.
+        *   Monter uniquement le répertoire local `./java-app/output` sur `/app/output` dans le conteneur. Cela permet à un rapport généré par l'application Java dans `/app/output` (par exemple `report.pdf`) d'être accessible sur l'hôte dans `./java-app/output/`, sans écraser le JAR de l'application dans `/app/`.
 5.  **Initialisation de la Base de Données:**
     *   Lors du premier démarrage du service `db`, le script `docker/db/init.sh` sera automatiquement exécuté.
     *   Ce script crée la base de données, importe le schéma (`business_care.sql`), les vues (`views.sql`), les triggers (`triggers.sql`), crée les utilisateurs (`business_care_user`, `business_care_backup`) et importe les données d'exemple (`sample_data.sql`) si elles existent.
-+    *   Pour vérifier que l'initialisation s'est correctement déroulée, exécutez :`docker compose logs db | grep "Init complete"`
-+    *   Si vous ne voyez pas ce message, vérifiez les logs complets pour identifier l'erreur : `docker compose logs db`
+    *   Pour vérifier que l'initialisation s'est correctement déroulée, exécutez :`docker compose logs db | grep "Init complete"`
+    *   Si vous ne voyez pas ce message, vérifiez les logs complets pour identifier l'erreur : `docker compose logs db`
 6.  **Accéder à l'Application:**
     *   L'application devrait maintenant être accessible dans votre navigateur :
         *   Interface Admin : `http://localhost/admin`
         *   Interface Client : `http://localhost/client` (ou simplement `http://localhost/` qui pourrait rediriger)
-+    *   Vérifiez que les conteneurs sont bien en cours d'exécution :
-+        ```bash
-+        docker compose ps
-+        ```
-+    *   Si l'un des conteneurs n'est pas à l'état "Up", consultez ses logs :
-+        ```bash
-+        docker compose logs [nom_du_service]
-+        ```
+    *   Vérifiez que les conteneurs sont bien en cours d'exécution :
+        ```bash
+        docker compose ps
+        ```
+    *   Si l'un des conteneurs n'est pas à l'état "Up", consultez ses logs :
+        ```bash
+        docker compose logs [nom_du_service]
+        ```
 
 ---
 
@@ -108,3 +116,4 @@ Une fois l'installation Docker terminée :
 
 *   **Interface Admin:** Accessible via `http://localhost/admin`
 *   **Interface Client:** Accessible via `http://localhost/client`
+*   **Rapport PDF (Java):** L'application Java (`java-app`) s'exécute au démarrage du conteneur. Actuellement, elle affiche des messages de placeholder (voir les logs avec `docker compose logs java-app`). Si la logique de génération de rapport était implémentée, elle écrirait le fichier (par exemple `report.pdf`) dans `/app/output` à l'intérieur du conteneur, qui serait alors visible sur votre machine hôte dans `./java-app/output/report.pdf` grâce au montage de volume configuré. L'accès via une URL directe ou un lien dans l'interface `web-admin` nécessiterait une configuration Nginx supplémentaire ou une logique applicative pour servir/lier ce fichier.
