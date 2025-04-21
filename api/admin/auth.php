@@ -40,7 +40,12 @@ switch ($method) {
                 ]);
 
                 
-                updateRow(TABLE_USERS, ['derniere_connexion' => date('Y-m-d H:i:s')], "id = ?", [$user['id']]);
+                updateRow(
+                    TABLE_USERS, 
+                    ['derniere_connexion' => date('Y-m-d H:i:s')], 
+                    "id = :user_id",
+                    [':user_id' => $user['id']]
+                );
 
                 
                 logSecurityEvent($user['id'], 'api_login', "[SUCCESS] Utilisateur connecté avec succès via l'API (ID: " . $user['id'] . ")");
