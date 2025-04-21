@@ -8,7 +8,7 @@ define('DB_CHARSET', 'utf8mb4');
 
 // Paramètres de l'application
 define('APP_NAME', 'Business Care');
-define('APP_VERSION', '0.6.0');
+define('APP_VERSION', '0.7.0');
 
 // URLs de l'application
 define('ROOT_URL', 'http://localhost');
