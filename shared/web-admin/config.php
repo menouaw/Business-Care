@@ -66,5 +66,6 @@ define('SESSION_LIFETIME', 1800);
 date_default_timezone_set('Europe/Paris');
 
 // constantes specifiques au web-client
-define('REMOVED', '');
+define('REMOVED', 'pk_test_51RG1rUCS7H8MIpLmIl0i9xgv1TEpg5hXe9fZZKZF2VboTBXVvJG02V4CoLdYnPGV6v0aK4RIekGvNuG3UiUADoLS00kQ2d2e07');
+define('REMOVED', 'sk_test_51RG1rUCS7H8MIpLmrY7d2OezYTkw6JDofEvEM0t0FbLBBo1inAw25c40HW7OgO0NwJRjAnOSBFAEuRVu3umXRgw600QUrz9KEU');
 define('STRIPE_JS_URL', 'https://js.stripe.com/v3/');
