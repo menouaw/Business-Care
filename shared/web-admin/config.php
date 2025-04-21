@@ -129,6 +129,9 @@ define('AVAILABILITY_TYPES', [AVAILABILITY_TYPE_RECURRING, AVAILABILITY_TYPE_SPE
 // Limites diverses
 define('DASHBOARD_RECENT_ACTIVITIES_LIMIT', 5);
 
+// Constantes financières
+define('FINANCIAL_RECENT_PAYMENT_DAYS', 7);
+
 // Définit le fuseau horaire
 date_default_timezone_set('Europe/Paris');
 
