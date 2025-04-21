@@ -69,7 +69,8 @@ _(Non recommandée si Docker est utilisé)_
 - Gestion Dons
 - Suivi Rendez-vous & Événements (si applicable au module admin)
 - Gestion Financière (facturation, suivi paiements via Stripe)
-- Rapports & Statistiques basiques
+- Visualisation de Rapports PDF : Accès à un rapport d'activité détaillé (généré périodiquement par une application Java externe - voir `/java-app/README.md`), fournissant des statistiques sur les clients, événements et prestations. Nécessite une configuration serveur web appropriée pour servir le fichier PDF depuis `/java-app/output/`.
+- Rapports & Statistiques basiques (intégrés au PHP)
 - Journalisation des activités importantes via `logging.php`
 
 ## Développement

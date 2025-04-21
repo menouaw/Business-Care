@@ -73,6 +73,39 @@ services:
     networks:
       - app-network
 
+  
+  java-app:
+    build:
+      context: ./java-app 
+      dockerfile: Dockerfile
+    container_name: business_care_java_app
+    restart: unless-stopped
+    volumes:
+      
+      
+      
+      
+      
+      - ./java-app/output:/app/output
+    networks:
+      - app-network
+    depends_on:
+      
+      nginx:
+        condition: service_started
+      db:
+        condition: service_healthy
+    environment:
+      
+      
+      API_BASE_URL: http://nginx/api/admin
+      
+      
+      
+      
+      
+      
+      
 
 networks:
   app-network:
