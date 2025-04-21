@@ -1,4 +1,10 @@
 <?php
+
+error_reporting(E_ALL);
+ini_set('display_errors', '0');
+
+header('Content-Type: application/json; charset=UTF-8');
+
 require_once __DIR__ . '/../../shared/web-admin/config.php';
 require_once __DIR__ . '/../../shared/web-admin/db.php';
 require_once __DIR__ . '/../../shared/web-admin/functions.php';
