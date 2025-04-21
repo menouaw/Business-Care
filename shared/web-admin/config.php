@@ -60,6 +60,8 @@ define('DEFAULT_DATE_FORMAT', 'd/m/Y H:i');
 define('DEFAULT_CURRENCY', '€');
 define('DEFAULT_ITEMS_PER_PAGE', 10);
 
+define('INVOICE_PREFIX', 'F');
+
 // duree de vie de la session en secondes (30 minutes)
 define('SESSION_LIFETIME', 1800);
 
