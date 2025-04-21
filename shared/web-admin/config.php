@@ -13,6 +13,7 @@ define('APP_VERSION', '0.4.0');
 // url de l'application
 define('ROOT_URL', 'http://localhost');
 define('WEBCLIENT_URL', ROOT_URL . '/client');
+define('WEBADMIN_URL', ROOT_URL . '/web-admin');
 
 define('SHARED_URL', ROOT_URL . '/shared');
 define('ASSETS_URL', ROOT_URL . '/assets');
