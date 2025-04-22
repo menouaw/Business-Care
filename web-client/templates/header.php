@@ -92,7 +92,7 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
                                     Entreprise
                                 </a>
                                 <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/companies/index.php">Tableau de bord</a></li>
+                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/companies/dashboard.php">Tableau de bord</a></li>
                                     <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/companies/invoices.php">Factures</a></li>
                                     <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/companies/contracts.php">Contrats</a></li>
                                     <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/companies/employees.php">Gestion des salariés</a></li>

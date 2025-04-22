@@ -1,3 +1,4 @@
+-- source C:/MAMP/htdocs/Business-Care/database/schemas/business_care.sql
 CREATE TABLE roles (
     id INT PRIMARY KEY AUTO_INCREMENT,
     nom VARCHAR(50) NOT NULL UNIQUE,
@@ -360,7 +361,7 @@ CREATE TABLE evenement_inscriptions (
 );
 
 CREATE TABLE evenement_inscriptions (
-    id INT PRIMARY KEY AUTO_INCREMENT,s
+    id INT PRIMARY KEY AUTO_INCREMENT,
     personne_id INT NOT NULL,
     evenement_id INT NOT NULL,
     statut ENUM('inscrit', 'annule') DEFAULT 'inscrit',

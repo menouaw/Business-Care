@@ -19,8 +19,11 @@ if ($isLoggedIn) {
 
 $available_services_for_pricing = [];
 try {
-    $stmt = executeQuery("SELECT id, nom, description FROM services WHERE actif = 1 ORDER BY ordre");
+    $sql_debug = "SELECT id, type, description FROM services WHERE actif = 1 ORDER BY ordre";
+    echo "<!-- DEBUG SQL: " . $sql_debug . " -->"; // Ajout pour voir dans le code source HTML
+    $stmt = executeQuery($sql_debug);
     $available_services_for_pricing = $stmt->fetchAll();
+    // die("DEBUG: Requête exécutée sans erreur PHP."); // Décommentez cette ligne temporairement
 } catch (Exception $e) {
     error_log("Erreur lors de la récupération des services pour la page d'accueil: " . $e->getMessage());
     // Gérer l'erreur discrètement ou afficher un message si nécessaire
@@ -154,7 +157,7 @@ include_once __DIR__ . '/templates/header.php';
                         <div class="col-md-4">
                             <div class="card h-100 <?php echo $cardClass; ?>">
                                 <div class="card-header text-center bg-primary text-white">
-                                    <h3 class="my-0"><?php echo htmlspecialchars($service['nom']); ?></h3>
+                                    <h3 class="my-0"><?php echo htmlspecialchars($service['type']); ?></h3>
                                 </div>
                                 <div class="card-body d-flex flex-column">
                                     <h4 class="card-title pricing-card-title text-center"><?php echo $pricingText; ?></h4>

@@ -6,15 +6,15 @@ require_once __DIR__ . '/functions.php';
 
 function login($email, $password, $rememberMe = false)
 {
-    $user = fetchOne('personnes', "email = '$email' AND statut = 'actif'");
+    $user = fetchOne('personnes', "email = :email AND statut = 'actif'", [':email' => $email]);
 
     if ($user && password_verify($password, $user['mot_de_passe'])) {
 
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['user_name'] = $user['prenom'] . ' ' . $user['nom'];
         $_SESSION['user_email'] = $user['email'];
-        $_SESSION['user_role'] = $user['role_id'];
-        $_SESSION['user_entreprise'] = $user['entreprise_id'];
+        $_SESSION['user_role'] = (int)$user['role_id'];
+        $_SESSION['user_entreprise'] = $user['entreprise_id'] ? (int)$user['entreprise_id'] : null;
         $_SESSION['user_photo'] = $user['photo_url'];
         $_SESSION['last_activity'] = time();
 
@@ -26,6 +26,7 @@ function login($email, $password, $rememberMe = false)
         }
 
         logSecurityEvent($user['id'], 'login', '[SUCCESS] Connexion réussie');
+
 
         return true;
     } else {
@@ -59,8 +60,12 @@ function logout()
 function isAuthenticated()
 {
     if (isset($_SESSION['user_id'])) {
-        if (time() - $_SESSION['last_activity'] > SESSION_LIFETIME) {
-            logSystemActivity('session_timeout', "[FAILURE] Session expirée pour l'utilisateur ID: " . $_SESSION['user_id']);
+        $currentTime = time();
+        $lastActivity = $_SESSION['last_activity'] ?? 0;
+        $lifetime = defined('SESSION_LIFETIME') ? SESSION_LIFETIME : 1800;
+        $timeDiff = $currentTime - $lastActivity;
+
+        if ($timeDiff > $lifetime) {
             logout();
             return false;
         }
@@ -80,7 +85,8 @@ function requireAuthentication()
 {
     if (!isAuthenticated()) {
         $_SESSION['redirect_after_login'] = $_SERVER['REQUEST_URI'];
-        redirectTo(WEBCLIENT_URL . '/connexion.php');
+        redirectTo((defined('WEBCLIENT_URL') ? WEBCLIENT_URL : '') . '/login.php');
+        exit;
     }
 }
 
@@ -121,9 +127,12 @@ function requireRole($requiredRole)
 {
     requireAuthentication();
 
-    if (!hasRole($requiredRole)) {
-        flashMessage('[ACCESS DENIED] Vous n\'avez pas les permissions nécessaires', 'danger');
-        redirectTo(WEBCLIENT_URL . '/index.php');
+    $userRoleInSession = $_SESSION['user_role'] ?? null;
+
+    if ($userRoleInSession === null || (int)$userRoleInSession !== (int)$requiredRole) {
+        flashMessage('Vous n\'avez pas les permissions nécessaires pour accéder à cette page.', 'danger');
+        redirectTo((defined('WEBCLIENT_URL') ? WEBCLIENT_URL : '') . '/index.php');
+        exit;
     }
 }
 
