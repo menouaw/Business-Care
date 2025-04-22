@@ -2,7 +2,6 @@
 require_once __DIR__ . '/../../shared/web-client/config.php';
 require_once __DIR__ . '/../../shared/web-client/db.php';
 
-define('DEFAULT_ITEMS_PER_PAGE', 10);
 define('INVOICE_PREFIX', 'F');
 
 

@@ -15,8 +15,8 @@ function getEmployeesList($company_id = null, $page = 1, $limit = 5, $search = '
 
     $offset = ($page - 1) * $limit;
 
-    $query = "SELECT p.id, p.nom, p.prenom, p.email, p.telephone, p.statut, p.photo_url, 
-              p.derniere_connexion, e.nom as entreprise_nom 
+    $query = "SELECT p.id, p.nom, p.prenom, p.email, p.telephone, p.statut, p.photo_url,
+              p.derniere_connexion, e.nom as entreprise_nom
               FROM personnes p
               LEFT JOIN entreprises e ON p.entreprise_id = e.id
               WHERE p.role_id = :role_id";
@@ -207,8 +207,8 @@ function getEmployeeAvailableServices($employee_id)
         return [];
     }
 
-    $query = "SELECT id, nom, description, type, categorie, 
-              niveau_difficulte, duree, capacite_max, prix 
+    $query = "SELECT id, nom, description, type, categorie,
+              niveau_difficulte, duree, capacite_max, prix
               FROM " . TABLE_PRESTATIONS . "
               ORDER BY type, nom";
 
@@ -235,7 +235,7 @@ function getEmployeeReservations($employee_id, $status = 'all')
               prat.nom as praticien_nom, prat.prenom as praticien_prenom
               FROM " . TABLE_APPOINTMENTS . " r
               JOIN " . TABLE_PRESTATIONS . " p ON r.prestation_id = p.id
-              LEFT JOIN " . TABLE_USERS . " prat ON r.praticien_id = prat.id 
+              LEFT JOIN " . TABLE_USERS . " prat ON r.praticien_id = prat.id
               WHERE r.personne_id = :employee_id";
     $params = [':employee_id' => $employee_id];
 
@@ -471,7 +471,6 @@ function manageEmployeeDonations($employee_id, $donation_data)
     }
 
     if ($association_id) {
-        if (!defined('TABLE_ASSOCIATIONS')) define('TABLE_ASSOCIATIONS', 'associations');
         $association_exists = fetchOne(TABLE_ASSOCIATIONS, "id = :id", [':id' => $association_id]);
         if (!$association_exists) {
             flashMessage("L'association sélectionnée est invalide.", "danger");
@@ -567,15 +566,25 @@ function getEmployeeEvents($employee_id, $event_type = 'all', $page = 1, $limit 
         ];
     }
 
+    $employeeData = fetchOne(TABLE_USERS, 'id = :id', [':id' => $employee_id], ['site_id']);
+    $employee_site_id = $employeeData ? $employeeData['site_id'] : null;
+
     $event_type = sanitizeInput($event_type);
     $validEventTypes = EVENT_TYPES;
 
-    $query = "SELECT e.id, e.titre, e.description, e.date_debut, e.date_fin, e.lieu, e.type, 
-                     e.capacite_max, e.niveau_difficulte
+    $query = "SELECT e.id, e.titre, e.description, e.date_debut, e.date_fin, e.lieu, e.type,
+                     e.capacite_max, e.niveau_difficulte, e.site_id
               FROM evenements e
               WHERE e.date_debut >= CURDATE()";
     $params = [];
     $whereClause = '';
+
+    if ($employee_site_id !== null) {
+        $whereClause .= " AND (e.site_id IS NULL OR e.site_id = :employee_site_id)";
+        $params[':employee_site_id'] = $employee_site_id;
+    } else {
+        $whereClause .= " AND e.site_id IS NULL";
+    }
 
     if ($event_type !== 'all' && in_array($event_type, $validEventTypes)) {
         $whereClause .= " AND e.type = :event_type";
@@ -586,6 +595,28 @@ function getEmployeeEvents($employee_id, $event_type = 'all', $page = 1, $limit 
     $query .= " ORDER BY e.date_debut ASC, e.titre ASC";
 
     try {
+        $prefQuery = "SELECT categorie_conseil FROM utilisateur_interets_conseils WHERE personne_id = :pid";
+        $userPreferences = executeQuery($prefQuery, ['pid' => $employee_id])->fetchAll(PDO::FETCH_COLUMN);
+        $userPreferencesLower = array_map('strtolower', array_map('trim', $userPreferences));
+
+        $preferenceToEventTypeMap = [
+            'stress' => ['conference', 'webinar', 'atelier'],
+            'sommeil' => ['conference', 'webinar', 'atelier'],
+            'nutrition' => ['conference', 'webinar', 'atelier'],
+            'activité physique' => ['defi_sportif', 'atelier', 'conference'],
+            'sport' => ['defi_sportif', 'atelier', 'conference'],
+            'bien_etre' => ['conference', 'webinar', 'atelier', 'defi_sportif'],
+            'sante' => ['conference', 'webinar', 'atelier']
+        ];
+
+        $recommendedEventTypes = [];
+        foreach ($userPreferencesLower as $pref) {
+            if (isset($preferenceToEventTypeMap[$pref])) {
+                $recommendedEventTypes = array_merge($recommendedEventTypes, $preferenceToEventTypeMap[$pref]);
+            }
+        }
+        $recommendedEventTypes = array_unique($recommendedEventTypes);
+
         error_log("[DEBUG] getEmployeeEvents - Query: " . $query);
         error_log("[DEBUG] getEmployeeEvents - Params: " . json_encode($params));
 
@@ -601,9 +632,9 @@ function getEmployeeEvents($employee_id, $event_type = 'all', $page = 1, $limit 
             $placeholders = implode(',', array_fill(0, count($eventIds), '?'));
 
             $inscriptionCounts = [];
-            $sqlCounts = "SELECT evenement_id, COUNT(id) as count 
-                          FROM evenement_inscriptions 
-                          WHERE evenement_id IN ($placeholders) AND statut = 'inscrit' 
+            $sqlCounts = "SELECT evenement_id, COUNT(id) as count
+                          FROM evenement_inscriptions
+                          WHERE evenement_id IN ($placeholders) AND statut = 'inscrit'
                           GROUP BY evenement_id";
             $stmtCounts = executeQuery($sqlCounts, $eventIds);
             while ($row = $stmtCounts->fetch()) {
@@ -611,8 +642,8 @@ function getEmployeeEvents($employee_id, $event_type = 'all', $page = 1, $limit 
             }
 
             $userRegistrations = [];
-            $sqlUserReg = "SELECT evenement_id 
-                           FROM evenement_inscriptions 
+            $sqlUserReg = "SELECT evenement_id
+                           FROM evenement_inscriptions
                            WHERE personne_id = ? AND statut = 'inscrit' AND evenement_id IN ($placeholders)";
             $paramsUserReg = array_merge([$employee_id], $eventIds);
             $stmtUserReg = executeQuery($sqlUserReg, $paramsUserReg);
@@ -633,6 +664,9 @@ function getEmployeeEvents($employee_id, $event_type = 'all', $page = 1, $limit 
                 $event['est_complet'] = false;
             }
             $event['est_inscrit'] = isset($userRegistrations[$event['id']]);
+
+            $eventTypeLower = isset($event['type']) ? strtolower(trim($event['type'])) : null;
+            $event['is_recommended'] = $eventTypeLower && in_array($eventTypeLower, $recommendedEventTypes);
         }
 
         return $events;
@@ -837,14 +871,60 @@ function displayEmployeeDashboard()
     $appointmentsResult = getEmployeeAppointments($employee_id, 'upcoming', 1, 3);
     $data['upcoming_appointments'] = $appointmentsResult;
 
-    $eventsResult = getEmployeeEvents($employee_id, 'all', 1, 3);
-    $data['upcoming_events'] = $eventsResult['items'] ?? [];
+    $allUpcomingEvents = getEmployeeEvents($employee_id, 'all', 1, 999);
+
+    $prefQuery = "SELECT categorie_conseil FROM utilisateur_interets_conseils WHERE personne_id = :pid";
+    $userPreferences = executeQuery($prefQuery, ['pid' => $employee_id])->fetchAll(PDO::FETCH_COLUMN);
+    $userPreferencesLower = array_map('strtolower', array_map('trim', $userPreferences));
+
+    $preferenceToEventTypeMap = [
+        'stress' => ['conference', 'webinar', 'atelier'],
+        'sommeil' => ['conference', 'webinar', 'atelier'],
+        'nutrition' => ['conference', 'webinar', 'atelier'],
+        'activité physique' => ['defi_sportif', 'atelier', 'conference'],
+        'sport' => ['defi_sportif', 'atelier', 'conference'],
+        'bien_etre' => ['conference', 'webinar', 'atelier', 'defi_sportif'],
+        'sante' => ['conference', 'webinar', 'atelier']
+    ];
+
+    $recommendedEventTypes = [];
+    foreach ($userPreferencesLower as $pref) {
+        if (isset($preferenceToEventTypeMap[$pref])) {
+            $recommendedEventTypes = array_merge($recommendedEventTypes, $preferenceToEventTypeMap[$pref]);
+        }
+    }
+    $recommendedEventTypes = array_unique($recommendedEventTypes);
+
+    $recommendedEvents = [];
+    $otherEvents = [];
+    if (is_array($allUpcomingEvents)) {
+        foreach ($allUpcomingEvents as $event) {
+            $eventTypeLower = isset($event['type']) ? strtolower(trim($event['type'])) : null;
+            if ($eventTypeLower && in_array($eventTypeLower, $recommendedEventTypes)) {
+                $recommendedEvents[] = $event;
+            } else {
+                $otherEvents[] = $event;
+            }
+        }
+    }
+
+    $dashboardEvents = array_slice($recommendedEvents, 0, 3);
+    $remainingSlots = 3 - count($dashboardEvents);
+    if ($remainingSlots > 0) {
+        $dashboardEvents = array_merge($dashboardEvents, array_slice($otherEvents, 0, $remainingSlots));
+    }
+
+    $data['upcoming_events'] = $dashboardEvents;
+    $data['total_upcoming_events_count'] = is_array($allUpcomingEvents) ? count($allUpcomingEvents) : 0;
 
     $data['unread_notifications'] = fetchAll(TABLE_NOTIFICATIONS, 'personne_id = :id AND lu = 0', 'created_at DESC', 5, 0, ['id' => $employee_id]);
+
+    $data['recommended_events'] = array_slice($recommendedEvents, 0, 3);
 
     $activityResult = getEmployeeActivityHistory($employee_id, 1, 5);
     $data['recent_activity'] = $activityResult;
 
+    error_log("Debug Dashboard - Events Result: " . print_r($dashboardEvents, true));
 
     return $data;
 }
@@ -874,8 +954,71 @@ function displayEmployeeCommunitiesPage()
     requireRole(ROLE_SALARIE);
     $employee_id = $_SESSION['user_id'];
 
-    $data = [];
-    $data['communities'] = getEmployeeCommunities($employee_id);
+    $data = [
+        'recommendedCommunities' => [],
+        'otherCommunities' => [],
+        'memberCommunityIds' => [],
+        'csrf_token' => $_SESSION['csrf_token'] ?? generateToken(),
+        'dbError' => null
+    ];
+
+    try {
+        $allCommunities = fetchAll(TABLE_COMMUNAUTES, '1=1', 'type, nom');
+        if ($allCommunities === false) {
+            throw new Exception("Impossible de récupérer la liste des communautés.");
+        }
+
+        $memberQuery = "SELECT communaute_id FROM communaute_membres WHERE personne_id = :pid";
+        $memberStmt = executeQuery($memberQuery, [':pid' => $employee_id]);
+        $data['memberCommunityIds'] = $memberStmt->fetchAll(PDO::FETCH_COLUMN, 0);
+        if ($data['memberCommunityIds'] === false) {
+            error_log("Avertissement: Impossible de récupérer les adhésions aux communautés pour l'employé #$employee_id.");
+            $data['memberCommunityIds'] = [];
+        }
+
+        $prefQuery = "SELECT categorie_conseil FROM utilisateur_interets_conseils WHERE personne_id = :pid";
+        $userPreferencesStmt = executeQuery($prefQuery, [':pid' => $employee_id]);
+        $userCounselingPreferences = $userPreferencesStmt->fetchAll(PDO::FETCH_COLUMN, 0);
+        if ($userCounselingPreferences === false) {
+            error_log("Avertissement: Impossible de récupérer les préférences de conseils pour l'employé #$employee_id.");
+            $userCounselingPreferences = [];
+        }
+        $userCounselingPreferencesLower = array_map('strtolower', array_map('trim', $userCounselingPreferences));
+
+        $preferenceToCommunityTypeMap = [
+            'stress' => ['bien_etre', 'sante'],
+            'sommeil' => ['bien_etre', 'sante'],
+            'nutrition' => ['sante', 'bien_etre'],
+            'activité physique' => ['sport'],
+            'sport' => ['sport'],
+            'bien_etre' => ['bien_etre'],
+            'sante' => ['sante']
+        ];
+
+        $recommendedCommunityTypes = [];
+        foreach ($userCounselingPreferencesLower as $pref) {
+            if (isset($preferenceToCommunityTypeMap[$pref])) {
+                $recommendedCommunityTypes = array_merge($recommendedCommunityTypes, $preferenceToCommunityTypeMap[$pref]);
+            }
+        }
+        $recommendedCommunityTypes = array_unique($recommendedCommunityTypes);
+
+        foreach ($allCommunities as $community) {
+            $communityTypeLower = isset($community['type']) ? strtolower(trim($community['type'])) : null;
+
+            if ($communityTypeLower && in_array($communityTypeLower, $recommendedCommunityTypes)) {
+                $data['recommendedCommunities'][] = $community;
+            } else {
+                $data['otherCommunities'][] = $community;
+            }
+        }
+    } catch (Exception $e) {
+        logSystemActivity('error', "Erreur chargement données page communautés pour user #$employee_id: " . $e->getMessage());
+        $data['dbError'] = "Une erreur est survenue lors du chargement des communautés.";
+        $data['recommendedCommunities'] = [];
+        $data['otherCommunities'] = [];
+        $data['memberCommunityIds'] = [];
+    }
 
     return $data;
 }
@@ -883,10 +1026,6 @@ function displayEmployeeCommunitiesPage()
 function getActiveAssociations()
 {
     try {
-        if (!defined('TABLE_ASSOCIATIONS')) {
-            define('TABLE_ASSOCIATIONS', 'associations');
-            error_log("[WARNING] TABLE_ASSOCIATIONS constant was not defined. Using default 'associations'.");
-        }
         return fetchAll(TABLE_ASSOCIATIONS, '1=1', 'nom ASC', 0, 0, []);
     } catch (Exception $e) {
         logSystemActivity('error', "Erreur récupération des associations: " . $e->getMessage());
@@ -1195,16 +1334,16 @@ function handleCancelReservation($reservation_id)
         exit;
     }
 
-    error_log("[DEBUG] handleCancelReservation: Tentative d'annulation pour employee_id = $employee_id, reservation_id = $reservation_id"); // Log entrée
+    error_log("[DEBUG] handleCancelReservation: Tentative d'annulation pour employee_id = $employee_id, reservation_id = $reservation_id");
 
     try {
-        error_log("[DEBUG] handleCancelReservation: Appel de fetchOne avec id=$reservation_id, personne_id=$employee_id, statut IN ('planifie', 'confirme')"); // Log avant fetch
+        error_log("[DEBUG] handleCancelReservation: Appel de fetchOne avec id=$reservation_id, personne_id=$employee_id, statut IN ('planifie', 'confirme')");
         $reservation = fetchOne(
             TABLE_APPOINTMENTS,
             "id = :id AND personne_id = :employee_id AND statut IN ('planifie', 'confirme')",
             [':id' => $reservation_id, ':employee_id' => $employee_id]
         );
-        error_log("[DEBUG] handleCancelReservation: Résultat de fetchOne: " . print_r($reservation, true)); // Log après fetch
+        error_log("[DEBUG] handleCancelReservation: Résultat de fetchOne: " . print_r($reservation, true));
 
         if (!$reservation) {
             flashMessage("Réservation non trouvée ou non annulable.", "warning");
@@ -1218,6 +1357,22 @@ function handleCancelReservation($reservation_id)
         if ($now >= $rdvTime || ($interval->days == 0 && $interval->h < 24)) {
         }
 
+        $creneau_to_release = null;
+        try {
+            $creneau_to_release = fetchOne(
+                'consultation_creneaux',
+                'prestation_id = :prestation_id AND praticien_id <=> :praticien_id AND start_time = :start_time AND is_booked = TRUE',
+                [
+                    ':prestation_id' => $reservation['prestation_id'],
+                    ':praticien_id' => $reservation['praticien_id'],
+                    ':start_time' => $reservation['date_rdv']
+                ]
+            );
+            error_log("[DEBUG] handleCancelReservation: Recherche créneau pour RDV #{$reservation_id}. Trouvé: " . ($creneau_to_release ? "ID {$creneau_to_release['id']}" : "Non"));
+        } catch (Exception $fetchEx) {
+            error_log("Erreur recherche créneau pour RDV #{$reservation_id}: " . $fetchEx->getMessage());
+        }
+
         $updated = updateRow(
             TABLE_APPOINTMENTS,
             ['statut' => 'annule'],
@@ -1228,6 +1383,39 @@ function handleCancelReservation($reservation_id)
         if ($updated) {
             logReservationActivity($employee_id, $reservation['prestation_id'], 'annulation', "RDV #$reservation_id annulé par l'employé");
             flashMessage("Votre réservation a été annulée.", "success");
+
+            if ($creneau_to_release) {
+                try {
+                    $slot_updated = updateRow(
+                        'consultation_creneaux',
+                        ['is_booked' => 0],
+                        'id = :id',
+                        [':id' => $creneau_to_release['id']]
+                    );
+                    if ($slot_updated) {
+                        error_log("[INFO] handleCancelReservation: Créneau #{$creneau_to_release['id']} libéré suite à annulation RDV #{$reservation_id}.");
+                    } else {
+                        error_log("[WARNING] handleCancelReservation: Échec MAJ is_booked=0 pour créneau #{$creneau_to_release['id']}.");
+                    }
+                } catch (Exception $slotEx) {
+                    error_log("Erreur libération créneau #{$creneau_to_release['id']} suite à annulation RDV #{$reservation_id}: " . $slotEx->getMessage());
+                }
+            }
+
+            $prestation = fetchOne(TABLE_PRESTATIONS, 'id = :id', [':id' => $reservation['prestation_id']]);
+            $prestationNom = $prestation ? $prestation['nom'] : 'Inconnue';
+            $notifData = [
+                'personne_id' => $employee_id,
+                'titre' => 'Réservation annulée',
+                'message' => 'Votre réservation pour \'' . htmlspecialchars($prestationNom) . '\' prévue le ' . formatDate($reservation['date_rdv']) . ' a été annulée.',
+                'type' => 'warning',
+                'lien' => WEBCLIENT_URL . '/modules/employees/appointments.php'
+            ];
+            try {
+                insertRow(TABLE_NOTIFICATIONS, $notifData);
+            } catch (Exception $notifEx) {
+                logSystemActivity('error', "Erreur création notif annulation RDV #$reservation_id: " . $notifEx->getMessage());
+            }
         } else {
             flashMessage("Impossible d'annuler la réservation.", "danger");
         }
@@ -1237,27 +1425,6 @@ function handleCancelReservation($reservation_id)
     }
 }
 
-
-function displayNotifications()
-{
-    requireRole(ROLE_SALARIE);
-    $employee_id = $_SESSION['user_id'];
-
-    $data = [];
-    $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-    $limit = 15;
-
-    $where = "personne_id = :id";
-    $params = [':id' => $employee_id];
-    $orderBy = "created_at DESC";
-
-    $paginationResult = paginateResults(TABLE_NOTIFICATIONS, $page, $limit, $where, $orderBy, $params);
-
-    $data['notifications'] = $paginationResult['items'];
-    $data['pagination_html'] = renderPagination($paginationResult, "?page={page}");
-
-    return $data;
-}
 
 function handleAnonymousReport($sujet, $description)
 {
@@ -1283,8 +1450,6 @@ function handleAnonymousReport($sujet, $description)
     $reportData = [
         'sujet' => !empty($sujet) ? $sujet : 'Signalement Anonyme',
         'description' => $description,
-        'ip_address' => $_SERVER['REMOTE_ADDR'] ?? null,
-        'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? null,
         'statut' => 'nouveau',
         'created_at' => date('Y-m-d H:i:s')
     ];
@@ -1294,15 +1459,18 @@ function handleAnonymousReport($sujet, $description)
         $insertedId = insertRow(TABLE_SIGNALEMENTS, $reportData);
 
         if ($insertedId) {
-            logSystemActivity('anonymous_report_submitted', "Nouveau signalement anonyme soumis (ID: $insertedId)", ['ip' => $reportData['ip_address']]);
+            $details_success = "Nouveau signalement anonyme soumis (ID: $insertedId) | IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'N/A');
+            logSystemActivity('anonymous_report_submitted', $details_success);
             return true;
         } else {
-            logSystemActivity('error', "Échec insertion signalement anonyme DB", ['ip' => $reportData['ip_address'], 'sujet' => $sujet]);
+            $details_fail = "Échec insertion signalement anonyme DB | Sujet: " . $sujet . " | IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'N/A');
+            logSystemActivity('error', $details_fail);
             flashMessage("Erreur technique lors de la transmission de votre signalement (code 1).", "danger");
             return false;
         }
     } catch (Exception $e) {
-        logSystemActivity('error', "Exception lors traitement signalement anonyme: " . $e->getMessage(), ['ip' => $reportData['ip_address'], 'sujet' => $sujet]);
+        $details_exception = "Exception lors traitement signalement anonyme: " . $e->getMessage() . " | Sujet: " . $sujet . " | IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'N/A');
+        logSystemActivity('error', $details_exception);
         flashMessage("Erreur technique lors de la transmission de votre signalement (code 2).", "danger");
         return false;
     }
@@ -1380,54 +1548,88 @@ function handleChangePassword($employee_id, $current_password, $new_password, $c
 
 function handleRegisterForEvent($employee_id, $event_id)
 {
-    if (!defined('TABLE_EVENTS')) define('TABLE_EVENTS', 'evenements');
-    if (!defined('TABLE_EVENT_REGISTRATIONS')) define('TABLE_EVENT_REGISTRATIONS', 'evenement_inscriptions');
-
+    error_log("[HRE_DEBUG] Début handleRegisterForEvent pour employee #$employee_id, event #$event_id");
     try {
         $event = fetchOne(TABLE_EVENTS, "id = :id", ['id' => $event_id]);
         if (!$event) {
+            error_log("[HRE_ERROR] Événement #$event_id non trouvé.");
             flashMessage("Événement non trouvé.", "warning");
             return false;
         }
+        error_log("[HRE_DEBUG] Événement trouvé: " . print_r($event, true));
 
         $existingRegistration = fetchOne(TABLE_EVENT_REGISTRATIONS, "personne_id = :pid AND evenement_id = :eid AND statut = 'inscrit'", [':pid' => $employee_id, ':eid' => $event_id]);
         if ($existingRegistration) {
+            error_log("[HRE_INFO] Employé #$employee_id déjà inscrit à l'événement #$event_id.");
             flashMessage("Vous êtes déjà inscrit à cet événement.", "info");
             return false;
         }
+        error_log("[HRE_DEBUG] Pas d'inscription active trouvée pour employee #$employee_id.");
 
         if (isset($event['capacite_max']) && $event['capacite_max'] !== null) {
             $currentRegistrations = countTableRows(TABLE_EVENT_REGISTRATIONS, "evenement_id = :eid AND statut = 'inscrit'", [':eid' => $event_id]);
+            error_log("[HRE_DEBUG] Capacité max: {$event['capacite_max']}, Inscriptions actuelles: $currentRegistrations pour event #$event_id");
             if ($currentRegistrations >= $event['capacite_max']) {
+                error_log("[HRE_WARN] Événement #$event_id est complet (Capacité: {$event['capacite_max']}, Inscrits: $currentRegistrations).");
                 flashMessage("Cet événement est complet.", "warning");
                 return false;
             }
         }
 
         $cancelledRegistration = fetchOne(TABLE_EVENT_REGISTRATIONS, "personne_id = :pid AND evenement_id = :eid AND statut = 'annule'", [':pid' => $employee_id, ':eid' => $event_id]);
+        error_log("[HRE_DEBUG] Inscription annulée trouvée: " . ($cancelledRegistration ? 'Oui (ID: ' . $cancelledRegistration['id'] . ')' : 'Non'));
 
+        error_log("[HRE_DEBUG] Début transaction.");
         beginTransaction();
 
+        $success = false;
+        $registrationId = null;
+
         if ($cancelledRegistration) {
+            error_log("[HRE_DEBUG] Tentative de réactivation de l'inscription ID: {$cancelledRegistration['id']}");
             $updated = updateRow(TABLE_EVENT_REGISTRATIONS, ['statut' => 'inscrit', 'updated_at' => date('Y-m-d H:i:s')], "id = :id", [':id' => $cancelledRegistration['id']]);
-            $success = $updated;
+            $success = (bool)$updated;
             $registrationId = $cancelledRegistration['id'];
+            error_log("[HRE_DEBUG] Résultat updateRow pour réactivation: " . ($success ? 'Succès' : 'Échec'));
         } else {
             $registrationData = [
                 'personne_id' => $employee_id,
                 'evenement_id' => $event_id,
-                'date_inscription' => date('Y-m-d H:i:s'),
                 'statut' => 'inscrit'
             ];
+            error_log("[HRE_DEBUG] Tentative d'insertion nouvelle inscription. Données: " . print_r($registrationData, true));
             $insertedId = insertRow(TABLE_EVENT_REGISTRATIONS, $registrationData);
             $success = (bool)$insertedId;
-            $registrationId = $insertedId;
+            if ($success && is_numeric($insertedId)) {
+                $registrationId = $insertedId;
+            } elseif (!$success && $insertedId !== false) {
+                $registrationId = 'N/A (Insert a retourné true)';
+            } else {
+                $registrationId = 'N/A (Insert a échoué)';
+            }
+
+            error_log("[HRE_DEBUG] Résultat insertRow pour nouvelle inscription: " . ($success ? "Succès (ID: $registrationId)" : 'Échec'));
         }
 
         if ($success) {
             commitTransaction();
             logBusinessOperation($employee_id, 'event_registration', "Inscription à l'événement #$event_id (Reg ID: $registrationId)");
             flashMessage("Inscription à l'événement réussie !", "success");
+
+            $eventTitre = $event ? $event['titre'] : 'Inconnu';
+            $notifData = [
+                'personne_id' => $employee_id,
+                'titre' => 'Inscription événement réussie',
+                'message' => 'Vous êtes maintenant inscrit à l\'événement : \'' . htmlspecialchars($eventTitre) . '\'.',
+                'type' => 'success',
+                'lien' => WEBCLIENT_URL . '/modules/employees/events.php?id=' . $event_id
+            ];
+            try {
+                insertRow(TABLE_NOTIFICATIONS, $notifData);
+            } catch (Exception $notifEx) {
+                logSystemActivity('error', "Erreur création notif inscription event #$event_id: " . $notifEx->getMessage());
+            }
+
             return true;
         } else {
             rollbackTransaction();
@@ -1446,8 +1648,6 @@ function handleRegisterForEvent($employee_id, $event_id)
 }
 function handleUnregisterFromEvent($employee_id, $event_id)
 {
-    if (!defined('TABLE_EVENT_REGISTRATIONS')) define('TABLE_EVENT_REGISTRATIONS', 'evenement_inscriptions');
-
     try {
         $registration = fetchOne(TABLE_EVENT_REGISTRATIONS, "personne_id = :pid AND evenement_id = :eid AND statut = 'inscrit'", [':pid' => $employee_id, ':eid' => $event_id]);
         if (!$registration) {
@@ -1461,6 +1661,22 @@ function handleUnregisterFromEvent($employee_id, $event_id)
         if ($updated) {
             logBusinessOperation($employee_id, 'event_unregistration', "Désinscription de l'événement #$event_id (Reg ID: {$registration['id']})");
             flashMessage("Désinscription de l'événement réussie.", "success");
+
+            $event = fetchOne(TABLE_EVENTS, "id = :id", ['id' => $event_id]);
+            $eventTitre = $event ? $event['titre'] : 'Inconnu';
+            $notifData = [
+                'personne_id' => $employee_id,
+                'titre' => 'Désinscription événement',
+                'message' => 'Vous avez été désinscrit de l\'événement : \'' . htmlspecialchars($eventTitre) . '\'.',
+                'type' => 'warning',
+                'lien' => WEBCLIENT_URL . '/modules/employees/events.php?id=' . $event_id
+            ];
+            try {
+                insertRow(TABLE_NOTIFICATIONS, $notifData);
+            } catch (Exception $notifEx) {
+                logSystemActivity('error', "Erreur création notif désinscription event #$event_id: " . $notifEx->getMessage());
+            }
+
             return true;
         } else {
             logSystemActivity('error', "Échec désinscription événement #$event_id pour employé #$employee_id");
@@ -1529,8 +1745,6 @@ function timeAgo($timestamp)
 
 function handleNewCommunityPost($community_id, $employee_id, $message_content)
 {
-    if (!defined('TABLE_COMMUNITY_POSTS')) define('TABLE_COMMUNITY_POSTS', 'community_posts');
-
     $message_content = sanitizeInput(trim($message_content ?? ''));
 
     if (empty($message_content)) {
@@ -1562,6 +1776,22 @@ function handleNewCommunityPost($community_id, $employee_id, $message_content)
 
         if ($postId) {
             logBusinessOperation($employee_id, 'community_post', "Nouveau message (ID: $postId) posté dans la communauté #$community_id");
+            flashMessage("Votre message a été envoyé avec succès.", "success");
+
+            $communityNom = $community ? $community['nom'] : 'Inconnue';
+            $notifData = [
+                'personne_id' => $employee_id,
+                'titre' => 'Nouveau message posté',
+                'message' => 'Votre message a été ajouté à la communauté \'' . htmlspecialchars($communityNom) . '\'.',
+                'type' => 'info',
+                'lien' => WEBCLIENT_URL . '/modules/employees/communities.php?id=' . $community_id . '#post-' . $postId
+            ];
+            try {
+                insertRow(TABLE_NOTIFICATIONS, $notifData);
+            } catch (Exception $notifEx) {
+                logSystemActivity('error', "Erreur création notif nouveau post communauté #$community_id: " . $notifEx->getMessage());
+            }
+
             return true;
         } else {
             logSystemActivity('error', "Échec insertion message communauté #$community_id pour employé #$employee_id");
@@ -1578,11 +1808,13 @@ function handleNewCommunityPost($community_id, $employee_id, $message_content)
 
 function displayCommunityDetailsPageData($community_id)
 {
-    if (!defined('TABLE_COMMUNAUTES')) define('TABLE_COMMUNAUTES', 'communautes');
-    if (!defined('TABLE_COMMUNITY_POSTS')) define('TABLE_COMMUNITY_POSTS', 'community_posts');
-    if (!defined('TABLE_USERS')) define('TABLE_USERS', 'personnes');
+    $current_employee_id = $_SESSION['user_id'] ?? null;
+    $data = ['community' => null, 'posts' => [], 'memberCommunityIds' => []];
 
-    $data = ['community' => null, 'posts' => []];
+    if (!$current_employee_id) {
+        flashMessage("Erreur: Utilisateur non identifié.", "danger");
+        return $data;
+    }
 
     try {
         $community = fetchOne(TABLE_COMMUNAUTES, 'id = :id', [':id' => $community_id]);
@@ -1597,20 +1829,30 @@ function displayCommunityDetailsPageData($community_id)
                        WHERE cp.communaute_id = :community_id
                        ORDER BY cp.created_at DESC
                        LIMIT 50";
-
         $posts = executeQuery($queryPosts, [':community_id' => $community_id])->fetchAll();
 
         foreach ($posts as &$post) {
             $post['created_at_formatted'] = isset($post['created_at']) ? timeAgo(strtotime($post['created_at'])) : 'Date inconnue';
-            $post['auteur_nom'] = trim(($post['auteur_prenom' ?? ''] ?? '') . ' ' . ($post['auteur_nom' ?? ''] ?? ''));
+            $post['auteur_nom'] = trim(($post['auteur_prenom'] ?? '') . ' ' . ($post['auteur_nom'] ?? ''));
             if (empty($post['auteur_nom'])) {
                 $post['auteur_nom'] = 'Auteur Anonyme';
             }
         }
         $data['posts'] = $posts;
+
+        $memberQuery = "SELECT communaute_id FROM " . TABLE_COMMUNITY_MEMBERS . " WHERE personne_id = :pid";
+        $memberStmt = executeQuery($memberQuery, [':pid' => $current_employee_id]);
+        $data['memberCommunityIds'] = $memberStmt->fetchAll(PDO::FETCH_COLUMN, 0);
+        if ($data['memberCommunityIds'] === false) {
+            error_log("Avertissement: Impossible de récupérer les adhésions aux communautés pour l'employé #$current_employee_id dans displayCommunityDetailsPageData.");
+            $data['memberCommunityIds'] = [];
+        }
     } catch (Exception $e) {
         logSystemActivity('error', "Erreur chargement détails communauté #$community_id: " . $e->getMessage());
         flashMessage("Impossible de charger les détails de la communauté.", "danger");
+        $data['community'] = null;
+        $data['posts'] = [];
+        $data['memberCommunityIds'] = [];
     }
 
     return $data;
@@ -1621,25 +1863,19 @@ function getCommunityIcon($communityType)
     $communityType = strtolower($communityType ?? 'autre');
     $iconMap = [
         'sport' => 'fas fa-futbol',
+        'bien_etre' => 'fas fa-spa',
+        'sante' => 'fas fa-heartbeat',
         'loisir' => 'fas fa-gamepad',
         'professionnel' => 'fas fa-briefcase',
         'culture' => 'fas fa-palette',
         'technologie' => 'fas fa-laptop-code',
-        'bien-être' => 'fas fa-spa',
         'entraide' => 'fas fa-hands-helping',
         'autre' => 'fas fa-users'
     ];
-
     return $iconMap[$communityType] ?? $iconMap['autre'];
 }
 
-/**
- * Gère la soumission du formulaire de mise à jour des préférences de conseils.
- *
- * @param array $postData Données du formulaire POST.
- * @param int $employee_id ID de l'employé.
- * @return bool Retourne true si la mise à jour réussit (ou s'il n'y a pas d'erreur majeure), false sinon.
- */
+
 function handleCounselPreferencesUpdate(array $postData, int $employee_id): bool
 {
 
@@ -1715,56 +1951,96 @@ function getCounselPageData(int $employee_id): array
 
 function getAvailableSlotsForDate($prestation_id, $date)
 {
-    error_log("[DEBUG] Placeholder getAvailableSlotsForDate called for prestation $prestation_id on $date");
-    $sql = "SELECT cc.id, cc.start_time, cc.end_time, p.nom as praticien_nom, p.prenom as praticien_prenom
-            FROM consultation_creneaux cc
-            LEFT JOIN personnes p ON cc.praticien_id = p.id
-            WHERE cc.prestation_id = :pid
-            AND DATE(cc.start_time) = :date
-            AND cc.is_booked = FALSE
-            AND cc.start_time > NOW()
-            ORDER BY cc.start_time ASC";
+    $prestation_id = filter_var(sanitizeInput($prestation_id), FILTER_VALIDATE_INT);
+    $date = sanitizeInput($date);
+    $employee_id = $_SESSION['user_id'] ?? null;
+
+    if (!$prestation_id || !$date || !$employee_id) {
+        error_log("getAvailableSlotsForDate: Paramètres manquants ou invalides.");
+        return [];
+    }
+
+    $employeeData = fetchOne(TABLE_USERS, 'id = :id', [':id' => $employee_id], ['site_id']);
+    $employee_site_id = $employeeData ? $employeeData['site_id'] : null;
+
+
     try {
-        $slots = executeQuery($sql, [':pid' => $prestation_id, ':date' => $date])->fetchAll();
-        foreach ($slots as &$slot) {
-            $slot['praticien_nom'] = isset($slot['praticien_nom']) ? trim($slot['praticien_prenom'] . ' ' . $slot['praticien_nom']) : null;
+        $sql = "SELECT cc.id, cc.heure_debut, cc.heure_fin, cc.reserve
+                FROM " . TABLE_CONSULTATION_CRENEAUX . " cc
+                WHERE cc.prestation_id = :prestation_id
+                  AND DATE(cc.heure_debut) = :date
+                  AND cc.reserve = FALSE";
+
+        $params = [
+            ':prestation_id' => $prestation_id,
+            ':date' => $date
+        ];
+
+        if ($employee_site_id !== null) {
+            $sql .= " AND (cc.site_id IS NULL OR cc.site_id = :employee_site_id)";
+            $params[':employee_site_id'] = $employee_site_id;
+        } else {
+            $sql .= " AND cc.site_id IS NULL";
         }
+
+        $sql .= " ORDER BY cc.heure_debut ASC";
+
+
+        $stmt = executeQuery($sql, $params);
+        $slots = $stmt->fetchAll();
+
         return $slots;
     } catch (Exception $e) {
         logSystemActivity('error', "Erreur getAvailableSlotsForDate pour prestation #$prestation_id, date $date: " . $e->getMessage());
-        flashMessage("Impossible de récupérer les créneaux pour cette date.", "danger");
         return [];
     }
 }
 
+
 function getAllAvailableSlotsGroupedByDate($prestation_id)
 {
-    $groupedSlots = [];
-    $sql = "SELECT cc.id, cc.start_time, cc.end_time, p.nom as praticien_nom, p.prenom as praticien_prenom
-            FROM consultation_creneaux cc
-            LEFT JOIN personnes p ON cc.praticien_id = p.id
-            WHERE cc.prestation_id = :pid
-            AND cc.is_booked = FALSE
-            AND cc.start_time > NOW()
-            ORDER BY cc.start_time ASC";
+    $prestation_id = filter_var(sanitizeInput($prestation_id), FILTER_VALIDATE_INT);
+    $employee_id = $_SESSION['user_id'] ?? null;
 
-    try {
-        $allSlots = executeQuery($sql, [':pid' => $prestation_id])->fetchAll();
-        foreach ($allSlots as $slot) {
-            $date = date('Y-m-d', strtotime($slot['start_time']));
-            if (!isset($groupedSlots[$date])) {
-                $groupedSlots[$date] = [];
-            }
-            $slot['praticien_nom'] = isset($slot['praticien_nom']) ? trim($slot['praticien_prenom'] . ' ' . $slot['praticien_nom']) : null;
-            $groupedSlots[$date][] = $slot;
-        }
-        ksort($groupedSlots); // Sort by date
-        return $groupedSlots;
-    } catch (Exception $e) {
-        logSystemActivity('error', "Erreur getAllAvailableSlotsGroupedByDate pour prestation #$prestation_id: " . $e->getMessage());
-        flashMessage("Impossible de récupérer la liste complète des créneaux.", "danger");
+
+    if (!$prestation_id || !$employee_id) {
+        error_log("getAllAvailableSlotsGroupedByDate: Paramètres manquants ou invalides.");
         return [];
     }
+
+    $employeeData = fetchOne(TABLE_USERS, 'id = :id', [':id' => $employee_id], ['site_id']);
+    $employee_site_id = $employeeData ? $employeeData['site_id'] : null;
+
+    $groupedSlots = [];
+    try {
+        $sql = "SELECT DATE(cc.heure_debut) as date_slot, COUNT(cc.id) as available_slots
+                FROM " . TABLE_CONSULTATION_CRENEAUX . " cc
+                WHERE cc.prestation_id = :prestation_id
+                  AND cc.reserve = FALSE
+                  AND cc.heure_debut > NOW()";
+
+        $params = [':prestation_id' => $prestation_id];
+
+        if ($employee_site_id !== null) {
+            $sql .= " AND (cc.site_id IS NULL OR cc.site_id = :employee_site_id)";
+            $params[':employee_site_id'] = $employee_site_id;
+        } else {
+            $sql .= " AND cc.site_id IS NULL";
+        }
+
+        $sql .= " GROUP BY date_slot
+                 HAVING available_slots > 0
+                 ORDER BY date_slot ASC";
+
+        $stmt = executeQuery($sql, $params);
+        while ($row = $stmt->fetch()) {
+            $groupedSlots[$row['date_slot']] = $row['available_slots'];
+        }
+    } catch (Exception $e) {
+        logSystemActivity('error', "Erreur getAllAvailableSlotsGroupedByDate pour prestation #$prestation_id: " . $e->getMessage());
+        return [];
+    }
+    return $groupedSlots;
 }
 
 function processSlotBooking($employee_id, $creneau_id)
@@ -1781,7 +2057,6 @@ function processSlotBooking($employee_id, $creneau_id)
     try {
         beginTransaction();
 
-        // 1. Fetch the Slot (Temporarily removing FOR UPDATE for debugging)
         $slot = fetchOne('consultation_creneaux', "id = :id AND is_booked = FALSE", [':id' => $creneau_id]);
 
         if (!$slot) {
@@ -1842,9 +2117,7 @@ function processSlotBooking($employee_id, $creneau_id)
         if (getDbConnection()->inTransaction()) {
             rollbackTransaction();
         }
-        // Log the full exception details for better debugging
         error_log("Full exception details for PB04: " . (string)$e);
-        // Log the system activity as before
         logSystemActivity('error', "Exception processSlotBooking pour créneau #$creneau_id, user #$employee_id: " . $e->getMessage());
         flashMessage("Une erreur technique majeure est survenue lors de la réservation (code PB04).", "danger");
         return false;
@@ -1876,7 +2149,7 @@ function getServiceCatalogPageData($action, $selected_prestation_id, $selected_d
     $employee = fetchOne(TABLE_USERS, "id = :id", [':id' => $employee_id]);
     if (!$employee || !$employee['entreprise_id']) {
         flashMessage("Accès refusé: informations utilisateur incomplètes.", "danger");
-        redirectTo(WEBCLIENT_URL . '/dashboard.php'); // Should not happen if requireRole works
+        redirectTo(WEBCLIENT_URL . '/dashboard.php');
         exit;
     }
     $activeContract = fetchOne(
@@ -1903,13 +2176,310 @@ function getServiceCatalogPageData($action, $selected_prestation_id, $selected_d
             redirectTo(WEBCLIENT_URL . '/modules/employees/services.php');
             exit;
         }
-        $data['pageTitle'] = 'Réserver : ' . htmlspecialchars($data['prestation_details']['nom']);
+        $prestationNom = isset($data['prestation_details']['nom']) ? htmlspecialchars($data['prestation_details']['nom']) : 'Prestation inconnue';
+        $data['pageTitle'] = 'Réserver : ' . $prestationNom;
 
         if ($action === 'select_date') {
             $data['grouped_slots'] = getAllAvailableSlotsGroupedByDate($selected_prestation_id);
-            $data['pageTitle'] = 'Choisir un créneau pour : ' . htmlspecialchars($data['prestation_details']['nom']);
+            $prestationNomDate = isset($data['prestation_details']['nom']) ? htmlspecialchars($data['prestation_details']['nom']) : 'Prestation inconnue';
+            $data['pageTitle'] = 'Choisir un créneau pour : ' . $prestationNomDate;
         }
     }
 
     return $data;
+}
+
+function handleLeaveCommunity(int $community_id, int $employee_id): bool
+{
+    $tableName = TABLE_COMMUNITY_MEMBERS;
+    try {
+        $deleted = deleteRow(
+            $tableName,
+            'communaute_id = :cid AND personne_id = :pid',
+            [':cid' => $community_id, ':pid' => $employee_id]
+        );
+
+        if ($deleted) {
+            logActivity($employee_id, 'community_leave_success', "A quitté la communauté #$community_id");
+
+            $community = fetchOne(TABLE_COMMUNAUTES, 'id = :id', [':id' => $community_id]);
+            $communityNom = $community ? $community['nom'] : 'Inconnue';
+            $notifData = [
+                'personne_id' => $employee_id,
+                'titre' => 'Départ de communauté',
+                'message' => 'Vous avez quitté la communauté \'' . htmlspecialchars($communityNom) . '\'.',
+                'type' => 'warning',
+                'lien' => WEBCLIENT_URL . '/modules/employees/communities.php'
+            ];
+            try {
+                insertRow(TABLE_NOTIFICATIONS, $notifData);
+            } catch (Exception $notifEx) {
+                logSystemActivity('error', "Erreur création notif départ communauté #$community_id: " . $notifEx->getMessage());
+            }
+
+            return true;
+        } else {
+            logActivity($employee_id, 'community_leave_noop', "Tentative de quitter la communauté #$community_id mais l'enregistrement n'a pas été trouvé ou une erreur s'est produite.");
+            return false;
+        }
+    } catch (Exception $e) {
+        logSystemActivity('error', "Exception en quittant la communauté #$community_id pour employé #$employee_id: " . $e->getMessage() . " | Trace: " . $e->getTraceAsString());
+        flashMessage("Erreur technique lors de la tentative de quitter la communauté.", "danger");
+        return false;
+    }
+}
+
+
+function handleDeleteCommunityPost(int $post_id, int $employee_id): bool
+{
+    try {
+        $post = fetchOne(TABLE_COMMUNITY_POSTS, 'id = :post_id', [':post_id' => $post_id]);
+
+        if (!$post) {
+            flashMessage("Le message à supprimer n'existe pas.", "warning");
+            return false;
+        }
+
+        if ($post['personne_id'] != $employee_id) {
+            flashMessage("Vous n'êtes pas autorisé à supprimer ce message.", "danger");
+            logSecurityEvent($employee_id, 'delete_community_post_unauthorized', "Tentative de suppression du post #$post_id par un utilisateur non autorisé.");
+            return false;
+        }
+
+        $deleted = deleteRow(TABLE_COMMUNITY_POSTS, 'id = :post_id AND personne_id = :employee_id', [':post_id' => $post_id, ':employee_id' => $employee_id]);
+
+        if ($deleted) {
+            logBusinessOperation($employee_id, 'community_post_delete', "Message #$post_id supprimé par son auteur.");
+            flashMessage("Le message a été supprimé avec succès.", "success");
+            return true;
+        } else {
+            logSystemActivity('error', "Échec suppression message communauté #$post_id par employé #$employee_id (deleteRow a échoué).");
+            flashMessage("Une erreur technique est survenue lors de la suppression du message.", "danger");
+            return false;
+        }
+    } catch (Exception $e) {
+        logSystemActivity('error', "Exception suppression message communauté #$post_id pour employé #$employee_id: " . $e->getMessage());
+        flashMessage("Erreur technique lors de la suppression du message.", "danger");
+        return false;
+    }
+}
+
+function handleCommunityPostRequest(array $postData, ?int $current_employee_id, string $sessionCsrfToken): void
+{
+    $action = $postData['action'] ?? null;
+    $posted_community_id = isset($postData['community_id']) ? filter_var($postData['community_id'], FILTER_VALIDATE_INT) : null;
+    $submitted_csrf_token = $postData['csrf_token'] ?? null;
+
+    $redirectUrl = WEBCLIENT_URL . '/modules/employees/communities.php';
+    if ($posted_community_id) {
+        $redirectUrl = WEBCLIENT_URL . '/modules/employees/communities.php?id=' . $posted_community_id;
+    }
+
+    if (!validateToken($submitted_csrf_token)) {
+        logSecurityEvent($current_employee_id, 'csrf_failure', '[SECURITY FAILURE] Tentative POST avec jeton invalide sur communities.php');
+        flashMessage("Erreur de sécurité (jeton invalide).", "danger");
+        redirectTo($redirectUrl);
+        exit;
+    }
+
+    requireRole(ROLE_SALARIE);
+
+    switch ($action) {
+        case 'join_community':
+            if ($posted_community_id && $current_employee_id) {
+                handleJoinCommunity($posted_community_id, $current_employee_id);
+            } else {
+                if (!$posted_community_id) flashMessage("ID de communauté manquant pour rejoindre.", "danger");
+                if (!$current_employee_id) flashMessage("ID employé manquant.", "danger");
+            }
+            break;
+
+        case 'post_message':
+            if ($posted_community_id) {
+                $message_content = $postData['message'] ?? null;
+                handleNewCommunityPost($posted_community_id, $current_employee_id, $message_content);
+            } else {
+                flashMessage("ID de communauté manquant pour poster un message.", "danger");
+            }
+            break;
+
+        case 'leave_community':
+            if ($posted_community_id) {
+                $left = handleLeaveCommunity($posted_community_id, $current_employee_id);
+                if ($left) {
+                    $redirectUrl = WEBCLIENT_URL . '/modules/employees/communities.php';
+                }
+            } else {
+                flashMessage("ID de communauté manquant pour quitter.", "danger");
+            }
+            break;
+
+        case 'delete_community_post':
+            $post_id_to_delete = isset($postData['post_id']) ? filter_var($postData['post_id'], FILTER_VALIDATE_INT) : null;
+            if ($post_id_to_delete && $posted_community_id) {
+                handleDeleteCommunityPost($post_id_to_delete, $current_employee_id);
+            } else {
+                if (!$post_id_to_delete) flashMessage("ID de message manquant pour la suppression.", "danger");
+                if (!$posted_community_id) flashMessage("Contexte de communauté manquant pour la suppression.", "danger");
+            }
+            break;
+
+        default:
+            flashMessage("Action invalide ou données manquantes.", "danger");
+            break;
+    }
+
+    redirectTo($redirectUrl);
+    exit;
+}
+
+function handleJoinCommunity(int $community_id, int $employee_id): bool
+{
+    $tableName = TABLE_COMMUNITY_MEMBERS;
+    try {
+        $existingMembership = fetchOne($tableName, 'communaute_id = :cid AND personne_id = :pid', [':cid' => $community_id, ':pid' => $employee_id]);
+        if ($existingMembership) {
+            flashMessage("Vous êtes déjà membre de cette communauté.", "info");
+            return true;
+        }
+        $community = fetchOne(TABLE_COMMUNAUTES, 'id = :id', [':id' => $community_id]);
+        if (!$community) {
+            flashMessage("La communauté que vous essayez de rejoindre n'existe pas.", "warning");
+            return false;
+        }
+
+        $joinData = [
+            'communaute_id' => $community_id,
+            'personne_id' => $employee_id,
+            'date_adhesion' => date('Y-m-d H:i:s')
+        ];
+
+        $inserted = insertRow($tableName, $joinData);
+
+        if ($inserted) {
+            try {
+                logActivity($employee_id, 'community_join_success', "A rejoint la communauté #$community_id");
+            } catch (Exception $logEx) {
+                logSystemActivity('error', "Erreur dans logActivity après join community #$community_id: " . $logEx->getMessage());
+            }
+            return true;
+        } else {
+            $failMsg = "[DEBUG handleJoinCommunity] insertRow for table '$tableName' returned false. Data: " . json_encode($joinData);
+            error_log($failMsg);
+
+            logSystemActivity('error', "Échec insertion adhésion communauté #$community_id pour employé #$employee_id (insertRow returned false).");
+            flashMessage("Une erreur technique est survenue lors de la tentative de rejoindre la communauté (Code JI1).", "danger");
+            return false;
+        }
+    } catch (Exception $e) {
+        error_log("[handleJoinCommunity EXCEPTION] Type: " . get_class($e) . ", Message: " . $e->getMessage() . " IN FILE " . $e->getFile() . " ON LINE " . $e->getLine());
+
+        if (str_contains($e->getMessage(), 'Duplicate entry')) {
+            flashMessage("Vous êtes déjà membre de cette communauté (erreur détectée).", "info");
+            return true;
+        }
+
+        logSystemActivity('error', "Exception en rejoignant la communauté #$community_id pour employé #$employee_id: " . $e->getMessage());
+
+        flashMessage("Erreur technique lors de la tentative de rejoindre la communauté (Code JE1).", "danger");
+        return false;
+    }
+}
+
+function displayEmployeeNotificationsPage(int $employee_id, int $page = 1, int $limit = 15): array
+{
+    $defaultResult = [
+        'notifications' => [],
+        'pagination_html' => '',
+        'pagination_data' => ['currentPage' => $page, 'totalPages' => 0, 'totalItems' => 0, 'perPage' => $limit]
+    ];
+
+    if (!defined('TABLE_NOTIFICATIONS')) {
+        error_log("TABLE_NOTIFICATIONS constant is not defined.");
+        flashMessage("Configuration error: Table des notifications non définie.", "danger");
+        return $defaultResult;
+    }
+
+    if (!function_exists('paginateResults') || !function_exists('renderPagination') || !function_exists('timeAgo') || !function_exists('updateRow') || !function_exists('logActivity')) {
+        error_log("One or more required helper functions (paginateResults, renderPagination, timeAgo, updateRow, logActivity) are missing.");
+        flashMessage("Erreur interne: Fonctions d'aide manquantes.", "danger");
+        return $defaultResult;
+    }
+
+    try {
+        $updateData = [
+            'lu' => 1,
+            'date_lecture' => date('Y-m-d H:i:s')
+        ];
+        $tableName = TABLE_NOTIFICATIONS;
+        try {
+            updateRow(
+                $tableName,
+                $updateData,
+                'personne_id = :pid AND lu = 0',
+                [':pid' => $employee_id]
+            );
+        } catch (Exception $updateEx) {
+            error_log("Error marking notifications as read for user #$employee_id: " . $updateEx->getMessage());
+        }
+
+        logActivity($employee_id, 'notifications_read', 'Consultation de la page des notifications.');
+
+
+        $where = "personne_id = :id";
+        $params = [':id' => $employee_id];
+        $orderBy = "created_at DESC";
+
+        $paginationResult = paginateResults($tableName, $page, $limit, $where, $orderBy, $params);
+
+        $notifications = $paginationResult['items'] ?? [];
+        foreach ($notifications as &$notif) {
+            $notif['created_at_formatted'] = isset($notif['created_at']) ? timeAgo(strtotime($notif['created_at'])) : ($notif['created_at'] ?? 'Date inconnue');
+            $notif['icon_class'] = getNotificationIcon($notif['type'] ?? 'info');
+            $notif['bg_class'] = getNotificationBgClass($notif['type'] ?? 'info');
+            $notif['is_read'] = (bool)($notif['lu'] ?? 0);
+        }
+
+        $paginationHtml = renderPagination($paginationResult, "?page={page}");
+
+        return [
+            'notifications' => $notifications,
+            'pagination_html' => $paginationHtml,
+            'pagination_data' => $paginationResult['pagination'] ?? $defaultResult['pagination_data']
+        ];
+    } catch (Exception $e) {
+        logSystemActivity('error', "Erreur chargement notifications pour user #$employee_id: " . $e->getMessage());
+        flashMessage("Une erreur est survenue lors du chargement des notifications.", "danger");
+        return $defaultResult;
+    }
+}
+function getNotificationIcon(string $type): string
+{
+    switch (strtolower($type)) {
+        case 'success':
+            return 'fas fa-check-circle text-success';
+        case 'warning':
+            return 'fas fa-exclamation-triangle text-warning';
+        case 'error':
+            return 'fas fa-times-circle text-danger';
+        case 'info':
+        default:
+            return 'fas fa-info-circle text-info';
+    }
+}
+
+function getNotificationBgClass(string $type): string
+{
+
+    switch (strtolower($type)) {
+        case 'success':
+            return 'list-group-item-success-light';
+        case 'warning':
+            return 'list-group-item-warning-light';
+        case 'error':
+            return 'list-group-item-danger-light';
+        case 'info':
+        default:
+            return 'list-group-item-info-light';
+    }
 }

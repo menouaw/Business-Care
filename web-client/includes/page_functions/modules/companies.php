@@ -43,8 +43,8 @@ function getCompaniesList($page = 1, $limit = 5, $search = '')
 
         $query = "SELECT e.id, e.nom, e.siret, e.adresse, e.code_postal, e.ville, e.telephone, e.email, e.site_web, e.logo_url, e.taille_entreprise, e.secteur_activite, e.date_creation, e.created_at, e.updated_at,
                   COUNT(DISTINCT p.id) as nombre_employes,
-                  COUNT(DISTINCT c.id) as nombre_contrats_actifs 
-                  FROM entreprises e 
+                  COUNT(DISTINCT c.id) as nombre_contrats_actifs
+                  FROM entreprises e
                   LEFT JOIN personnes p ON e.id = p.entreprise_id AND p.role_id = :role_id
                   LEFT JOIN contrats c ON e.id = c.entreprise_id AND (c.date_fin IS NULL OR c.date_fin >= CURDATE()) AND c.statut = 'actif'
                   WHERE " . $where;
@@ -106,9 +106,9 @@ function getCompaniesList($page = 1, $limit = 5, $search = '')
 
 /**
  * Récupère les détails d'une entreprise
- * 
- * @param int $company_id 
- * @return array|false 
+ *
+ * @param int $company_id
+ * @return array|false
  */
 function getCompanyDetails($company_id)
 {
@@ -119,7 +119,7 @@ function getCompanyDetails($company_id)
     }
 
     try {
-        $query = "SELECT e.*, 
+        $query = "SELECT e.*,
                   COUNT(DISTINCT p.id) as nombre_employes,
                   COUNT(DISTINCT c.id) as nombre_contrats_actifs -- Renommé pour clarté
                   FROM entreprises e
@@ -207,15 +207,15 @@ function getCompanyDetails($company_id)
 
 /**
  * Récupère les activités récentes d'une entreprise
- * 
- * @param int $company_id 
- * @param int $limit 
- * @return array 
+ *
+ * @param int $company_id
+ * @param int $limit
+ * @return array
  */
 function getCompanyRecentActivity($company_id, $limit = 10)
 {
     $company_id = filter_var(sanitizeInput($company_id), FILTER_VALIDATE_INT);
-    $limit = min(50, max(1, (int)$limit)); 
+    $limit = min(50, max(1, (int)$limit));
 
     if (!$company_id) {
 
@@ -223,7 +223,7 @@ function getCompanyRecentActivity($company_id, $limit = 10)
     }
 
     try {
-        $query = "SELECT l.id, l.action, l.details, l.created_at, 
+        $query = "SELECT l.id, l.action, l.details, l.created_at,
                 CONCAT(p.prenom, ' ', p.nom) as utilisateur
                 FROM logs l
                 JOIN personnes p ON l.personne_id = p.id
@@ -263,14 +263,14 @@ function getCompanyRecentActivity($company_id, $limit = 10)
 
 /**
  * Récupère les factures d'une entreprise avec pagination et filtres de date.
- * 
- * @param int $company_id 
- * @param int $page 
- * @param int $limit 
- * @param string|null $start_date 
- * @param string|null $end_date 
- * @param string|array|null $status 
- * @return array 
+ *
+ * @param int $company_id
+ * @param int $page
+ * @param int $limit
+ * @param string|null $start_date
+ * @param string|null $end_date
+ * @param string|array|null $status
+ * @return array
  */
 function getCompanyInvoices($company_id, $page = 1, $limit = 5, $start_date = null, $end_date = null, $status = null)
 {
@@ -300,7 +300,7 @@ function getCompanyInvoices($company_id, $page = 1, $limit = 5, $start_date = nu
         $where = "f.entreprise_id = :company_id";
         $params = ['company_id' => $company_id];
         $countParams = ['company_id' => $company_id];
-        $urlParams = []; 
+        $urlParams = [];
 
         if ($start_date) {
             $where .= " AND f.date_emission >= :start_date";
@@ -387,7 +387,7 @@ function getCompanyInvoices($company_id, $page = 1, $limit = 5, $start_date = nu
                 $invoice['statut_badge'] = getStatusBadge($invoice['statut']);
             }
         }
-        unset($invoice);  
+        unset($invoice);
 
         $paginationData = [
             'currentPage' => $page,
@@ -483,7 +483,7 @@ function addCompanyContract($company_id, $contract_data)
         }
 
         if (!empty($contract_data['services']) && is_array($contract_data['services'])) {
-            foreach ($contract_data['services'] as $prestationId) { 
+            foreach ($contract_data['services'] as $prestationId) {
                 $prestationId = filter_var($prestationId, FILTER_VALIDATE_INT);
                 if ($prestationId) {
 
@@ -531,7 +531,7 @@ function getCompanyContractDetails($company_id, $contract_id)
 
     $pdo = getDbConnection();
     $query = "SELECT c.*,
-                   e.nom AS entreprise_nom, 
+                   e.nom AS entreprise_nom,
                    e.siret AS entreprise_siret,
                    e.adresse AS entreprise_adresse,
                    e.code_postal AS entreprise_code_postal,
@@ -545,7 +545,7 @@ function getCompanyContractDetails($company_id, $contract_id)
     $contract = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$contract) {
-        return false; 
+        return false;
     }
 
     $contract['reference'] = 'CT-' . str_pad($contract['id'], 6, '0', STR_PAD_LEFT);
@@ -581,7 +581,7 @@ function getContractInvoices($contract_id)
 
     $query = "SELECT entreprise_id FROM contrats WHERE id = :id LIMIT 1";
     $params = [':id' => $contract_id];
-    $contractInfo = executeQuery($query, $params)->fetch(); 
+    $contractInfo = executeQuery($query, $params)->fetch();
     if (!$contractInfo || !$contractInfo['entreprise_id']) {
         return [];
     }
@@ -644,7 +644,7 @@ function requestContractRenewal($contract_id, $entreprise_id, $personne_id = nul
         $insertData = [
             'contrat_id' => $contract_id,
             'entreprise_id' => $entreprise_id,
-            'personne_id' => $personne_id, 
+            'personne_id' => $personne_id,
             'statut' => 'en_attente',
             'commentaire_client' => $commentaire
         ];
@@ -763,10 +763,10 @@ function requestCompanyQuote($data)
         $devisData = [
             'entreprise_id' => $data['entreprise_id'],
             'date_creation' => date('Y-m-d'),
-            'montant_total' => 0, 
+            'montant_total' => 0,
             'montant_ht' => 0,
-            'tva' => 0, 
-            'statut' => 'en_attente' 
+            'tva' => 0,
+            'statut' => 'en_attente'
         ];
 
 
@@ -798,7 +798,7 @@ function requestCompanyQuote($data)
         ];
     } catch (Exception $e) {
         logSystemActivity('error', "Erreur demande devis: " . $e->getMessage());
-            return [
+        return [
             'success' => false,
             'message' => "Une erreur technique est survenue lors de l'envoi de votre demande."
         ];
@@ -812,7 +812,7 @@ function notifyAdminsNewQuoteRequest($devisId, $entrepriseId, $detailsMessage = 
         $admins = fetchAll('personnes', 'role_id = :role_id', '', 0, 0, [':role_id' => $adminRoleId]);
         $titre = "Nouvelle demande de devis (#$devisId)";
         $message = "Demande reçue de l'entreprise ID #$entrepriseId.\n" . $detailsMessage;
-        $lien = '/admin/quotes/view/' . $devisId;       
+        $lien = '/admin/quotes/view/' . $devisId;
 
         foreach ($admins as $admin) {
             insertRow('notifications', [
@@ -821,7 +821,7 @@ function notifyAdminsNewQuoteRequest($devisId, $entrepriseId, $detailsMessage = 
                 'message' => $message,
                 'type' => 'info',
                 'lien' => $lien
-                
+
             ]);
         }
         logSystemActivity('info', "Notification envoyée aux admins pour devis #$devisId");
@@ -841,8 +841,8 @@ function getInvoiceDetailsForCompany($company_id, $invoice_id)
     }
 
     try {
-        $query = "SELECT f.*, 
-                       e.nom AS entreprise_nom, e.siret AS entreprise_siret, 
+        $query = "SELECT f.*,
+                       e.nom AS entreprise_nom, e.siret AS entreprise_siret,
                        e.adresse AS entreprise_adresse, e.code_postal AS entreprise_code_postal, e.ville AS entreprise_ville
                 FROM factures f
                 JOIN entreprises e ON f.entreprise_id = e.id
@@ -900,10 +900,10 @@ function getCompanyEmployeeDetails($company_id, $employee_id)
     }
 
     try {
-        $query = "SELECT p.* 
+        $query = "SELECT p.*
                   FROM personnes p
-                  WHERE p.id = :employee_id 
-                    AND p.entreprise_id = :company_id 
+                  WHERE p.id = :employee_id
+                    AND p.entreprise_id = :company_id
                     AND p.role_id = :role_id";
 
         $employee = executeQuery($query, [
@@ -1067,7 +1067,7 @@ function deleteCompanyEmployee($company_id, $employee_id)
             return false;
         }
 
-       
+
         $employeeInfoQuery = "SELECT nom, prenom FROM personnes WHERE id = :id LIMIT 1";
         $employeeInfoStmt = executeQuery($employeeInfoQuery, ['id' => $employee_id]);
         $employeeInfo = $employeeInfoStmt->fetch();
@@ -1461,7 +1461,7 @@ function getCompanyEmployees($company_id, $page = 1, $limit = 5, $search = '', $
         $queryParams[':offset'] = $offset;
 
         $employees = executeQuery($query, $queryParams)->fetchAll(PDO::FETCH_ASSOC);
-        
+
         foreach ($employees as &$employee) {
             if (!isset($employee['derniere_connexion_formatee'])) {
                 $employee['derniere_connexion_formatee'] = isset($employee['derniere_connexion']) ? formatDate($employee['derniere_connexion'], 'd/m/Y H:i') : 'Jamais';
@@ -1470,7 +1470,7 @@ function getCompanyEmployees($company_id, $page = 1, $limit = 5, $search = '', $
                 $employee['statut_badge'] = isset($employee['statut']) ? getStatusBadge($employee['statut']) : 'N/A';
             }
         }
-        unset($employee); 
+        unset($employee);
 
         $paginationData = [
             'currentPage' => $page,
@@ -1545,10 +1545,10 @@ function getCompanyContracts($company_id, $status = null, $page = 1, $limit = 10
         $page = max(1, min($page, $totalPages > 0 ? $totalPages : 1));
         $offset = ($page - 1) * $limit;
 
-        $query = "SELECT c.* 
-                  FROM contrats c 
+        $query = "SELECT c.*
+                  FROM contrats c
                   WHERE " . $where . "
-                  ORDER BY c.date_debut DESC 
+                  ORDER BY c.date_debut DESC
                   LIMIT :limit OFFSET :offset";
 
         $params[':limit'] = $limit;
@@ -1562,7 +1562,7 @@ function getCompanyContracts($company_id, $status = null, $page = 1, $limit = 10
             $contract['date_fin_formatee'] = isset($contract['date_fin']) ? formatDate($contract['date_fin'], 'd/m/Y') : 'Indéterminée';
             $contract['statut_badge'] = isset($contract['statut']) ? getStatusBadge($contract['statut']) : 'N/A';
         }
-        unset($contract); 
+        unset($contract);
 
         $paginationData = [
             'currentPage' => $page,

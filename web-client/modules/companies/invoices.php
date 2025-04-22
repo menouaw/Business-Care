@@ -268,7 +268,6 @@ include_once __DIR__ . '/../../templates/header.php';
                                             <a href="invoices.php?action=view&id=<?= $facture['id'] ?>" class="btn btn-sm btn-outline-primary" title="Voir la facture">
                                                 <i class="fas fa-eye"></i>
                                             </a>
-                                            {/* No Pay button for history */}
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>

@@ -132,8 +132,15 @@ function insertRow($table, $data)
 
     $sql = "INSERT INTO $table (" . implode(', ', $fields) . ") VALUES (" . implode(', ', $placeholders) . ")";
 
-    $stmt = executeQuery($sql, $data);
-    return $stmt->rowCount() > 0 ? getDbConnection()->lastInsertId() : false;
+    try {
+        $stmt = executeQuery($sql, $data);
+
+        return true;
+
+    } catch (Exception $e) {
+        error_log("Exception caught within insertRow: " . $e->getMessage() . " | SQL: $sql | Params: " . json_encode($data));
+        return false;
+    }
 }
 
 
@@ -184,11 +191,7 @@ function deleteRow($table, $where, $params = [])
     return $stmt->rowCount();
 }
 
-/**
- * Démarre une transaction SQL
- * 
- * @return void
- */
+
 function beginTransaction()
 {
     getDbConnection()->beginTransaction();

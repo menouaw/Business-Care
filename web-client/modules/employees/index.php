@@ -110,12 +110,12 @@ include_once __DIR__ . '/../../templates/header.php';
                             </div>
                             <div>
                                 <h6 class="card-subtitle text-muted mb-1">Événements</h6>
-                                <h2 class="card-title mb-0"><?= count($dashboardData['upcoming_events'] ?? []) ?></h2>
+                                <h2 class="card-title mb-0"><?= $dashboardData['total_upcoming_events_count'] ?? 0 ?></h2>
                                 <small class="text-muted">À venir</small>
                             </div>
                         </div>
                         <div class="mt-3">
-                            <a href="<?= WEBCLIENT_URL ?>/evenements.php" class="btn btn-sm btn-outline-success">Explorer les événements</a>
+                            <a href="<?= WEBCLIENT_URL ?>/modules/employees/events.php" class="btn btn-sm btn-outline-success">Explorer les événements</a>
                         </div>
                     </div>
                 </div>
@@ -135,7 +135,7 @@ include_once __DIR__ . '/../../templates/header.php';
                             </div>
                         </div>
                         <div class="mt-3">
-                            <a href="<?= WEBCLIENT_URL ?>/notifications.php" class="btn btn-sm btn-outline-warning">Voir les notifications</a>
+                            <a href="<?= WEBCLIENT_URL ?>/modules/employees/notifications.php" class="btn btn-sm btn-outline-warning">Voir les notifications</a>
                         </div>
                     </div>
                 </div>
@@ -214,7 +214,7 @@ include_once __DIR__ . '/../../templates/header.php';
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0">Événements à venir</h5>
-                        <a href="<?= WEBCLIENT_URL ?>/evenements.php" class="btn btn-sm btn-outline-primary">Tous les événements</a>
+                        <a href="<?= WEBCLIENT_URL ?>/modules/employees/events.php" class="btn btn-sm btn-outline-primary">Tous les événements</a>
                     </div>
                     <div class="card-body">
                         <?php if (empty($dashboardData['upcoming_events'])) : ?>

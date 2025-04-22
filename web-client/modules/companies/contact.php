@@ -8,7 +8,6 @@ $formMessageType = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $formMessage = "Votre message a bien été envoyé. Nous vous répondrons bientôt.";
     $formMessageType = 'success';
-
 }
 
 include_once __DIR__ . '/../../templates/header.php';

@@ -124,7 +124,7 @@ include_once __DIR__ . '/../../templates/header.php';
                                             <i><?= htmlspecialchars(substr($topic['contenu'] ?? '', 0, 150)) . (strlen($topic['contenu'] ?? '') > 150 ? '...' : '') ?></i>
                                         </p>
                                         <div class="mt-auto">
-                                            <a href="#" class="btn btn-sm btn-outline-primary disabled">Lire la suite (Bientôt disponible)</a>
+                                            <a href="conseil_detail.php?id=<?= htmlspecialchars($topic['id']) ?>" class="btn btn-sm btn-outline-primary">Lire la suite</a>
                                         </div>
                                     </div>
                                 </div>
@@ -170,7 +170,7 @@ include_once __DIR__ . '/../../templates/header.php';
                                         <i><?= htmlspecialchars(substr($topic['contenu'] ?? '', 0, 150)) . (strlen($topic['contenu'] ?? '') > 150 ? '...' : '') ?></i>
                                     </p>
                                     <div class="mt-auto">
-                                        <a href="#" class="btn btn-sm btn-outline-success disabled">Lire la suite (Bientôt disponible)</a>
+                                        <a href="conseil_detail.php?id=<?= htmlspecialchars($topic['id']) ?>" class="btn btn-sm btn-outline-success">Lire la suite</a>
                                     </div>
                                 </div>
                             </div>

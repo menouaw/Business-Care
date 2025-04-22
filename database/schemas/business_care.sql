@@ -31,6 +31,19 @@ CREATE TABLE entreprises (
     INDEX idx_ville (ville)
 );
 
+CREATE TABLE sites (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nom VARCHAR(255) NOT NULL,
+    adresse TEXT,
+    code_postal VARCHAR(10),
+    ville VARCHAR(100),
+    entreprise_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (entreprise_id) REFERENCES entreprises(id) ON DELETE CASCADE,
+    INDEX idx_ville (ville)
+);
+
 CREATE TABLE personnes (
     id INT PRIMARY KEY AUTO_INCREMENT,
     nom VARCHAR(100) NOT NULL,
@@ -43,12 +56,14 @@ CREATE TABLE personnes (
     photo_url VARCHAR(255),
     role_id INT NOT NULL,
     entreprise_id INT,
+    site_id INT NULL,
     statut ENUM('actif', 'inactif', 'en_attente', 'suspendu') DEFAULT 'actif',
     derniere_connexion DATETIME,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (role_id) REFERENCES roles(id),
-    FOREIGN KEY (entreprise_id) REFERENCES entreprises(id),
+    FOREIGN KEY (entreprise_id) REFERENCES entreprises(id) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE SET NULL ON UPDATE CASCADE,
     INDEX idx_email (email),
     INDEX idx_role (role_id),
     INDEX idx_entreprise (entreprise_id)
@@ -79,9 +94,11 @@ CREATE TABLE consultation_creneaux (
     start_time DATETIME NOT NULL,
     end_time DATETIME NOT NULL,
     is_booked BOOLEAN DEFAULT FALSE,
+    site_id INT NULL,
 
     FOREIGN KEY (prestation_id) REFERENCES prestations(id) ON DELETE CASCADE,
     FOREIGN KEY (praticien_id) REFERENCES personnes(id) ON DELETE SET NULL,
+    FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE SET NULL ON UPDATE CASCADE,
 
     INDEX idx_prestation_time (prestation_id, start_time, is_booked),
     UNIQUE KEY unique_slot (prestation_id, praticien_id, start_time)
@@ -164,7 +181,7 @@ CREATE TABLE rendez_vous (
     date_rdv DATETIME NOT NULL,
     duree INT NOT NULL,
     lieu VARCHAR(255),
-    type_rdv ENUM('presentiel', 'visio', 'telephone'),
+    type_rdv ENUM('presentiel', 'visio', 'telephone', 'consultation'),
     statut ENUM('planifie', 'confirme', 'annule', 'termine', 'no_show') DEFAULT 'planifie',
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -189,8 +206,10 @@ CREATE TABLE evenements (
     niveau_difficulte ENUM('debutant', 'intermediaire', 'avance'),
     materiel_necessaire TEXT,
     prerequis TEXT,
+    site_id INT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE SET NULL ON UPDATE CASCADE,
     INDEX idx_dates (date_debut, date_fin),
     INDEX idx_type (type)
 );
@@ -348,6 +367,15 @@ CREATE TABLE utilisateur_interets_conseils (
     personne_id INT NOT NULL,
     categorie_conseil VARCHAR(100) NOT NULL,            
     PRIMARY KEY (personne_id, categorie_conseil),
+    FOREIGN KEY (personne_id) REFERENCES personnes(id) ON DELETE CASCADE
+);
+
+CREATE TABLE communaute_membres (
+    communaute_id INT NOT NULL,
+    personne_id INT NOT NULL,
+    date_adhesion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (communaute_id, personne_id),
+    FOREIGN KEY (communaute_id) REFERENCES communautes(id) ON DELETE CASCADE,
     FOREIGN KEY (personne_id) REFERENCES personnes(id) ON DELETE CASCADE
 );
 

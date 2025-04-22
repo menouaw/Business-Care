@@ -198,7 +198,7 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
                                     <?php endif; ?>
                                 </div>
                                 <div class="notification-footer text-center p-2 border-top">
-                                    <a href="<?= WEBCLIENT_URL ?>/notifications.php" class="text-decoration-none small">Voir toutes les notifications</a>
+                                    <a href="<?= WEBCLIENT_URL ?>/modules/employees/notifications.php" class="text-decoration-none small">Voir toutes les notifications</a>
                                 </div>
                             </div>
                         </li>

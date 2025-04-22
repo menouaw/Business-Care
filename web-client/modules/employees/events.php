@@ -91,7 +91,12 @@ include_once __DIR__ . '/../../templates/header.php';
                                         <i class="<?= getEventIcon($event['type'] ?? 'autre') ?> fa-2x"></i>
                                     </div>
                                     <div>
-                                        <h5 class="card-title mb-1"><?= htmlspecialchars($event['titre'] ?? 'Événement sans titre') ?></h5>
+                                        <h5 class="card-title mb-1">
+                                            <?= htmlspecialchars($event['titre'] ?? 'Événement sans titre') ?>
+                                            <?php if ($event['is_recommended'] ?? false): ?>
+                                                <span class="badge bg-warning text-dark ms-1" title="Recommandé pour vous"><i class="fas fa-star"></i></span>
+                                            <?php endif; ?>
+                                        </h5>
                                         <span class="badge bg-secondary me-1"><?= htmlspecialchars(ucfirst($event['type'] ?? 'Autre')) ?></span>
                                         <?php if (!empty($event['niveau_difficulte'])) : ?>
                                             <span class="badge bg-light text-dark"><?= htmlspecialchars(ucfirst($event['niveau_difficulte'])) ?></span>
