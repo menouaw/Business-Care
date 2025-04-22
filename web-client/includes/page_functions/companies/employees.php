@@ -95,7 +95,7 @@ function reactivateEmployee(int $employee_id, int $company_id): bool
         return false;
     }
 
-    // Vérification : le salarié appartient-il bien à l'entreprise ?
+
     $employee = fetchOne('personnes', 'id = :id AND entreprise_id = :company_id AND role_id = :role_salarie', [
         ':id' => $employee_id,
         ':company_id' => $company_id,
@@ -103,17 +103,93 @@ function reactivateEmployee(int $employee_id, int $company_id): bool
     ]);
 
     if (!$employee) {
-        // Salarié non trouvé ou n'appartient pas à cette entreprise
+
         return false;
     }
 
-    // Mettre à jour le statut en 'actif'
+
     $updatedRows = updateRow(
         'personnes',
-        ['statut' => 'actif'], // La donnée à mettre à jour
-        'id = :id',            // La condition WHERE
-        [':id' => $employee_id] // Le paramètre pour la condition WHERE
+        ['statut' => 'actif'],
+        'id = :id',
+        [':id' => $employee_id]
     );
 
     return $updatedRows > 0;
+}
+
+/**
+ * Récupère les détails complets d'un salarié spécifique appartenant à une entreprise.
+ *
+ * @param int $employee_id L'ID du salarié.
+ * @param int $company_id L'ID de l'entreprise pour vérification.
+ * @return array|false Les détails du salarié ou false si non trouvé ou n'appartient pas à l'entreprise.
+ */
+function getEmployeeDetails(int $employee_id, int $company_id): array|false
+{
+    if ($employee_id <= 0 || $company_id <= 0) {
+        return false;
+    }
+
+    return fetchOne(
+        'personnes',
+        'id = :id AND entreprise_id = :company_id AND role_id = :role_salarie',
+        [
+            ':id' => $employee_id,
+            ':company_id' => $company_id,
+            ':role_salarie' => ROLE_SALARIE
+        ]
+    );
+}
+
+/**
+ * Récupère la liste des sites pour une entreprise donnée.
+ *
+ * @param int $company_id L'ID de l'entreprise.
+ * @return array La liste des sites (id, nom).
+ */
+function getCompanySites(int $company_id): array
+{
+    if ($company_id <= 0) {
+        return [];
+    }
+
+    $sql = "SELECT id, nom FROM sites WHERE entreprise_id = :company_id ORDER BY nom ASC";
+    $stmt = executeQuery($sql, [':company_id' => $company_id]);
+    return $stmt->fetchAll();
+}
+
+/**
+ * Met à jour les détails d'un salarié.
+ *
+ * @param int $employee_id L'ID du salarié à mettre à jour.
+ * @param int $company_id L'ID de l'entreprise (pour vérification).
+ * @param array $data Les données à mettre à jour.
+ * @return bool True si la mise à jour réussit, false sinon.
+ */
+function updateEmployeeDetails(int $employee_id, int $company_id, array $data): bool
+{
+    if ($employee_id <= 0 || $company_id <= 0 || empty($data)) {
+        return false;
+    }
+
+    $employee = getEmployeeDetails($employee_id, $company_id);
+    if (!$employee) {
+        return false;
+    }
+
+    unset($data['statut'], $data['role_id'], $data['entreprise_id'], $data['mot_de_passe']);
+
+    if (empty($data)) {
+        return false;
+    }
+
+    $updatedRows = updateRow(
+        'personnes',
+        $data,
+        'id = :id',
+        [':id' => $employee_id]
+    );
+
+    return $updatedRows >= 0;
 }
