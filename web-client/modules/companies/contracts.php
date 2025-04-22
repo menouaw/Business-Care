@@ -58,7 +58,15 @@ if ($contractId > 0) {
                 <div class="row">
                     <div class="col-md-6">
                         <p class="mb-1"><strong>Référence:</strong> <?php echo htmlspecialchars($contract['reference'] ?? 'N/A'); ?></p>
-                        <p class="mb-1"><strong>Type de contrat:</strong> <?php echo htmlspecialchars(ucfirst($contract['type_contrat'] ?? 'N/A')); ?></p>
+                        <?php
+                        $contractTypeDisplay = 'N/A';
+                        if (!empty($contract['services']) && isset($contract['services'][0]['nom'])) {
+                            $contractTypeDisplay = $contract['services'][0]['nom'];
+                        } elseif (!empty($contract['prestation_nom'])) {
+                            $contractTypeDisplay = $contract['prestation_nom'];
+                        }
+                        ?>
+                        <p class="mb-1"><strong>Type:</strong> <?php echo htmlspecialchars($contractTypeDisplay); ?></p>
                         <p class="mb-1"><strong>Date de début:</strong> <?php echo isset($contract['date_debut']) ? formatDate($contract['date_debut'], 'd/m/Y') : 'N/A'; ?></p>
                         <p class="mb-1"><strong>Date de fin:</strong> <?php echo isset($contract['date_fin']) && $contract['date_fin'] ? formatDate($contract['date_fin'], 'd/m/Y') : 'Indéterminée'; ?></p>
                     </div>
@@ -191,7 +199,7 @@ if ($contractId > 0) {
                                 <?php foreach ($contrats as $contratItem): ?>
                                     <tr>
                                         <td><?= htmlspecialchars($contratItem['reference'] ?? 'N/A') ?></td>
-                                        <td><?= htmlspecialchars(ucfirst($contratItem['type_contrat'])) ?></td>
+                                        <td><?= htmlspecialchars($contratItem['service_nom'] ?? 'N/A') ?></td>
                                         <td><?= formatDate($contratItem['date_debut'], 'd/m/Y') ?></td>
                                         <td><?= $contratItem['date_fin'] ? formatDate($contratItem['date_fin'], 'd/m/Y') : 'Indéterminée' ?></td>
                                         <td><?= getStatusBadge($contratItem['statut']) ?></td>

@@ -1,197 +1,146 @@
 # Business Care - Panneau d'Administration
 
-Le panneau d'administration est la partie backend permettant de gérer toutes les fonctionnalités de Business Care. Cette interface centralise les outils nécessaires à la gestion de l'ensemble des services proposés aux entreprises, salariés et prestataires.
+Panneau d'administration backend pour la gestion de Business Care (entreprises, utilisateurs, contrats, services, etc.). S'exécute dans un environnement Dockerisé.
 
-## Structure du projet
-
-```
-web-admin/                  # Dossier principal de l'administration
-├── includes/               # Fichiers d'inclusion PHP
-│   ├── init.php            # Initialisation du système
-│   └── page_functions/     # Fonctions spécifiques à chaque page
-├── modules/                # Modules fonctionnels
-│   ├── users/              # Gestion des utilisateurs
-│   ├── companies/          # Gestion des entreprises
-│   ├── contracts/          # Gestion des contrats
-│   └── services/           # Gestion des services et prestations
-├── templates/              # Modèles d'interface
-│   ├── header.php          # En-tête commune
-│   ├── footer.php          # Pied de page commun
-│   └── sidebar.php         # Barre latérale de navigation
-├── assets/                 # Ressources statiques (css, js, images)
-├── index.php               # Page d'accueil/tableau de bord
-├── login.php               # Page de connexion
-├── logout.php              # Script de déconnexion
-└── install-admin.php       # Script d'installation
-```
-
-### Fichiers partagés
-
-Les fichiers communs partagés entre plusieurs composants de l'application se trouvent dans le dossier `/shared/web-admin/` :
-```
-shared/web-admin/           # Fichiers partagés pour l'administration
-├── config.php              # Configuration de l'application
-├── db.php                  # Fonctions de base de données
-├── auth.php                # Fonctions d'authentification
-├── functions.php           # Fonctions utilitaires
-└── logging.php             # Fonctions de journalisation
-```
-
-## API REST
-
-L'API REST se trouve dans le dossier `/api` à la racine du projet et comprend les points d'entrée suivants :
+## Structure Principale
 
 ```
-/api/                      # Point d'entrée principal
-├── admin/                 # Endpoints pour l'administration
-│   ├── users.php          # Gestion des utilisateurs
-│   ├── companies.php      # Gestion des entreprises
-│   ├── contracts.php      # Gestion des contrats
-│   ├── services.php       # Gestion des services
-│   └── auth.php           # Authentification
+web-admin/
+├── includes/           # Fichiers PHP Core
+│   ├── init.php        # Initialisation (config, db, session, via /shared)
+│   └── page_functions/ # Logique métier (fonctions par module)
+│       └── modules/    # ex: contracts.php, users.php
+├── modules/            # Modules fonctionnels (vues/logique de présentation)
+│   ├── users/          # Gestion utilisateurs
+│   ├── companies/      # Gestion entreprises
+│   ├── contracts/      # Gestion contrats
+│   └── ...             # Autres modules (services, quotes, etc.)
+├── templates/          # Templates HTML communs
+│   ├── header.php      # En-tête HTML
+│   ├── footer.php      # Pied de page HTML
+│   └── sidebar.php     # Menu latéral
+├── assets/             # Ressources statiques (CSS, JS, images) -> Servi par Nginx via /assets
+├── index.php           # Point d'entrée / Tableau de bord
+├── login.php           # Connexion admin
+├── logout.php          # Déconnexion admin
+└── install-admin.php   # Obsolète
 ```
 
-### Points d'entrée API disponibles
+**Fichiers Partagés :** Les fichiers essentiels partagés se trouvent dans `/shared/web-admin/` et sont inclus par `includes/init.php`. Ils comprennent `config.php` (configuration), `db.php` (connexion BDD), `auth.php` (authentification), `functions.php` (utilitaires), et `logging.php` (journalisation). Ces fichiers sont la base du fonctionnement de l'application admin.
 
-#### Gestion des utilisateurs
-- `GET /api/admin/users` - Liste des utilisateurs (avec pagination)
-- `GET /api/admin/users/{id}` - Détail d'un utilisateur
-- `POST /api/admin/users` - Création d'un utilisateur
-- `PUT /api/admin/users/{id}` - Mise à jour d'un utilisateur
-- `DELETE /api/admin/users/{id}` - Suppression d'un utilisateur
+## API REST (Service Externe)
 
-#### Authentification
-- `POST /api/admin/auth` - Authentification et génération de token
-- `PUT /api/admin/auth` - Modification de mot de passe
-- `DELETE /api/admin/auth` - Déconnexion et invalidation du token
+Le projet principal expose une API REST distincte sous `/api/admin/` pour la gestion des ressources (utilisateurs, entreprises, etc.). **Ce panneau d'administration (`web-admin`) n'utilise pas directement cette API REST pour ses opérations internes.** Il s'appuie plutôt sur les fonctions PHP définies dans `includes/page_functions/` et les fichiers partagés (`shared/web-admin/`).
 
-#### Gestion des entreprises
-- `GET /api/admin/companies` - Liste des entreprises (avec pagination)
-- `GET /api/admin/companies/{id}` - Détail d'une entreprise
-- `POST /api/admin/companies` - Création d'une entreprise
-- `PUT /api/admin/companies/{id}` - Mise à jour d'une entreprise
-- `DELETE /api/admin/companies/{id}` - Suppression d'une entreprise
+Les endpoints `/api/admin/*` existent comme un service séparé qui *pourrait* être consommé par d'autres clients ou potentiellement par ce panneau dans le futur.
 
-#### Gestion des contrats
-- `GET /api/admin/contracts` - Liste des contrats (avec pagination)
-- `GET /api/admin/contracts/{id}` - Détail d'un contrat
-- `POST /api/admin/contracts` - Création d'un contrat
-- `PUT /api/admin/contracts/{id}` - Mise à jour d'un contrat
-- `DELETE /api/admin/contracts/{id}` - Suppression d'un contrat
+_(Voir la section détaillée plus bas pour les endpoints de ce service API externe)_.
 
-#### Gestion des services
-- `GET /api/admin/services` - Liste des services (avec pagination)
-- `GET /api/admin/services/{id}` - Détail d'un service
-- `POST /api/admin/services` - Création d'un service
-- `PUT /api/admin/services/{id}` - Mise à jour d'un service
-- `DELETE /api/admin/services/{id}` - Suppression d'un service
+## Setup (Docker Recommandé)
 
-## Configuration
+**Prérequis :**
+- Docker & Docker Compose
 
-1. Créer une base de données MySQL
-2. Importer le script SQL depuis `/database/schemas/business_care.sql`
-3. Modifier les paramètres de connexion dans `/shared/web-admin/config.php`
-4. Exécuter le script d'installation via `/web-admin/install-admin.php`
+**Installation via Docker (Méthode Principale) :**
+1.  Assurez-vous que Docker Desktop (ou équivalent) est en cours d'exécution.
+2.  Configurez les variables d'environnement nécessaires dans le fichier `.env` à la racine du projet (notamment les mots de passe pour la base de données `MYSQL_PASSWORD`, `MYSQL_ROOT_PASSWORD`, `MYSQL_BACKUP_PASSWORD`). **Ne commitez pas `.env` dans Git.**
+3.  Depuis la racine du projet, exécutez : `docker-compose up -d --build`
+4.  Le panneau d'administration devrait être accessible via `http://localhost/admin` (ou l'URL configurée dans Nginx).
+5.  La base de données sera automatiquement initialisée par le script `docker/db/init.sh` lors du premier démarrage du conteneur `db`.
 
-## Fonctionnalités principales
+**Installation Manuelle (Alternatif) :**
+_(Non recommandée si Docker est utilisé)_
+1.  Prérequis : PHP >= 7.4, MySQL >= 5.7, Serveur web (Apache/Nginx), Composer.
+2.  Cloner le dépôt.
+3.  Créer une base de données MySQL (ex: `business_care`).
+4.  Importer les schémas depuis `/database/schemas/`.
+5.  Configurer la connexion BDD dans `/shared/web-admin/config.php`.
+6.  Exécuter `composer install` à la racine du projet.
+7.  Configurer le serveur web pour pointer vers le dossier racine du projet et gérer la réécriture d'URL si nécessaire (voir exemple `docker/nginx/default.conf`).
 
-- Tableau de bord avec statistiques et métriques clés
-- Gestion complète des utilisateurs (administrateurs, prestataires, salariés)
-- Gestion des entreprises clientes et de leurs contrats
-- Gestion des services et prestations
-- Suivi des événements et des réservations
-- Gestion financière (facturation, paiements)
-- Rapports et statistiques
-- Journalisation complète des activités système
+## Fonctionnalités Clefs
+
+- Tableau de bord
+- Gestion Utilisateurs (admins, prestataires, salariés clients)
+- Gestion Entreprises & Contrats associés
+- Gestion Prestataires (fournisseurs de services)
+- Gestion Services & Prestations proposées
+- Gestion Devis
+- Gestion Dons
+- Suivi Rendez-vous & Événements (si applicable au module admin)
+- Gestion Financière (facturation, suivi paiements via Stripe)
+- Visualisation de Rapports PDF : Accès à un rapport d'activité détaillé (généré périodiquement par une application Java externe - voir `/java-app/README.md`), fournissant des statistiques sur les clients, événements et prestations. Nécessite une configuration serveur web appropriée pour servir le fichier PDF depuis `/java-app/output/`.
+- Rapports & Statistiques basiques (intégrés au PHP)
+- Journalisation des activités importantes via `logging.php`
 
 ## Développement
 
-### Prérequis
+**Architecture :**
+- **Logique Métier :** Fonctions PHP dans `/includes/page_functions/modules/` (ex: `contractsGetList()`). Ces fonctions interagissent avec la base de données via les fonctions de `/shared/web-admin/db.php`.
+- **Présentation :** Fichiers PHP dans `/modules/` pour l'affichage HTML. Ils incluent les templates et appellent les fonctions métier pour récupérer les données à afficher.
+- **Templates Communs :** `header.php`, `footer.php`, `sidebar.php` sont inclus dans les fichiers de vue des modules pour une structure cohérente.
+- **Initialisation :** `includes/init.php` est inclus au début des points d'entrée (`index.php`, `login.php`, pages des modules) pour charger la configuration, démarrer la session, et établir la connexion BDD.
 
-- PHP 7.4 ou supérieur
-- MySQL 5.7 ou supérieur
-- Serveur web Apache avec mod_rewrite activé
-- Composer pour la gestion des dépendances
+**Ajouter un Module :**
+1.  Créer un dossier pour le nouveau module, par exemple `/modules/nouveau_module/`.
+2.  Créer le fichier de fonctions PHP correspondant dans `/includes/page_functions/modules/nouveau_module.php`. Définir les fonctions pour lire/écrire les données de ce module.
+3.  Créer les fichiers de vue nécessaires (ex: `index.php` pour la liste, `edit.php` pour l'édition) dans `/modules/nouveau_module/`. Ces fichiers incluront `init.php` et les templates, et appelleront les fonctions créées à l'étape 2.
+4.  Ajouter une entrée dans le menu latéral (`templates/sidebar.php`) si nécessaire.
+5.  Mettre à jour les routes ou la logique de routage si applicable (actuellement basé sur la structure des dossiers).
 
-### Installation pour le développement
-
-1. Cloner le dépôt GitHub
-2. Créer et configurer la base de données
-3. Exécuter `composer install` pour installer les dépendances
-4. Configurer le fichier `shared/web-admin/config.php`
-5. Exécuter le script d'installation
-
-## Architecture du code
-
-### Structure des fichiers
-
-Pour maintenir une organisation claire du code, les fonctions sont séparées selon leur responsabilité:
-
-- `/shared/web-admin/` - Contient les fichiers partagés du système
-  - `config.php` - Configuration générale (constantes, URLs, paramètres de base de données)
-  - `db.php` - Connexion à la base de données et fonctions de requêtes (getDbConnection, fetchAll, fetchOne, etc.)
-  - `auth.php` - Fonctions d'authentification (login, logout, isAuthenticated, etc.)
-  - `functions.php` - Fonctions utilitaires générales (formatDate, sanitizeInput, flashMessage, etc.)
-  - `logging.php` - Journalisation des événements système (logActivity, logSecurityEvent, logBusinessOperation)
-
-- `/web-admin/includes/` - Contient les fichiers spécifiques à l'administration
-  - `init.php` - Initialisation du système
-  - `/page_functions/` - Fonctions spécifiques à chaque page
-    - `dashboard.php` - Fonctions pour le tableau de bord
-    - `login.php` - Fonctions de traitement du login
-    - `/modules/` - Fonctions spécifiques aux modules
-      - `companies.php` - Gestion des entreprises
-      - `contracts.php` - Gestion des contrats
-      - `services.php` - Gestion des services
-      - `users.php` - Gestion des utilisateurs
-
-### Directives pour ajouter de nouvelles pages et fonctions
-
-1. Pour chaque nouvelle page:
-   - Créer un fichier dans `/includes/page_functions/` portant le nom de la page
-   - Y inclure toutes les fonctions spécifiques à cette page
-   - Inclure ce fichier en haut de la page correspondante
-
-2. Pour les modules:
-   - Créer un fichier dans `/includes/page_functions/modules/` pour chaque module
-   - Exemple: `/includes/page_functions/modules/companies.php` pour les fonctions du module entreprises
-   - Le nom des fonctions doit commencer par le nom du module (ex: `companiesGetList()`, `companiesGetDetails()`)
-
-3. Règles à suivre:
-   - Les fonctions d'une page ne doivent pas être dans le fichier de la page
-   - Chaque fichier de fonction doit inclure les dépendances nécessaires
-   - Les noms de fonctions doivent être préfixés par le nom de la page ou du module
-   - Ajouter de la documentation pour chaque fonction
-   - Les fonctions doivent retourner des structures cohérentes (ex: tableau associatif avec clés 'success', 'message', etc.)
-   - Séparer clairement la logique métier de la présentation
-
-### Système de journalisation
-
-Le système intègre une journalisation complète des activités:
-- Activités utilisateurs standard avec `logActivity()`
-- Opérations système critiques avec `logSystemActivity()`
-- Événements de sécurité avec `logSecurityEvent()`
-- Opérations métiers avec `logBusinessOperation()`
-
-Ces logs sont stockés dans la table `logs` de la base de données et peuvent être consultés depuis l'interface d'administration.
-
-### Avantages de cette organisation
-
-1. **Meilleure lisibilité du code**: Les fichiers de page sont plus courts et contiennent uniquement la logique de présentation
-2. **Réutilisation des fonctions**: Les fonctions peuvent être utilisées dans différents contextes
-3. **Facilite la maintenance**: Les modifications de la logique métier sont centralisées
-4. **Tests plus simples**: Il est plus facile de tester les fonctions séparément
-5. **Évolution plus aisée**: L'ajout de nouvelles fonctionnalités est simplifié
-6. **Partage de code**: Les fonctions communes sont disponibles pour tous les composants de l'application
+**Journalisation :**
+Utiliser les fonctions définies dans `/shared/web-admin/logging.php` :
+- `logActivity()`: Actions utilisateur standard (ex: modification d'un contrat).
+- `logSystemActivity()`: Événements système (ex: démarrage service).
+- `logSecurityEvent()`: Événements de sécurité (ex: connexion échouée).
+- `logBusinessOperation()`: Opérations métier critiques (ex: traitement paiement).
+Les logs sont stockés dans la table `logs` de la base de données.
 
 ## Sécurité
 
-- Toutes les entrées utilisateur sont validées et nettoyées via la fonction `sanitizeInput()`
-- L'authentification est gérée via des sessions sécurisées avec `login()`, `logout()` et `isAuthenticated()`
-- Les mots de passe sont hachés avec PASSWORD_DEFAULT (bcrypt)
-- Protection contre les attaques XSS via `htmlspecialchars()` et nettoyage des entrées
-- Protection contre les attaques CSRF avec des jetons via `generateToken()` et `validateToken()`
-- Expiration automatique des sessions inactives (SESSION_LIFETIME)
-- Fonction "Se souvenir de moi" sécurisée avec des jetons à usage unique
-- Journalisation de tous les événements de sécurité (tentatives de connexion, permissions, etc.)
-- Les requêtes à l'API nécessitent une authentification par jeton 
+- **Validation/Nettoyage des entrées :** Utilisation probable de fonctions comme `htmlspecialchars()` pour l'affichage (protection XSS) et potentiellement des fonctions de nettoyage personnalisées ou `filter_var` pour les données entrantes (voir `shared/web-admin/functions.php`).
+- **Gestion des Sessions :** Gérée via `session_start()` dans `init.php` et les fonctions dans `shared/web-admin/auth.php` (`login()`, `logout()`, `isAuthenticated()`). Vérifier la configuration de la durée de vie (`SESSION_LIFETIME`) et des cookies de session.
+- **Hachage des Mots de Passe :** Utilisation de `password_hash()` (avec `PASSWORD_DEFAULT` ou un algorithme robuste) et `password_verify()` (implémenté dans `shared/web-admin/auth.php`).
+- **Protection CSRF :** Implémentation via des jetons synchronisés (`generateToken()`, `validateToken()` dans `shared/web-admin/functions.php` ou `auth.php`). À vérifier dans les formulaires POST.
+- **Contrôle d'Accès :** Vérifications des rôles/permissions via `isAuthenticated()` et potentiellement des fonctions de vérification de rôle plus spécifiques dans `auth.php` ou les `page_functions`.
+- **Journalisation Sécurité :** Utilisation de `logSecurityEvent()`.
+- **Configuration Serveur :** Protection des dossiers sensibles (ex: `/shared/`) via la configuration Nginx (`deny all;`). HTTPS doit être configuré en production.
+
+---
+
+## Détail API Endpoints (Service API Externe)
+
+*(Rappel : Ces endpoints appartiennent au service API REST distinct situé sous `/api/admin/` et ne sont pas servis directement par ce panneau d'administration)*
+
+### Authentification API
+- `POST /api/admin/auth/login`
+- `PUT /api/admin/auth/password`
+- `DELETE /api/admin/auth/logout`
+
+### Gestion des utilisateurs API
+- `GET /api/admin/users`
+- `GET /api/admin/users/{id}`
+- `POST /api/admin/users`
+- `PUT /api/admin/users/{id}`
+- `DELETE /api/admin/users/{id}`
+
+### Gestion des entreprises API
+- `GET /api/admin/companies`
+- `GET /api/admin/companies/{id}`
+- `POST /api/admin/companies`
+- `PUT /api/admin/companies/{id}`
+- `DELETE /api/admin/companies/{id}`
+
+### Gestion des contrats API
+- `GET /api/admin/contracts`
+- `GET /api/admin/contracts/{id}`
+- `POST /api/admin/contracts`
+- `PUT /api/admin/contracts/{id}`
+- `DELETE /api/admin/contracts/{id}`
+
+### Gestion des services API
+- `GET /api/admin/services`
+- `GET /api/admin/services/{id}`
+- `POST /api/admin/services`
+- `PUT /api/admin/services/{id}`
+- `DELETE /api/admin/services/{id}` 

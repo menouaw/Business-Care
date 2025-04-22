@@ -13,7 +13,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!validateToken($csrf_token)) {
         logSecurityEvent($employee_id, 'csrf_failure', "[SECURITY FAILURE] Tentative POST événement avec jeton invalide");
-    } elseif ($event_id) {
+        flashMessage("Erreur de sécurité (jeton invalide). Veuillez réessayer.", "danger");
+        redirectTo(WEBCLIENT_URL . '/modules/employees/events.php');
+        exit;
+    }
+
+    if ($event_id) {
         if ($action === 'register_event') {
             handleRegisterForEvent($employee_id, $event_id);
         } elseif ($action === 'unregister_event') {
@@ -24,7 +29,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         flashMessage("ID d'événement invalide.", "danger");
     }
-
 
     redirectTo(WEBCLIENT_URL . '/modules/employees/events.php');
     exit;

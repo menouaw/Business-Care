@@ -16,6 +16,7 @@ TRUNCATE TABLE dons;
 TRUNCATE TABLE rendez_vous;
 TRUNCATE TABLE factures;
 TRUNCATE TABLE devis;
+TRUNCATE TABLE devis_prestations;
 TRUNCATE TABLE contrats;
 TRUNCATE TABLE preferences_utilisateurs;
 TRUNCATE TABLE personnes;
@@ -54,7 +55,6 @@ INSERT INTO prestations (nom, description, prix, duree, type, categorie, niveau_
 ('Yoga en Entreprise', 'Seance de yoga adaptee au milieu professionnel', 120.00, 60, 'atelier', 'Bien-etre physique', 'debutant', 20, 'Tapis de yoga', 'Aucun'),
 ('Webinar Gestion du Stress', 'Formation en ligne sur la gestion du stress', 150.00, 90, 'webinar', 'Formation', 'debutant', 50, 'Ordinateur, connexion internet', 'Aucun'),
 ('Consultation Nutritionniste', 'Bilan et conseils personnalisés avec un nutritionniste', 90.00, 60, 'consultation', 'Nutrition', NULL, 1, 'Aucun', 'Aucun'),
--- Ajouter d'autres prestations si référencées plus bas...
 ('Meditation Pleine Conscience', 'Atelier pratique de méditation', 100.00, 60, 'atelier', 'Bien-etre mental', 'debutant', 15, 'Coussin (optionnel)', 'Aucun'), -- ID 5
 ('Formation Ergonomie Bureau', 'Adapter son poste de travail', 250.00, 120, 'atelier', 'Ergonomie', 'debutant', 12, 'Aucun', 'Aucun'), -- ID 6
 ('Coaching de Vie Individuel', 'Accompagnement personnalisé objectifs', 150.00, 60, 'consultation', 'Developpement personnel', NULL, 1, 'Aucun', 'Aucun'), -- ID 7
@@ -128,10 +128,36 @@ INSERT INTO communautes (nom, description, type, niveau, capacite_max) VALUES
 ('Yoga & Meditation', 'Groupe de pratique du yoga et de la meditation', 'bien_etre', 'debutant', 20), -- Type: bien_etre
 ('Running Club', 'Club de course a pied pour tous niveaux', 'sport', 'intermediaire', 30); -- Type: sport
 
-INSERT INTO associations (nom) VALUES
-('Restos du Coeur'),
-('Fondation Abbé Pierre'),
-('Secours Populaire Français');
+INSERT INTO factures (entreprise_id, devis_id, numero_facture, date_emission, date_echeance, montant_total, montant_ht, tva, statut, mode_paiement) VALUES
+(1, NULL, 'FACT-2024-001', '2024-01-20', '2024-02-20', 18000.00, 15000.00, 20.00, 'payee', 'virement'),  
+(2, NULL, 'FACT-2024-002', '2024-02-05', '2024-03-22', 36000.00, 30000.00, 20.00, 'payee', 'carte'),      
+(4, NULL, 'FACT-2024-003', '2024-03-10', '2024-04-10', 1728.00, 1440.00, 20.00, 'en_attente', 'prelevement'), 
+(5, NULL, 'FACT-2024-004', '2024-04-10', '2024-05-10', 3000.00, 2500.00, 20.00, 'payee', 'virement'), 
+(1, NULL, 'FACT-2024-005', '2024-04-12', '2024-04-12', 24000.00, 20000.00, 20.00, 'payee', 'carte'), 
+(2, NULL, 'FACT-2024-006', '2024-04-20', '2024-05-20', 2200.00, 1833.33, 20.00, 'en_attente', 'prelevement'), 
+(3, NULL, 'FACT-2024-007', '2024-04-22', '2024-04-22', 4320.00, 3600.00, 20.00, 'payee', 'virement'), 
+(4, NULL, 'FACT-2024-008', '2024-05-01', '2024-06-15', 1750.00, 1458.33, 20.00, 'annulee', 'virement'), 
+(5, NULL, 'FACT-2024-009', '2024-05-05', '2024-07-05', 8640.00, 7200.00, 20.00, 'payee', 'prelevement'), 
+(1, NULL, 'FACT-2024-010', '2024-05-10', '2024-06-10', 1350.00, 1125.00, 20.00, 'en_attente', 'carte'), 
+(2, NULL, 'FACT-2024-011', '2024-05-12', '2024-06-27', 48000.00, 40000.00, 20.00, 'payee', 'virement'), 
+(3, NULL, 'FACT-2024-012', '2024-05-20', '2024-05-20', 700.00, 583.33, 20.00, 'en_attente', 'carte'), 
+(4, NULL, 'FACT-2024-013', '2024-05-22', '2024-06-22', 1080.00, 900.00, 20.00, 'payee', 'prelevement'),  
+(6, NULL, 'FACT-2024-014', '2024-05-28', '2024-06-28', 27000.00, 22500.00, 20.00, 'en_attente', 'virement'), 
+(3, NULL, 'FACT-2024-015', '2024-04-25', '2024-05-25', 1200.00, 1000.00, 20.00, 'annulee', 'virement'), 
+(7, NULL, 'FACT-2024-016', '2024-06-05', '2024-07-20', 1600.00, 1333.33, 20.00, 'en_attente', 'prelevement'), 
+(8, NULL, 'FACT-2024-017', '2024-06-07', '2024-06-07', 64800.00, 54000.00, 20.00, 'payee', 'carte'), 
+(9, NULL, 'FACT-2024-018', '2024-06-12', '2024-07-12', 850.00, 708.33, 20.00, 'annulee', 'virement'), 
+(10, NULL, 'FACT-2024-019', '2024-06-20', '2024-08-20', 3200.00, 2666.67, 20.00, 'en_attente', 'prelevement'), 
+(11, NULL, 'FACT-2024-020', '2024-06-22', '2024-06-22', 35640.00, 29700.00, 20.00, 'payee', 'virement'), 
+(12, NULL, 'FACT-2024-021', '2024-06-28', '2024-07-28', 1950.00, 1625.00, 20.00, 'en_attente', 'carte'), 
+(13, NULL, 'FACT-2024-022', '2024-07-03', '2024-07-03', 1080.00, 900.00, 20.00, 'payee', 'carte'),    
+(14, NULL, 'FACT-2024-023', '2024-07-08', '2024-08-23', 2700.00, 2250.00, 20.00, 'annulee', 'virement'), 
+(15, NULL, 'FACT-2024-024', '2024-07-12', '2024-09-12', 23040.00, 19200.00, 20.00, 'payee', 'prelevement'), 
+(16, NULL, 'FACT-2024-025', '2024-07-18', '2024-08-18', 1400.00, 1166.67, 20.00, 'en_attente', 'carte'), 
+(17, NULL, 'FACT-2024-026', '2024-07-22', '2024-09-06', 1944.00, 1620.00, 20.00, 'payee', 'virement'),  
+(18, NULL, 'FACT-2024-027', '2024-07-28', '2024-07-28', 900.00, 750.00, 20.00, 'annulee', 'virement'), 
+(19, NULL, 'FACT-2024-028', '2024-08-05', '2024-09-05', 25080.00, 20900.00, 20.00, 'payee', 'prelevement'), 
+(20, NULL, 'FACT-2024-029', '2024-08-08', '2024-10-08', 1550.00, 1291.67, 20.00, 'en_attente', 'carte');
 
 INSERT INTO dons (personne_id, association_id, montant, type, description, date_don, statut) VALUES
 (5, 1, 50.00, 'financier', 'Don pour le programme de bien-etre', '2024-03-01', 'valide'),
@@ -169,15 +195,12 @@ INSERT INTO conseils (titre, icone, resume, categorie, contenu) VALUES
 ('L\'Importance de l\'Activité Physique', 'fas fa-running', 'Intégrer l\'exercice dans votre routine quotidienne.', 'Activité Physique', 'L\'activité physique est essentielle pour le corps et l\'esprit. Elle aide à réduire le stress, améliorer le sommeil et maintenir un poids santé.\n\nComment bouger plus :\n- Privilégiez les escaliers à l\'ascenseur.\n- Descendez un arrêt de bus/métro plus tôt et marchez.\n- Profitez de la pause déjeuner pour faire une courte marche.\n- Fixez-vous des objectifs réalisables : 30 minutes de marche rapide par jour, par exemple.\n- Trouvez une activité qui vous plaît : natation, danse, vélo, randonnée...');
 
 INSERT INTO utilisateur_interets_conseils (personne_id, categorie_conseil) VALUES
--- Préférences pour Chloé Bernard (ID 7)
-(7, 'bien_etre'),         -- Standardisé
-(7, 'sport'),             -- Standardisé
+(7, 'bien_etre'),         
+(7, 'sport'),             
 (7, 'nutrition'),
--- Préférences exemple pour Marie Dupont (ID 5)
 (5, 'stress'),
 (5, 'sommeil'),
 (5, 'nutrition'),
--- Préférences exemple pour Jean Martin (ID 6)
 (6, 'activité physique'),
 (6, 'stress');
 
@@ -196,8 +219,8 @@ INSERT INTO consultation_creneaux (prestation_id, praticien_id, start_time, end_
 (7, 3, NOW() + INTERVAL 4 DAY + INTERVAL '16:00' HOUR_MINUTE, NOW() + INTERVAL 4 DAY + INTERVAL '17:00' HOUR_MINUTE, FALSE, NULL); -- Coaching, Praticien 3, En ligne (NULL)
 
 INSERT INTO communaute_membres (communaute_id, personne_id, date_adhesion) VALUES
-(1, 5, NOW() - INTERVAL 5 DAY),   -- Marie Dupont (ID 5) rejoint Yoga & Meditation (ID 1)
-(2, 6, NOW() - INTERVAL 10 DAY),  -- Jean Martin (ID 6) rejoint Running Club (ID 2)
+(1, 5, NOW() - INTERVAL 5 DAY),  
+(2, 6, NOW() - INTERVAL 10 DAY),  
 (1, 7, NOW() - INTERVAL 7 DAY),   -- Chloé Bernard (ID 7) rejoint Yoga & Meditation (ID 1)
 (2, 7, NOW() - INTERVAL 6 DAY),   -- Chloé Bernard (ID 7) rejoint Running Club (ID 2)
 (2, 8, NOW() - INTERVAL 8 DAY),   -- Pierre Dubois (ID 8) rejoint Running Club (ID 2)

@@ -1,8 +1,3 @@
--- source C:/MAMP/htdocs/Business-Care/database/schemas/business_care.sql
-
-CREATE DATABASE business_care CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE business_care;
-
 CREATE TABLE roles (
     id INT PRIMARY KEY AUTO_INCREMENT,
     nom VARCHAR(50) NOT NULL UNIQUE,
@@ -107,36 +102,47 @@ CREATE TABLE consultation_creneaux (
 
 CREATE TABLE services (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    nom VARCHAR(100) NOT NULL UNIQUE,
+    type ENUM('Starter Pack', 'Basic Pack', 'Premium Pack') NOT NULL UNIQUE,
     description TEXT,
     actif BOOLEAN DEFAULT TRUE,
     ordre INT DEFAULT 0,
+    max_effectif_inferieur_egal INT NULL,
+    activites_incluses INT NOT NULL DEFAULT 0,
+    rdv_medicaux_inclus INT NOT NULL DEFAULT 0,
+    chatbot_questions_limite INT NULL,
+    conseils_hebdo_personnalises BOOLEAN DEFAULT FALSE,
+    tarif_annuel_par_salarie DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_nom (nom),
+    INDEX idx_type (type),
     INDEX idx_actif (actif)
 );
 
 CREATE TABLE contrats (
     id INT PRIMARY KEY AUTO_INCREMENT,
     entreprise_id INT NOT NULL,
+    service_id INT NOT NULL,
     date_debut DATE NOT NULL,
     date_fin DATE,
-    montant_mensuel DECIMAL(10,2),
     nombre_salaries INT,
-    type_contrat ENUM('standard', 'premium', 'entreprise') NOT NULL,
     statut ENUM('actif', 'expire', 'resilie', 'en_attente') DEFAULT 'actif',
     conditions_particulieres TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (entreprise_id) REFERENCES entreprises(id),
+    FOREIGN KEY (service_id) REFERENCES services(id),
     INDEX idx_dates (date_debut, date_fin),
-    INDEX idx_statut (statut)
+    INDEX idx_statut (statut),
+    INDEX idx_service (service_id)
 );
 
 CREATE TABLE devis (
     id INT PRIMARY KEY AUTO_INCREMENT,
     entreprise_id INT NOT NULL,
+    service_id INT NULL,
+    nombre_salaries_estimes INT NULL,
+    est_personnalise BOOLEAN DEFAULT FALSE,
+    notes_negociation TEXT NULL,
     date_creation DATE NOT NULL,
     date_validite DATE,
     montant_total DECIMAL(10,2) NOT NULL,
@@ -148,8 +154,10 @@ CREATE TABLE devis (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (entreprise_id) REFERENCES entreprises(id),
+    FOREIGN KEY (service_id) REFERENCES services(id),
     INDEX idx_dates (date_creation, date_validite),
-    INDEX idx_statut (statut)
+    INDEX idx_statut (statut),
+    INDEX idx_service (service_id)
 );
 
 CREATE TABLE factures (
@@ -164,6 +172,7 @@ CREATE TABLE factures (
     tva DECIMAL(5,2),
     statut ENUM('en_attente', 'payee', 'annulee', 'retard', 'impayee') DEFAULT 'en_attente',
     mode_paiement ENUM('virement', 'carte', 'prelevement'),
+    date_paiement DATETIME NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (entreprise_id) REFERENCES entreprises(id),
@@ -224,6 +233,12 @@ CREATE TABLE communautes (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_type (type)
+);
+
+CREATE TABLE associations (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nom VARCHAR(255) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE dons (
@@ -306,6 +321,17 @@ CREATE TABLE preferences_utilisateurs (
     UNIQUE KEY unique_personne_id (personne_id)
 );
 
+CREATE TABLE devis_prestations (
+    devis_id INT NOT NULL,
+    prestation_id INT NOT NULL,
+    quantite INT DEFAULT 1,
+    prix_unitaire_devis DECIMAL(10,2) NOT NULL,
+    description_specifique TEXT,
+    PRIMARY KEY (devis_id, prestation_id),
+    FOREIGN KEY (devis_id) REFERENCES devis(id) ON DELETE CASCADE,
+    FOREIGN KEY (prestation_id) REFERENCES prestations(id) ON DELETE CASCADE
+);
+
 CREATE TABLE contrats_prestations (
     contrat_id INT NOT NULL,
     prestation_id INT NOT NULL,
@@ -314,25 +340,27 @@ CREATE TABLE contrats_prestations (
     FOREIGN KEY (prestation_id) REFERENCES prestations(id) ON DELETE CASCADE
 );
 
+
 CREATE TABLE communaute_messages (
     id INT PRIMARY KEY AUTO_INCREMENT,
     communaute_id INT NOT NULL,
     personne_id INT NOT NULL,
     message TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (communaute_id) REFERENCES communautes(id) ON DELETE CASCADE,
     FOREIGN KEY (personne_id) REFERENCES personnes(id) ON DELETE CASCADE,
     INDEX idx_communaute_date (communaute_id, created_at)
 );
 
-CREATE TABLE associations (
+CREATE TABLE evenement_inscriptions (
     id INT PRIMARY KEY AUTO_INCREMENT,
     nom VARCHAR(255) NOT NULL UNIQUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE evenement_inscriptions (
-    id INT PRIMARY KEY AUTO_INCREMENT,
+    id INT PRIMARY KEY AUTO_INCREMENT,s
     personne_id INT NOT NULL,
     evenement_id INT NOT NULL,
     statut ENUM('inscrit', 'annule') DEFAULT 'inscrit',
@@ -340,15 +368,15 @@ CREATE TABLE evenement_inscriptions (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (personne_id) REFERENCES personnes(id) ON DELETE CASCADE,
     FOREIGN KEY (evenement_id) REFERENCES evenements(id) ON DELETE CASCADE,
-    UNIQUE KEY unique_inscription (personne_id, evenement_id),
+    UNIQUE KEY unique_inscription (personne_id, evenement_id), -- Empêche un utilisateur de s'inscrire deux fois au même événement
     INDEX idx_statut (statut)
 );
 
 CREATE TABLE signalements (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    sujet VARCHAR(255) NULL,
-    description TEXT NOT NULL,
-    statut ENUM('nouveau', 'en_cours', 'resolu', 'clos') DEFAULT 'nouveau',
+    sujet VARCHAR(255) NULL, -- Sujet optionnel
+    description TEXT NOT NULL, -- Description obligatoire
+    statut ENUM('nouveau', 'en_cours', 'resolu', 'clos') DEFAULT 'nouveau', -- Statut du traitement
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_statut (statut)
@@ -361,21 +389,5 @@ CREATE TABLE conseils (
     resume TEXT,
     categorie VARCHAR(100),
     contenu LONGTEXT NOT NULL
-);
-
-CREATE TABLE utilisateur_interets_conseils (
-    personne_id INT NOT NULL,
-    categorie_conseil VARCHAR(100) NOT NULL,            
-    PRIMARY KEY (personne_id, categorie_conseil),
-    FOREIGN KEY (personne_id) REFERENCES personnes(id) ON DELETE CASCADE
-);
-
-CREATE TABLE communaute_membres (
-    communaute_id INT NOT NULL,
-    personne_id INT NOT NULL,
-    date_adhesion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (communaute_id, personne_id),
-    FOREIGN KEY (communaute_id) REFERENCES communautes(id) ON DELETE CASCADE,
-    FOREIGN KEY (personne_id) REFERENCES personnes(id) ON DELETE CASCADE
 );
 

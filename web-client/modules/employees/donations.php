@@ -2,29 +2,13 @@
 
 require_once __DIR__ . '/../../includes/page_functions/modules/employees.php';
 
+session_status() === PHP_SESSION_ACTIVE || session_start();
 $current_employee_id = $_SESSION['user_id'] ?? null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $submitted_csrf_token = $_POST['csrf_token'] ?? null;
+    handleDonationSubmission($_POST, $current_employee_id);
+
     $redirectUrl = WEBCLIENT_URL . '/modules/employees/donations.php';
-
-    if (!validateToken($submitted_csrf_token)) {
-        logSecurityEvent($current_employee_id, 'csrf_failure', '[SECURITY FAILURE] Tentative POST avec jeton invalide sur donations.php');
-        flashMessage("Erreur de sécurité (jeton invalide).", "danger");
-    } else {
-        requireRole(ROLE_SALARIE);
-
-        $donationData = [
-            'association_id' => $_POST['association_id'] ?? null,
-            'type' => $_POST['type'] ?? null,
-            'montant' => $_POST['montant'] ?? null,
-            'description' => $_POST['description'] ?? null
-        ];
-
-
-        $donationId = manageEmployeeDonations($current_employee_id, $donationData);
-    }
-
     redirectTo($redirectUrl);
     exit;
 }
@@ -59,7 +43,6 @@ include_once __DIR__ . '/../../templates/header.php';
         <?php echo displayFlashMessages(); ?>
 
         <div class="row g-5">
-            <!-- Formulaire de Don -->
             <div class="col-lg-5">
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-primary text-white">
@@ -67,7 +50,7 @@ include_once __DIR__ . '/../../templates/header.php';
                     </div>
                     <div class="card-body">
                         <form id="donation-form" action="<?= WEBCLIENT_URL ?>/modules/employees/donations.php" method="POST">
-                            <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
+                            <input type="hidden" name="csrf_token" value="<?= $csrfToken ?? '' ?>">
 
                             <div class="mb-3">
                                 <label for="association-id" class="form-label">Association <span class="text-danger">*</span></label>
@@ -119,7 +102,6 @@ include_once __DIR__ . '/../../templates/header.php';
                 </div>
             </div>
 
-            <!-- Historique des Dons -->
             <div class="col-lg-7">
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-light">

@@ -2,8 +2,9 @@
 require_once __DIR__ . '/../init.php';
 
 /**
- * Recupere les statistiques pour le tableau de bord
- * @return array Tableau contenant les differentes statistiques
+ * Récupère les statistiques pour le tableau de bord
+ * 
+ * @return array Tableau contenant les différentes statistiques
  */
 function getDashboardStats() {
     return [
@@ -15,10 +16,11 @@ function getDashboardStats() {
 }
 
 /**
- * Recupere les activites recentes pour le tableau de bord
- * @param int $limit Nombre d'activites a recuperer
- * @return array Tableau d'activites recentes
+ * Récupère les activités récentes pour le tableau de bord
+ * 
+ * @param int $limit Nombre d'activités à récupérer
+ * @return array Tableau d'activités récentes
  */
-function getDashboardRecentActivities($limit = DASHBOARD_RECENT_ACTIVITIES_LIMIT) {
+function getDashboardRecentActivities($limit = 20) {
     return getRecentActivities($limit);
 } 

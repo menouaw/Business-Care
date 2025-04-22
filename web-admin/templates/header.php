@@ -16,15 +16,14 @@ require_once BASE_DIR . 'includes/init.php';
 <body>
     <header class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow" style="position: fixed;">
         <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3 d-flex align-items-center" href="<?php echo WEBADMIN_URL; ?>/" title="<?php echo APP_NAME; ?>">
-            <img src="<?php echo ASSETS_URL; ?>/images/logo/noBgWhite.png" alt="<?php echo APP_NAME; ?>" height="30">
+            <img src="<?php echo ASSETS_URL; ?>/images/logo/noBgBlack.png" alt="<?php echo APP_NAME; ?>" height="30">
         </a>
         <button class="navbar-toggler position-absolute d-md-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="col-md-9 col-lg-10 ms-sm-auto">
             <div class="d-flex justify-content-between align-items-center">
-                <input class="form-control form-control-white" type="text" placeholder="Rechercher..." aria-label="Search">
-                <div class="navbar-nav flex-row">
+                <div class="navbar-nav flex-row ms-auto">
                     <div class="nav-item text-nowrap">
                         <a class="nav-link px-3" href="<?php echo WEBADMIN_URL; ?>/notifications.php" title="Notifications">
                             <i class="fas fa-bell"></i>

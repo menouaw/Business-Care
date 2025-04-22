@@ -2,9 +2,6 @@
 require_once __DIR__ . '/../../shared/web-client/config.php';
 require_once __DIR__ . '/../../shared/web-client/db.php';
 
-define('INVOICE_PREFIX', 'F');
-
-
 /**
  * Formate une date selon un format spécifié.
  *
@@ -64,12 +61,44 @@ function sanitizeInput($input)
     return $input;
 }
 
-/**
- * Génère le titre de la page en ajoutant optionnellement un titre spécifique
- * 
- * @param string $title Titre spécifique de la page
- * @return string Titre complet formaté
- */
+
+function timeAgo($time)
+{
+    if (!is_numeric($time)) {
+        $time = strtotime($time);
+        if ($time === false) {
+            error_log("timeAgo: Impossible de convertir l'entrée en timestamp.");
+            return 'date invalide';
+        }
+    }
+
+    $time_difference = time() - $time;
+
+    if ($time_difference < 1) {
+        return 'à l\'instant';
+    }
+    $condition = array(
+        12 * 30 * 24 * 60 * 60 =>  'an',
+        30 * 24 * 60 * 60       =>  'mois',
+        24 * 60 * 60            =>  'jour',
+        60 * 60                 =>  'heure',
+        60                      =>  'minute',
+        1                       =>  'seconde'
+    );
+
+    foreach ($condition as $secs => $str) {
+        $d = $time_difference / $secs;
+
+        if ($d >= 1) {
+            $t = round($d);
+            $plural = ($t > 1 && $str !== 'mois') ? 's' : '';
+            return 'il y a ' . $t . ' ' . $str . $plural;
+        }
+    }
+    return 'à l\'instant';
+}
+
+
 function generatePageTitle($title = '')
 {
     if ($title) {
@@ -78,12 +107,6 @@ function generatePageTitle($title = '')
     return APP_NAME;
 }
 
-/**
- * Redirige l'utilisateur vers l'URL spécifiée
- *
- * @param string $url URL de destination
- * @return void
- */
 function redirectTo($url)
 {
     session_write_close();
@@ -92,33 +115,17 @@ function redirectTo($url)
     exit;
 }
 
-/**
- * Récupère les données du formulaire POST avec nettoyage
- * 
- * @return array Données du formulaire nettoyées
- */
 function getFormData()
 {
     return sanitizeInput($_POST);
 }
 
-/**
- * Récupère et nettoie les paramètres de la requête GET
- *
- * @return array Les paramètres GET nettoyés
- */
+
 function getQueryData()
 {
     return sanitizeInput($_GET);
 }
 
-/**
- * Enregistre un ou plusieurs messages temporaires en session
- * 
- * @param string|array $message Contenu du message ou tableau de messages
- * @param string $type Type de message (success, danger, warning, info)
- * @return void
- */
 function flashMessage($message, $type = 'success')
 {
     if (!isset($_SESSION['flash_messages'])) {
@@ -143,12 +150,11 @@ function getFlashMessages()
 
 function displayFlashMessages()
 {
-    $flashMessages = $_SESSION['flash_messages'] ?? [];
+    $flashMessages = getFlashMessages();
+
     if (empty($flashMessages)) {
         return '';
     }
-
-    unset($_SESSION['flash_messages']);
 
     $output = '';
     foreach ($flashMessages as $flashMessage) {
@@ -243,7 +249,7 @@ function getServiceIcon($type)
             return 'fas fa-tools';
         case 'consultation':
             return 'fas fa-user-md';
-        case 'evenement': // Keep consistent with the function removed from services.php
+        case 'evenement':
             return 'fas fa-calendar-alt';
         case 'autre':
         default:
@@ -316,7 +322,7 @@ function getPrestations($type = '', $categorie = '', $page = 1, $perPage = DEFAU
 
     $whereClause = !empty($where) ? implode(' AND ', $where) : '';
 
-    return paginateResults('prestations', $page, $perPage, $whereClause, 'nom ASC');
+    return paginateResults('prestations', $page, $perPage, $whereClause, 'nom ASC', $params);
 }
 
 
@@ -349,16 +355,7 @@ function isTimeSlotAvailable($dateHeure, $duree, $prestationId)
     return $stmt->fetchColumn() == 0;
 }
 
-/**
- * Génère un numéro de facture unique basé sur la date courante.
- *
- * Le numéro est composé du préfixe configuré (défini par la constante INVOICE_PREFIX),
- * de la date au format YYYYMMDD et d'un identifiant séquentiel sur 4 chiffres. La fonction
- * interroge la base de données pour récupérer le dernier identifiant utilisé pour la date
- * actuelle, puis incrémente cet identifiant pour garantir l'unicité du numéro généré.
- *
- * @return string Le numéro de facture au format INVOICE_PREFIX-YYYYMMDD-XXXX.
- */
+
 function generateInvoiceNumber()
 {
     $date = date('Ymd');
@@ -376,13 +373,7 @@ function generateInvoiceNumber()
     return INVOICE_PREFIX . "-$date-$nextId";
 }
 
-/**
- * Formate un nombre en devise (euros).
- *
- * @param float|null $amount Le montant.
- * @param string $currencySymbol Le symbole de la devise.
- * @return string Le montant formaté ou 'N/A' si null.
- */
+
 function formatCurrency($amount, $currencySymbol = '€')
 {
     if ($amount === null || !is_numeric($amount)) {
@@ -406,14 +397,7 @@ function formatDuration($interval)
     return $totalMonths . ' mois';
 }
 
-/**
- * Gère la redirection en cas d'échec de validation CSRF pour le client.
- * Log l'échec, affiche un message flash et redirige vers une page par défaut (ex: index).
- *
- * @param string $actionDescription Description de l'action tentée (ex: 'soumission formulaire').
- * @param string $redirectUrl URL de redirection par défaut.
- * @return void
- */
+
 function handleClientCsrfFailureRedirect($actionDescription = 'action', $redirectUrl = null)
 {
     $redirectUrl = $redirectUrl ?? WEBCLIENT_URL . '/index.php';

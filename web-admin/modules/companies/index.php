@@ -3,13 +3,13 @@ require_once '../../includes/page_functions/modules/companies.php';
 
 requireRole(ROLE_ADMIN);
 
-$filterData = getQueryData(['page' => 1, 'search' => '', 'city' => '', 'size' => '', 'action' => '', 'id' => 0]);
-$page = $filterData['page'];
-$search = $filterData['search'];
-$city = $filterData['city'];
-$size = $filterData['size'];
-$action = $filterData['action'];
-$id = $filterData['id'];
+$queryData = getQueryData(); 
+$page = $queryData['page'] ?? 1; 
+$search = $queryData['search'] ?? ''; 
+$city = $queryData['city'] ?? ''; 
+$size = $queryData['size'] ?? ''; 
+$action = $queryData['action'] ?? ''; 
+$id = $queryData['id'] ?? 0; 
 
 $errors = [];
 $company = null;
@@ -385,7 +385,7 @@ include_once '../../templates/header.php';
                                 <?php 
                                 $isFiltering = !empty($search) || !empty($city) || !empty($size);
                                 $message = $isFiltering 
-                                    ? "Aucune entreprise trouvée correspondant à vos critères."
+                                    ? "Aucune entreprise trouvée correspondant à vos critères de recherche."
                                     : "Aucune entreprise trouvée. <a href=\"" . WEBADMIN_URL . "/modules/companies/add.php\" class=\"alert-link\">Ajouter une entreprise</a>";
                                 echo $message;
                                 ?>

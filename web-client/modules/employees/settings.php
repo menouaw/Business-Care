@@ -19,12 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'update_settings') {
         handleUpdateEmployeeSettings();
     } elseif ($action === 'change_password') {
-        $current_password = $_POST['current_password'] ?? '';
-        $new_password = $_POST['new_password'] ?? '';
-        $confirm_password = $_POST['confirm_password'] ?? '';
-        $employee_id = $_SESSION['user_id'] ?? null;
-
-        handleChangePassword($employee_id, $current_password, $new_password, $confirm_password);
+        handlePasswordChangeRequest($_POST, $_SESSION['user_id']);
     }
     redirectTo(WEBCLIENT_URL . '/modules/employees/settings.php');
     exit;
@@ -33,8 +28,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $pageData = displayEmployeeSettings();
 $employee = $pageData['employee'] ?? [];
 $settings = $pageData['settings'] ?? [];
-$csrfToken = generateToken();
-$_SESSION['csrf_token'] = $csrfToken;
 
 $pageTitle = "Mes Paramètres";
 
@@ -65,7 +58,7 @@ include_once __DIR__ . '/../../templates/header.php';
             <div class="card-body">
                 <form action="<?= WEBCLIENT_URL ?>/modules/employees/settings.php" method="POST">
                     <input type="hidden" name="action" value="update_settings">
-                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
 
                     <h6>Informations Personnelles</h6>
                     <div class="row">
@@ -79,12 +72,19 @@ include_once __DIR__ . '/../../templates/header.php';
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="telephone" class="form-label">Téléphone</label>
-                            <input type="tel" class="form-control" id="telephone" name="telephone" value="<?= htmlspecialchars($employee['telephone'] ?? '') ?>">
+                            <input type="tel" class="form-control" id="telephone" name="telephone"
+                                pattern="^(\+33|0)[1-9](\d{2}){4}$"
+                                placeholder="0612345678 ou +33612345678"
+                                value="<?= htmlspecialchars($employee['telephone'] ?? '') ?>">
+                            <div class="form-text">Format: 0612345678 ou +33612345678</div>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" name="email" value="<?= htmlspecialchars($employee['email'] ?? '') ?>" disabled>
-                            <small class="text-muted">L'email ne peut pas être modifié ici.</small>
+                            <div class="input-group">
+                                <input type="email" class="form-control" id="email" name="email" value="<?= htmlspecialchars($employee['email'] ?? '') ?>" disabled>
+                                <a href="<?= WEBCLIENT_URL ?>/modules/employees/email-change-request.php" class="btn btn-outline-secondary">Demander modification</a>
+                            </div>
+                            <small class="text-muted">Pour des raisons de sécurité, la modification d'email nécessite une vérification spécifique.</small>
                         </div>
                     </div>
 
@@ -121,7 +121,7 @@ include_once __DIR__ . '/../../templates/header.php';
             <div class="card-body">
                 <form action="<?= WEBCLIENT_URL ?>/modules/employees/settings.php" method="POST">
                     <input type="hidden" name="action" value="change_password">
-                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
 
                     <div class="mb-3">
                         <label for="current_password" class="form-label">Mot de passe actuel <span class="text-danger">*</span></label>
@@ -129,8 +129,12 @@ include_once __DIR__ . '/../../templates/header.php';
                     </div>
                     <div class="mb-3">
                         <label for="new_password" class="form-label">Nouveau mot de passe <span class="text-danger">*</span></label>
-                        <input type="password" class="form-control" id="new_password" name="new_password" required aria-describedby="passwordHelp">
-                        <div id="passwordHelp" class="form-text">Doit comporter au moins 8 caractères.</div>
+                        <input type="password" class="form-control" id="new_password" name="new_password"
+                            pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
+                            required aria-describedby="passwordHelp">
+                        <div id="passwordHelp" class="form-text">
+                            Doit comporter au moins 8 caractères, dont une majuscule, une minuscule, un chiffre et un caractère spécial (@$!%*?&).
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label for="confirm_password" class="form-label">Confirmer le nouveau mot de passe <span class="text-danger">*</span></label>

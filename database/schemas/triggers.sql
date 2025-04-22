@@ -68,3 +68,80 @@ BEGIN
 END//
 
 DELIMITER ;
+
+
+DELIMITER //
+
+-- notifications pour les factures prestataires
+CREATE TRIGGER after_facture_prestataire_insert
+AFTER INSERT ON factures_prestataires
+FOR EACH ROW
+BEGIN
+    IF NEW.statut != 'generation_attendue' THEN
+        INSERT INTO notifications (personne_id, titre, message, type, lien)
+        VALUES (
+            NEW.prestataire_id,
+            'Nouvelle Facture Prestataire',
+            CONCAT('Votre facture No ', NEW.numero_facture, ' pour la periode du ', DATE_FORMAT(NEW.periode_debut, '%d/%m/%Y'), ' au ', DATE_FORMAT(NEW.periode_fin, '%d/%m/%Y'), ' (', NEW.montant_total, '€) a ete generee.'),
+            'info',
+            CONCAT('/prestataire/facturation/', NEW.id)
+        );
+    END IF;
+END//
+
+CREATE TRIGGER after_facture_prestataire_update
+AFTER UPDATE ON factures_prestataires
+FOR EACH ROW
+BEGIN
+    IF NEW.statut = 'payee' AND OLD.statut != 'payee' THEN
+        INSERT INTO notifications (personne_id, titre, message, type, lien)
+        VALUES (
+            NEW.prestataire_id,
+            'Facture Prestataire Payee',
+            CONCAT('Votre facture No ', NEW.numero_facture, ' (', NEW.montant_total, '€) a ete payee le ', DATE_FORMAT(NEW.date_paiement, '%d/%m/%Y'), '.'),
+            'success',
+            CONCAT('/prestataire/facturation/', NEW.id)
+        );
+    END IF;
+END//
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE TRIGGER after_prestataire_prestation_insert
+AFTER INSERT ON prestataires_prestations
+FOR EACH ROW
+BEGIN
+    DECLARE prestation_nom VARCHAR(255);
+    SELECT nom INTO prestation_nom FROM prestations WHERE id = NEW.prestation_id;
+
+    INSERT INTO notifications (personne_id, titre, message, type, lien)
+    VALUES (
+        NEW.prestataire_id,
+        'Nouvelle Prestation Assignee',
+        CONCAT('Vous pouvez desormais proposer la prestation: ', IFNULL(prestation_nom, 'ID ' + NEW.prestation_id), '.'),
+        'info',
+        '/prestataire/gestion/prestation'
+    );
+END//
+
+CREATE TRIGGER after_prestataire_prestation_delete
+AFTER DELETE ON prestataires_prestations
+FOR EACH ROW
+BEGIN
+    DECLARE prestation_nom VARCHAR(255);
+    SELECT nom INTO prestation_nom FROM prestations WHERE id = OLD.prestation_id;
+
+    INSERT INTO notifications (personne_id, titre, message, type, lien)
+    VALUES (
+        OLD.prestataire_id,
+        'Prestation Retiree',
+        CONCAT('Vous ne proposez plus la prestation: ', IFNULL(prestation_nom, 'ID ' + OLD.prestation_id), '.'),
+        'warning',
+        '/prestataire/gestion/prestation'
+    );
+END//
+
+DELIMITER ;

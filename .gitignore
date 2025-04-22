@@ -1,4 +1,3 @@
-
 # repertoire des dependances
 /vendor/
 /node_modules/
@@ -30,16 +29,12 @@ npm-debug.log*
 composer.phar
 
 # fichiers de configuration avec des informations sensibles
-config.php
 .cursor/
 docs/
 
 # fichiers de contenu utilisateur
 /uploads/
 /media/
-
-# fichiers generes
-/generated/
 
 # fichier de creation d'utilisateur admin
 web-admin/install-admin.php

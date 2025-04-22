@@ -117,7 +117,7 @@ function isAuthenticated() {
  */
 function requireAuthentication() {
     if (!isAuthenticated()) {
-        logSystemActivity('[SECURITY] auth_required', '[FAILURE] Redirection vers la page de connexion - Accès à une page protégée: ' . $_SERVER['REQUEST_URI']);
+        logSystemActivity('[SECURITY]:auth_required', '[FAILURE] Redirection vers la page de connexion - Accès à une page protégée: ' . $_SERVER['REQUEST_URI']);
         $_SESSION['redirect_after_login'] = $_SERVER['REQUEST_URI'];
         redirectTo(WEBADMIN_URL . '/login.php');
     }
@@ -204,7 +204,7 @@ function getUserInfo($userId = null) {
  * Initialise la procédure de réinitialisation de mot de passe pour un utilisateur.
  *
  * Cette fonction vérifie si l'email fourni correspond à un utilisateur existant. Si ce n'est pas le cas,
- * elle consigne un événement de sécurité et retourne false. Sinon, elle génère un jeton unique et définit
+ * elle consigne un événement de sécurité et retourne false. Sinon, elle génère un token unique et définit
  * une date d'expiration d'une heure pour le lien de réinitialisation, met à jour l'enregistrement de l'utilisateur,
  * et consigne l'initiation de la demande de réinitialisation.
  *
@@ -235,14 +235,14 @@ function resetPassword($email) {
 }
 
 /**
- * Génère et stocke un jeton de connexion automatique "Se souvenir de moi" pour un utilisateur.
+ * Génère et stocke un token de connexion automatique "Se souvenir de moi" pour un utilisateur.
  *
- * Le jeton, composé d'une chaîne hexadécimale de 64 caractères, est enregistré dans la base
- * de données avec une date d'expiration fixée à 30 jours. Un événement de sécurité est loggué
+ * Le token, composé d'une chaîne hexadécimale de 64 caractères, est enregistré dans la base
+ * de données avec une date d'expiration fixée à 30 jours. Un événement de sécurité est loggé
  * lors de sa création.
  *
- * @param int $userId Identifiant de l'utilisateur pour lequel le jeton est généré.
- * @return string Le jeton généré.
+ * @param int $userId Identifiant de l'utilisateur pour lequel le token est généré.
+ * @return string Le token généré.
  */
 function createRememberMeToken($userId) {
     $token = bin2hex(random_bytes(32));
@@ -254,20 +254,20 @@ function createRememberMeToken($userId) {
         'expires_at' => $expires
     ]);
     
-    logSecurityEvent($userId, 'remember_token', '[SUCCESS] Création de jeton "Se souvenir de moi"');
+    logSecurityEvent($userId, 'remember_token', '[SUCCESS] Création de token "Se souvenir de moi"');
     
     return $token;
 }
 
 /**
- * Valide un jeton "Se souvenir de moi" et ré-authentifie l'utilisateur associé.
+ * Valide un token "Se souvenir de moi" et ré-authentifie l'utilisateur associé.
  *
- * Cette fonction vérifie que le jeton fourni existe et n'est pas expiré dans la base de données. 
- * Si le jeton est valide, elle récupère les informations de l'utilisateur correspondant, initialise 
+ * Cette fonction vérifie que le token fourni existe et n'est pas expiré dans la base de données. 
+ * Si le token est valide, elle récupère les informations de l'utilisateur correspondant, initialise 
  * les variables de session et enregistre un événement de connexion automatique. En cas d'invalidité 
- * du jeton ou si l'utilisateur est introuvable, un événement d'échec est consigné.
+ * du token ou si l'utilisateur est introuvable, un événement d'échec est consigné.
  *
- * @param string $token Le jeton à valider.
+ * @param string $token Le token à valider.
  * @return bool Renvoie true si la ré-authentification a réussi, sinon false.
  */
 function validateRememberMeToken($token) {
@@ -283,24 +283,24 @@ function validateRememberMeToken($token) {
             $_SESSION['user_photo'] = $user['photo_url'];
             $_SESSION['last_activity'] = time();
             
-            logSecurityEvent($user['id'], 'auto_login', 'Connexion automatique via jeton "Se souvenir de moi"');
+            logSecurityEvent($user['id'], 'auto_login', 'Connexion automatique via token "Se souvenir de moi"');
             return true;
         } else {
             logSecurityEvent($result['user_id'], 'auto_login', '[FAILURE] Échec de connexion automatique - Utilisateur introuvable', true);
         }
     } else {
-        logSecurityEvent(null, 'auto_login', '[FAILURE] Échec de connexion automatique - Jeton invalide ou expiré', true);
+        logSecurityEvent(null, 'auto_login', '[FAILURE] Échec de connexion automatique - Token invalide ou expiré', true);
     }
     return false;
 }
 
 /**
- * Supprime un jeton "Se souvenir de moi" de la base de données et journalise l'opération.
+ * Supprime un token "Se souvenir de moi" de la base de données et journalise l'opération.
  *
- * Cette fonction recherche le jeton dans la table dédiée et tente de le supprimer. Elle enregistre ensuite
+ * Cette fonction recherche le token dans la table dédiée et tente de le supprimer. Elle enregistre ensuite
  * un événement de sécurité indiquant si l'opération a réussi ou échoué.
  *
- * @param string $token Jeton d'authentification à supprimer.
+ * @param string $token Token d'authentification à supprimer.
  * @return bool Retourne true si la suppression est effectuée avec succès, sinon false.
  */
 function deleteRememberMeToken($token) {
@@ -310,10 +310,10 @@ function deleteRememberMeToken($token) {
     $rowsAffected = deleteRow('remember_me_tokens', "token = '$token'");
     
     if ($rowsAffected > 0) {
-        logSecurityEvent($userId, 'remember_token', '[SUCCESS] Suppression du jeton "Se souvenir de moi"');
+        logSecurityEvent($userId, 'remember_token', '[SUCCESS] Suppression du token "Se souvenir de moi"');
         return true;
     } else {
-        logSecurityEvent($userId, 'remember_token', '[FAILURE] Échec de suppression du jeton "Se souvenir de moi"', true);
+        logSecurityEvent($userId, 'remember_token', '[FAILURE] Échec de suppression du token "Se souvenir de moi"', true);
         return false;
     }
 } 

@@ -21,7 +21,7 @@ $service = $serviceData['service'];
 $appointments = $serviceData['appointments'] ?? [];
 $evaluations = $serviceData['evaluations'] ?? [];
 
-$pageTitle = "Details du service";
+$pageTitle = "Informations du service";
 include_once '../../templates/header.php';
 ?>
 
