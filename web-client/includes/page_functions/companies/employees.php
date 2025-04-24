@@ -32,8 +32,8 @@ function getCompanyEmployees(int $entreprise_id): array
                 p.entreprise_id = :entreprise_id 
             AND 
                 p.role_id = :role_salarie
-            -- AND 
-            --    p.statut = 'actif' -- Décommenter pour ne voir que les actifs
+            
+            
             ORDER BY 
                 p.nom ASC, p.prenom ASC";
 
@@ -192,4 +192,64 @@ function updateEmployeeDetails(int $employee_id, int $company_id, array $data): 
     );
 
     return $updatedRows >= 0;
+}
+
+/**
+ * Ajoute un nouveau salarié à une entreprise.
+ *
+ * @param int $entreprise_id ID de l'entreprise.
+ * @param array $employeeData Données du salarié (nom, prenom, email, telephone, site_id).
+ * @return int|false L'ID du nouveau salarié en cas de succès, false sinon.
+ */
+function addEmployee($entreprise_id, $employeeData)
+{
+    
+    if (empty($entreprise_id) || empty($employeeData['nom']) || empty($employeeData['prenom']) || empty($employeeData['email'])) {
+        flashMessage("Les champs Nom, Prénom et Email sont obligatoires.", "danger");
+        return false;
+    }
+
+    
+    if (!filter_var($employeeData['email'], FILTER_VALIDATE_EMAIL)) {
+        flashMessage("Le format de l'adresse email est invalide.", "danger");
+        return false;
+    }
+
+    
+    $existingUser = fetchOne('personnes', 'email = :email', [':email' => $employeeData['email']]);
+    if ($existingUser) {
+        flashMessage("L'adresse email " . htmlspecialchars($employeeData['email']) . " existe déjà.", "warning");
+        return false;
+    }
+
+    
+    
+    $temporaryPassword = bin2hex(random_bytes(8)); 
+    $hashedPassword = password_hash($temporaryPassword, PASSWORD_DEFAULT);
+
+    $dataToInsert = [
+        'nom' => trim($employeeData['nom']),
+        'prenom' => trim($employeeData['prenom']),
+        'email' => trim($employeeData['email']),
+        'mot_de_passe' => $hashedPassword,
+        'telephone' => !empty($employeeData['telephone']) ? trim($employeeData['telephone']) : null,
+        'role_id' => ROLE_SALARIE, 
+        'entreprise_id' => $entreprise_id,
+        'site_id' => !empty($employeeData['site_id']) ? (int)$employeeData['site_id'] : null,
+        'statut' => 'actif' 
+    ];
+
+    $newEmployeeId = insertRow('personnes', $dataToInsert);
+
+    if ($newEmployeeId) {
+        logSecurityEvent($_SESSION['user_id'] ?? null, 'employee_add', '[SUCCESS] Ajout salarié ID: ' . $newEmployeeId . ' pour entreprise ID: ' . $entreprise_id);
+        
+        
+        flashMessage("Salarié ajouté avec succès. Mot de passe temporaire (pour test uniquement) : " . $temporaryPassword, "success");
+        return (int)$newEmployeeId;
+    } else {
+        logSecurityEvent($_SESSION['user_id'] ?? null, 'employee_add', '[FAILURE] Échec ajout salarié pour entreprise ID: ' . $entreprise_id . ' Data: ' . json_encode($employeeData), true);
+        flashMessage("Une erreur technique est survenue lors de l'ajout du salarié.", "danger");
+        return false;
+    }
 }

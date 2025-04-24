@@ -110,10 +110,6 @@ function fetchOne($table, $where, $params = [], $orderBy = '')
     }
     $sql .= " LIMIT 1";
 
-    if (defined('DEBUG_MODE') && DEBUG_MODE) {
-        error_log("[DEBUG] fetchOne called for table: $table | WHERE: $where | SQL: $sql");
-    }
-
     $stmt = executeQuery($sql, $params);
 
 
@@ -136,7 +132,6 @@ function insertRow($table, $data)
         $stmt = executeQuery($sql, $data);
 
         return true;
-
     } catch (Exception $e) {
         error_log("Exception caught within insertRow: " . $e->getMessage() . " | SQL: $sql | Params: " . json_encode($data));
         return false;

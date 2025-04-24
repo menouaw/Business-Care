@@ -16,22 +16,22 @@
                     </a>
                 </li>
                 <li class="nav-item border-bottom">
-                    <a class="nav-link d-inline-flex align-items-center" href="<?php echo WEBCLIENT_URL; ?>/modules/companies/employees.php">
+                    <a class="nav-link d-inline-flex align-items-center" href="<?php echo WEBCLIENT_URL; ?>/modules/companies/index.php">
                         <i class="fas fa-users-cog fa-fw me-2"></i>Salariés
                     </a>
                 </li>
                 <li class="nav-item border-bottom">
-                    <a class="nav-link d-inline-flex align-items-center" href="#">
-                        <i class="fas fa-file-contract fa-fw me-2"></i>Contrats
+                    <a class="nav-link d-inline-flex align-items-center" href="<?php echo WEBCLIENT_URL; ?>/modules/companies/contracts.php">
+                        <i class="fas fa-file-contract fa-fw me-2"></i>Mes Contrats
                     </a>
                 </li>
                 <li class="nav-item border-bottom">
-                    <a class="nav-link d-inline-flex align-items-center" href="#">
-                        <i class="fas fa-file-invoice-dollar fa-fw me-2"></i>Facturation
+                    <a class="nav-link d-inline-flex align-items-center" href="<?php echo WEBCLIENT_URL; ?>/modules/companies/invoices.php">
+                        <i class="fas fa-file-invoice-dollar fa-fw me-2"></i>Mes Factures
                     </a>
                 </li>
                 <li class="nav-item border-bottom">
-                    <a class="nav-link d-inline-flex align-items-center" href="#">
+                    <a class="nav-link d-inline-flex align-items-center" href="<?php echo WEBCLIENT_URL; ?>/modules/companies/devis.php">
                         <i class="fas fa-file-alt fa-fw me-2"></i>Devis
                     </a>
                 </li>
