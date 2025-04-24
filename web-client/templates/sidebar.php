@@ -16,7 +16,7 @@
                     </a>
                 </li>
                 <li class="nav-item border-bottom">
-                    <a class="nav-link d-inline-flex align-items-center" href="<?php echo WEBCLIENT_URL; ?>/modules/companies/index.php">
+                    <a class="nav-link d-inline-flex align-items-center" href="<?php echo WEBCLIENT_URL; ?>/modules/companies/employees/index.php">
                         <i class="fas fa-users-cog fa-fw me-2"></i>Salariés
                     </a>
                 </li>

@@ -81,10 +81,10 @@ INSERT INTO personnes (nom, prenom, email, mot_de_passe, telephone, date_naissan
 ('Dupois', 'Jacques', 'jacques.dupois@techsolutions.fr', '$2y$10$CGP1gfg0khtXjAZcJFC6iO3oYisjwlPfkm8tQ8Q/OxWpFdR7tOiqO', '0612345666', '1995-03-15', 'M', '/photos/jacques.dupois.jpg', 2, 1, 1, 'inactif', NOW() - INTERVAL 10 DAY); 
 ('Representant', 'SantePlus', 'rep.santeplus@businesscare.fr', '$2y$10$CGP1gfg0khtXjAZcJFC6iO3oYisjwlPfkm8tQ8Q/OxWpFdR7tOiqO', '0000000001', '1980-01-01', 'Autre', '/photos/default.jpg', 4, 2, 2, 'actif', NOW());
 
-INSERT INTO contrats (entreprise_id, date_debut, date_fin, montant_mensuel, nombre_salaries, type_contrat, statut, conditions_particulieres) VALUES
-(1, '2024-01-01', '2025-12-31', 500.00, 150, 'premium', 'actif', 'Acces a toutes les prestations premium'),
-(2, '2024-02-01', NULL, 750.00, 300, 'entreprise', 'actif', 'Acces illimite aux prestations'),
-(3, '2024-03-01', '2025-08-31', 250.00, 35, 'standard', 'actif', 'Acces aux prestations de base');
+INSERT INTO contrats (entreprise_id, service_id, date_debut, date_fin, nombre_salaries, statut, conditions_particulieres) VALUES
+(1, 3, '2024-01-01', '2025-12-31', 150, 'actif', 'Acces a toutes les prestations premium'),
+(2, 2, '2024-02-01', NULL, 300, 'actif', 'Acces illimite aux prestations'),
+(3, 1, '2024-03-01', '2025-08-31', 35, 'actif', 'Acces aux prestations de base');
 
 INSERT INTO devis (entreprise_id, date_creation, date_validite, montant_total, montant_ht, tva, statut, conditions_paiement, delai_paiement) VALUES
 (1, '2024-01-15', '2024-02-15', 1500.00, 1250.00, 20.00, 'accepte', 'Paiement a 30 jours', 30), 
