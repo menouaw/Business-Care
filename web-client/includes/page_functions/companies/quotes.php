@@ -14,7 +14,7 @@ function getCompanyQuotes(int $entreprise_id): array
         return [];
     }
 
-    
+
     $sql = "SELECT
                 d.id,
                 d.date_creation,
@@ -50,7 +50,7 @@ function getQuoteDetails(int $quote_id, int $company_id): array|false
         return false;
     }
 
-    
+
     $sql_quote = "SELECT
                     d.*,
                     s.type as service_nom
@@ -70,10 +70,10 @@ function getQuoteDetails(int $quote_id, int $company_id): array|false
     $quote = $stmt_quote->fetch();
 
     if (!$quote) {
-        return false; 
+        return false;
     }
 
-    
+
     $sql_prestations = "SELECT
                             p.id as prestation_id,
                             p.nom as prestation_nom,
@@ -89,7 +89,7 @@ function getQuoteDetails(int $quote_id, int $company_id): array|false
                             dp.devis_id = :quote_id";
 
     $stmt_prestations = executeQuery($sql_prestations, [':quote_id' => $quote_id]);
-    $quote['prestations'] = $stmt_prestations->fetchAll(); 
+    $quote['prestations'] = $stmt_prestations->fetchAll();
 
     return $quote;
 }
@@ -101,10 +101,59 @@ function getQuoteDetails(int $quote_id, int $company_id): array|false
  */
 function getAvailableServicePacks(): array
 {
-    
+
     $sql = "SELECT id, type FROM services WHERE actif = 1 ORDER BY ordre ASC, type ASC";
     $stmt = executeQuery($sql);
     return $stmt->fetchAll();
+}
+
+/**
+ * Enregistre une nouvelle demande de devis dans la base de données.
+ *
+ * @param int $entreprise_id L'ID de l'entreprise.
+ * @param array $data Données de la demande (ex: ['notes' => '...', 'service_id' => 1 ou null]).
+ * @return int|false L'ID du nouveau devis créé ou false en cas d'échec.
+ */
+function saveQuoteRequest(int $entreprise_id, array $data): int|false
+{
+    if ($entreprise_id <= 0 || empty($data['notes'])) {
+        return false;
+    }
+
+    $service_id = $data['service_id'] ?? null;
+    $montant_total = 0;
+    $montant_ht = 0;
+    $statut = QUOTE_STATUS_CUSTOM_REQUEST; 
+    $tva = defined('TVA_RATE') ? TVA_RATE * 100 : 20.0; 
+
+    if ($service_id) {
+        
+        $service = fetchOne('services', 'id = :id', [':id' => $service_id]);
+        if ($service && isset($service['prix_base_indicatif']) && $service['prix_base_indicatif'] !== null) {
+            $montant_total = (float)$service['prix_base_indicatif'];
+            
+            $montant_ht = $montant_total / (1 + (float)($tva / 100));
+            $statut = QUOTE_STATUS_PENDING; 
+        } else {
+            
+            error_log("[WARNING] saveQuoteRequest: Service ID {$service_id} sélectionné mais non trouvé ou prix indicatif manquant.");
+            $service_id = null; 
+        }
+    }
+
+    $insertData = [
+        'entreprise_id' => $entreprise_id,
+        'service_id' => $service_id,
+        'notes_negociation' => $data['notes'],
+        'date_creation' => date('Y-m-d'),
+        'statut' => $statut,
+        'montant_total' => $montant_total,
+        'montant_ht' => $montant_ht,
+        'tva' => $tva,
+        
+    ];
+
+    return insertRow('devis', $insertData);
 }
 
 function getQuoteStatusBadgeClass($status)

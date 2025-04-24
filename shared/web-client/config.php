@@ -11,7 +11,7 @@ if (class_exists('Dotenv\Dotenv')) { ... } else { ... }
 define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
 define('DB_NAME', getenv('MYSQL_DATABASE') ?: 'business_care');
 define('DB_USER', getenv('MYSQL_USER') ?: 'business_care_user');
-define('DB_PASS', getenv('DB_PASSWORD') ?: 'root'); 
+define('DB_PASS', getenv('DB_PASSWORD') ?: 'root');
 define('DB_CHARSET', 'utf8mb4');
 
 
@@ -52,8 +52,8 @@ define('TABLE_QUOTES', 'devis');
 define('STATUS_ACTIVE', 'actif');
 define('DEFAULT_DONATION_STATUS', 'pending');
 define('APPOINTMENT_CANCELABLE_STATUSES', ['planifie', 'confirme']);
-define('APPOINTMENT_TYPES', ['visio', 'telephone', 'presentiel']); 
-define('DONATION_TYPES', ['financier', 'materiel']); 
+define('APPOINTMENT_TYPES', ['visio', 'telephone', 'presentiel']);
+define('DONATION_TYPES', ['financier', 'materiel']);
 define('EVENT_TYPES', ['conference', 'webinar', 'atelier', 'defi_sportif', 'consultation', 'autre']);
 define('USER_STATUSES', ['actif', 'inactif', 'suspendu', 'supprime']);
 
@@ -79,7 +79,7 @@ date_default_timezone_set('Europe/Paris');
 
 define('STRIPE_SECRET_KEY', $_ENV['STRIPE_SECRET_KEY'] ?? getenv('STRIPE_SECRET_KEY') ?: '');
 define('STRIPE_PUBLIC_KEY', $_ENV['STRIPE_PUBLIC_KEY'] ?? getenv('STRIPE_PUBLIC_KEY') ?: '');
-define('STRIPE_WEBHOOK_SECRET', $_ENV['STRIPE_WEBHOOK_SECRET'] ?? getenv('STRIPE_WEBHOOK_SECRET') ?: ''); 
+define('STRIPE_WEBHOOK_SECRET', $_ENV['STRIPE_WEBHOOK_SECRET'] ?? getenv('STRIPE_WEBHOOK_SECRET') ?: '');
 
 
 
@@ -96,15 +96,16 @@ define('INVOICE_PAYMENT_MODES', ['virement', 'carte', 'prelevement']);
 define('INVOICE_PREFIX', 'F');
 
 
-define('TVA_RATE', 0.20); 
+define('TVA_RATE', 0.20);
 
 
 
 define('QUOTE_STATUS_PENDING', 'en_attente');
-define('QUOTE_STATUS_ACCEPTED', 'accepte'); 
-define('QUOTE_STATUS_REFUSED', 'refuse'); 
-define('QUOTE_STATUS_EXPIRED', 'expire'); 
-define('QUOTE_STATUSES', [QUOTE_STATUS_PENDING, QUOTE_STATUS_ACCEPTED, QUOTE_STATUS_REFUSED, QUOTE_STATUS_EXPIRED]);
+define('QUOTE_STATUS_ACCEPTED', 'accepte');
+define('QUOTE_STATUS_REFUSED', 'refuse');
+define('QUOTE_STATUS_EXPIRED', 'expire');
+define('QUOTE_STATUS_CUSTOM_REQUEST', 'demande_en_cours');
+define('QUOTE_STATUSES', [QUOTE_STATUS_PENDING, QUOTE_STATUS_ACCEPTED, QUOTE_STATUS_REFUSED, QUOTE_STATUS_EXPIRED, QUOTE_STATUS_CUSTOM_REQUEST]);
 
 if (!defined('K_TCPDF_EXTERNAL_CONFIG')) {
     define('K_TCPDF_EXTERNAL_CONFIG', true);
@@ -121,4 +122,3 @@ define('PDF_MARGIN_RIGHT', 15);
 define('PDF_MARGIN_BOTTOM', 15);
 define('PDF_FONT_NAME_MAIN', 'helvetica');
 define('PDF_FONT_SIZE_MAIN', 10);
-

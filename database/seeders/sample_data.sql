@@ -185,10 +185,10 @@ INSERT INTO contrats_prestations (contrat_id, prestation_id) VALUES
 (2, 2), 
 (3, 3); 
 
-INSERT INTO services (nom, description, actif, ordre) VALUES
-('Starter Pack', 'Pour les petites équipes (jusqu\'à 30 salariés)', TRUE, 10), 
-('Basic Pack', 'Solution équilibrée (jusqu\'à 250 salariés)', TRUE, 20),
-('Premium Pack', 'Offre complète pour grandes entreprises (251+ salariés)', TRUE, 30);
+INSERT INTO services (id, type, description, actif, ordre, tarif_annuel_par_salarie, prix_base_indicatif) VALUES
+(1, 'Starter Pack', 'Pour les petites équipes (jusqu\'à 30 salariés)', TRUE, 10, 180.00, 100.00),
+(2, 'Basic Pack', 'Solution équilibrée (jusqu\'à 250 salariés)', TRUE, 20, 150.00, 500.00),
+(3, 'Premium Pack', 'Offre complète pour grandes entreprises (251+ salariés)', TRUE, 30, 100.00, 1000.00);
 
 INSERT INTO conseils (titre, icone, resume, categorie, contenu) VALUES
 ('Gestion du Stress au Travail', 'fas fa-brain', 'Apprenez des techniques pour mieux gérer la pression.', 'Stress', 'Le stress chronique peut avoir des effets néfastes sur votre santé physique et mentale.\n\nVoici quelques techniques simples :\n1. Respiration profonde : Inspirez lentement par le nez, retenez quelques secondes, expirez lentement par la bouche. Répétez 5 fois.\n2. Pause active : Levez-vous et marchez quelques minutes toutes les heures.\n3. Priorisation : Utilisez la matrice d\'Eisenhower (urgent/important) pour organiser vos tâches.\n4. Communication : Exprimez vos difficultés à votre manager ou à un collègue de confiance.\n\nN\'oubliez pas de faire des pauses régulières, même courtes, pour déconnecter.'),

@@ -17,19 +17,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_quote'])) {
 
 
     if ($entreprise_id > 0 && $personne_id > 0 && !empty($notes)) {
-        $log_message = sprintf(
-            "[INFO] Nouvelle demande de devis reçue - Entreprise ID: %d, Demandeur ID: %d, Service ID: %s, Notes: %s",
-            $entreprise_id,
-            $personne_id,
-            $service_id_to_log ?? 'NULL (Personnalisé)',
-            $notes
-        );
-        error_log($log_message);
+        $newQuoteId = saveQuoteRequest($entreprise_id, [
+            'notes' => $notes,
+            'service_id' => $service_id_to_log
+        ]);
 
-
-        flashMessage("Votre demande de devis a bien été envoyée. Notre équipe commerciale vous recontactera prochainement.", "success");
+        if ($newQuoteId) {
+            flashMessage("Votre demande de devis (N°{$newQuoteId}) a bien été enregistrée avec le statut 'en attente'. Notre équipe la traitera prochainement.", "success");
+        } else {
+            flashMessage("Une erreur est survenue lors de l'enregistrement de votre demande. Veuillez réessayer.", "danger");
+        }
     } else {
-        flashMessage("Erreur lors de l'envoi de la demande. Veuillez remplir tous les champs nécessaires.", "danger");
+        flashMessage("Erreur lors de l\'envoi de la demande. Veuillez remplir tous les champs nécessaires.", "danger");
     }
 
     redirectTo(WEBCLIENT_URL . '/modules/companies/quotes.php');
@@ -95,7 +94,7 @@ include __DIR__ . '/../../templates/header.php';
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
                     <h1 class="h2"><?= htmlspecialchars($pageTitle) ?></h1>
                     <div class="btn-toolbar mb-2 mb-md-0">
-                        <a href="<?= WEBCLIENT_URL ?>/modules/companies/quotes.php" class="btn btn-sm btn-outline-secondary">
+                        <a href="<?= WEBCLIENT_URL ?>/modules/companies/dashboard.php" class="btn btn-sm btn-outline-secondary">
                             <i class="fas fa-arrow-left me-1"></i> Retour à la liste
                         </a>
                     </div>
@@ -225,8 +224,11 @@ include __DIR__ . '/../../templates/header.php';
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
                     <h1 class="h2"><?= htmlspecialchars($pageTitle) ?></h1>
                     <div class="btn-toolbar mb-2 mb-md-0">
+                        <a href="<?= WEBCLIENT_URL ?>/modules/companies/dashboard.php" class="btn btn-sm btn-outline-secondary me-2">
+                            <i class="fas fa-arrow-left me-1"></i> Retour au Tableau de Bord
+                        </a>
                         <a href="<?= WEBCLIENT_URL ?>/modules/companies/quotes.php?action=request" class="btn btn-sm btn-success">
-                            <i class="fas fa-plus me-1"></i> Demander un Devis Personnalisé
+                            <i class="fas fa-plus me-1"></i> Demander un Devis 
                         </a>
                     </div>
                 </div>

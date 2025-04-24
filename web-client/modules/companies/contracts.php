@@ -4,25 +4,7 @@ require_once __DIR__ . '/../../includes/page_functions/companies/contracts.php';
 
 requireRole(ROLE_ENTREPRISE);
 
-// -
-if (!function_exists('getStatusBadgeClass')) {
-    function getStatusBadgeClass($status)
-    {
-        switch ($status) {
-            case 'actif':
-                return 'success';
-            case 'expire':
-                return 'secondary';
-            case 'resilie':
-                return 'danger';
-            case 'en_attente':
-                return 'warning';
-            default:
-                return 'light';
-        }
-    }
-}
-// -
+
 
 $entreprise_id = $_SESSION['user_entreprise'] ?? 0;
 
@@ -74,8 +56,8 @@ include __DIR__ . '/../../templates/header.php';
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
                     <h1 class="h2"><?= htmlspecialchars($pageTitle) ?></h1>
                     <div class="btn-toolbar mb-2 mb-md-0">
-                        <a href="<?= WEBCLIENT_URL ?>/modules/companies/contracts.php" class="btn btn-sm btn-outline-secondary">
-                            <i class="fas fa-arrow-left me-1"></i> Retour à la liste
+                        <a href="<?= WEBCLIENT_URL ?>/modules/companies/dashboard.php" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Retour au Tableau de Bord
                         </a>
                     </div>
                 </div>
@@ -123,60 +105,66 @@ include __DIR__ . '/../../templates/header.php';
                 </div>
                 <!
 
-            <?php else: ($action === 'list')
-            ?>
-                <?php
-                ?>
-                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+                    <?php else: ($action === 'list')
+                    ?>
+                    <?php
+                    ?>
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
                     <h1 class="h2"><?= htmlspecialchars($pageTitle) ?></h1>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-striped table-sm">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Service / Pack</th>
-                                <th>Date Début</th>
-                                <th>Date Fin</th>
-                                <th>Statut</th>
-                                <th>Dernière MAJ</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (empty($contracts)): ?>
-                                <tr>
-                                    <td colspan="7">Aucun contrat trouvé.</td>
-                                </tr>
-                            <?php else: ?>
-                                <?php foreach ($contracts as $contract_item): ?>
-                                    <tr>
-                                        <td><?= htmlspecialchars($contract_item['id']) ?></td>
-                                        <td><?= htmlspecialchars($contract_item['service_nom'] ?? 'N/A') ?></td>
-                                        <td><?= htmlspecialchars(date('d/m/Y', strtotime($contract_item['date_debut']))) ?></td>
-                                        <td><?= $contract_item['date_fin'] ? htmlspecialchars(date('d/m/Y', strtotime($contract_item['date_fin']))) : 'Indéfinie' ?></td>
-                                        <td>
-                                            <span class="badge bg-<?= getStatusBadgeClass($contract_item['statut']) ?>">
-                                                <?= htmlspecialchars(ucfirst($contract_item['statut'])) ?>
-                                            </span>
-                                        </td>
-                                        <td><?= htmlspecialchars(date(DEFAULT_DATE_FORMAT, strtotime($contract_item['updated_at']))) ?></td>
-                                        <td>
-                                            <a href="<?= WEBCLIENT_URL ?>/modules/companies/contracts.php?action=view&id=<?= $contract_item['id'] ?>" class="btn btn-sm btn-outline-info" title="Voir Détails">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <?php /* Boutons Edit/Delete supprimés */ ?>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
-                </div>
-            <?php endif; ?>
-
-        </main>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <a href="<?= WEBCLIENT_URL ?>/modules/companies/dashboard.php" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Retour au Tableau de Bord
+                        </a>
+                    </div>
     </div>
+    <div class="table-responsive">
+        <table class="table table-striped table-sm">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Service / Pack</th>
+                    <th>Date Début</th>
+                    <th>Date Fin</th>
+                    <th>Statut</th>
+                    <th>Dernière MAJ</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (empty($contracts)): ?>
+                    <tr>
+                        <td colspan="7">Aucun contrat trouvé.</td>
+                    </tr>
+                <?php else: ?>
+                    <?php foreach ($contracts as $contract_item): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($contract_item['id']) ?></td>
+                            <td><?= htmlspecialchars($contract_item['service_nom'] ?? 'N/A') ?></td>
+                            <td><?= htmlspecialchars(date('d/m/Y', strtotime($contract_item['date_debut']))) ?></td>
+                            <td><?= $contract_item['date_fin'] ? htmlspecialchars(date('d/m/Y', strtotime($contract_item['date_fin']))) : 'Indéfinie' ?></td>
+                            <td>
+                                <span class="badge bg-<?= getStatusBadgeClass($contract_item['statut']) ?>">
+                                    <?= htmlspecialchars(ucfirst($contract_item['statut'])) ?>
+                                </span>
+                            </td>
+                            <td><?= htmlspecialchars(date(DEFAULT_DATE_FORMAT, strtotime($contract_item['updated_at']))) ?></td>
+                            <td>
+                                <a href="<?= WEBCLIENT_URL ?>/modules/companies/contracts.php?action=view&id=<?= $contract_item['id'] ?>" class="btn btn-sm btn-outline-info" title="Voir Détails">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <?php /* Boutons Edit/Delete supprimés */ ?>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+<?php endif; ?>
+
+</main>
+</div>
+</div>
 </div>
 
 <?php

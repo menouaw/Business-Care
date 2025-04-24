@@ -113,6 +113,7 @@ CREATE TABLE services (
     chatbot_questions_limite INT NULL,
     conseils_hebdo_personnalises BOOLEAN DEFAULT FALSE,
     tarif_annuel_par_salarie DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    prix_base_indicatif DECIMAL(10,2) NULL DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_type (type),
@@ -149,7 +150,7 @@ CREATE TABLE devis (
     montant_total DECIMAL(10,2) NOT NULL,
     montant_ht DECIMAL(10,2),
     tva DECIMAL(5,2),
-    statut ENUM('en_attente', 'accepte', 'refuse', 'expire') DEFAULT 'en_attente',
+    statut ENUM('en_attente', 'accepte', 'refuse', 'expire', 'demande_en_cours') DEFAULT 'en_attente',
     conditions_paiement TEXT,
     delai_paiement INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -391,4 +392,25 @@ CREATE TABLE conseils (
     categorie VARCHAR(100),
     contenu LONGTEXT NOT NULL
 );
+
+CREATE TABLE support_tickets (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    entreprise_id INT NULL, -- Peut être null si envoyé par un salarié non lié ou un visiteur
+    personne_id INT NULL, -- Qui a envoyé le message
+    sujet VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    statut ENUM('nouveau', 'en_cours', 'resolu', 'clos') DEFAULT 'nouveau',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (entreprise_id) REFERENCES entreprises(id) ON DELETE SET NULL,
+    FOREIGN KEY (personne_id) REFERENCES personnes(id) ON DELETE SET NULL,
+    INDEX idx_statut (statut),
+    INDEX idx_entreprise_id (entreprise_id),
+    INDEX idx_personne_id (personne_id)
+);
+
+INSERT INTO services (id, type, description, actif, ordre, tarif_annuel_par_salarie, prix_base_indicatif) VALUES
+(1, 'Starter Pack', 'Pour les petites équipes (jusqu\'à 30 salariés)', TRUE, 10, 180.00, 100.00),
+(2, 'Basic Pack', 'Solution équilibrée (jusqu\'à 250 salariés)', TRUE, 20, 150.00, 500.00),
+(3, 'Premium Pack', 'Offre complète pour grandes entreprises (251+ salariés)', TRUE, 30, 100.00, 1000.00);
 

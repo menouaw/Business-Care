@@ -286,7 +286,7 @@ function deleteRememberMeToken($token)
 function userHasPermission($permission)
 {
     if (!isAuthenticated()) {
-        return false; // Not logged in, no permissions
+        return false; 
     }
 
     $role_id = $_SESSION['user_role'] ?? null;

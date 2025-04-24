@@ -1,85 +1,69 @@
 <?php
 require_once __DIR__ . '/../../../includes/init.php';
+require_once __DIR__ . '/../../../../shared/web-client/db.php';
 
 /**
- * Récupère les statistiques principales pour le tableau de bord de l'entreprise.
+ * Récupère les statistiques pour le tableau de bord de l'entreprise.
  *
- * @param int $entreprise_id L'ID de l'entreprise connectée.
- * @return array Tableau contenant les statistiques (ex: nb_salaries, nb_rdv_recents).
+ * @param int $entreprise_id L'ID de l'entreprise.
+ * @return array Un tableau contenant les statistiques.
  */
 function getCompanyDashboardStats(int $entreprise_id): array
 {
-
-
-    $activeEmployeesCount = 0;
-    if (defined('TABLE_USERS') && defined('STATUS_ACTIVE')) {
-        $activeEmployeesCount = countTableRows(TABLE_USERS, 'entreprise_id = ? AND statut = ?', [$entreprise_id, STATUS_ACTIVE]);
-    }
-
-
-
-    $recentAppointmentsCount = 0;
-
-    return [
-        'active_employees' => $activeEmployeesCount,
-        'recent_appointments' => $recentAppointmentsCount,
+    $stats = [
+        'active_employees' => 0,
+        'active_contracts' => 0,
+        'pending_quotes' => 0,
+        'pending_invoices' => 0,
     ];
-}
 
-
-function getCompanyRecentActivities(int $entreprise_id, int $limit = 10): array
-{
-
-
-    if (!defined('TABLE_LOGS') || !defined('TABLE_USERS')) {
-        return [];
+    if ($entreprise_id <= 0) {
+        return $stats;
     }
-
-    
-    $allowed_actions = [
-        'login',
-        'rdv_creation',
-        'rdv_modification',
-        'rdv_annulation',
-        'profile_update'
-        
-    ];
-    $action_placeholders = implode(', ', array_fill(0, count($allowed_actions), '?'));
-
-    $sql = "SELECT l.created_at, l.action, l.details, p.prenom, p.nom 
-            FROM " . TABLE_LOGS . " l
-            LEFT JOIN " . TABLE_USERS . " p ON l.personne_id = p.id
-            WHERE p.entreprise_id = ? AND l.action IN ($action_placeholders)
-            ORDER BY l.created_at DESC
-            LIMIT ?";
-
-    $params = array_merge([$entreprise_id], $allowed_actions, [$limit]);
 
     try {
         
+        $sql_employees = "SELECT COUNT(DISTINCT p.id) 
+                          FROM personnes p
+                          LEFT JOIN sites s ON p.site_id = s.id
+                          WHERE (p.entreprise_id = :id1 OR s.entreprise_id = :id2) 
+                          AND p.statut = 'actif' 
+                          AND p.role_id = :role_salarie";
+        $stmt_employees = executeQuery($sql_employees, [
+            ':id1' => $entreprise_id,
+            ':id2' => $entreprise_id,
+            ':role_salarie' => ROLE_SALARIE
+        ]);
+        $employee_count_raw = $stmt_employees->fetchColumn();
+        $stats['active_employees'] = (int)$employee_count_raw;
+
         
+        $sql_contracts = "SELECT COUNT(*) FROM contrats WHERE entreprise_id = :id AND statut = 'actif'";
+        $stmt_contracts = executeQuery($sql_contracts, [':id' => $entreprise_id]);
+        $stats['active_contracts'] = (int)$stmt_contracts->fetchColumn();
+
         
-        $action_list = implode(', ', array_map(function ($action) {
-            return getDbConnection()->quote($action); 
-        }, $allowed_actions));
+        $sql_quotes = "SELECT COUNT(*) FROM devis WHERE entreprise_id = :id AND statut IN (:status1, :status2)";
+        $stmt_quotes = executeQuery($sql_quotes, [
+            ':id' => $entreprise_id,
+            ':status1' => QUOTE_STATUS_PENDING,       
+            ':status2' => QUOTE_STATUS_CUSTOM_REQUEST 
+        ]);
+        $stats['pending_quotes'] = (int)$stmt_quotes->fetchColumn();
 
-        $sql_safe = "SELECT l.created_at, l.action, l.details, p.prenom, p.nom 
-                     FROM " . TABLE_LOGS . " l
-                     LEFT JOIN " . TABLE_USERS . " p ON l.personne_id = p.id
-                     WHERE p.entreprise_id = :entreprise_id AND l.action IN ($action_list)
-                     ORDER BY l.created_at DESC
-                     LIMIT :limit";
-
-        $params_safe = [
-            ':entreprise_id' => $entreprise_id,
-            ':limit' => $limit
-        ];
-
-        $stmt = executeQuery($sql_safe, $params_safe);
-        return $stmt->fetchAll();
-    } catch (Exception $e) {
-
-        error_log("Erreur getCompanyRecentActivities: " . $e->getMessage());
-        return [];
+        
+        $sql_invoices = "SELECT COUNT(*) FROM factures WHERE entreprise_id = :id AND statut IN (:status1, :status2, :status3)";
+        $stmt_invoices = executeQuery($sql_invoices, [
+            ':id' => $entreprise_id,
+            ':status1' => INVOICE_STATUS_PENDING, 
+            ':status2' => INVOICE_STATUS_LATE,    
+            ':status3' => INVOICE_STATUS_UNPAID   
+        ]);
+        $stats['pending_invoices'] = (int)$stmt_invoices->fetchColumn();
+    } catch (PDOException $e) {
+        error_log("Erreur PDO dans getCompanyDashboardStats pour entreprise ID {$entreprise_id}: " . $e->getMessage());
+        
     }
+
+    return $stats;
 }

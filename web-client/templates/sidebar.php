@@ -25,13 +25,15 @@
                         <i class="fas fa-file-contract fa-fw me-2"></i>Mes Contrats
                     </a>
                 </li>
-                <li class="nav-item border-bottom">
-                    <a class="nav-link d-inline-flex align-items-center" href="<?php echo WEBCLIENT_URL; ?>/modules/companies/quotes.php">
-                        <i class="fas fa-file-signature me-2"></i>Mes Devis
+                <li class="nav-item">
+                    <a class="nav-link <?= isActivePage(WEBCLIENT_URL . '/modules/companies/quotes.php') ? 'active' : '' ?>" href="<?= WEBCLIENT_URL ?>/modules/companies/quotes.php">
+                        <i class="fas fa-file-contract me-2"></i>
+                        Mes Devis
                     </a>
                 </li>
-                <li class="nav-item border-bottom">
-                    <a class="nav-link d-inline-flex align-items-center" href="<?php echo WEBCLIENT_URL; ?>/modules/companies/invoices.php">
+
+                <li class="nav-item">
+                    <a class="nav-link <?= isActivePage(WEBCLIENT_URL . '/modules/companies/invoices.php') ? 'active' : '' ?>" href="<?= WEBCLIENT_URL ?>/modules/companies/invoices.php">
                         <i class="fas fa-file-invoice-dollar fa-fw me-2"></i>Mes Factures
                     </a>
                 </li>
@@ -40,17 +42,24 @@
                         <i class="fas fa-file-alt fa-fw me-2"></i>Devis
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link <?= isActivePage(WEBCLIENT_URL . '/modules/companies/settings.php') ? 'active' : '' ?>" href="<?= WEBCLIENT_URL ?>/modules/companies/settings.php">
+                        <i class="fas fa-cog me-2"></i>
+                        Paramètres
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <?= isActivePage(WEBCLIENT_URL . '/modules/companies/contact.php') ? 'active' : '' ?>" href="<?= WEBCLIENT_URL ?>/modules/companies/contact.php">
+                        <i class="fas fa-headset me-2"></i>
+                        Contact / Support
+                    </a>
+                </li>
             </ul>
 
             <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-uppercase fw-semibold">
                 <span>Mon Compte</span>
             </h6>
             <ul class="nav flex-column mb-3">
-                <li class="nav-item border-bottom">
-                    <a class="nav-link d-inline-flex align-items-center" href="#">
-                        <i class="fas fa-building fa-fw me-2"></i>Profil Entreprise
-                    </a>
-                </li>
                 <li class="nav-item border-bottom">
                     <a class="nav-link d-inline-flex align-items-center" href="#">
                         <i class="fas fa-cog fa-fw me-2"></i>Paramètres

@@ -356,24 +356,6 @@ function isTimeSlotAvailable($dateHeure, $duree, $prestationId)
 }
 
 
-function generateInvoiceNumber()
-{
-    $date = date('Ymd');
-
-    $sql = "SELECT MAX(SUBSTRING_INDEX(numero_facture, '-', -1)) AS last_id
-            FROM factures
-            WHERE numero_facture LIKE :pattern";
-
-    $stmt = executeQuery($sql, ['pattern' => "F-$date-%"]);
-    $result = $stmt->fetch();
-
-    $lastId = $result['last_id'] ?? 0;
-    $nextId = str_pad($lastId + 1, 4, '0', STR_PAD_LEFT);
-
-    return INVOICE_PREFIX . "-$date-$nextId";
-}
-
-
 function formatCurrency($amount, $currencySymbol = '€')
 {
     if ($amount === null || !is_numeric($amount)) {
@@ -409,4 +391,79 @@ function handleClientCsrfFailureRedirect($actionDescription = 'action', $redirec
         "[SECURITY FAILURE] Tentative de {$actionDescription} avec jeton invalide via {$requestMethod} sur web-client"
     );
     redirectTo($redirectUrl);
+}
+
+/**
+ * Vérifie si l'URL fournie correspond à la page actuelle pour les liens de navigation.
+ *
+ * @param string $url L'URL du lien de navigation.
+ * @return bool True si l'URL correspond à la page actuelle, false sinon.
+ */
+function isActivePage(string $url): bool
+{
+
+
+    $current_uri = $_SERVER['REQUEST_URI'] ?? '';
+    $base_url = defined('WEBCLIENT_URL') ? parse_url(WEBCLIENT_URL, PHP_URL_PATH) : '';
+    $link_uri = parse_url($url, PHP_URL_PATH) ?? '';
+
+
+    if ($base_url && str_starts_with($current_uri, $base_url)) {
+        $current_uri = substr($current_uri, strlen($base_url));
+    }
+    if ($base_url && str_starts_with($link_uri, $base_url)) {
+        $link_uri = substr($link_uri, strlen($base_url));
+    }
+
+    return $current_uri === $link_uri;
+}
+
+/**
+ * Retourne la classe CSS Bootstrap pour le badge de statut.
+ * Utilise une map pour les statuts communs (contrats, factures, etc.)
+ *
+ * @param string|null $status Le statut.
+ * @return string La classe CSS du badge (ex: 'success', 'warning', 'danger').
+ */
+function getStatusBadgeClass(?string $status): string
+{
+    if ($status === null) {
+        return 'light'; // Ou une autre classe par défaut pour le null
+    }
+
+    $status = strtolower($status);
+
+    // Map des statuts vers les classes de badge
+    $statusMap = [
+        // Statuts Contrat
+        'actif' => 'success',
+        'expire' => 'secondary',
+        'resilie' => 'danger',
+        'en_attente' => 'warning', // Aussi pour devis/factures
+
+        // Statuts Facture Client
+        'payee' => 'success',
+        'annulee' => 'secondary',
+        'retard' => 'danger',
+        'impayee' => 'danger',
+
+        // Statuts Devis
+        'accepte' => 'success',
+        'refuse' => 'danger',
+        // 'expire' déjà défini
+        'demande_en_cours' => 'info',
+
+        // Autres statuts possibles
+        'inactif' => 'secondary',
+        'suspendu' => 'secondary',
+        'planifie' => 'primary',
+        'termine' => 'info',
+        'confirme' => 'success',
+        'nouveau' => 'primary',
+        'en_cours' => 'info',
+        'resolu' => 'success',
+        'clos' => 'secondary'
+    ];
+
+    return $statusMap[$status] ?? 'light'; // Retourne 'light' si statut inconnu
 }

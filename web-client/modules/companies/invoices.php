@@ -153,11 +153,9 @@ include __DIR__ . '/../../templates/header.php';
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
                     <h1 class="h2"><?= htmlspecialchars($pageTitle) ?></h1>
                     <div class="btn-toolbar mb-2 mb-md-0">
-                        <a href="<?= WEBCLIENT_URL ?>/modules/companies/invoices.php" class="btn btn-sm btn-outline-secondary me-2">
-                            <i class="fas fa-arrow-left me-1"></i> Retour à la liste
+                        <a href="<?= WEBCLIENT_URL ?>/modules/companies/dashboard.php" class="btn btn-sm btn-outline-secondary me-2">
+                            <i class="fas fa-arrow-left me-1"></i> Retour au Tableau de Bord
                         </a>
-                        <?php
-                        ?>
                         <a href="<?= WEBCLIENT_URL ?>/modules/companies/invoices.php?action=download&id=<?= $invoice['id'] ?>" class="btn btn-sm btn-outline-primary me-2" title="Télécharger le PDF">
                             <i class="fas fa-download me-1"></i> Télécharger PDF
                         </a>
@@ -224,6 +222,11 @@ include __DIR__ . '/../../templates/header.php';
                 ?>
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
                     <h1 class="h2"><?= htmlspecialchars($pageTitle) ?></h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <a href="<?= WEBCLIENT_URL ?>/modules/companies/dashboard.php" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Retour au Tableau de Bord
+                        </a>
+                    </div>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-striped table-sm">
