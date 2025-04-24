@@ -123,21 +123,21 @@ function saveQuoteRequest(int $entreprise_id, array $data): int|false
     $service_id = $data['service_id'] ?? null;
     $montant_total = 0;
     $montant_ht = 0;
-    $statut = QUOTE_STATUS_CUSTOM_REQUEST; 
-    $tva = defined('TVA_RATE') ? TVA_RATE * 100 : 20.0; 
+    $statut = QUOTE_STATUS_CUSTOM_REQUEST;
+    $tva = defined('TVA_RATE') ? TVA_RATE * 100 : 20.0;
 
     if ($service_id) {
-        
+
         $service = fetchOne('services', 'id = :id', [':id' => $service_id]);
         if ($service && isset($service['prix_base_indicatif']) && $service['prix_base_indicatif'] !== null) {
             $montant_total = (float)$service['prix_base_indicatif'];
-            
+
             $montant_ht = $montant_total / (1 + (float)($tva / 100));
-            $statut = QUOTE_STATUS_PENDING; 
+            $statut = QUOTE_STATUS_PENDING;
         } else {
-            
+
             error_log("[WARNING] saveQuoteRequest: Service ID {$service_id} sélectionné mais non trouvé ou prix indicatif manquant.");
-            $service_id = null; 
+            $service_id = null;
         }
     }
 
@@ -150,10 +150,34 @@ function saveQuoteRequest(int $entreprise_id, array $data): int|false
         'montant_total' => $montant_total,
         'montant_ht' => $montant_ht,
         'tva' => $tva,
-        
+
     ];
 
-    return insertRow('devis', $insertData);
+    $newQuoteId = insertRow('devis', $insertData);
+
+    if ($newQuoteId) {
+        $user_id = $_SESSION['user_id'] ?? null; 
+        if ($user_id) {
+            $quote_link = WEBCLIENT_URL . '/modules/companies/quotes.php?action=view&id=' . $newQuoteId;
+            $notif_title = 'Demande de devis enregistrée';
+            $notif_message = "Votre demande de devis (ID: {$newQuoteId}) a bien été enregistrée.";
+            if ($insertData['statut'] === QUOTE_STATUS_CUSTOM_REQUEST) {
+                $notif_message .= " Elle est en cours de traitement par nos équipes.";
+            } else {
+                $notif_message .= " Vous pouvez le consulter.";
+            }
+
+            createNotification(
+                $user_id,
+                $notif_title,
+                $notif_message,
+                'success',
+                $quote_link
+            );
+        }
+    }
+
+    return $newQuoteId;
 }
 
 function getQuoteStatusBadgeClass($status)

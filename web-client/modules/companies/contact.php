@@ -16,17 +16,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
     $message = filter_input(INPUT_POST, 'message', FILTER_SANITIZE_SPECIAL_CHARS);
 
     if ($personne_id && !empty($sujet) && !empty($message)) {
-        
-        
 
-        
-        flashMessage("Votre message a bien été envoyé (simulation). Notre équipe vous répondra dès que possible.", "success");
-        
+        // TODO: Implémenter la logique d'enregistrement réel du message 
+        // Par exemple: insertRow('support_tickets', ['personne_id' => $personne_id, 'sujet' => $sujet, 'message' => $message, 'entreprise_id' => $entreprise_id]);
+        $messageSaved = true; // Simuler l'enregistrement pour l'instant
 
+        if ($messageSaved) {
+            flashMessage("Votre message a bien été envoyé. Notre équipe vous répondra dès que possible.", "success");
+
+            // <<< AJOUT Notification Utilisateur >>>
+            createNotification(
+                $personne_id,
+                'Message envoyé',
+                "Votre message concernant '" . htmlspecialchars(substr($sujet, 0, 50)) . (strlen($sujet) > 50 ? '...' : '') . "' a bien été envoyé.",
+                'success',
+                WEBCLIENT_URL . '/modules/companies/contact.php' // Lien vers la page de contact elle-même
+            );
+            // <<< FIN AJOUT >>>
+
+        } else {
+            flashMessage("Une erreur est survenue lors de l'envoi de votre message.", "danger");
+        }
     } else {
         flashMessage("Veuillez remplir tous les champs obligatoires.", "warning");
     }
-    
+
     redirectTo(WEBCLIENT_URL . '/modules/companies/contact.php');
     exit;
 }

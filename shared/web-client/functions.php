@@ -467,3 +467,30 @@ function getStatusBadgeClass(?string $status): string
 
     return $statusMap[$status] ?? 'light'; // Retourne 'light' si statut inconnu
 }
+
+/**
+ * Crée une notification pour un utilisateur spécifique.
+ *
+ * @param int $user_id ID de l'utilisateur destinataire.
+ * @param string $title Titre de la notification.
+ * @param string $message Message de la notification.
+ * @param string $type Type de notification (info, success, warning, error).
+ * @param string|null $link Lien optionnel associé.
+ * @return int|false L'ID de la notification créée ou false en cas d'erreur.
+ */
+function createNotification(int $user_id, string $title, string $message, string $type = 'info', ?string $link = null): int|false
+{
+    if ($user_id <= 0 || empty($title) || empty($message)) {
+        return false;
+    }
+
+    $data = [
+        'personne_id' => $user_id,
+        'titre' => $title,
+        'message' => $message,
+        'type' => in_array($type, ['info', 'success', 'warning', 'error']) ? $type : 'info',
+        'lien' => $link
+    ];
+
+    return insertRow('notifications', $data);
+}

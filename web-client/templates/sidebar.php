@@ -15,6 +15,7 @@
                         <i class="fas fa-tachometer-alt fa-fw me-2"></i>Tableau de bord
                     </a>
                 </li>
+
                 <li class="nav-item">
                     <a class="nav-link <?= isActivePage(WEBCLIENT_URL . '/modules/companies/employees/index.php') ? 'active' : '' ?>" href="<?= WEBCLIENT_URL ?>/modules/companies/employees/index.php">
                         <i class="fas fa-users-cog fa-fw me-2"></i>Salariés
@@ -36,11 +37,7 @@
                         <i class="fas fa-file-invoice-dollar fa-fw me-2"></i>Mes Factures
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link <?= isActivePage(WEBCLIENT_URL . '/modules/companies/settings.php') ? 'active' : '' ?>" href="<?= WEBCLIENT_URL ?>/modules/companies/settings.php">
-                        <i class="fas fa-cog me-2"></i>Paramètres
-                    </a>
-                </li>
+
 
             </ul>
 
@@ -112,11 +109,7 @@
                         <i class="fas fa-user-cog fa-fw me-2"></i>Mon Profil
                     </a>
                 </li>
-                <li class="nav-item border-bottom">
-                    <a class="nav-link d-inline-flex align-items-center" href="#">
-                        <i class="fas fa-cog fa-fw me-2"></i>Paramètres
-                    </a>
-                </li>
+
             </ul>
 
 
@@ -168,11 +161,7 @@
                         <i class="fas fa-user-tie fa-fw me-2"></i>Mon Profil
                     </a>
                 </li>
-                <li class="nav-item border-bottom">
-                    <a class="nav-link d-inline-flex align-items-center" href="#">
-                        <i class="fas fa-cog fa-fw me-2"></i>Paramètres
-                    </a>
-                </li>
+
             </ul>
 
         <?php endif;
@@ -186,6 +175,12 @@
                 <span>Support & Compte</span>
             </h6>
             <ul class="nav flex-column mb-3">
+
+                <li class="nav-item border-bottom">
+                    <a class="nav-link d-inline-flex align-items-center" href="<?php echo WEBCLIENT_URL; ?>/modules/companies/settings.php">
+                        <i class="fas fa-cog fa-fw me-2"></i>Paramètres
+                    </a>
+                </li>
 
                 <li class="nav-item border-bottom">
                     <a class="nav-link d-inline-flex align-items-center" href="<?php echo WEBCLIENT_URL; ?>/logout.php">

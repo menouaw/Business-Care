@@ -161,46 +161,36 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
 
                 <ul class="navbar-nav ms-auto">
                     <?php if ($isLoggedIn): ?>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <!-- Notifications Dropdown -->
+                        <li class="nav-item dropdown me-3">
+                            <?php
+                            // Inclure les fonctions si elles ne sont pas déjà dans init.php
+                            if (function_exists('getUnreadNotificationCount')) {
+                                $unread_count = getUnreadNotificationCount($_SESSION['user_id']);
+                            } else {
+                                $unread_count = 0;
+                                // Peut-être logguer une erreur ici si la fonction devrait exister
+                                // error_log("Fonction getUnreadNotificationCount non trouvée dans header.php");
+                            }
+                            ?>
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownNotifications" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="fas fa-bell"></i>
-                                <?php if (!empty($userNotifications)): ?>
-                                    <span class="badge rounded-pill bg-danger"><?= count($userNotifications) ?></span>
+                                <?php if ($unread_count > 0): ?>
+                                    <span class="badge rounded-pill bg-danger ms-1"><?= $unread_count ?></span>
                                 <?php endif; ?>
                             </a>
-                            <div class="dropdown-menu dropdown-menu-end notification-dropdown">
-                                <div class="notification-header d-flex justify-content-between align-items-center p-3">
-                                    <h6 class="m-0">Notifications</h6>
-                                    <?php if (!empty($userNotifications)): ?>
-                                        <a href="#" class="text-decoration-none small">Marquer comme lues</a>
-                                    <?php endif; ?>
-                                </div>
-                                <div class="notification-body">
-                                    <?php if (!empty($userNotifications)): ?>
-                                        <?php foreach ($userNotifications as $notification): ?>
-                                            <a href="<?= $notification['lien'] ?>" class="dropdown-item notification-item p-3">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="flex-shrink-0">
-                                                        <i class="fas <?= $notification['icon'] ?? 'fa-info-circle' ?> fa-lg text-<?= $notification['type'] ?? 'primary' ?>"></i>
-                                                    </div>
-                                                    <div class="flex-grow-1 ms-3">
-                                                        <p class="mb-1 fw-bold"><?= htmlspecialchars($notification['titre']) ?></p>
-                                                        <p class="mb-0 small"><?= htmlspecialchars($notification['message']) ?></p>
-                                                        <small class="text-muted"><?= $notification['date_formatee'] ?></small>
-                                                    </div>
-                                                </div>
-                                            </a>
-                                        <?php endforeach; ?>
-                                    <?php else: ?>
-                                        <div class="text-center p-3">
-                                            <p class="mb-0 text-muted">Aucune notification</p>
-                                        </div>
-                                    <?php endif; ?>
-                                </div>
-                                <div class="notification-footer text-center p-2 border-top">
-                                    <a href="<?= WEBCLIENT_URL ?>/modules/employees/notifications.php" class="text-decoration-none small">Voir toutes les notifications</a>
-                                </div>
-                            </div>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownNotifications">
+                                <li>
+                                    <h6 class="dropdown-header">Notifications</h6>
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+
+                                <?php /* TODO: Afficher ici quelques notifications récentes ? */ ?>
+
+                                <li><a class="dropdown-item text-center text-muted small" href="<?= WEBCLIENT_URL ?>/modules/companies/notifications.php">Voir toutes les notifications</a></li>
+                            </ul>
                         </li>
 
                         <!-- Profil utilisateur -->
