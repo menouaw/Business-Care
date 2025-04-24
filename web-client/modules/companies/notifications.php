@@ -8,9 +8,11 @@ $user_id = $_SESSION['user_id'] ?? 0;
 
 if ($user_id <= 0) {
     flashMessage("Impossible d'identifier votre compte.", "danger");
-    redirectTo(WEBCLIENT_URL . '/login.php');
+    redirectTo(WEBCLIENT_URL . '/modules/companies/dashboard.php');
     exit;
 }
+
+markNotificationsAsRead($user_id);
 
 $action = filter_input(INPUT_GET, 'action', FILTER_SANITIZE_SPECIAL_CHARS);
 $notification_id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
@@ -51,9 +53,7 @@ include __DIR__ . '/../../templates/header.php';
                     <a href="<?= WEBCLIENT_URL ?>/modules/companies/dashboard.php" class="btn btn-sm btn-outline-secondary me-2">
                         <i class="fas fa-arrow-left me-1"></i> Retour
                     </a>
-                    <a href="<?= WEBCLIENT_URL ?>/modules/companies/notifications.php?action=readall" class="btn btn-sm btn-outline-primary">
-                        <i class="fas fa-check-double me-1"></i> Marquer tout comme lu
-                    </a>
+
                 </div>
             </div>
 

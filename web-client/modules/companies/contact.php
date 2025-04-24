@@ -17,25 +17,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
 
     if ($personne_id && !empty($sujet) && !empty($message)) {
 
-        // TODO: Implémenter la logique d'enregistrement réel du message 
-        // Par exemple: insertRow('support_tickets', ['personne_id' => $personne_id, 'sujet' => $sujet, 'message' => $message, 'entreprise_id' => $entreprise_id]);
-        $messageSaved = true; // Simuler l'enregistrement pour l'instant
+        // Enregistrement réel du message dans la table support_tickets
+        $ticketData = [
+            'personne_id' => $personne_id,
+            'entreprise_id' => $entreprise_id, // Peut être null si l'entreprise n'est pas trouvée
+            'sujet' => $sujet,
+            'message' => $message,
+            'statut' => 'nouveau' // Statut initial
+        ];
+        $newTicketId = insertRow('support_tickets', $ticketData);
 
-        if ($messageSaved) {
+        if ($newTicketId) {
             flashMessage("Votre message a bien été envoyé. Notre équipe vous répondra dès que possible.", "success");
 
-            // <<< AJOUT Notification Utilisateur >>>
+            // Notification Utilisateur (déjà ajoutée)
             createNotification(
                 $personne_id,
                 'Message envoyé',
                 "Votre message concernant '" . htmlspecialchars(substr($sujet, 0, 50)) . (strlen($sujet) > 50 ? '...' : '') . "' a bien été envoyé.",
                 'success',
-                WEBCLIENT_URL . '/modules/companies/contact.php' // Lien vers la page de contact elle-même
+                WEBCLIENT_URL . '/modules/companies/contact.php'
             );
-            // <<< FIN AJOUT >>>
-
         } else {
-            flashMessage("Une erreur est survenue lors de l'envoi de votre message.", "danger");
+            flashMessage("Une erreur est survenue lors de l'enregistrement de votre message.", "danger");
+            // Logguer l'erreur ici serait utile
+            error_log("[ERROR] Failed to insert support ticket for personne_id: {$personne_id}, entreprise_id: {$entreprise_id}");
         }
     } else {
         flashMessage("Veuillez remplir tous les champs obligatoires.", "warning");

@@ -401,12 +401,11 @@ function handleClientCsrfFailureRedirect($actionDescription = 'action', $redirec
  */
 function isActivePage(string $url): bool
 {
-
-
     $current_uri = $_SERVER['REQUEST_URI'] ?? '';
-    $base_url = defined('WEBCLIENT_URL') ? parse_url(WEBCLIENT_URL, PHP_URL_PATH) : '';
-    $link_uri = parse_url($url, PHP_URL_PATH) ?? '';
 
+    
+    $base_url = parse_url(WEBCLIENT_URL, PHP_URL_PATH) ?? '';
+    $link_uri = parse_url($url, PHP_URL_PATH) ?? '';
 
     if ($base_url && str_starts_with($current_uri, $base_url)) {
         $current_uri = substr($current_uri, strlen($base_url));
@@ -428,32 +427,32 @@ function isActivePage(string $url): bool
 function getStatusBadgeClass(?string $status): string
 {
     if ($status === null) {
-        return 'light'; // Ou une autre classe par défaut pour le null
+        return 'light'; 
     }
 
     $status = strtolower($status);
 
-    // Map des statuts vers les classes de badge
+    
     $statusMap = [
-        // Statuts Contrat
+        
         'actif' => 'success',
         'expire' => 'secondary',
         'resilie' => 'danger',
-        'en_attente' => 'warning', // Aussi pour devis/factures
+        'en_attente' => 'warning', 
 
-        // Statuts Facture Client
+        
         'payee' => 'success',
         'annulee' => 'secondary',
         'retard' => 'danger',
         'impayee' => 'danger',
 
-        // Statuts Devis
+        
         'accepte' => 'success',
         'refuse' => 'danger',
-        // 'expire' déjà défini
+        
         'demande_en_cours' => 'info',
 
-        // Autres statuts possibles
+        
         'inactif' => 'secondary',
         'suspendu' => 'secondary',
         'planifie' => 'primary',
@@ -465,7 +464,7 @@ function getStatusBadgeClass(?string $status): string
         'clos' => 'secondary'
     ];
 
-    return $statusMap[$status] ?? 'light'; // Retourne 'light' si statut inconnu
+    return $statusMap[$status] ?? 'light'; 
 }
 
 /**
@@ -493,4 +492,35 @@ function createNotification(int $user_id, string $title, string $message, string
     ];
 
     return insertRow('notifications', $data);
+}
+
+function getUnreadNotificationCount(int $userId): int
+{
+    if ($userId <= 0) return 0;
+
+    
+    $sql = "SELECT COUNT(*) FROM notifications WHERE personne_id = :user_id AND lu = 0";
+    $stmt = executeQuery($sql, [':user_id' => $userId]);
+
+    
+    
+    return (int)$stmt->fetchColumn();
+}
+
+/**
+ * Marque toutes les notifications non lues d'un utilisateur comme lues.
+ *
+ * @param int $userId L'ID de l'utilisateur.
+ * @return int Le nombre de notifications mises à jour.
+ */
+function markNotificationsAsRead(int $userId): int
+{
+    if ($userId <= 0) return 0;
+
+    $updateData = [
+        'lu' => 1,
+        'date_lecture' => date('Y-m-d H:i:s')
+    ];
+
+    return updateRow('notifications', $updateData, 'personne_id = :user_id AND lu = 0', [':user_id' => $userId]);
 }

@@ -63,17 +63,3 @@ function markAllNotificationsAsRead(int $user_id): int
         [':user_id' => $user_id]
     );
 }
-
-/**
- * Compte le nombre de notifications non lues pour un utilisateur.
- *
- * @param int $user_id L'ID de l'utilisateur.
- * @return int Le nombre de notifications non lues.
- */
-function getUnreadNotificationCount(int $user_id): int
-{
-    if ($user_id <= 0) {
-        return 0;
-    }
-    return countTableRows('notifications', 'personne_id = :user_id AND lu = 0', [':user_id' => $user_id]);
-}
