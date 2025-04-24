@@ -13,9 +13,6 @@ if ($entreprise_id <= 0 || $user_id <= 0) {
     exit;
 }
 
-$company_details = getCompanyDetailsForSettings($entreprise_id);
-$user_info = getUserInfo($user_id);
-
 $pageTitle = "Paramètres";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
@@ -32,6 +29,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
     redirectTo(WEBCLIENT_URL . '/modules/companies/settings.php');
     exit;
 }
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_photo'])) {
+    if (isset($_FILES['profile_photo'])) {
+        $result = updateUserProfilePhoto($user_id, $_FILES['profile_photo']);
+        if ($result['success'] && $result['new_photo_url']) {
+            $_SESSION['user_photo'] = $result['new_photo_url'];
+        }
+        flashMessage($result['message'], $result['success'] ? 'success' : 'danger');
+    } else {
+        flashMessage("Aucun fichier photo n'a été envoyé.", "warning");
+    }
+    redirectTo(WEBCLIENT_URL . '/modules/companies/settings.php');
+    exit;
+}
+
+$company_details = getCompanyDetailsForSettings($entreprise_id);
+$user_info = getUserInfo($user_id);
 
 include __DIR__ . '/../../templates/header.php';
 ?>
@@ -52,7 +66,7 @@ include __DIR__ . '/../../templates/header.php';
 
             <?php echo displayFlashMessages(); ?>
 
-            
+
             <div class="card mb-4">
                 <div class="card-header">
                     <i class="fas fa-building me-1"></i> Informations sur l'entreprise
@@ -81,33 +95,53 @@ include __DIR__ . '/../../templates/header.php';
                 </div>
             </div>
 
-            
+
             <div class="card mb-4">
                 <div class="card-header">
                     <i class="fas fa-user me-1"></i> Vos informations personnelles
                 </div>
                 <div class="card-body">
-                    <?php if ($user_info): ?>
-                        <dl class="row">
-                            <dt class="col-sm-3">Nom:</dt>
-                            <dd class="col-sm-9"><?= htmlspecialchars($user_info['prenom'] . ' ' . $user_info['nom']) ?></dd>
+                    <div class="row">
+                        <div class="col-md-9">
+                            <?php if ($user_info): ?>
+                                <dl class="row">
+                                    <dt class="col-sm-3">Nom:</dt>
+                                    <dd class="col-sm-9"><?= htmlspecialchars($user_info['prenom'] . ' ' . $user_info['nom']) ?></dd>
 
-                            <dt class="col-sm-3">Email:</dt>
-                            <dd class="col-sm-9"><?= htmlspecialchars($user_info['email']) ?></dd>
+                                    <dt class="col-sm-3">Email:</dt>
+                                    <dd class="col-sm-9"><?= htmlspecialchars($user_info['email']) ?></dd>
 
-                            <dt class="col-sm-3">Rôle:</dt>
-                            <dd class="col-sm-9">Représentant Entreprise</dd>
+                                    <dt class="col-sm-3">Rôle:</dt>
+                                    <dd class="col-sm-9">Représentant Entreprise</dd>
 
-                            <dt class="col-sm-3">Téléphone:</dt>
-                            <dd class="col-sm-9"><?= htmlspecialchars($user_info['telephone'] ?? 'Non renseigné') ?></dd>
-                        </dl>
-                    <?php else: ?>
-                        <p class="text-danger">Impossible de charger vos informations utilisateur.</p>
-                    <?php endif; ?>
+                                    <dt class="col-sm-3">Téléphone:</dt>
+                                    <dd class="col-sm-9"><?= htmlspecialchars($user_info['telephone'] ?? 'Non renseigné') ?></dd>
+                                </dl>
+                            <?php else: ?>
+                                <p class="text-danger">Impossible de charger vos informations utilisateur.</p>
+                            <?php endif; ?>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <h5>Photo de Profil</h5>
+                            <img src="<?= htmlspecialchars($_SESSION['user_photo'] ?? ASSETS_URL . '/images/user_default.png') ?>" alt="Photo de profil" class="img-thumbnail rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: contain;">
+
+                            <form method="POST" action="<?= WEBCLIENT_URL ?>/modules/companies/settings.php" enctype="multipart/form-data">
+                                <input type="hidden" name="change_photo" value="1">
+                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken()); ?>">
+
+                                <div class="mb-3">
+                                    <label for="profile_photo" class="form-label">Changer la photo</label>
+                                    <input class="form-control form-control-sm" type="file" id="profile_photo" name="profile_photo" accept="image/jpeg, image/png, image/gif" required>
+                                    <div class="form-text">Taille max 2Mo. Formats: JPG, PNG, GIF.</div>
+                                </div>
+                                <button type="submit" class="btn btn-secondary btn-sm"><i class="fas fa-upload me-1"></i> Mettre à jour la photo</button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            
+
             <div class="card">
                 <div class="card-header">
                     <i class="fas fa-key me-1"></i> Changer votre mot de passe

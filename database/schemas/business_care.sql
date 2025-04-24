@@ -1,4 +1,4 @@
--- source C:/MAMP/htdocs/Business-Care/database/schemas/business_care.sql
+
 CREATE TABLE roles (
     id INT PRIMARY KEY AUTO_INCREMENT,
     nom VARCHAR(50) NOT NULL UNIQUE,
@@ -370,15 +370,15 @@ CREATE TABLE evenement_inscriptions (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (personne_id) REFERENCES personnes(id) ON DELETE CASCADE,
     FOREIGN KEY (evenement_id) REFERENCES evenements(id) ON DELETE CASCADE,
-    UNIQUE KEY unique_inscription (personne_id, evenement_id), -- Empêche un utilisateur de s'inscrire deux fois au même événement
+    UNIQUE KEY unique_inscription (personne_id, evenement_id), 
     INDEX idx_statut (statut)
 );
 
 CREATE TABLE signalements (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    sujet VARCHAR(255) NULL, -- Sujet optionnel
-    description TEXT NOT NULL, -- Description obligatoire
-    statut ENUM('nouveau', 'en_cours', 'resolu', 'clos') DEFAULT 'nouveau', -- Statut du traitement
+    sujet VARCHAR(255) NULL, 
+    description TEXT NOT NULL, 
+    statut ENUM('nouveau', 'en_cours', 'resolu', 'clos') DEFAULT 'nouveau', 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_statut (statut)
@@ -395,11 +395,11 @@ CREATE TABLE conseils (
 
 CREATE TABLE support_tickets (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    entreprise_id INT NULL, -- Peut être null si envoyé par un salarié non lié ou un visiteur
-    personne_id INT NULL, -- Qui a envoyé le message
+    entreprise_id INT NULL, 
+    personne_id INT NULL, 
     sujet VARCHAR(255) NOT NULL,
     message TEXT NOT NULL,
-    statut ENUM('nouveau', 'en_cours', 'resolu', 'clos') DEFAULT 'nouveau',
+    statut ENUM('nouveau', 'en_cours', 'resolu', 'clos') DEFAULT 'nouveau', 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (entreprise_id) REFERENCES entreprises(id) ON DELETE SET NULL,
