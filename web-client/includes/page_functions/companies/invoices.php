@@ -189,9 +189,9 @@ function getInvoiceStatusBadgeClass(string $status): string
 function generateInvoiceNumber(): string
 {
     $date = date('Ymd');
-    $prefix = defined('INVOICE_PREFIX') ? INVOICE_PREFIX : 'F'; // Utilise la constante ou 'F' par défaut
+    $prefix = defined('INVOICE_PREFIX') ? INVOICE_PREFIX : 'F'; 
 
-    // Requête pour trouver le dernier compteur pour la date donnée
+    
     $sql = "SELECT MAX(CAST(SUBSTRING_INDEX(numero_facture, '-', -1) AS UNSIGNED)) AS last_id
             FROM factures
             WHERE numero_facture LIKE :pattern";

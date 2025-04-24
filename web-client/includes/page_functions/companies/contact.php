@@ -37,7 +37,7 @@ function saveContactMessage(?int $entreprise_id, ?int $personne_id, string $suje
         'personne_id' => $personne_id,
         'sujet' => $sujet,
         'message' => $message,
-        'statut' => 'nouveau' // Statut initial
+        'statut' => 'nouveau'
     ];
 
     return insertRow('support_tickets', $insertData);

@@ -14,11 +14,10 @@ if ($entreprise_id <= 0 || $user_id <= 0) {
 }
 
 $company_details = getCompanyDetailsForSettings($entreprise_id);
-$user_info = getUserInfo($user_id); // Récupère les infos de l'utilisateur connecté
+$user_info = getUserInfo($user_id);
 
 $pageTitle = "Paramètres";
 
-// Traitement du changement de mot de passe
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
     $current_password = $_POST['current_password'] ?? '';
     $new_password = $_POST['new_password'] ?? '';
@@ -30,7 +29,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
         $result = updateCompanyRepresentativePassword($user_id, $current_password, $new_password);
         flashMessage($result['message'], $result['success'] ? 'success' : 'danger');
     }
-    // Recharger la page pour afficher le message flash
     redirectTo(WEBCLIENT_URL . '/modules/companies/settings.php');
     exit;
 }

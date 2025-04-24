@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../../../includes/init.php'; // Assure-toi que init.php existe
+require_once __DIR__ . '/../../../includes/init.php'; 
 
 /**
  * Récupère les statistiques pour le tableau de bord Salarié.
@@ -10,10 +10,10 @@ require_once __DIR__ . '/../../../includes/init.php'; // Assure-toi que init.php
  */
 function getSalarieDashboardStats(int $salarie_id): array
 {
-    // TODO: Implémenter la logique (ex: compter les RDV à venir)
+    
     return [
-        'prochains_rdv' => 0, // Placeholder
-        'notifications_non_lues' => 0, // Placeholder
+        'prochains_rdv' => 0, 
+        'notifications_non_lues' => 0, 
     ];
 }
 
@@ -26,8 +26,7 @@ function getSalarieDashboardStats(int $salarie_id): array
  */
 function getSalarieRecentActivities(int $salarie_id, int $limit = 5): array
 {
-    // TODO: Implémenter la logique (ex: derniers RDV pris, messages communauté)
-    return []; // Placeholder
+    
+    return []; 
 }
 
-// Ajouter d'autres fonctions si nécessaire 

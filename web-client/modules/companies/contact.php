@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../../includes/init.php';
-// require_once __DIR__ . '/../../includes/page_functions/companies/contact.php'; // On ne l'utilise pas
+
 
 requireRole(ROLE_ENTREPRISE);
 
@@ -16,17 +16,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
     $message = filter_input(INPUT_POST, 'message', FILTER_SANITIZE_SPECIAL_CHARS);
 
     if ($personne_id && !empty($sujet) && !empty($message)) {
-        // ON NE SAUVEGARDE PAS EN BASE DE DONNEES
-        // $ticketId = saveContactMessage($entreprise_id, $personne_id, $sujet, $message);
+        
+        
 
-        // Simuler l'envoi (juste un message flash)
+        
         flashMessage("Votre message a bien été envoyé (simulation). Notre équipe vous répondra dès que possible.", "success");
-        // TODO: Implémenter l'envoi réel par email si nécessaire
+        
 
     } else {
         flashMessage("Veuillez remplir tous les champs obligatoires.", "warning");
     }
-    // Recharger la page pour afficher le message flash
+    
     redirectTo(WEBCLIENT_URL . '/modules/companies/contact.php');
     exit;
 }

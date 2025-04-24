@@ -8,7 +8,6 @@ requireRole(ROLE_ENTREPRISE);
 
 $entreprise_id = $_SESSION['user_entreprise'] ?? 0;
 
-// Vérification initiale de l'ID entreprise
 if ($entreprise_id <= 0) {
     flashMessage("Impossible d'identifier votre entreprise.", "danger");
     redirectTo(WEBCLIENT_URL . '/modules/companies/dashboard.php');
