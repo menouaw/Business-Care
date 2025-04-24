@@ -26,6 +26,11 @@
                     </a>
                 </li>
                 <li class="nav-item border-bottom">
+                    <a class="nav-link d-inline-flex align-items-center" href="<?php echo WEBCLIENT_URL; ?>/modules/companies/quotes.php">
+                        <i class="fas fa-file-signature me-2"></i>Mes Devis
+                    </a>
+                </li>
+                <li class="nav-item border-bottom">
                     <a class="nav-link d-inline-flex align-items-center" href="<?php echo WEBCLIENT_URL; ?>/modules/companies/invoices.php">
                         <i class="fas fa-file-invoice-dollar fa-fw me-2"></i>Mes Factures
                     </a>
