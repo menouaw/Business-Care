@@ -52,10 +52,6 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
 </head>
 
 <body>
-    <a id="back-to-top" class="d-none d-lg-block">
-        <i class="fas fa-arrow-up"></i>
-    </a>
-
     <nav class="navbar navbar-expand-lg <?= isset($transparentNav) && $transparentNav ? 'navbar-dark' : 'navbar-light bg-white' ?> fixed-top">
         <div class="container">
             <a class="navbar-brand" href="<?= WEBCLIENT_URL ?>">
