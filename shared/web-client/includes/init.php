@@ -17,13 +17,10 @@ if (class_exists('Dotenv\Dotenv')) {
             $dotenv = Dotenv\Dotenv::createImmutable($dotenv_path);
             $dotenv->load();
         } catch (\Exception $e) {
+            
             error_log("Erreur Dotenv depuis init.php: " . $e->getMessage());
         }
-    } else {
-        error_log("Warning depuis init.php: .env file not found at expected location: " . $env_file_path);
     }
-} else {
-    error_log("Warning depuis init.php: Dotenv class not found after autoload. Check Composer setup.");
 }
 
 
