@@ -1,11 +1,15 @@
 package com.businesscare.reporting.pdf;
 
 import com.businesscare.reporting.model.ClientStats;
+import com.businesscare.reporting.model.EventStats;
+import com.businesscare.reporting.model.PrestationStats;
+import com.itextpdf.io.image.ImageData;
 import com.itextpdf.io.image.ImageDataFactory;
 import com.itextpdf.kernel.colors.ColorConstants;
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.kernel.geom.PageSize;
+import com.itextpdf.kernel.geom.Rectangle;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
@@ -21,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
@@ -142,26 +147,19 @@ public class PdfGenerator {
      * Méthode utilitaire pour ajouter un graphique JFreeChart au canvas PDF en utilisant iText 7.
      */
     private void addChartToCanvas(PdfCanvas canvas, JFreeChart chart, float x, float y, float width, float height) throws IOException {
-        try (ByteArrayOutputStream chartOut = new ByteArrayOutputStream()) {
+        try {
+            // Convert JFreeChart to AWT BufferedImage
+            BufferedImage bufferedImage = chart.createBufferedImage((int)width, (int)height);
             
-            
-            java.awt.image.BufferedImage bufferedImage = new java.awt.image.BufferedImage((int)width, (int)height, java.awt.image.BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g2 = bufferedImage.createGraphics();
+            // Create iText ImageData from BufferedImage
+            ImageData imageData = ImageDataFactory.create(bufferedImage, null);
 
-            
-            chart.draw(g2, new Rectangle2D.Double(0, 0, width, height));
-            g2.dispose();
-
-            
-            Image chartImage = new Image(ImageDataFactory.create(bufferedImage, null));
-
-            
-            canvas.addImageFittedIntoRectangle(chartImage.getImageData(), new com.itextpdf.kernel.geom.Rectangle(x, y, width, height), false);
+            // Add the ImageData directly to the canvas
+            canvas.addImageFittedIntoRectangle(imageData, new Rectangle(x, y, width, height), false);
             logger.debug("Chart added to PDF canvas at x={}, y={}", x, y);
 
         } catch (Exception e) {
             logger.error("Erreur lors de l'ajout du graphique au canvas PDF", e);
-            
             if (e instanceof IOException) throw (IOException)e;
             throw new IOException("Erreur lors de la conversion du graphique en image PDF", e);
         }

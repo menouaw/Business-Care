@@ -1,8 +1,9 @@
 package com.businesscare.reporting.client;
 
 import com.businesscare.reporting.exception.ApiException;
-import com.businesscare.reporting.model.*; 
+import com.businesscare.reporting.model.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
@@ -28,7 +29,7 @@ public class ApiClient {
     public ApiClient(String baseUrl) {
         this.baseUrl = baseUrl.endsWith("/") ? baseUrl : baseUrl + "/";
         this.objectMapper = new ObjectMapper();
-        
+        this.objectMapper.registerModule(new JavaTimeModule());
         this.httpClient = HttpClients.createDefault();
     }
 
@@ -37,6 +38,7 @@ public class ApiClient {
         this.baseUrl = baseUrl.endsWith("/") ? baseUrl : baseUrl + "/";
         this.httpClient = httpClient;
         this.objectMapper = objectMapper;
+        this.objectMapper.registerModule(new JavaTimeModule());
     }
 
     /**
@@ -49,7 +51,7 @@ public class ApiClient {
      * @throws ApiException Si l'API retourne une erreur.
      */
     public AuthResponse login(String email, String password) throws IOException, ApiException {
-        HttpPost post = new HttpPost(baseUrl + "auth");
+        HttpPost post = new HttpPost(baseUrl + "auth.php");
         Map<String, String> credentials = Map.of("email", email, "password", password);
         String jsonBody = objectMapper.writeValueAsString(credentials);
         post.setEntity(new StringEntity(jsonBody, ContentType.APPLICATION_JSON));
@@ -91,7 +93,7 @@ public class ApiClient {
             throw new ApiException("Not authenticated. Call login() first.");
         }
 
-        HttpGet get = new HttpGet(baseUrl + "companies");
+        HttpGet get = new HttpGet(baseUrl + "companies.php");
         get.setHeader("Authorization", "Bearer " + this.authToken);
 
         return httpClient.execute(get, response -> {
@@ -131,7 +133,7 @@ public class ApiClient {
             throw new ApiException("Non authentifié. Appeler login() d'abord.");
         }
 
-        HttpGet get = new HttpGet(baseUrl + "contracts");
+        HttpGet get = new HttpGet(baseUrl + "contracts.php");
         get.setHeader("Authorization", "Bearer " + this.authToken);
 
         return httpClient.execute(get, response -> {
@@ -167,7 +169,7 @@ public class ApiClient {
             throw new ApiException("Non authentifié. Appeler login() d'abord.");
         }
 
-        HttpGet get = new HttpGet(baseUrl + "quotes");
+        HttpGet get = new HttpGet(baseUrl + "quotes.php");
         get.setHeader("Authorization", "Bearer " + this.authToken);
 
         return httpClient.execute(get, response -> {
@@ -203,7 +205,7 @@ public class ApiClient {
             throw new ApiException("Non authentifié. Appeler login() d'abord.");
         }
 
-        HttpGet get = new HttpGet(baseUrl + "invoices");
+        HttpGet get = new HttpGet(baseUrl + "invoices.php");
         get.setHeader("Authorization", "Bearer " + this.authToken);
 
         return httpClient.execute(get, response -> {
@@ -239,7 +241,7 @@ public class ApiClient {
             throw new ApiException("Non authentifié. Appeler login() d'abord.");
         }
 
-        HttpGet get = new HttpGet(baseUrl + "events");
+        HttpGet get = new HttpGet(baseUrl + "events.php");
         get.setHeader("Authorization", "Bearer " + this.authToken);
 
         return httpClient.execute(get, response -> {
@@ -275,7 +277,7 @@ public class ApiClient {
             throw new ApiException("Non authentifié. Appeler login() d'abord.");
         }
 
-        HttpGet get = new HttpGet(baseUrl + "services"); 
+        HttpGet get = new HttpGet(baseUrl + "services.php");
         get.setHeader("Authorization", "Bearer " + this.authToken);
 
         return httpClient.execute(get, response -> {
@@ -313,46 +315,4 @@ public class ApiClient {
          }
     }
 
-    public static class AuthResponse extends ErrorResponse {
-        private String token;
-        private User user;
-        
-        public String getToken() { return token; }
-        public void setToken(String token) { this.token = token; }
-        public User getUser() { return user; }
-        public void setUser(User user) { this.user = user; }
-    }
-
-     public static class ApiResponse<T> extends ErrorResponse {
-        private T data;
-        
-        public T getData() { return data; }
-        public void setData(T data) { this.data = data; }
-    }
-
-    public static class ErrorResponse {
-        private boolean error;
-        private String message;
-        
-        public boolean isError() { return error; }
-        public void setError(boolean error) { this.error = error; }
-        public String getMessage() { return message; }
-        public void setMessage(String message) { this.message = message; }
-    }
-
-    public static class User {
-        public int id;
-        public String nom;
-        public String prenom;
-        public String email;
-        public int role_id;
-        
-    }
-
-    public static class Company {
-         public int id;
-         public String nom;
-         public String siret;
-         
-         
 }

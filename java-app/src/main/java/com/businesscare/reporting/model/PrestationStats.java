@@ -1,14 +1,21 @@
 package com.businesscare.reporting.model;
 
-import com.businesscare.reporting.model.enums.PrestationType;
+import com.businesscare.reporting.model.enums.*;
 
 import java.util.List;
 import java.util.Map;
+import java.math.BigDecimal;
 
 /**
  * Contient les statistiques agrégées sur les prestations pour le rapport.
  */
 public class PrestationStats {
+
+    private Map<String, Long> distributionParCategorie;
+    private Map<PrestationType, Long> distributionParType;
+    private Map<PrestationDifficultyLevel, Long> distributionParDifficulte;
+    private Map<String, BigDecimal> revenuParPrestation;
+    private List<Map.Entry<String, Long>> top5Prestations;
 
     private Map<PrestationType, Long> prestationCountByType; 
     private Map<String, Long> prestationCountByCategory; 
@@ -22,6 +29,46 @@ public class PrestationStats {
     }
 
     
+
+    public Map<String, Long> getDistributionParCategorie() {
+        return distributionParCategorie;
+    }
+
+    public void setDistributionParCategorie(Map<String, Long> distributionParCategorie) {
+        this.distributionParCategorie = distributionParCategorie;
+    }
+
+    public Map<PrestationType, Long> getDistributionParType() {
+        return distributionParType;
+    }
+
+    public void setDistributionParType(Map<PrestationType, Long> distributionParType) {
+        this.distributionParType = distributionParType;
+    }
+
+    public Map<PrestationDifficultyLevel, Long> getDistributionParDifficulte() {
+        return distributionParDifficulte;
+    }
+
+    public void setDistributionParDifficulte(Map<PrestationDifficultyLevel, Long> distributionParDifficulte) {
+        this.distributionParDifficulte = distributionParDifficulte;
+    }
+
+    public Map<String, BigDecimal> getRevenuParPrestation() {
+        return revenuParPrestation;
+    }
+
+    public void setRevenuParPrestation(Map<String, BigDecimal> revenuParPrestation) {
+        this.revenuParPrestation = revenuParPrestation;
+    }
+
+    public List<Map.Entry<String, Long>> getTop5Prestations() {
+        return top5Prestations;
+    }
+
+    public void setTop5Prestations(List<Map.Entry<String, Long>> top5Prestations) {
+        this.top5Prestations = top5Prestations;
+    }
 
     public Map<PrestationType, Long> getPrestationCountByType() {
         return prestationCountByType;

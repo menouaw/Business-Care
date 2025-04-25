@@ -52,18 +52,19 @@ public class ReportApplication {
 
             
             logger.info("Tentative d'authentification auprès de {}...", config.getBaseUrl());
-            apiClient.login(config.getApiUser(), config.getApiPassword());
-            logger.info("Authentification réussie.");
+            AuthResponse auth = apiClient.login(config.getApiUser(), config.getApiPassword());
+            logger.info("Authentification réussie pour {}", auth.getUser() != null ? auth.getUser().email : "N/A");
 
             
             logger.info("Récupération des données depuis l'API...");
             List<Company> companies = apiClient.getCompanies();
             List<Contract> contracts = apiClient.getContracts();
+            List<Quote> quotes = apiClient.getQuotes();
             List<Invoice> invoices = apiClient.getInvoices();
             List<Event> events = apiClient.getEvents();
             List<Prestation> prestations = apiClient.getPrestations();
-            logger.info("Données récupérées: {} entreprises, {} contrats, {} factures, {} événements, {} prestations.",
-                    companies.size(), contracts.size(), invoices.size(), events.size(), prestations.size());
+            logger.info("Données récupérées: {} entreprises, {} contrats, {} devis, {} factures, {} événements, {} prestations.",
+                    companies.size(), contracts.size(), quotes.size(), invoices.size(), events.size(), prestations.size());
 
             
             

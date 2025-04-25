@@ -1,8 +1,7 @@
 package com.businesscare.reporting.service;
 
 import com.businesscare.reporting.model.*;
-import com.businesscare.reporting.model.enums.ContractStatus;
-import com.businesscare.reporting.model.enums.InvoiceStatus;
+import com.businesscare.reporting.model.enums.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,10 +40,10 @@ public class ReportService {
 
         
         Map<Integer, BigDecimal> revenueByClientId = invoices.stream()
-                .filter(inv -> inv.getStatut() == InvoiceStatus.PAYEE && inv.getMontantTotal() != null)
+                .filter(inv -> inv.getStatut() == InvoiceStatus.payee && inv.getMontantTotal() != null)
                 .collect(Collectors.groupingBy(
                         Invoice::getEntrepriseId,
-                        Collectors.reducing(BigDecimal.ZERO, Invoice::getMontantTotal, BigDecimal::add)
+                        Collectors.mapping(Invoice::getMontantTotal, Collectors.reducing(BigDecimal.ZERO, BigDecimal::add))
                 ));
         stats.setTotalRevenueByClientId(revenueByClientId);
 
@@ -54,19 +53,19 @@ public class ReportService {
         stats.setTotalRevenueOverall(totalRevenue);
 
         
-        long paidInvoicesCount = invoices.stream().filter(inv -> inv.getStatut() == InvoiceStatus.PAYEE).count();
+        long paidInvoicesCount = invoices.stream().filter(inv -> inv.getStatut() == InvoiceStatus.payee).count();
         stats.setTotalPaidInvoices(paidInvoicesCount);
 
         
         Map<String, Long> countBySector = companies.stream()
-                .filter(c -> c.getSecteurActivite() != null && !c.getSecteurActivite().isBlank())
-                .collect(Collectors.groupingBy(Company::getSecteurActivite, Collectors.counting()));
+                .filter(c -> c.getSecteurActivite() != null)
+                .collect(Collectors.groupingBy(c -> c.getSecteurActivite().name(), Collectors.counting()));
         stats.setClientCountBySector(countBySector);
 
         
         Map<String, Long> countBySize = companies.stream()
-                .filter(c -> c.getTailleEntreprise() != null && !c.getTailleEntreprise().isBlank())
-                .collect(Collectors.groupingBy(Company::getTailleEntreprise, Collectors.counting()));
+                .filter(c -> c.getTailleEntreprise() != null)
+                .collect(Collectors.groupingBy(c -> c.getTailleEntreprise().name(), Collectors.counting()));
         stats.setClientCountBySize(countBySize);
 
         
@@ -181,7 +180,7 @@ public class ReportService {
         }
 
         
-        Map<com.businesscare.reporting.model.enums.PrestationType, Long> countByType = prestations.stream()
+        Map<PrestationType, Long> countByType = prestations.stream()
                 .filter(p -> p.getType() != null)
                 .collect(Collectors.groupingBy(Prestation::getType, Collectors.counting()));
         stats.setPrestationCountByType(countByType);

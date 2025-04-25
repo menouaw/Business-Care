@@ -1,5 +1,8 @@
 package com.businesscare.reporting.client;
 
+import com.businesscare.reporting.model.*;
+import com.businesscare.reporting.model.enums.*;
+import com.businesscare.reporting.client.ApiConfig;
 import com.businesscare.reporting.exception.ApiException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
@@ -9,6 +12,8 @@ import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.io.HttpClientResponseHandler;
+import org.apache.hc.core5.http.message.BasicHeader;
+import org.apache.hc.core5.http.ProtocolException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,6 +31,10 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+
+import com.businesscare.reporting.model.AuthResponse;
+import com.businesscare.reporting.model.Company;
+import com.businesscare.reporting.model.User;
 
 @ExtendWith(MockitoExtension.class)
 class ApiClientTest {
@@ -79,117 +88,131 @@ class ApiClientTest {
     }
 
     @Test
-    void testLoginSuccess() throws IOException, ApiException, URISyntaxException {
-        
-        String fakeToken = "test-token-123";
-        String successJson = String.format(
-            "{\"error\": false, \"message\": \"Authentification réussie\", \"token\": \"%s\", \"user\": {\"id\": 1, \"nom\": \"Admin\", \"prenom\": \"Test\", \"email\": \"admin@test.com\", \"role_id\": 1}}",
-            fakeToken
-        );
-        mockApiResponse(200, successJson);
+    void testLogin_Success() throws Exception {
+        String responseJson = "{\"error\":false, \"message\":\"Authentification réussie\", \"token\":\"fake-jwt-token\", \"user\":{\"id\":1, \"nom\":\"Admin\", \"prenom\":\"Admin\", \"email\":\"admin@businesscare.fr\", \"role_id\":1}}";
+        mockApiResponseForPost(200, responseJson);
 
-        
-        ApiClient.AuthResponse response = apiClient.login("admin@test.com", "password123");
+        AuthResponse authResponse = apiClient.login("admin@businesscare.fr", "password");
 
-        
-        assertNotNull(response);
-        assertFalse(response.isError());
-        assertEquals(fakeToken, response.getToken());
-        assertNotNull(response.getUser());
-        assertEquals(1, response.getUser().id);
-        assertEquals("admin@test.com", response.getUser().email);
+        assertNotNull(authResponse);
+        assertFalse(authResponse.isError());
+        assertEquals("fake-jwt-token", authResponse.getToken());
+        assertNotNull(authResponse.getUser());
+        assertEquals(1, authResponse.getUser().getId());
+        assertEquals("admin@businesscare.fr", authResponse.getUser().getEmail());
 
-        
         verify(mockHttpClient).execute(httpPostCaptor.capture(), any(HttpClientResponseHandler.class));
-        assertEquals(BASE_URL + "auth", httpPostCaptor.getValue().getUri().toString());
+        assertEquals(BASE_URL + "auth.php", httpPostCaptor.getValue().getUri().toString());
     }
 
     @Test
-    void testLoginFailure_InvalidCredentials() throws IOException {
-        
+    void testLoginFailure_InvalidCredentials() throws Exception {
         String failureJson = "{\"error\": true, \"message\": \"Identifiants invalides ou accès non autorisé.\"}";
-        mockApiResponse(401, failureJson);
+        mockApiResponseForPost(401, failureJson);
 
-        
         ApiException exception = assertThrows(ApiException.class, () -> {
             apiClient.login("admin@test.com", "wrongpassword");
         });
-
-        assertTrue(exception.getMessage().contains("Identifiants invalides"));
+        String expectedMessage = "API authentication failed: Identifiants invalides ou accès non autorisé.";
+        assertEquals(expectedMessage, exception.getMessage(),
+                     "Exception message should match the expected format.");
     }
 
     @Test
-    void testGetCompaniesSuccess() throws IOException, ApiException, URISyntaxException {
-        
-        String fakeToken = "token-for-companies";
-        String loginSuccessJson = String.format(
-            "{\"error\": false, \"message\": \"Authentification réussie\", \"token\": \"%s\", \"user\": {\"id\": 1, \"nom\": \"Admin\", \"prenom\": \"Test\", \"email\": \"admin@test.com\", \"role_id\": 1}}",
-            fakeToken
-        );
-        mockApiResponse(200, loginSuccessJson);
-        apiClient.login("admin@test.com", "password"); 
+    void testGetCompanies_Success() throws Exception {
+        String loginJson = "{\"error\":false, \"token\":\"test-token\", \"user\":{\"id\":1}}";
+        mockApiResponseForPost(200, loginJson);
+        apiClient.login("user", "pass");
 
-        
-        String companiesJson = "{\"error\": false, \"data\": [{\"id\": 10, \"nom\": \"CompA\", \"siret\": \"111\"}, {\"id\": 20, \"nom\": \"CompB\", \"siret\": \"222\"}]}";
-        
-        mockApiResponse(200, companiesJson);
+        String companiesJson = "{\"error\":false, \"message\":\"Liste des entreprises\", \"data\":[{\"id\":1, \"nom\":\"Test Corp\"},{\"id\":2, \"nom\":\"Demo LLC\"}]}";
+        mockApiResponseForGet(200, companiesJson);
 
-        
-        List<ApiClient.Company> companies = apiClient.getCompanies();
+        List<Company> companies = apiClient.getCompanies();
 
-        
         assertNotNull(companies);
         assertEquals(2, companies.size());
-        assertEquals(10, companies.get(0).id);
-        assertEquals("CompA", companies.get(0).nom);
-        assertEquals(20, companies.get(1).id);
-        assertEquals("CompB", companies.get(1).nom);
+        assertEquals(1, companies.get(0).getId());
+        assertEquals("Test Corp", companies.get(0).getNom());
+        assertEquals(2, companies.get(1).getId());
+        assertEquals("Demo LLC", companies.get(1).getNom());
 
-        
         verify(mockHttpClient).execute(httpGetCaptor.capture(), any(HttpClientResponseHandler.class));
         HttpGet capturedGet = httpGetCaptor.getValue();
-        assertEquals(BASE_URL + "companies", capturedGet.getUri().toString());
+        assertEquals(BASE_URL + "companies.php", capturedGet.getUri().toString());
         Header authHeader = capturedGet.getFirstHeader("Authorization");
         assertNotNull(authHeader, "Authorization header is missing");
-        assertEquals("Bearer " + fakeToken, authHeader.getValue());
+        assertEquals("Bearer test-token", authHeader.getValue());
     }
 
-     @Test
-    void testGetCompaniesFailure_Unauthorized() throws IOException, ApiException {
-        
-         String fakeToken = "token-unauth";
-         String loginSuccessJson = String.format(
-             "{\"error\": false, \"message\": \"Authentification réussie\", \"token\": \"%s\", \"user\": {\"id\": 1, \"nom\": \"Admin\", \"prenom\": \"Test\", \"email\": \"admin@test.com\", \"role_id\": 1}}",
-             fakeToken
-         );
-         mockApiResponse(200, loginSuccessJson);
-         apiClient.login("admin@test.com", "password");
+    @Test
+    void testGetCompaniesFailure_Unauthorized() throws Exception {
+        String loginJson = "{\"error\":false, \"token\":\"valid-token\", \"user\":{\"id\":1}}";
+        mockApiResponseForPost(200, loginJson);
+        apiClient.login("user", "pass");
 
-        
         String unauthorizedJson = "{\"error\": true, \"message\": \"Authentification requise\"}";
-        mockApiResponse(401, unauthorizedJson);
+        mockApiResponseForGet(401, unauthorizedJson);
 
-        
         ApiException exception = assertThrows(ApiException.class, () -> {
             apiClient.getCompanies();
         });
 
-        assertTrue(exception.getMessage().contains("Authentification requise"));
+        assertTrue(exception.getMessage().contains("Failed to fetch companies: Authentification requise"),
+                   "Exception message should indicate failure cause. Was: " + exception.getMessage());
     }
 
-     @Test
-     void testGetCompaniesFailure_NotLoggedIn() throws IOException {
-         
+    @Test
+    void testGetCompaniesFailure_NotLoggedIn() throws Exception {
+        apiClient = new ApiClient(BASE_URL, mockHttpClient, objectMapper);
 
-         
-         ApiException exception = assertThrows(ApiException.class, () -> {
-             apiClient.getCompanies();
-         });
+        ApiException exception = assertThrows(ApiException.class, () -> {
+            apiClient.getCompanies();
+        });
 
-         assertTrue(exception.getMessage().contains("Not authenticated"));
+        assertTrue(exception.getMessage().contains("Not authenticated"));
 
-         
-         verify(mockHttpClient, never()).execute(any(HttpGet.class), any(HttpClientResponseHandler.class));
-     }
+        verify(mockHttpClient, never()).execute(any(HttpGet.class), any(HttpClientResponseHandler.class));
+    }
 
+    private void mockApiResponseForPost(int statusCode, String jsonBody) throws IOException {
+        when(mockHttpResponse.getCode()).thenReturn(statusCode);
+        when(mockHttpEntity.getContent()).thenReturn(new ByteArrayInputStream(jsonBody.getBytes(StandardCharsets.UTF_8)));
+        Header contentTypeHeader = new BasicHeader("Content-Type", "application/json; charset=utf-8");
+        lenient().when(mockHttpEntity.getContentType()).thenReturn("application/json; charset=utf-8");
+        try {
+            lenient().when(mockHttpResponse.getHeader("Content-Type")).thenReturn(contentTypeHeader);
+            lenient().when(mockHttpResponse.getHeaders("Content-Type")).thenReturn(new Header[]{contentTypeHeader});
+        } catch (ProtocolException e) {
+            throw new RuntimeException("Unexpected ProtocolException in mock setup", e);
+        }
+
+        when(mockHttpResponse.getEntity()).thenReturn(mockHttpEntity);
+
+        when(mockHttpClient.execute(any(HttpPost.class), any(HttpClientResponseHandler.class)))
+                .thenAnswer(invocation -> {
+                    HttpClientResponseHandler handler = invocation.getArgument(1);
+                    return handler.handleResponse(mockHttpResponse);
+                });
+    }
+
+    private void mockApiResponseForGet(int statusCode, String jsonBody) throws IOException {
+        when(mockHttpResponse.getCode()).thenReturn(statusCode);
+        when(mockHttpEntity.getContent()).thenReturn(new ByteArrayInputStream(jsonBody.getBytes(StandardCharsets.UTF_8)));
+        Header contentTypeHeader = new BasicHeader("Content-Type", "application/json; charset=utf-8");
+        lenient().when(mockHttpEntity.getContentType()).thenReturn("application/json; charset=utf-8");
+        try {
+            lenient().when(mockHttpResponse.getHeader("Content-Type")).thenReturn(contentTypeHeader);
+            lenient().when(mockHttpResponse.getHeaders("Content-Type")).thenReturn(new Header[]{contentTypeHeader});
+        } catch (ProtocolException e) {
+            throw new RuntimeException("Unexpected ProtocolException in mock setup", e);
+        }
+
+        when(mockHttpResponse.getEntity()).thenReturn(mockHttpEntity);
+
+        when(mockHttpClient.execute(any(HttpGet.class), any(HttpClientResponseHandler.class)))
+                .thenAnswer(invocation -> {
+                    HttpClientResponseHandler handler = invocation.getArgument(1);
+                    return handler.handleResponse(mockHttpResponse);
+                });
+    }
 } 

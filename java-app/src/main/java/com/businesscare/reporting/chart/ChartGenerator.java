@@ -1,7 +1,10 @@
 package com.businesscare.reporting.chart;
 
 import com.businesscare.reporting.model.ClientStats;
+import com.businesscare.reporting.model.EventStats;
+import com.businesscare.reporting.model.PrestationStats;
 import com.businesscare.reporting.model.enums.ContractStatus;
+import com.businesscare.reporting.model.enums.EventType;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PiePlot;
@@ -16,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Color;
 import java.awt.Font;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 
 public class ChartGenerator {
@@ -432,5 +436,47 @@ public class ChartGenerator {
         return pieChart;
     }
 
+    /**
+     * Crée un graphique de participation par mois (à adapter).
+     *
+     * @param stats Les statistiques des événements.
+     * @return Un objet JFreeChart.
+     */
+    public JFreeChart createEventParticipationByMonthChart(EventStats stats) {
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        // TODO: Implémenter la logique pour représenter les données correctement par mois si possible.
+        Map<String, Long> frequency = stats.getEventFrequency(); // Correction
+        if (frequency != null) {
+            frequency.forEach((title, count) -> dataset.addValue(count, "Popularité", title)); 
+        }
+
+        return ChartFactory.createBarChart(
+                "Participation aux événements par mois",
+                "Événement",
+                "Nombre de participants",
+                dataset,
+                PlotOrientation.VERTICAL,
+                true, true, false);
+    }
+
+    /**
+     * Crée un graphique de distribution du taux de satisfaction (à adapter).
+     *
+     * @param stats Les statistiques des événements.
+     * @return Un objet JFreeChart.
+     */
+    public JFreeChart createEventSatisfactionRateChart(EventStats stats) {
+        DefaultPieDataset<String> dataset = new DefaultPieDataset<>();
+        // TODO: implémenter la logique pour représenter les données de satisfaction si elles existent.
+        Map<EventType, Long> countByType = stats.getEventCountByType(); 
+        if (countByType != null) {
+            countByType.forEach((type, count) -> dataset.setValue(type.name(), count)); 
+        }
+
+        return ChartFactory.createPieChart(
+                "Taux de satisfaction des événements",
+                dataset,
+                true, true, false);
+    }
 
 }

@@ -38,7 +38,7 @@ if ($authHeader && preg_match('/^Bearer\s+(.*)$/i', $authHeader, $matches)) {
     
     try {
         
-        $tokenRecord = fetchOne(TABLE_REMEMBER_ME, "token = ? AND expires_at > NOW()", '', [$bearerToken]);
+        $tokenRecord = fetchOne(TABLE_API_TOKENS, "token = ? AND expires_at > NOW()", '', [$bearerToken]);
 
         if ($tokenRecord) {
             

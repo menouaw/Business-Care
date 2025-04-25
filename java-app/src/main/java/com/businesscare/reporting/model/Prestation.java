@@ -1,7 +1,6 @@
 package com.businesscare.reporting.model;
 
-import com.businesscare.reporting.model.enums.PrestationDifficultyLevel;
-import com.businesscare.reporting.model.enums.PrestationType;
+import com.businesscare.reporting.model.enums.*;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -38,6 +37,15 @@ public class Prestation {
     private List<Integer> associatedEvents;
 
     
+    @JsonProperty("categorie_id")
+    private int categorieId;
+
+    @JsonProperty("duree_estimee")
+    private int dureeEstimee;
+
+    @JsonProperty("prestataire_id")
+    private Integer prestataireId;
+
     public Prestation() {
     }
 
@@ -137,6 +145,30 @@ public class Prestation {
 
     public void setAssociatedEvents(List<Integer> associatedEvents) {
         this.associatedEvents = associatedEvents;
+    }
+
+    public int getCategorieId() {
+        return categorieId;
+    }
+
+    public void setCategorieId(int categorieId) {
+        this.categorieId = categorieId;
+    }
+
+    public int getDureeEstimee() {
+        return dureeEstimee;
+    }
+
+    public void setDureeEstimee(int dureeEstimee) {
+        this.dureeEstimee = dureeEstimee;
+    }
+
+    public Integer getPrestataireId() {
+        return prestataireId;
+    }
+
+    public void setPrestataireId(Integer prestataireId) {
+        this.prestataireId = prestataireId;
     }
 
     @Override

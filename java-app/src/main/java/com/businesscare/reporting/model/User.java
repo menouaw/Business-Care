@@ -9,10 +9,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class User {
 
-    private int id;
-    private String nom;
-    private String prenom;
-    private String email;
+    public int id;
+    public String nom;
+    public String prenom;
+    public String email;
+    public int role_id;
 
     @JsonProperty("role_id")
     private int roleId;

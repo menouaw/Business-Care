@@ -1,6 +1,6 @@
 package com.businesscare.reporting.model;
 
-import com.businesscare.reporting.model.enums.CompanySize;
+import com.businesscare.reporting.model.enums.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -36,13 +36,14 @@ public class Company {
     private CompanySize tailleEntreprise;
 
     @JsonProperty("secteur_activite")
-    private String secteurActivite;
+    private IndustrySector secteurActivite;
 
     @JsonProperty("date_creation")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate dateCreation;
 
-    
+    private String pays;
+
     private List<Integer> contracts;
     private List<Integer> quotes;
     private List<Integer> invoices;
@@ -50,7 +51,6 @@ public class Company {
     public Company() {
     }
 
-    
     public int getId() {
         return id;
     }
@@ -139,11 +139,11 @@ public class Company {
         this.tailleEntreprise = tailleEntreprise;
     }
 
-    public String getSecteurActivite() {
+    public IndustrySector getSecteurActivite() {
         return secteurActivite;
     }
 
-    public void setSecteurActivite(String secteurActivite) {
+    public void setSecteurActivite(IndustrySector secteurActivite) {
         this.secteurActivite = secteurActivite;
     }
 
@@ -153,6 +153,14 @@ public class Company {
 
     public void setDateCreation(LocalDate dateCreation) {
         this.dateCreation = dateCreation;
+    }
+
+    public String getPays() {
+        return pays;
+    }
+
+    public void setPays(String pays) {
+        this.pays = pays;
     }
 
     public List<Integer> getContracts() {
@@ -177,6 +185,10 @@ public class Company {
 
     public void setInvoices(List<Integer> invoices) {
         this.invoices = invoices;
+    }
+
+    public String getEmailContact() {
+        return email;
     }
 
     @Override

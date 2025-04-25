@@ -1,5 +1,10 @@
 package com.businesscare.reporting.model.enums;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
+import java.util.Arrays;
+
 /**
  * Représente la taille d'une entreprise, correspondant à l'enum de la base de données.
  */
@@ -16,7 +21,16 @@ public enum CompanySize {
         this.value = value;
     }
 
+    @JsonValue 
     public String getValue() {
         return value;
+    }
+
+    @JsonCreator 
+    public static CompanySize fromValue(String value) {
+        return Arrays.stream(CompanySize.values())
+                .filter(size -> size.value.equalsIgnoreCase(value))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Unknown CompanySize value: " + value));
     }
 }
