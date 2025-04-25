@@ -13,9 +13,9 @@ $pageTitle = "Modifier Salarié";
 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    
+
     $employee_id_post = filter_input(INPUT_POST, 'employee_id', FILTER_VALIDATE_INT);
-    
+
 
     if ($employee_id_post) {
         $nom = filter_input(INPUT_POST, 'nom', FILTER_SANITIZE_SPECIAL_CHARS);
@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (updateEmployeeDetails($employee_id_post, $entreprise_id, $updateData)) {
                 flashMessage('Informations du salarié mises à jour avec succès.', 'success');
             } else {
-                flashMessage('Erreur lors de la mise à jour ou aucune modification détectée.', 'warning'); 
+                flashMessage('Erreur lors de la mise à jour ou aucune modification détectée.', 'warning');
             }
         } else {
             flashMessage('Erreur de validation. Veuillez vérifier les champs obligatoires (Nom, Prénom, Email valide).', 'danger');
@@ -44,8 +44,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         flashMessage('ID du salarié manquant pour la mise à jour.', 'danger');
     }
-    
-    redirectTo(WEBCLIENT_URL . '/modules/companies/index.php');
+
+    redirectTo(WEBCLIENT_URL . '/modules/companies/employees/index.php');
     exit;
 }
 
@@ -84,53 +84,55 @@ include __DIR__ . '/../../templates/header.php';
                 </div>
             </div>
 
-            <?php echo displayFlashMessages(); 
+            <?php echo displayFlashMessages();
             ?>
 
-            <form method="POST" action="<?= WEBCLIENT_URL ?>/modules/companies/edit.php?id=<?= $employee_id ?>"> <!
-                <input type="hidden" name="employee_id" value="<?= (int)$employee_details['id'] ?>">
-                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken()) ?>">
+            <form method="POST" action="<?= WEBCLIENT_URL ?>/modules/companies/edit.php?id=<?= $employee_id ?>">
+                <!
+                    <input type="hidden" name="employee_id" value="<?= (int)$employee_details['id'] ?>">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken()) ?>">
 
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label for="prenom" class="form-label">Prénom <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="prenom" name="prenom" value="<?= htmlspecialchars($employee_details['prenom'] ?? '') ?>" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="nom" class="form-label">Nom <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="nom" name="nom" value="<?= htmlspecialchars($employee_details['nom'] ?? '') ?>" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
-                        <input type="email" class="form-control" id="email" name="email" value="<?= htmlspecialchars($employee_details['email'] ?? '') ?>" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="telephone" class="form-label">Téléphone</label>
-                        <input type="tel" class="form-control" id="telephone" name="telephone" value="<?= htmlspecialchars($employee_details['telephone'] ?? '') ?>">
-                    </div>
-                    <div class="col-md-6">
-                        <label for="site_id" class="form-label">Site d'affectation</label>
-                        <select class="form-select" id="site_id" name="site_id">
-                            <option value="">
-                            <?php foreach ($company_sites as $site): ?>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="prenom" class="form-label">Prénom <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="prenom" name="prenom" value="<?= htmlspecialchars($employee_details['prenom'] ?? '') ?>" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="nom" class="form-label">Nom <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="nom" name="nom" value="<?= htmlspecialchars($employee_details['nom'] ?? '') ?>" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" id="email" name="email" value="<?= htmlspecialchars($employee_details['email'] ?? '') ?>" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="telephone" class="form-label">Téléphone</label>
+                            <input type="tel" class="form-control" id="telephone" name="telephone" value="<?= htmlspecialchars($employee_details['telephone'] ?? '') ?>">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="site_id" class="form-label">Site d'affectation</label>
+                            <select class="form-select" id="site_id" name="site_id">
+                                <option value="">
+                                    <?php foreach ($company_sites as $site): ?>
                                 <option value="<?= $site['id'] ?>" <?= ($employee_details['site_id'] == $site['id']) ? 'selected' : '' ?>>
                                     <?= htmlspecialchars($site['nom']) ?>
                                 </option>
                             <?php endforeach; ?>
-                        </select>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Statut</label>
+                            <input type="text" class="form-control" value="<?= htmlspecialchars(ucfirst($employee_details['statut'] ?? '')) ?>" disabled readonly>
+                            <small class="form-text text-muted">Le statut est modifié via les boutons Activer/Désactiver sur la liste.</small>
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Statut</label>
-                        <input type="text" class="form-control" value="<?= htmlspecialchars(ucfirst($employee_details['statut'] ?? '')) ?>" disabled readonly>
-                        <small class="form-text text-muted">Le statut est modifié via les boutons Activer/Désactiver sur la liste.</small>
-                    </div>
-                </div>
 
-                <hr class="my-4">
+                    <hr class="my-4">
 
-                <button class="btn btn-primary" type="submit">Enregistrer les modifications</button>
-                <a href="<?= WEBCLIENT_URL ?>/modules/companies/index.php" class="btn btn-secondary">Annuler</a> <!
-            </form>
+                    <button class="btn btn-primary" type="submit">Enregistrer les modifications</button>
+                    <a href="<?= WEBCLIENT_URL ?>/modules/companies/index.php" class="btn btn-secondary">Annuler</a>
+                    <!
+                        </form>
 
         </main>
     </div>

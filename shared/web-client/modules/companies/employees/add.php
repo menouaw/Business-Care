@@ -89,12 +89,11 @@ include __DIR__ . '/../../templates/header.php';
                     <div class="col-md-6">
                         <label for="site_id" class="form-label">Site d'affectation</label>
                         <select class="form-select" id="site_id" name="site_id">
-                            <option value="">
-                                <?php foreach ($company_sites as $site): ?>
-                            <option value="<?= $site['id'] ?>" <?= (isset($_POST['site_id']) && $_POST['site_id'] == $site['id']) ? 'selected' : '' ?>>
-                                <?= htmlspecialchars($site['nom']) ?>
-                            </option>
-                        <?php endforeach; ?>
+                            <option value="">Sélectionnez un site</option> <?php foreach ($company_sites as $site): ?>
+                                <option value="<?= $site['id'] ?>" <?= (isset($_POST['site_id']) && $_POST['site_id'] == $site['id']) ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($site['nom']) ?>
+                                </option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
                 </div>
