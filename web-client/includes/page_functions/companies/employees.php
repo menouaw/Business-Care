@@ -282,24 +282,3 @@ function addEmployee($entreprise_id, $employeeData)
         return false;
     }
 }
-function getStatusBadgeClass(string $status): string
-    {
-        switch (strtolower($status)) {
-            case 'actif':
-            case 'active': // Handle variations
-                return 'success';
-            case 'en_attente':
-            case 'pending':
-                return 'warning';
-            case 'resilie':
-            case 'termine':
-            case 'cancelled':
-                return 'danger';
-            case 'expire':
-            case 'expired':
-                return 'secondary';
-            default:
-                return 'info';
-            }
-        } 
-        
