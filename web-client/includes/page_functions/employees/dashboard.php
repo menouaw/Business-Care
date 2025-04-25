@@ -10,11 +10,35 @@ require_once __DIR__ . '/../../../includes/init.php';
  */
 function getSalarieDashboardStats(int $salarie_id): array
 {
+   
+    try {
+       
+        $stmtRdv = executeQuery(
+            'SELECT COUNT(*) FROM rendez_vous WHERE salarie_id = :salarie_id AND date_heure > NOW()',
+            [':salarie_id' => $salarie_id]
+        );
+        $prochainsRdv = $stmtRdv ? $stmtRdv->fetchColumn() : 0;
 
-    return [
-        'prochains_rdv' => 0,
-        'notifications_non_lues' => 0,
-    ];
+       
+        $stmtNotif = executeQuery(
+            'SELECT COUNT(*) FROM notifications WHERE destinataire_id = :salarie_id AND statut = :statut',
+            [':salarie_id' => $salarie_id, ':statut' => 'non_lu']
+        );
+        $notifNonLues = $stmtNotif ? $stmtNotif->fetchColumn() : 0;
+
+        return [
+            'prochains_rdv'        => (int)$prochainsRdv,
+            'notifications_non_lues' => (int)$notifNonLues,
+        ];
+    } catch (PDOException $e) {
+        error_log("Erreur lors de la récupération des stats dashboard salarié ID {$salarie_id}: " . $e->getMessage());
+       
+        return [
+            'prochains_rdv' => 0,
+            'notifications_non_lues' => 0,
+        ];
+    }
+   
 }
 
 /**
@@ -26,7 +50,7 @@ function getSalarieDashboardStats(int $salarie_id): array
  */
 function getSalarieRecentActivities(int $salarie_id, int $limit = 5): array
 {
-    // Exemple d'implémentation à adapter selon votre schéma
+   
     $sql = "SELECT 
                n.id, 
                n.type, 
@@ -47,9 +71,9 @@ function getSalarieRecentActivities(int $salarie_id, int $limit = 5): array
         $stmt = executeQuery($sql, $params);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
-        // Log error
+       
         error_log("Error fetching employee recent activities for salarie_id $salarie_id: " . $e->getMessage());
-        // Return empty array on error
+       
         return [];
     }
 }
