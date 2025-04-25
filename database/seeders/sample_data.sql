@@ -219,20 +219,3 @@ INSERT INTO consultation_creneaux (prestation_id, praticien_id, start_time, end_
 (7, 3, NOW() + INTERVAL 2 DAY + INTERVAL '11:00' HOUR_MINUTE, NOW() + INTERVAL 2 DAY + INTERVAL '12:00' HOUR_MINUTE, FALSE, 1), 
 (7, 11, NOW() + INTERVAL 2 DAY + INTERVAL '12:15' HOUR_MINUTE, NOW() + INTERVAL 2 DAY + INTERVAL '13:15' HOUR_MINUTE, FALSE, 2), 
 (7, 3, NOW() + INTERVAL 4 DAY + INTERVAL '16:00' HOUR_MINUTE, NOW() + INTERVAL 4 DAY + INTERVAL '17:00' HOUR_MINUTE, FALSE, NULL); 
-
-INSERT INTO communaute_membres (communaute_id, personne_id, date_adhesion) VALUES
-(1, 5, NOW() - INTERVAL 5 DAY),  
-(2, 6, NOW() - INTERVAL 10 DAY),  
-(1, 7, NOW() - INTERVAL 7 DAY),   
-(2, 7, NOW() - INTERVAL 6 DAY),   
-(2, 8, NOW() - INTERVAL 8 DAY),   
-(2, 12, NOW() - INTERVAL 2 DAY),  
-(1, 13, NOW() - INTERVAL 3 DAY);  
-
-
-INSERT INTO communaute_messages (communaute_id, personne_id, message) VALUES
-(1, 5, 'Bonjour à tous ! Hâte de pratiquer le yoga avec vous.'), 
-(2, 6, 'Qui est partant pour une course ce week-end ?'),       
-(1, 7, 'Quelqu\'un aurait des conseils pour améliorer la posture du guerrier ?'), 
-(2, 7, 'Super sortie hier ! Bravo à tous les participants.'),   
-(2, 12, 'Nouveau dans le club, je cherche des parcours sympas autour de 5-10km.'); 

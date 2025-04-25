@@ -20,20 +20,20 @@ if ($isLoggedIn) {
 $available_services_for_pricing = [];
 try {
     $sql_debug = "SELECT id, type, description FROM services WHERE actif = 1 ORDER BY ordre";
-    echo "<!-- DEBUG SQL: " . $sql_debug . " -->"; // Ajout pour voir dans le code source HTML
+    echo "<!-- DEBUG SQL: " . $sql_debug . " -->"; 
     $stmt = executeQuery($sql_debug);
     $available_services_for_pricing = $stmt->fetchAll();
-    // die("DEBUG: Requête exécutée sans erreur PHP."); // Décommentez cette ligne temporairement
+    
 } catch (Exception $e) {
     error_log("Erreur lors de la récupération des services pour la page d'accueil: " . $e->getMessage());
-    // Gérer l'erreur discrètement ou afficher un message si nécessaire
+    
 }
 
 $serviceCategories = [
     [
         'title' => 'Santé & Bien-être',
         'description' => 'Séances individuelles, formations, webinars et ateliers pour le bien-être physique et psychologique de vos collaborateurs.',
-        'icon' => 'fa-heartbeat' // Changé pour une icône plus générale
+        'icon' => 'fa-heartbeat' 
     ],
     [
         'title' => 'Cohésion & Activités d\'équipe',
@@ -116,15 +116,15 @@ include_once __DIR__ . '/templates/header.php';
                         $buttonClass = 'btn btn-outline-primary';
                         $badge = '';
 
-                        // Placeholder pour le prix et les caractéristiques
-                        // TODO: Remplacer par une logique de récupération des prix/caractéristiques réels si nécessaire
+                        
+                        
                         $pricingText = "Prix sur devis";
                         $features = [
                             'Accès aux services de base',
                             'Support client',
                             'Interface intuitive'
                         ];
-                        if ($service['id'] == 1) { // Exemple de personnalisation pour Starter (ID 1)
+                        if ($service['id'] == 1) { 
                             $pricingText = "À partir de 20€ <small class=\"text-muted\">/ salarié / an</small>";
                             $features = [
                                 'Conseils hebdomadaires',
@@ -132,7 +132,7 @@ include_once __DIR__ . '/templates/header.php';
                                 'Accès webinars collectifs',
                                 '2 RDV médicaux / salarié'
                             ];
-                        } elseif ($service['id'] == 2) { // Exemple pour Basic (ID 2)
+                        } elseif ($service['id'] == 2) { 
                             $pricingText = "À partir de 35€ <small class=\"text-muted\">/ salarié / an</small>";
                             $features = [
                                 'Avantages Starter',
@@ -141,7 +141,7 @@ include_once __DIR__ . '/templates/header.php';
                                 '4 RDV médicaux / salarié',
                                 'Programme personnalisé'
                             ];
-                        } elseif ($service['id'] == 3) { // Exemple pour Premium (ID 3)
+                        } elseif ($service['id'] == 3) { 
                             $pricingText = "À partir de 50€ <small class=\"text-muted\">/ salarié / an</small>";
                             $features = [
                                 'Avantages Basic',
@@ -346,6 +346,6 @@ include_once __DIR__ . '/templates/header.php';
 </main>
 
 <?php
-// inclure le pied de page
+
 include_once __DIR__ . '/templates/footer.php';
 ?>

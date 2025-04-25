@@ -15,7 +15,7 @@ if (class_exists('Dotenv\Dotenv')) {
             $dotenv = Dotenv\Dotenv::createImmutable($dotenv_path);
             $dotenv->load();
 
-            // DEBUG: Vérifier la valeur de la clé webhook dans $_ENV ici
+            
             $debug_webhook_secret = $_ENV['STRIPE_WEBHOOK_SECRET'] ?? '#<NOT_SET_IN_ENV>#';
             error_log("DEBUG (webhook script): \$_ENV['STRIPE_WEBHOOK_SECRET'] value after load: " . $debug_webhook_secret);
         } catch (\Exception $e) {
