@@ -17,7 +17,9 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
         } else {
             flashMessage('Erreur lors de la désactivation du salarié ou salarié non trouvé.', 'danger');
         }
-        redirectTo(WEBCLIENT_URL . '/modules/companies/employees/index.php');
+        $currentPage = isset($_GET['p']) ? (int)$_GET['p'] : 1;
+        $redirectUrl = WEBCLIENT_URL . '/modules/companies/employees/index.php?page=' . $currentPage;
+        redirectTo($redirectUrl);
         exit;
     } elseif ($action === 'reactivate' && $employee_id > 0) {
         if (reactivateEmployee($employee_id, $entreprise_id)) {
@@ -25,7 +27,9 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
         } else {
             flashMessage('Erreur lors de la réactivation du salarié ou salarié non trouvé.', 'danger');
         }
-        redirectTo(WEBCLIENT_URL . '/modules/companies/employees/index.php');
+        $currentPage = isset($_GET['p']) ? (int)$_GET['p'] : 1;
+        $redirectUrl = WEBCLIENT_URL . '/modules/companies/employees/index.php?page=' . $currentPage;
+        redirectTo($redirectUrl);
         exit;
     }
 }
@@ -36,7 +40,13 @@ if ($entreprise_id <= 0) {
     exit;
 }
 
-$employees = getCompanyEmployees($entreprise_id);
+$items_per_page = DEFAULT_ITEMS_PER_PAGE;
+$current_page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+
+$employeeData = getCompanyEmployees($entreprise_id, $current_page, $items_per_page);
+$employees = $employeeData['employees'];
+$total_employees = $employeeData['total_count'];
+$total_pages = ceil($total_employees / $items_per_page);
 
 $pageTitle = "Gestion des Salariés";
 
@@ -81,7 +91,7 @@ include __DIR__ . '/../../../templates/header.php';
                     <tbody>
                         <?php if (empty($employees)): ?>
                             <tr>
-                                <td colspan="8" class="text-center">Aucun salarié trouvé pour cette entreprise.</td>
+                                <td colspan="8" class="text-center">Aucun salarié trouvé.</td>
                             </tr>
                         <?php else: ?>
                             <?php foreach ($employees as $employee): ?>
@@ -124,6 +134,49 @@ include __DIR__ . '/../../../templates/header.php';
                     </tbody>
                 </table>
             </div>
+
+            <?php if ($total_pages > 1): ?>
+                <nav aria-label="Page navigation employés">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item <?= ($current_page <= 1) ? 'disabled' : '' ?>">
+                            <a class="page-link" href="?page=<?= $current_page - 1 ?>" aria-label="Précédent">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+
+                        <?php
+                        $start_page = max(1, $current_page - 2);
+                        $end_page = min($total_pages, $current_page + 2);
+
+                        if ($start_page > 1) {
+                            echo '<li class="page-item"><a class="page-link" href="?page=1">1</a></li>';
+                            if ($start_page > 2) {
+                                echo '<li class="page-item disabled"><span class="page-link">...</span></li>';
+                            }
+                        }
+
+                        for ($i = $start_page; $i <= $end_page; $i++): ?>
+                            <li class="page-item <?= ($i == $current_page) ? 'active' : '' ?>">
+                                <a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a>
+                            </li>
+                        <?php endfor;
+
+                        if ($end_page < $total_pages) {
+                            if ($end_page < $total_pages - 1) {
+                                echo '<li class="page-item disabled"><span class="page-link">...</span></li>';
+                            }
+                            echo '<li class="page-item"><a class="page-link" href="?page=' . $total_pages . '">' . $total_pages . '</a></li>';
+                        }
+                        ?>
+
+                        <li class="page-item <?= ($current_page >= $total_pages) ? 'disabled' : '' ?>">
+                            <a class="page-link" href="?page=<?= $current_page + 1 ?>" aria-label="Suivant">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            <?php endif; ?>
 
         </main>
     </div>

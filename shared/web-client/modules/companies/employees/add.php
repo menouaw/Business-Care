@@ -17,7 +17,7 @@ if ($entreprise_id <= 0) {
 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    verifyCsrfToken(); 
+    verifyCsrfToken();
 
     $nom = filter_input(INPUT_POST, 'nom', FILTER_SANITIZE_SPECIAL_CHARS);
     $prenom = filter_input(INPUT_POST, 'prenom', FILTER_SANITIZE_SPECIAL_CHARS);
@@ -36,15 +36,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $newEmployeeId = addEmployee($entreprise_id, $employeeData);
 
     if ($newEmployeeId) {
-        
-        
-        redirectTo(WEBCLIENT_URL . '/modules/companies/index.php'); 
+
+
+        redirectTo(WEBCLIENT_URL . '/modules/companies/index.php');
         exit;
     } else {
-        
-        
-        
-        
     }
 }
 
@@ -57,13 +53,13 @@ include __DIR__ . '/../../templates/header.php';
 
 <div class="container-fluid">
     <div class="row">
-        <?php include __DIR__ . '/../../templates/sidebar.php'; ?>
+        <?php include __DIR__ . '/../templates/sidebar.php'; ?>
 
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 pt-3">
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
                 <h1 class="h2"><?= htmlspecialchars($pageTitle) ?></h1>
                 <div class="btn-toolbar mb-2 mb-md-0">
-                    <a href="<?= WEBCLIENT_URL ?>/modules/companies/index.php" class="btn btn-sm btn-outline-secondary">
+                    <a href="<?= WEBCLIENT_URL ?>/modules/companies/employees/index.php" class="btn btn-sm btn-outline-secondary">
                         <i class="fas fa-arrow-left me-1"></i> Retour à la liste
                     </a>
                 </div>
@@ -71,8 +67,7 @@ include __DIR__ . '/../../templates/header.php';
 
             <?php echo displayFlashMessages(); ?>
 
-            <form method="POST" action="<?= WEBCLIENT_URL ?>/modules/companies/add.php">
-                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken()) ?>">
+            <form method="POST" action="<?= WEBCLIENT_URL ?>/modules/companies/employees/add.php"> <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken()) ?>">
 
                 <div class="row g-3">
                     <div class="col-md-6">
@@ -95,11 +90,11 @@ include __DIR__ . '/../../templates/header.php';
                         <label for="site_id" class="form-label">Site d'affectation</label>
                         <select class="form-select" id="site_id" name="site_id">
                             <option value="">
-                            <?php foreach ($company_sites as $site): ?>
-                                <option value="<?= $site['id'] ?>" <?= (isset($_POST['site_id']) && $_POST['site_id'] == $site['id']) ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($site['nom']) ?>
-                                </option>
-                            <?php endforeach; ?>
+                                <?php foreach ($company_sites as $site): ?>
+                            <option value="<?= $site['id'] ?>" <?= (isset($_POST['site_id']) && $_POST['site_id'] == $site['id']) ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($site['nom']) ?>
+                            </option>
+                        <?php endforeach; ?>
                         </select>
                     </div>
                 </div>
@@ -107,7 +102,7 @@ include __DIR__ . '/../../templates/header.php';
                 <hr class="my-4">
 
                 <button class="btn btn-primary" type="submit">Ajouter le Salarié</button>
-                <a href="<?= WEBCLIENT_URL ?>/modules/companies/index.php" class="btn btn-secondary">Annuler</a>
+                <a href="<?= WEBCLIENT_URL ?>/modules/companies/employees/index.php" class="btn btn-secondary">Annuler</a>
             </form>
 
         </main>

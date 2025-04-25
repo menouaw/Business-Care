@@ -1,18 +1,32 @@
 <?php
 
 require_once __DIR__ . '/../../../../shared/web-client/db.php';
+require_once __DIR__ . '/../../../includes/init.php'; // Pour DEFAULT_ITEMS_PER_PAGE
 
 /**
- * Récupère la liste des contrats pour une entreprise donnée.
+ * Récupère une page de la liste des contrats pour une entreprise donnée,
+ * ainsi que le nombre total de contrats.
  *
  * @param int $entreprise_id L'ID de l'entreprise.
- * @return array La liste des contrats (ou un tableau vide si aucun).
+ * @param int $page Le numéro de la page actuelle (commence à 1).
+ * @param int $items_per_page Le nombre de contrats par page.
+ * @return array Un tableau contenant ['contracts' => [liste des contrats], 'total_count' => total des contrats].
  */
-function getCompanyContracts(int $entreprise_id): array
+function getCompanyContracts(int $entreprise_id, int $page = 1, int $items_per_page = DEFAULT_ITEMS_PER_PAGE): array
 {
     if ($entreprise_id <= 0) {
-        return [];
+        return ['contracts' => [], 'total_count' => 0];
     }
+
+    // 1. Compter le total
+    $countSql = "SELECT COUNT(*) FROM contrats c WHERE c.entreprise_id = :entreprise_id";
+    $countStmt = executeQuery($countSql, [':entreprise_id' => $entreprise_id]);
+    $total_count = (int)$countStmt->fetchColumn();
+
+    // 2. Récupérer la page actuelle
+    $offset = ($page - 1) * $items_per_page;
+    $items_per_page = max(1, $items_per_page);
+    $offset = max(0, $offset);
 
     $sql = "SELECT 
                 c.id, 
@@ -28,13 +42,21 @@ function getCompanyContracts(int $entreprise_id): array
             WHERE 
                 c.entreprise_id = :entreprise_id 
             ORDER BY 
-                c.date_debut DESC";
+                c.date_debut DESC
+            LIMIT :limit OFFSET :offset";
 
     $stmt = executeQuery($sql, [
-        ':entreprise_id' => $entreprise_id
+        ':entreprise_id' => $entreprise_id,
+        ':limit' => $items_per_page,
+        ':offset' => $offset
     ]);
 
-    return $stmt->fetchAll();
+    $contracts = $stmt->fetchAll();
+
+    return [
+        'contracts' => $contracts,
+        'total_count' => $total_count
+    ];
 }
 
 /**

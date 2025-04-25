@@ -20,6 +20,9 @@ $contract_id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 $pageTitle = "Gestion des Contrats";
 $contract = null;
 $contracts = [];
+$total_contracts = 0;
+$total_pages = 1;
+$current_page = 1;
 
 if ($action === 'view' && $contract_id) {
     $contract = getContractDetails($contract_id, $entreprise_id);
@@ -32,7 +35,17 @@ if ($action === 'view' && $contract_id) {
 } else {
     $action = 'list';
     $pageTitle = "Mes Contrats";
-    $contracts = getCompanyContracts($entreprise_id);
+
+    // --- Logique de Pagination ---
+    $items_per_page = DEFAULT_ITEMS_PER_PAGE;
+    $current_page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+
+    // Appel de la fonction modifiée
+    $contractsData = getCompanyContracts($entreprise_id, $current_page, $items_per_page);
+    $contracts = $contractsData['contracts'];
+    $total_contracts = $contractsData['total_count'];
+    $total_pages = ceil($total_contracts / $items_per_page);
+    // --- Fin Logique de Pagination ---
 }
 
 include __DIR__ . '/../../templates/header.php';
@@ -55,6 +68,9 @@ include __DIR__ . '/../../templates/header.php';
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
                     <h1 class="h2"><?= htmlspecialchars($pageTitle) ?></h1>
                     <div class="btn-toolbar mb-2 mb-md-0">
+                        <a href="<?= WEBCLIENT_URL ?>/modules/companies/contracts.php" class="btn btn-sm btn-outline-secondary me-2">
+                            <i class="fas fa-list me-1"></i> Retour à la liste
+                        </a>
                         <a href="<?= WEBCLIENT_URL ?>/modules/companies/dashboard.php" class="btn btn-sm btn-outline-secondary">
                             <i class="fas fa-arrow-left me-1"></i> Retour au Tableau de Bord
                         </a>
@@ -104,7 +120,7 @@ include __DIR__ . '/../../templates/header.php';
                 </div>
                 <!
 
-                    <?php else: ($action === 'list')
+                    <?php else: // $action === 'list' 
                     ?>
                     <?php
                     ?>
@@ -132,7 +148,7 @@ include __DIR__ . '/../../templates/header.php';
             <tbody>
                 <?php if (empty($contracts)): ?>
                     <tr>
-                        <td colspan="7">Aucun contrat trouvé.</td>
+                        <td colspan="7" class="text-center">Aucun contrat trouvé.</td>
                     </tr>
                 <?php else: ?>
                     <?php foreach ($contracts as $contract_item): ?>
@@ -159,10 +175,58 @@ include __DIR__ . '/../../templates/header.php';
             </tbody>
         </table>
     </div>
+
+    <!-- Contrôles de Pagination -->
+    <?php if ($total_pages > 1): ?>
+        <nav aria-label="Page navigation contrats">
+            <ul class="pagination justify-content-center">
+                <!-- Bouton Précédent -->
+                <li class="page-item <?= ($current_page <= 1) ? 'disabled' : '' ?>">
+                    <a class="page-link" href="?page=<?= $current_page - 1 ?>" aria-label="Précédent">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+
+                <!-- Liens Numéros de Page -->
+                <?php
+                        $start_page = max(1, $current_page - 2);
+                        $end_page = min($total_pages, $current_page + 2);
+
+                        if ($start_page > 1) {
+                            echo '<li class="page-item"><a class="page-link" href="?page=1">1</a></li>';
+                            if ($start_page > 2) {
+                                echo '<li class="page-item disabled"><span class="page-link">...</span></li>';
+                            }
+                        }
+
+                        for ($i = $start_page; $i <= $end_page; $i++): ?>
+                    <li class="page-item <?= ($i == $current_page) ? 'active' : '' ?>">
+                        <a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a>
+                    </li>
+                <?php endfor;
+
+                        if ($end_page < $total_pages) {
+                            if ($end_page < $total_pages - 1) {
+                                echo '<li class="page-item disabled"><span class="page-link">...</span></li>';
+                            }
+                            echo '<li class="page-item"><a class="page-link" href="?page=' . $total_pages . '">' . $total_pages . '</a></li>';
+                        }
+                ?>
+
+                <!-- Bouton Suivant -->
+                <li class="page-item <?= ($current_page >= $total_pages) ? 'disabled' : '' ?>">
+                    <a class="page-link" href="?page=<?= $current_page + 1 ?>" aria-label="Suivant">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    <?php endif; ?>
+    <!-- Fin Contrôles de Pagination -->
+
 <?php endif; ?>
 
 </main>
-</div>
 </div>
 </div>
 

@@ -66,7 +66,7 @@ define('MIN_PASSWORD_LENGTH', 8);
 define('DEFAULT_DATE_FORMAT', 'd/m/Y H:i');
 define('DEFAULT_CURRENCY', '€');
 define('DEFAULT_CURRENCY_CODE', 'eur');
-define('DEFAULT_ITEMS_PER_PAGE', 10);
+define('DEFAULT_ITEMS_PER_PAGE', 5);
 
 
 define('SESSION_LIFETIME', 1800);

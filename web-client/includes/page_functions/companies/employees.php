@@ -1,19 +1,41 @@
 <?php
 
 require_once __DIR__ . '/../../../../shared/web-client/db.php';
+require_once __DIR__ . '/../../../includes/init.php';
 
 /**
- * Récupère la liste des salariés actifs pour une entreprise donnée.
+ * Récupère une page de la liste des salariés actifs pour une entreprise donnée,
+ * ainsi que le nombre total de salariés.
  *
  * @param int $entreprise_id L'ID de l'entreprise.
- * @return array La liste des salariés (ou un tableau vide si aucun).
+ * @param int $page Le numéro de la page actuelle (commence à 1).
+ * @param int $items_per_page Le nombre de salariés par page.
+ * @return array Un tableau contenant ['employees' => [liste des salariés pour la page], 'total_count' => total des salariés].
  */
-function getCompanyEmployees(int $entreprise_id): array
+function getCompanyEmployees(int $entreprise_id, int $page = 1, int $items_per_page = DEFAULT_ITEMS_PER_PAGE): array
 {
     if ($entreprise_id <= 0) {
-        return [];
+        return ['employees' => [], 'total_count' => 0];
     }
 
+    // 1. Compter le nombre total de salariés (sans pagination)
+    $countSql = "SELECT COUNT(*) 
+                 FROM personnes p
+                 WHERE p.entreprise_id = :entreprise_id 
+                 AND p.role_id = :role_salarie";
+    // Ajoutez ici d'autres conditions si nécessaire (ex: statut = 'actif')
+
+    $countStmt = executeQuery($countSql, [
+        ':entreprise_id' => $entreprise_id,
+        ':role_salarie' => ROLE_SALARIE
+        // Ajoutez les paramètres correspondants aux conditions ajoutées
+    ]);
+    $total_count = (int)$countStmt->fetchColumn();
+
+    // 2. Récupérer les salariés pour la page actuelle
+    $offset = ($page - 1) * $items_per_page;
+    $items_per_page = max(1, $items_per_page); // Assurer au moins 1 item par page
+    $offset = max(0, $offset); // Assurer un offset non négatif
 
     $sql = "SELECT 
                 p.id, 
@@ -32,18 +54,25 @@ function getCompanyEmployees(int $entreprise_id): array
                 p.entreprise_id = :entreprise_id 
             AND 
                 p.role_id = :role_salarie
-            
-            
+            -- Ajoutez ici les mêmes conditions que pour le COUNT si nécessaire
             ORDER BY 
-                p.nom ASC, p.prenom ASC";
-
+                p.nom ASC, p.prenom ASC
+            LIMIT :limit OFFSET :offset"; // Ajout de LIMIT et OFFSET
 
     $stmt = executeQuery($sql, [
         ':entreprise_id' => $entreprise_id,
-        ':role_salarie' => ROLE_SALARIE
+        ':role_salarie' => ROLE_SALARIE,
+        ':limit' => $items_per_page,
+        ':offset' => $offset
+        // Ajoutez les paramètres correspondants aux conditions ajoutées
     ]);
 
-    return $stmt->fetchAll();
+    $employees = $stmt->fetchAll();
+
+    return [
+        'employees' => $employees,
+        'total_count' => $total_count
+    ];
 }
 
 /**
@@ -203,28 +232,28 @@ function updateEmployeeDetails(int $employee_id, int $company_id, array $data): 
  */
 function addEmployee($entreprise_id, $employeeData)
 {
-    
+
     if (empty($entreprise_id) || empty($employeeData['nom']) || empty($employeeData['prenom']) || empty($employeeData['email'])) {
         flashMessage("Les champs Nom, Prénom et Email sont obligatoires.", "danger");
         return false;
     }
 
-    
+
     if (!filter_var($employeeData['email'], FILTER_VALIDATE_EMAIL)) {
         flashMessage("Le format de l'adresse email est invalide.", "danger");
         return false;
     }
 
-    
+
     $existingUser = fetchOne('personnes', 'email = :email', [':email' => $employeeData['email']]);
     if ($existingUser) {
         flashMessage("L'adresse email " . htmlspecialchars($employeeData['email']) . " existe déjà.", "warning");
         return false;
     }
 
-    
-    
-    $temporaryPassword = bin2hex(random_bytes(8)); 
+
+
+    $temporaryPassword = bin2hex(random_bytes(8));
     $hashedPassword = password_hash($temporaryPassword, PASSWORD_DEFAULT);
 
     $dataToInsert = [
@@ -233,18 +262,18 @@ function addEmployee($entreprise_id, $employeeData)
         'email' => trim($employeeData['email']),
         'mot_de_passe' => $hashedPassword,
         'telephone' => !empty($employeeData['telephone']) ? trim($employeeData['telephone']) : null,
-        'role_id' => ROLE_SALARIE, 
+        'role_id' => ROLE_SALARIE,
         'entreprise_id' => $entreprise_id,
         'site_id' => !empty($employeeData['site_id']) ? (int)$employeeData['site_id'] : null,
-        'statut' => 'actif' 
+        'statut' => 'actif'
     ];
 
     $newEmployeeId = insertRow('personnes', $dataToInsert);
 
     if ($newEmployeeId) {
         logSecurityEvent($_SESSION['user_id'] ?? null, 'employee_add', '[SUCCESS] Ajout salarié ID: ' . $newEmployeeId . ' pour entreprise ID: ' . $entreprise_id);
-        
-        
+
+
         flashMessage("Salarié ajouté avec succès. Mot de passe temporaire (pour test uniquement) : " . $temporaryPassword, "success");
         return (int)$newEmployeeId;
     } else {
@@ -253,3 +282,24 @@ function addEmployee($entreprise_id, $employeeData)
         return false;
     }
 }
+function getStatusBadgeClass(string $status): string
+    {
+        switch (strtolower($status)) {
+            case 'actif':
+            case 'active': // Handle variations
+                return 'success';
+            case 'en_attente':
+            case 'pending':
+                return 'warning';
+            case 'resilie':
+            case 'termine':
+            case 'cancelled':
+                return 'danger';
+            case 'expire':
+            case 'expired':
+                return 'secondary';
+            default:
+                return 'info';
+            }
+        } 
+        
