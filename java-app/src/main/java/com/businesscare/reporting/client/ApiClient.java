@@ -1,7 +1,7 @@
 package com.businesscare.reporting.client;
 
 import com.businesscare.reporting.exception.ApiException;
-import com.businesscare.reporting.model.*;
+import com.businesscare.reporting.model.*; 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
@@ -228,6 +228,79 @@ public class ApiClient {
     }
 
     /**
+     * Récupère la liste des événements depuis l'API.
+     *
+     * @return Une liste d'objets Event.
+     * @throws IOException  Si la communication échoue.
+     * @throws ApiException Si non authentifié ou si l'API retourne une erreur.
+     */
+    public List<Event> getEvents() throws IOException, ApiException {
+        if (this.authToken == null) {
+            throw new ApiException("Non authentifié. Appeler login() d'abord.");
+        }
+
+        HttpGet get = new HttpGet(baseUrl + "events");
+        get.setHeader("Authorization", "Bearer " + this.authToken);
+
+        return httpClient.execute(get, response -> {
+            int statusCode = response.getCode();
+            String responseBody = EntityUtils.toString(response.getEntity());
+
+            if (statusCode >= 200 && statusCode < 300) {
+                 ApiResponse<List<Event>> apiResponse = objectMapper.readValue(responseBody,
+                         objectMapper.getTypeFactory().constructParametricType(ApiResponse.class, objectMapper.getTypeFactory().constructCollectionType(List.class, Event.class)));
+
+                 if (apiResponse != null && !apiResponse.isError()) {
+                    return apiResponse.getData();
+                 } else {
+                     throw new ApiException("Échec de la récupération des événements: " + (apiResponse != null ? apiResponse.getMessage() : "Format de réponse invalide"));
+                 }
+            } else {
+                 ErrorResponse errorResponse = parseErrorResponse(responseBody);
+                 String errorMessage = (errorResponse != null && errorResponse.getMessage() != null) ? errorResponse.getMessage() : "HTTP Error: " + statusCode;
+                throw new ApiException("Échec de la récupération des événements: " + errorMessage);
+            }
+        });
+    }
+
+    /**
+     * Récupère la liste des prestations (services) depuis l'API.
+     *
+     * @return Une liste d'objets Prestation.
+     * @throws IOException  Si la communication échoue.
+     * @throws ApiException Si non authentifié ou si l'API retourne une erreur.
+     */
+    public List<Prestation> getPrestations() throws IOException, ApiException {
+        if (this.authToken == null) {
+            throw new ApiException("Non authentifié. Appeler login() d'abord.");
+        }
+
+        HttpGet get = new HttpGet(baseUrl + "services"); 
+        get.setHeader("Authorization", "Bearer " + this.authToken);
+
+        return httpClient.execute(get, response -> {
+            int statusCode = response.getCode();
+            String responseBody = EntityUtils.toString(response.getEntity());
+
+            if (statusCode >= 200 && statusCode < 300) {
+                 
+                 ApiResponse<List<Prestation>> apiResponse = objectMapper.readValue(responseBody,
+                         objectMapper.getTypeFactory().constructParametricType(ApiResponse.class, objectMapper.getTypeFactory().constructCollectionType(List.class, Prestation.class)));
+
+                 if (apiResponse != null && !apiResponse.isError()) {
+                    return apiResponse.getData();
+                 } else {
+                     throw new ApiException("Échec de la récupération des prestations: " + (apiResponse != null ? apiResponse.getMessage() : "Format de réponse invalide"));
+                 }
+            } else {
+                 ErrorResponse errorResponse = parseErrorResponse(responseBody);
+                 String errorMessage = (errorResponse != null && errorResponse.getMessage() != null) ? errorResponse.getMessage() : "HTTP Error: " + statusCode;
+                throw new ApiException("Échec de la récupération des prestations: " + errorMessage);
+            }
+        });
+    }
+
+    /**
      * Méthode utilitaire pour analyser les réponses d'erreur.
      * @param responseBody Le corps de la réponse JSON.
      * @return Objet ErrorResponse ou null si l'analyse échoue.
@@ -282,4 +355,4 @@ public class ApiClient {
          public String siret;
          
          
-    }
+}

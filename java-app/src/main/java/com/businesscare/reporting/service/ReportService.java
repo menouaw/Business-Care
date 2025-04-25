@@ -98,4 +98,120 @@ public class ReportService {
 
         return stats;
     }
+
+    /**
+     * Traite la liste des événements pour générer des statistiques agrégées.
+     *
+     * @param events La liste des événements.
+     * @return Un objet EventStats contenant les statistiques agrégées.
+     */
+    public EventStats processEventData(List<Event> events) {
+        logger.info("Traitement des données d'événements: {} événements", events.size());
+
+        EventStats stats = new EventStats();
+        stats.setTotalEvents(events.size());
+
+        if (events.isEmpty()) {
+            logger.warn("Aucun événement à traiter.");
+            stats.setEventCountByType(Collections.emptyMap());
+            stats.setEventFrequency(Collections.emptyMap());
+            stats.setTop5EventsByPopularity(Collections.emptyList());
+            return stats;
+        }
+
+        
+        Map<com.businesscare.reporting.model.enums.EventType, Long> countByType = events.stream()
+                .filter(e -> e.getType() != null)
+                .collect(Collectors.groupingBy(Event::getType, Collectors.counting()));
+        stats.setEventCountByType(countByType);
+
+        
+        
+        
+        Map<Event, Long> inscriptionsCountByEvent = events.stream()
+                .collect(Collectors.toMap(
+                        Function.identity(),
+                        event -> (long) (event.getInscriptions() != null ? event.getInscriptions().size() : 0)
+                ));
+
+        
+         Map<String, Long> frequencyByTitle = inscriptionsCountByEvent.entrySet().stream()
+             .filter(entry -> entry.getKey().getTitre() != null && !entry.getKey().getTitre().isBlank())
+             .collect(Collectors.groupingBy(entry -> entry.getKey().getTitre(),
+                                              Collectors.summingLong(Map.Entry::getValue)));
+        stats.setEventFrequency(frequencyByTitle);
+
+
+        
+        List<EventStats.EventPopularity> eventPopularities = inscriptionsCountByEvent.entrySet().stream()
+                .map(entry -> new EventStats.EventPopularity(entry.getKey(), entry.getValue()))
+                .sorted() 
+                .limit(5)
+                .collect(Collectors.toList());
+        stats.setTop5EventsByPopularity(eventPopularities);
+
+        logger.info("Traitement des données d'événements terminé.");
+        logger.debug("EventStats générées: Total Events={}, Events by Type={}, Top Event Popularity={}",
+                     stats.getTotalEvents(),
+                     stats.getEventCountByType().size(),
+                     eventPopularities.isEmpty() ? "N/A" : eventPopularities.get(0).getPopularityMetric());
+
+        return stats;
+    }
+
+    /**
+     * Traite la liste des prestations pour générer des statistiques agrégées.
+     *
+     * @param prestations La liste des prestations.
+     * @return Un objet PrestationStats contenant les statistiques agrégées.
+     */
+    public PrestationStats processPrestationData(List<Prestation> prestations) {
+        logger.info("Traitement des données de prestations: {} prestations", prestations.size());
+
+        PrestationStats stats = new PrestationStats();
+        stats.setTotalPrestations(prestations.size());
+
+        if (prestations.isEmpty()) {
+            logger.warn("Aucune prestation à traiter.");
+            stats.setPrestationCountByType(Collections.emptyMap());
+            stats.setPrestationCountByCategory(Collections.emptyMap());
+            stats.setPrestationCountByName(Collections.emptyMap());
+            stats.setTop5PrestationsByFrequency(Collections.emptyList());
+            return stats;
+        }
+
+        
+        Map<com.businesscare.reporting.model.enums.PrestationType, Long> countByType = prestations.stream()
+                .filter(p -> p.getType() != null)
+                .collect(Collectors.groupingBy(Prestation::getType, Collectors.counting()));
+        stats.setPrestationCountByType(countByType);
+
+        
+        Map<String, Long> countByCategory = prestations.stream()
+                .filter(p -> p.getCategorie() != null && !p.getCategorie().isBlank())
+                .collect(Collectors.groupingBy(Prestation::getCategorie, Collectors.counting()));
+        stats.setPrestationCountByCategory(countByCategory);
+
+        
+        Map<String, Long> countByName = prestations.stream()
+                .filter(p -> p.getNom() != null && !p.getNom().isBlank())
+                .collect(Collectors.groupingBy(Prestation::getNom, Collectors.counting()));
+        stats.setPrestationCountByName(countByName);
+
+        
+        List<PrestationStats.PrestationFrequency> top5ByFrequency = countByName.entrySet().stream()
+                .map(entry -> new PrestationStats.PrestationFrequency(entry.getKey(), entry.getValue()))
+                .sorted() 
+                .limit(5)
+                .collect(Collectors.toList());
+        stats.setTop5PrestationsByFrequency(top5ByFrequency);
+
+        logger.info("Traitement des données de prestations terminé.");
+        logger.debug("PrestationStats générées: Total={}, Count by Type={}, Top Freq Name={}",
+                     stats.getTotalPrestations(),
+                     stats.getPrestationCountByType().size(),
+                     top5ByFrequency.isEmpty() ? "N/A" : top5ByFrequency.get(0).getPrestationName());
+
+        return stats;
+    }
 }

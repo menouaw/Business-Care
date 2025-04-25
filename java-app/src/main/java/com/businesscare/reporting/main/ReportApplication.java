@@ -60,10 +60,10 @@ public class ReportApplication {
             List<Company> companies = apiClient.getCompanies();
             List<Contract> contracts = apiClient.getContracts();
             List<Invoice> invoices = apiClient.getInvoices();
-            
-            
-            logger.info("Données récupérées: {} entreprises, {} contrats, {} factures.",
-                    companies.size(), contracts.size(), invoices.size());
+            List<Event> events = apiClient.getEvents();
+            List<Prestation> prestations = apiClient.getPrestations();
+            logger.info("Données récupérées: {} entreprises, {} contrats, {} factures, {} événements, {} prestations.",
+                    companies.size(), contracts.size(), invoices.size(), events.size(), prestations.size());
 
             
             
@@ -72,6 +72,16 @@ public class ReportApplication {
             logger.info("Traitement des données financières client...");
             ClientStats clientStats = reportService.processClientFinancialData(companies, contracts, invoices);
             logger.info("Traitement des données financières terminé.");
+
+            
+            logger.info("Traitement des données d'événements...");
+            EventStats eventStats = reportService.processEventData(events);
+            logger.info("Traitement des données d'événements terminé.");
+
+            
+            logger.info("Traitement des données de prestations...");
+            PrestationStats prestationStats = reportService.processPrestationData(prestations);
+            logger.info("Traitement des données de prestations terminé.");
 
             
             logger.info("Génération des graphiques financiers (Page 1)..." );
@@ -84,10 +94,22 @@ public class ReportApplication {
             logger.info("{} graphiques financiers générés.", clientCharts.size());
 
             
-            logger.warn("Génération des graphiques pour les événements (Page 2) non implémentée.");
+            logger.info("Génération des graphiques d'événements (Page 2)..." );
+            List<JFreeChart> eventCharts = new ArrayList<>();
+            eventCharts.add(ChartGenerator.createEventTypeDistributionChart(eventStats));
+            eventCharts.add(ChartGenerator.createTop5EventsByPopularityChart(eventStats));
+            eventCharts.add(ChartGenerator.createEventFrequencyChart(eventStats));
+            eventCharts.add(ChartGenerator.createPlaceholderEventChart4(eventStats));
+            logger.info("{} graphiques d'événements générés.", eventCharts.size());
 
             
-            logger.warn("Génération des graphiques pour les services (Page 3) non implémentée.");
+            logger.info("Génération des graphiques de prestations (Page 3)..." );
+            List<JFreeChart> prestationCharts = new ArrayList<>();
+            prestationCharts.add(ChartGenerator.createPrestationTypeDistributionChart(prestationStats));
+            prestationCharts.add(ChartGenerator.createPrestationCategoryDistributionChart(prestationStats));
+            prestationCharts.add(ChartGenerator.createTop5PrestationsByFrequencyChart(prestationStats));
+            prestationCharts.add(ChartGenerator.createPlaceholderPrestationChart4(prestationStats));
+            logger.info("{} graphiques de prestations générés.", prestationCharts.size());
 
             
             logger.info("Génération du rapport PDF : {}", outputPath);
@@ -112,12 +134,10 @@ public class ReportApplication {
                 pdfGenerator.generateClientFinancialPage(pdfDoc, clientStats, clientCharts);
 
                 
-                
-                logger.warn("Génération de la page PDF pour les événements (Page 2) non implémentée.");
+                pdfGenerator.generateEventStatsPage(pdfDoc, eventStats, eventCharts);
 
                 
-                
-                logger.warn("Génération de la page PDF pour les services (Page 3) non implémentée.");
+                pdfGenerator.generatePrestationStatsPage(pdfDoc, prestationStats, prestationCharts);
 
                 
                 logger.info("Rapport PDF généré avec succès.");
@@ -134,7 +154,7 @@ public class ReportApplication {
             logger.error("Erreur inattendue dans l'application: {} ({})", e.getMessage(), e.getClass().getSimpleName(), e);
             
         } finally {
-             logger.info("Application de reporting terminée.");
+        logger.info("Application de reporting terminée.");
              
             if (apiClient instanceof AutoCloseable) { 
                 try {

@@ -190,4 +190,247 @@ public class ChartGenerator {
 
     
 
+    /**
+     * Crée un graphique camembert pour la distribution des types d'événements.
+     */
+    public static JFreeChart createEventTypeDistributionChart(EventStats stats) {
+        logger.debug("Création du diagramme de distribution des types d'événements");
+        DefaultPieDataset<String> dataset = new DefaultPieDataset<>();
+        if (stats.getEventCountByType() != null) {
+            stats.getEventCountByType().forEach((type, count) -> {
+                if (type != null && count != null && count > 0) {
+                    dataset.setValue(type.name(), count);
+                }
+            });
+        } else {
+            logger.warn("Données de comptage des types d'événements manquantes.");
+            dataset.setValue("Données manquantes", 1);
+        }
+
+        JFreeChart pieChart = ChartFactory.createPieChart(
+                "Répartition par Type d'Événement",
+                dataset,
+                true, true, false);
+
+        PiePlot<String> plot = (PiePlot<String>) pieChart.getPlot();
+        plot.setBackgroundPaint(Color.WHITE);
+        plot.setLabelFont(new Font("SansSerif", Font.PLAIN, 10));
+        plot.setNoDataMessage("Aucun type d'événement disponible");
+
+        return pieChart;
+    }
+
+    /**
+     * Crée un diagramme à barres montrant la popularité (inscriptions) du Top 5 des événements.
+     */
+    public static JFreeChart createTop5EventsByPopularityChart(EventStats stats) {
+        logger.debug("Création du diagramme des 5 événements les plus populaires");
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        if (stats.getTop5EventsByPopularity() != null) {
+            stats.getTop5EventsByPopularity().forEach(ep -> {
+                if (ep.getEvent() != null && ep.getEvent().getTitre() != null && !ep.getEvent().getTitre().isBlank()) {
+                    dataset.addValue(ep.getPopularityMetric(), "Inscriptions", ep.getEvent().getTitre());
+                }
+            });
+        } else {
+            logger.warn("Données du Top 5 des événements manquantes.");
+        }
+
+        JFreeChart barChart = ChartFactory.createBarChart(
+                "Top 5 Événements par Popularité (Inscriptions)",
+                "Événement",
+                "Nombre d'Inscriptions",
+                dataset,
+                PlotOrientation.VERTICAL,
+                false, true, false);
+
+        CategoryPlot plot = barChart.getCategoryPlot();
+        plot.setBackgroundPaint(Color.WHITE);
+        plot.setRangeGridlinePaint(Color.LIGHT_GRAY);
+         ((BarRenderer) plot.getRenderer()).setBarPainter(new org.jfree.chart.renderer.category.StandardBarPainter());
+         plot.getRenderer().setSeriesPaint(0, Color.MAGENTA);
+
+        return barChart;
+    }
+
+     /**
+     * Crée un diagramme (ex: barres) basé sur la fréquence calculée des événements par titre.
+     * Note: Ceci peut nécessiter une adaptation si la fréquence est calculée différemment.
+     */
+     public static JFreeChart createEventFrequencyChart(EventStats stats) {
+        logger.debug("Création du diagramme de fréquence des événements par titre");
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        if (stats.getEventFrequency() != null) {
+             
+             stats.getEventFrequency().entrySet().stream()
+                  .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+                  .limit(10) 
+                  .forEach(entry -> {
+                      if (entry.getKey() != null && !entry.getKey().isBlank() && entry.getValue() > 0) {
+                        dataset.addValue(entry.getValue(), "Fréquence", entry.getKey());
+                      }
+                  });
+        } else {
+            logger.warn("Données de fréquence des événements manquantes.");
+        }
+
+        JFreeChart barChart = ChartFactory.createBarChart(
+                "Fréquence des Événements (Top 10 par Inscriptions Totales)",
+                "Titre de l'Événement",
+                "Fréquence (Inscriptions)",
+                dataset,
+                PlotOrientation.HORIZONTAL, 
+                false, true, false);
+
+        CategoryPlot plot = barChart.getCategoryPlot();
+        plot.setBackgroundPaint(Color.WHITE);
+        plot.setRangeGridlinePaint(Color.LIGHT_GRAY);
+         ((BarRenderer) plot.getRenderer()).setBarPainter(new org.jfree.chart.renderer.category.StandardBarPainter());
+         plot.getRenderer().setSeriesPaint(0, Color.ORANGE);
+
+        return barChart;
+    }
+
+     /**
+     * Placeholder pour le quatrième graphique d'événement.
+     * Pourrait montrer les inscriptions au fil du temps, la capacité vs inscriptions, etc.
+     */
+     public static JFreeChart createPlaceholderEventChart4(EventStats stats) {
+         logger.debug("Création du graphique événement placeholder 4");
+         DefaultPieDataset<String> dataset = new DefaultPieDataset<>();
+         dataset.setValue("Graphique 4 (Événements) - À Implémenter", 100);
+
+        JFreeChart pieChart = ChartFactory.createPieChart(
+                "Événements - Graphique 4",
+                dataset,
+                false, true, false);
+
+         pieChart.getPlot().setBackgroundPaint(Color.LIGHT_GRAY);
+         ((PiePlot)pieChart.getPlot()).setNoDataMessage("Implémentation future");
+
+        return pieChart;
+    }
+
+    
+
+    /**
+     * Crée un graphique camembert pour la distribution des types de prestations.
+     */
+    public static JFreeChart createPrestationTypeDistributionChart(PrestationStats stats) {
+        logger.debug("Création du diagramme de distribution des types de prestations");
+        DefaultPieDataset<String> dataset = new DefaultPieDataset<>();
+        if (stats.getPrestationCountByType() != null) {
+            stats.getPrestationCountByType().forEach((type, count) -> {
+                if (type != null && count != null && count > 0) {
+                    dataset.setValue(type.name(), count);
+                }
+            });
+        } else {
+            logger.warn("Données de comptage des types de prestations manquantes.");
+            dataset.setValue("Données manquantes", 1);
+        }
+
+        JFreeChart pieChart = ChartFactory.createPieChart(
+                "Répartition par Type de Prestation",
+                dataset,
+                true, true, false);
+
+        PiePlot<String> plot = (PiePlot<String>) pieChart.getPlot();
+        plot.setBackgroundPaint(Color.WHITE);
+        plot.setLabelFont(new Font("SansSerif", Font.PLAIN, 10));
+        plot.setNoDataMessage("Aucun type de prestation disponible");
+
+        return pieChart;
+    }
+
+    /**
+     * Crée un diagramme à barres pour la distribution des prestations par catégorie.
+     */
+    public static JFreeChart createPrestationCategoryDistributionChart(PrestationStats stats) {
+        logger.debug("Création du diagramme de distribution des prestations par catégorie");
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        if (stats.getPrestationCountByCategory() != null) {
+            stats.getPrestationCountByCategory().entrySet().stream()
+                 .sorted(Map.Entry.<String, Long>comparingByValue().reversed()) 
+                 .limit(15) 
+                 .forEach(entry -> {
+                     if (entry.getKey() != null && !entry.getKey().isBlank() && entry.getValue() > 0) {
+                         dataset.addValue(entry.getValue(), "Prestations", entry.getKey());
+                     }
+                 });
+        } else {
+            logger.warn("Données de comptage des catégories de prestations manquantes.");
+        }
+
+        JFreeChart barChart = ChartFactory.createBarChart(
+                "Répartition des Prestations par Catégorie (Top 15)",
+                "Catégorie",
+                "Nombre de Prestations",
+                dataset,
+                PlotOrientation.HORIZONTAL, 
+                false, true, false);
+
+        CategoryPlot plot = barChart.getCategoryPlot();
+        plot.setBackgroundPaint(Color.WHITE);
+        plot.setRangeGridlinePaint(Color.LIGHT_GRAY);
+         ((BarRenderer) plot.getRenderer()).setBarPainter(new org.jfree.chart.renderer.category.StandardBarPainter());
+         plot.getRenderer().setSeriesPaint(0, Color.CYAN);
+
+        return barChart;
+    }
+
+    /**
+     * Crée un diagramme à barres montrant la fréquence du Top 5 des prestations (par nom).
+     */
+    public static JFreeChart createTop5PrestationsByFrequencyChart(PrestationStats stats) {
+        logger.debug("Création du diagramme des 5 prestations les plus fréquentes");
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        if (stats.getTop5PrestationsByFrequency() != null) {
+            stats.getTop5PrestationsByFrequency().forEach(pf -> {
+                 if (pf.getPrestationName() != null && !pf.getPrestationName().isBlank()) {
+                    dataset.addValue(pf.getFrequency(), "Fréquence", pf.getPrestationName());
+                 }
+            });
+        } else {
+            logger.warn("Données du Top 5 des prestations par fréquence manquantes.");
+        }
+
+        JFreeChart barChart = ChartFactory.createBarChart(
+                "Top 5 Prestations par Fréquence",
+                "Nom de la Prestation",
+                "Fréquence",
+                dataset,
+                PlotOrientation.VERTICAL,
+                false, true, false);
+
+        CategoryPlot plot = barChart.getCategoryPlot();
+        plot.setBackgroundPaint(Color.WHITE);
+        plot.setRangeGridlinePaint(Color.LIGHT_GRAY);
+         ((BarRenderer) plot.getRenderer()).setBarPainter(new org.jfree.chart.renderer.category.StandardBarPainter());
+         plot.getRenderer().setSeriesPaint(0, Color.RED);
+
+        return barChart;
+    }
+
+    /**
+     * Placeholder pour le quatrième graphique de prestation.
+     * Pourrait montrer la distribution des prix, durée moyenne par type, etc.
+     */
+    public static JFreeChart createPlaceholderPrestationChart4(PrestationStats stats) {
+         logger.debug("Création du graphique prestation placeholder 4");
+         DefaultPieDataset<String> dataset = new DefaultPieDataset<>();
+         dataset.setValue("Graphique 4 (Prestations) - À Implémenter", 100);
+
+        JFreeChart pieChart = ChartFactory.createPieChart(
+                "Prestations - Graphique 4",
+                dataset,
+                false, true, false);
+
+         pieChart.getPlot().setBackgroundPaint(Color.LIGHT_GRAY);
+         ((PiePlot)pieChart.getPlot()).setNoDataMessage("Implémentation future");
+
+        return pieChart;
+    }
+
+
 }
