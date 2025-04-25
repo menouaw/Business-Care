@@ -517,6 +517,3 @@ function validateApiAdminToken($token) {
         return [false, null];
     }
 }
-
-?>
-
