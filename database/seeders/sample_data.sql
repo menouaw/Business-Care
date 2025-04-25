@@ -94,72 +94,19 @@ INSERT INTO devis (entreprise_id, date_creation, date_validite, montant_total, m
 (2, '2024-02-20', '2024-03-20', 2500.00, 2083.33, 20.00, 'en_attente', 'Paiement a 30 jours', 30), 
 (3, '2024-01-25', '2024-02-25', 2800.00, 2333.33, 20.00, 'accepte', 'Paiement a 30 jours', 30); 
 
-INSERT INTO factures (entreprise_id, devis_id, numero_facture, date_emission, date_echeance, montant_total, montant_ht, tva, statut, mode_paiement) VALUES
-(1, 1, 'FACT-2024-001', '2024-01-20', '2024-02-20', 1500.00, 1250.00, 20.00, 'payee', 'virement'),
-(2, 2, 'FACT-2024-002', '2024-02-05', '2024-03-22', 2000.00, 1666.67, 20.00, 'payee', 'carte'),
-(1, 4, 'FACT-2024-003', '2024-02-20', '2024-03-06', 3200.00, 2666.67, 20.00, 'payee', 'carte'),
-(2, 5, 'FACT-2024-004', '2024-03-01', '2024-03-31', 2500.00, 2083.33, 20.00, 'en_attente', 'prelevement'),
-(3, 6, 'FACT-2024-005', '2024-02-01', '2024-03-02', 2800.00, 2333.33, 20.00, 'payee', 'virement'),
-(1, NULL, 'FACT-2024-013', '2024-04-20', '2024-05-20', 500.00, 416.67, 20.00, 'en_attente', 'virement');
-
-
-
-INSERT INTO rendez_vous (personne_id, prestation_id, praticien_id, date_rdv, duree, lieu, type_rdv, statut, notes) VALUES
-(5, 1, 3, '2024-03-20 10:00:00', 45, 'Cabinet 101', 'presentiel', 'planifie', 'Premiere consultation Marie'),
-(5, 2, 3, '2024-03-21 14:00:00', 60, 'Salle de yoga', 'presentiel', 'confirme', 'Seance de groupe Marie'),
-(6, 1, 11, '2024-03-22 15:00:00', 45, 'En ligne', 'visio', 'planifie', 'Consultation Jean'),
-(7, 4, 11, '2024-03-23 09:30:00', 60, 'Bureau 202', 'presentiel', 'confirme', 'Suivi Chloe'),
-(8, 5, 3, '2024-03-24 11:00:00', 60, 'Salle de reunion', 'presentiel', 'planifie', 'Atelier Pierre'),
-(9, 6, 11, '2024-03-25 10:30:00', 120, 'Salle de formation', 'presentiel', 'confirme', 'Formation Lucas'),
-(10, 7, 3, '2024-03-26 14:00:00', 60, 'Cabinet 303', 'presentiel', 'planifie', 'Coaching Julie'),
-(12, 8, 11, '2024-03-27 09:00:00', 120, 'Salle de formation B', 'presentiel', 'confirme', 'Atelier Hugo'),
-(13, 9, 3, '2024-03-28 15:00:00', 50, 'En ligne', 'visio', 'planifie', 'Sophro Heloise'),
-(2, 10, 11, '2024-03-29 11:30:00', 90, 'Salle de conference', 'presentiel', 'confirme', 'Conf Sommeil Salarie Test');
-
 INSERT INTO evaluations (personne_id, prestation_id, note, commentaire, date_evaluation) VALUES
 (5, 1, 5, 'Excellent service, tres professionnel', '2024-04-21'),
-(6, 1, 4, 'Très à l\'écoute, m\'a beaucoup aidé.', '2024-04-23'), 
+(6, 1, 4, 'Très à l\'écoute, m\'a beaucoup aidé.', '2024-04-23'),
 (8, 6, 5, 'Formation ergo très claire et pratique.', '2024-04-24');
 
 INSERT INTO evenements (titre, description, date_debut, date_fin, lieu, type, capacite_max, niveau_difficulte, materiel_necessaire, prerequis, site_id) VALUES
-('Conference Bien-etre Paris', 'Conference interactive sur site', NOW() + INTERVAL 1 WEEK, NOW() + INTERVAL 1 WEEK + INTERVAL 2 HOUR, 'Salle Paris A', 'conference', 100, 'intermediaire', 'Aucun', 'Aucun', 1), 
-('Webinar Gestion du Stress', 'Formation en ligne accessible à tous', NOW() + INTERVAL 2 WEEK, NOW() + INTERVAL 2 WEEK + INTERVAL 90 MINUTE, 'En ligne', 'webinar', 50, 'debutant', 'PC', 'Aucun', NULL), 
+('Conference Bien-etre Paris', 'Conference interactive sur site', NOW() + INTERVAL 1 WEEK, NOW() + INTERVAL 1 WEEK + INTERVAL 2 HOUR, 'Salle Paris A', 'conference', 100, 'intermediaire', 'Aucun', 'Aucun', 1),
+('Webinar Gestion du Stress', 'Formation en ligne accessible à tous', NOW() + INTERVAL 2 WEEK, NOW() + INTERVAL 2 WEEK + INTERVAL 90 MINUTE, 'En ligne', 'webinar', 50, 'debutant', 'PC', 'Aucun', NULL),
 ('Atelier Ergonomie Sante+', 'Amenager son espace de travail', NOW() + INTERVAL 3 WEEK, NOW() + INTERVAL 3 WEEK + INTERVAL 2 HOUR, 'Centre Sante+ Salle B', 'atelier', 30, 'debutant', 'Aucun', 'Aucun', 2); 
 
 INSERT INTO communautes (nom, description, type, niveau, capacite_max) VALUES
 ('Yoga & Meditation', 'Groupe de pratique du yoga et de la meditation', 'bien_etre', 'debutant', 20), 
 ('Running Club', 'Club de course a pied pour tous niveaux', 'sport', 'intermediaire', 30); 
-
-INSERT INTO factures (entreprise_id, devis_id, numero_facture, date_emission, date_echeance, montant_total, montant_ht, tva, statut, mode_paiement) VALUES
-(1, NULL, 'FACT-2024-001', '2024-01-20', '2024-02-20', 18000.00, 15000.00, 20.00, 'payee', 'virement'),  
-(2, NULL, 'FACT-2024-002', '2024-02-05', '2024-03-22', 36000.00, 30000.00, 20.00, 'payee', 'carte'),      
-(4, NULL, 'FACT-2024-003', '2024-03-10', '2024-04-10', 1728.00, 1440.00, 20.00, 'en_attente', 'prelevement'), 
-(5, NULL, 'FACT-2024-004', '2024-04-10', '2024-05-10', 3000.00, 2500.00, 20.00, 'payee', 'virement'), 
-(1, NULL, 'FACT-2024-005', '2024-04-12', '2024-04-12', 24000.00, 20000.00, 20.00, 'payee', 'carte'), 
-(2, NULL, 'FACT-2024-006', '2024-04-20', '2024-05-20', 2200.00, 1833.33, 20.00, 'en_attente', 'prelevement'), 
-(3, NULL, 'FACT-2024-007', '2024-04-22', '2024-04-22', 4320.00, 3600.00, 20.00, 'payee', 'virement'), 
-(4, NULL, 'FACT-2024-008', '2024-05-01', '2024-06-15', 1750.00, 1458.33, 20.00, 'annulee', 'virement'), 
-(5, NULL, 'FACT-2024-009', '2024-05-05', '2024-07-05', 8640.00, 7200.00, 20.00, 'payee', 'prelevement'), 
-(1, NULL, 'FACT-2024-010', '2024-05-10', '2024-06-10', 1350.00, 1125.00, 20.00, 'en_attente', 'carte'), 
-(2, NULL, 'FACT-2024-011', '2024-05-12', '2024-06-27', 48000.00, 40000.00, 20.00, 'payee', 'virement'), 
-(3, NULL, 'FACT-2024-012', '2024-05-20', '2024-05-20', 700.00, 583.33, 20.00, 'en_attente', 'carte'), 
-(4, NULL, 'FACT-2024-013', '2024-05-22', '2024-06-22', 1080.00, 900.00, 20.00, 'payee', 'prelevement'),  
-(6, NULL, 'FACT-2024-014', '2024-05-28', '2024-06-28', 27000.00, 22500.00, 20.00, 'en_attente', 'virement'), 
-(3, NULL, 'FACT-2024-015', '2024-04-25', '2024-05-25', 1200.00, 1000.00, 20.00, 'annulee', 'virement'), 
-(7, NULL, 'FACT-2024-016', '2024-06-05', '2024-07-20', 1600.00, 1333.33, 20.00, 'en_attente', 'prelevement'), 
-(8, NULL, 'FACT-2024-017', '2024-06-07', '2024-06-07', 64800.00, 54000.00, 20.00, 'payee', 'carte'), 
-(9, NULL, 'FACT-2024-018', '2024-06-12', '2024-07-12', 850.00, 708.33, 20.00, 'annulee', 'virement'), 
-(10, NULL, 'FACT-2024-019', '2024-06-20', '2024-08-20', 3200.00, 2666.67, 20.00, 'en_attente', 'prelevement'), 
-(11, NULL, 'FACT-2024-020', '2024-06-22', '2024-06-22', 35640.00, 29700.00, 20.00, 'payee', 'virement'), 
-(12, NULL, 'FACT-2024-021', '2024-06-28', '2024-07-28', 1950.00, 1625.00, 20.00, 'en_attente', 'carte'), 
-(13, NULL, 'FACT-2024-022', '2024-07-03', '2024-07-03', 1080.00, 900.00, 20.00, 'payee', 'carte'),    
-(14, NULL, 'FACT-2024-023', '2024-07-08', '2024-08-23', 2700.00, 2250.00, 20.00, 'annulee', 'virement'), 
-(15, NULL, 'FACT-2024-024', '2024-07-12', '2024-09-12', 23040.00, 19200.00, 20.00, 'payee', 'prelevement'), 
-(16, NULL, 'FACT-2024-025', '2024-07-18', '2024-08-18', 1400.00, 1166.67, 20.00, 'en_attente', 'carte'), 
-(17, NULL, 'FACT-2024-026', '2024-07-22', '2024-09-06', 1944.00, 1620.00, 20.00, 'payee', 'virement'),  
-(18, NULL, 'FACT-2024-027', '2024-07-28', '2024-07-28', 900.00, 750.00, 20.00, 'annulee', 'virement'), 
-(19, NULL, 'FACT-2024-028', '2024-08-05', '2024-09-05', 25080.00, 20900.00, 20.00, 'payee', 'prelevement'), 
-(20, NULL, 'FACT-2024-029', '2024-08-08', '2024-10-08', 1550.00, 1291.67, 20.00, 'en_attente', 'carte');
 
 INSERT INTO dons (personne_id, association_id, montant, type, description, date_don, statut) VALUES
 (5, 1, 50.00, 'financier', 'Don pour le programme de bien-etre', '2024-03-01', 'valide'),
