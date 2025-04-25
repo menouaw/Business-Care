@@ -16,6 +16,7 @@ TRUNCATE TABLE devis_prestations;
 TRUNCATE TABLE contrats;
 TRUNCATE TABLE preferences_utilisateurs;
 TRUNCATE TABLE remember_me_tokens;
+TRUNCATE TABLE api_tokens;
 TRUNCATE TABLE personnes;
 TRUNCATE TABLE prestations;
 TRUNCATE TABLE entreprises; 

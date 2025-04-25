@@ -15,10 +15,10 @@ L'application doit également s'assurer qu'elle utilise un jeu de données d'au 
 
 *   **Langage :** Java (JDK 17+ recommandé)
 *   **Gestion de build et dépendances :** Apache Maven
-*   **Génération PDF :** iText (ou Apache PDFBox)
-*   **Génération Graphiques :** JFreeChart
-*   **Client HTTP :** Apache HttpClient 5
-*   **Traitement JSON :** Jackson Databind
+*   **Génération PDF :** iText ([https://itextpdf.com/](https://itextpdf.com/)) - Bibliothèque pour créer et manipuler des documents PDF.
+*   **Génération Graphiques :** JFreeChart ([https://www.jfree.org/jfreechart/](https://www.jfree.org/jfreechart/)) - Framework pour générer divers types de graphiques.
+*   **Client HTTP :** Apache HttpClient 5 ([https://hc.apache.org/httpcomponents-client-5.3.x/](https://hc.apache.org/httpcomponents-client-5.3.x/)) - Utilisé pour envoyer des requêtes HTTP à l'API REST de Business Care et recevoir les réponses. Essentiel pour la communication avec le backend.
+*   **Traitement JSON :** Jackson Databind ([https://github.com/FasterXML/jackson-databind](https://github.com/FasterXML/jackson-databind)) - Permet de convertir facilement les objets Java en JSON (pour l'envoi de données à l'API, comme les identifiants de connexion) et le JSON reçu de l'API en objets Java (comme la liste des entreprises ou les détails de l'utilisateur).
 
 ## Prérequis
 

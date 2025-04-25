@@ -155,7 +155,7 @@ function getFlashMessages()
 {
     if (isset($_SESSION['flash_messages']) && is_array($_SESSION['flash_messages'])) {
         $messages = $_SESSION['flash_messages'];
-        unset($_SESSION['flash_messages']); // Supprime tous les messages après récupération
+        unset($_SESSION['flash_messages']); 
         return is_array($messages) ? $messages : [];
     }
     return [];
@@ -290,11 +290,11 @@ function paginateResults($table, $page, $perPage = DEFAULT_ITEMS_PER_PAGE, $wher
         if (is_string($orderBy) && !empty(trim($orderBy))) {
             if (!preg_match('/^[a-zA-Z0-9_\.,\s\(\)]+(?:\s+(?:ASC|DESC)(?:\s+NULLS\s+(?:FIRST|LAST))?)?(?:,\s*[a-zA-Z0-9_\.,\s\(\)]+(?:\s+(?:ASC|DESC)(?:\s+NULLS\s+(?:FIRST|LAST))?)?)*$/', $orderBy)) {
                 error_log("[WARNING] Caractères invalides détectés dans la clause orderBy pour la table '$table': " . $orderBy);
-                $orderBy = ''; // Réinitialiser orderBy en cas de caractères non valides
+                $orderBy = ''; 
             }
         } else {
             error_log("[WARNING] Type invalide ou paramètre orderBy vide passé à paginateResults pour la table '$table'. Attendu: string, reçu: " . gettype($orderBy));
-            $orderBy = ''; // Réinitialiser orderBy si le type n'est pas une chaîne ou s'il est vide
+            $orderBy = ''; 
         }
     }
 
@@ -329,12 +329,12 @@ function renderPagination($pagination, $urlPattern)
 
     $html = '<nav aria-label="Page navigation"><ul class="pagination">';
 
-    // Bouton précédent
+    
     $prevDisabled = $pagination['currentPage'] <= 1 ? ' disabled' : '';
     $prevUrl = str_replace('{page}', $pagination['currentPage'] - 1, $urlPattern);
     $html .= '<li class="page-item' . $prevDisabled . '"><a class="page-link" href="' . $prevUrl . '">Précédent</a></li>';
 
-    // Numéros de page
+    
     $startPage = max(1, $pagination['currentPage'] - 2);
     $endPage = min($pagination['totalPages'], $pagination['currentPage'] + 2);
 
@@ -344,7 +344,7 @@ function renderPagination($pagination, $urlPattern)
         $html .= '<li class="page-item' . $active . '"><a class="page-link" href="' . $url . '">' . $i . '</a></li>';
     }
 
-    // Bouton suivant
+    
     $nextDisabled = $pagination['currentPage'] >= $pagination['totalPages'] ? ' disabled' : '';
     $nextUrl = str_replace('{page}', $pagination['currentPage'] + 1, $urlPattern);
     $html .= '<li class="page-item' . $nextDisabled . '"><a class="page-link" href="' . $nextUrl . '">Suivant</a></li>';
@@ -445,4 +445,78 @@ function generateSecureReferer($defaultUrl = null, $allowedHosts = []) {
     }
     return $defaultUrl;
 }
+
+/**
+ * Génère une URL complète pour une route administrateur.
+ * 
+ * @param string $path Le chemin relatif dans le module admin (ex: /modules/users/edit.php)
+ * @param array $params Paramètres GET optionnels.
+ * @return string L'URL complète.
+ */
+function adminUrl($path = '/', $params = []) {
+    $url = WEBADMIN_URL . $path;
+    if (!empty($params)) {
+        $url .= '?' . http_build_query($params);
+    }
+    return $url;
+}
+
+/**
+ * Valide un token d'API pour un administrateur.
+ *
+ * Recherche le token dans la table `api_tokens`, vérifie qu'il n'est pas expiré
+ * et que l'utilisateur associé a le rôle administrateur.
+ *
+ * @param string $token Le token API extrait de l'en-tête Authorization.
+ * @return array Tableau contenant [bool $isValid, int|null $userId].
+ */
+function validateApiAdminToken($token) {
+    if (empty($token)) {
+        return [false, null];
+    }
+
+    try {
+        $pdo = getDbConnection();
+        
+        
+        $sqlToken = "SELECT user_id, expires_at FROM api_tokens WHERE token = :token AND expires_at > NOW() LIMIT 1";
+        $stmtToken = $pdo->prepare($sqlToken);
+        $stmtToken->execute([':token' => $token]);
+        $tokenData = $stmtToken->fetch();
+
+        if (!$tokenData) {
+            
+            return [false, null]; 
+        }
+
+        $userId = (int)$tokenData['user_id'];
+
+        
+        $sqlUser = "SELECT role_id FROM personnes WHERE id = :user_id LIMIT 1";
+        $stmtUser = $pdo->prepare($sqlUser);
+        $stmtUser->execute([':user_id' => $userId]);
+        $userData = $stmtUser->fetch();
+
+        if (!$userData || (int)$userData['role_id'] !== ROLE_ADMIN) {
+            
+            logSecurityEvent($userId, 'api_token_validation', '[FAILURE] Tentative d\'accès API avec token valide mais rôle non admin', true);
+            return [false, null];
+        }
+
+        
+        
+        
+        
+        
+        
+        return [true, $userId];
+
+    } catch (PDOException $e) {
+        
+        logSystemActivity('api_token_validation', '[ERROR] PDOException lors de la validation du token API: ' . $e->getMessage());
+        return [false, null];
+    }
+}
+
+?>
 
