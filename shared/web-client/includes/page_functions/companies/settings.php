@@ -129,7 +129,6 @@ function updateUserProfilePhoto(int $user_id, array $fileData): array
         $updated = updateRow(TABLE_USERS, ['photo_url' => $relativePath], 'id = :id', [':id' => $user_id]);
         if ($updated > 0) {
             logSecurityEvent($user_id, 'profile_photo_update', '[SUCCESS] Photo de profil mise à jour.');
-            // TODO: Ajouter la logique pour supprimer l'ancienne photo si elle existe et n'est pas la photo par défaut.
             return ['success' => true, 'message' => 'Photo de profil mise à jour avec succès.', 'new_photo_url' => $relativePath];
         } else {
             error_log("[ERROR] Échec de la mise à jour de photo_url en BDD pour user ID: {$user_id}");

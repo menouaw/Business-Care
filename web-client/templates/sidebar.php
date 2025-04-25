@@ -48,27 +48,27 @@
             </h6>
             <ul class="nav flex-column nav-fill mb-3">
                 <li class="nav-item border-bottom">
-                    <a class="nav-link d-inline-flex align-items-center" href="#"> <!-- TODO: Link -->
+                    <a class="nav-link d-inline-flex align-items-center" href="#"> 
                         <i class="fas fa-tachometer-alt fa-fw me-2"></i>Tableau de bord
                     </a>
                 </li>
                 <li class="nav-item border-bottom">
-                    <a class="nav-link d-inline-flex align-items-center" href="#"> <!-- TODO: Link -->
+                    <a class="nav-link d-inline-flex align-items-center" href="#"> 
                         <i class="fas fa-concierge-bell fa-fw me-2"></i>Catalogue Services
                     </a>
                 </li>
                 <li class="nav-item border-bottom">
-                    <a class="nav-link d-inline-flex align-items-center" href="#"> <!-- TODO: Link -->
+                    <a class="nav-link d-inline-flex align-items-center" href="#"> 
                         <i class="fas fa-calendar-check fa-fw me-2"></i>Mes Rendez-vous
                     </a>
                 </li>
                 <li class="nav-item border-bottom">
-                    <a class="nav-link d-inline-flex align-items-center" href="#"> <!-- TODO: Link -->
+                    <a class="nav-link d-inline-flex align-items-center" href="#"> 
                         <i class="fas fa-calendar-alt fa-fw me-2"></i>Événements & Ateliers
                     </a>
                 </li>
                 <li class="nav-item border-bottom">
-                    <a class="nav-link d-inline-flex align-items-center" href="#"> <!-- TODO: Link -->
+                    <a class="nav-link d-inline-flex align-items-center" href="#"> 
                         <i class="fas fa-users fa-fw me-2"></i>Communautés
                     </a>
                 </li>
@@ -79,22 +79,22 @@
             </h6>
             <ul class="nav flex-column mb-3">
                 <li class="nav-item border-bottom">
-                    <a class="nav-link d-inline-flex align-items-center" href="#"> <!-- TODO: Link -->
+                    <a class="nav-link d-inline-flex align-items-center" href="#"> 
                         <i class="fas fa-heartbeat fa-fw me-2"></i>Conseils Bien-être
                     </a>
                 </li>
                 <li class="nav-item border-bottom">
-                    <a class="nav-link d-inline-flex align-items-center" href="#"> <!-- TODO: Link -->
+                    <a class="nav-link d-inline-flex align-items-center" href="#"> 
                         <i class="fas fa-hand-holding-heart fa-fw me-2"></i>Faire un don
                     </a>
                 </li>
                 <li class="nav-item border-bottom">
-                    <a class="nav-link d-inline-flex align-items-center" href="#"> <!-- TODO: Link -->
+                    <a class="nav-link d-inline-flex align-items-center" href="#"> 
                         <i class="fas fa-robot fa-fw me-2"></i>Assistance IA
                     </a>
                 </li>
                 <li class="nav-item border-bottom">
-                    <a class="nav-link d-inline-flex align-items-center" href="#"> <!-- TODO: Link -->
+                    <a class="nav-link d-inline-flex align-items-center" href="#"> 
                         <i class="fas fa-exclamation-triangle fa-fw me-2"></i>Signalement
                     </a>
                 </li>
@@ -105,7 +105,7 @@
             </h6>
             <ul class="nav flex-column mb-3">
                 <li class="nav-item border-bottom">
-                    <a class="nav-link d-inline-flex align-items-center" href="#"> <!-- TODO: Link -->
+                    <a class="nav-link d-inline-flex align-items-center" href="#"> 
                         <i class="fas fa-user-cog fa-fw me-2"></i>Mon Profil
                     </a>
                 </li>

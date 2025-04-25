@@ -211,8 +211,7 @@ include __DIR__ . '/../../templates/header.php';
                             <dd class="col-sm-9"><?= $invoice['date_paiement'] ? htmlspecialchars(date(defined('DEFAULT_DATE_FORMAT') ? DEFAULT_DATE_FORMAT : 'd/m/Y H:i', strtotime($invoice['date_paiement']))) : '-' ?></dd>
 
                         </dl>
-                        <?php /* TODO: Ajouter affichage des lignes de la facture */
-                        ?>
+                        
                     </div>
                 </div>
 

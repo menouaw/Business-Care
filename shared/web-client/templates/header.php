@@ -35,19 +35,19 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title><?= htmlspecialchars($pageTitle) ?></title>
 
-    <!-- Favicon -->
+    
     <link rel="icon" href="<?= ASSETS_URL ?>/images/logo/noBgBlack.png" type="image/png">
 
-    <!-- CSS Bootstrap -->
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Font Awesome -->
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Google Fonts -->
+    
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 
-    <!-- CSS personnalisé -->
+    
     <link rel="stylesheet" href="<?= ASSETS_URL ?>/css/client.css">
 </head>
 
@@ -130,7 +130,7 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
                                 <a class="nav-link" href="<?= WEBCLIENT_URL ?>/modules/employees/signalement.php"><i class="fas fa-exclamation-triangle me-1"></i>Signalement</a>
                             </li>
                         <?php elseif ($userRole === 'prestataire'): ?>
-                            <!-- Prestataire Links -->
+                            
                             <li class="nav-item">
                                 <a class="nav-link" href="<?= WEBCLIENT_URL ?>/modules/companies/contact.php"><i class="fas fa-headset me-1"></i>Contact</a>
                             </li>
@@ -157,7 +157,7 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
 
                 <ul class="navbar-nav ms-auto">
                     <?php if ($isLoggedIn): ?>
-                        <!-- Notifications Dropdown -->
+                        
                         <li class="nav-item dropdown me-3">
                             <?php
                             // Inclure les fonctions si elles ne sont pas déjà dans init.php
@@ -183,13 +183,11 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
                                     <hr class="dropdown-divider">
                                 </li>
 
-                                <?php /* TODO: Afficher ici quelques notifications récentes ? */ ?>
-
                                 <li><a class="dropdown-item text-center text-muted small" href="<?= WEBCLIENT_URL ?>/modules/companies/notifications.php">Voir toutes les notifications</a></li>
                             </ul>
                         </li>
 
-                        <!-- Profil utilisateur -->
+                        
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <?php if (isset($_SESSION['user_photo']) && !empty($_SESSION['user_photo'])): ?>

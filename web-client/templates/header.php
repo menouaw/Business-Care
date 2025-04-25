@@ -183,7 +183,6 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
                                     <hr class="dropdown-divider">
                                 </li>
 
-                                <?php /* TODO: Afficher ici quelques notifications récentes ? */ ?>
 
                                 <li><a class="dropdown-item text-center text-muted small" href="<?= WEBCLIENT_URL ?>/modules/companies/notifications.php">Voir toutes les notifications</a></li>
                             </ul>
