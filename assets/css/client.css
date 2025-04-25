@@ -464,9 +464,19 @@ footer a:hover {
     }
 }
 
-
 .avatar-sm {
-  width: 32px; 
-  height: 32px; 
-  object-fit: cover; 
+  width: 32px !important; 
+  height: 32px !important;
+  object-fit: cover;
+  border-radius: 50%; 
+  border: 1px solid var(--gray); 
+  vertical-align: middle; 
+  display: inline-block; 
+}
+
+.avatar-md { 
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 50%;
 }
