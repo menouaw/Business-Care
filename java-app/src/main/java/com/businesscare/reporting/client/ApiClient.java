@@ -1,7 +1,7 @@
 package com.businesscare.reporting.client;
 
 import com.businesscare.reporting.exception.ApiException;
-import com.businesscare.reporting.model.*; 
+import com.businesscare.reporting.model.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
@@ -119,8 +119,126 @@ public class ApiClient {
         });
     }
 
-    
-    
+    /**
+     * Récupère la liste des contrats depuis l'API.
+     *
+     * @return Une liste d'objets Contract.
+     * @throws IOException  Si la communication échoue.
+     * @throws ApiException Si non authentifié ou si l'API retourne une erreur.
+     */
+    public List<Contract> getContracts() throws IOException, ApiException {
+        if (this.authToken == null) {
+            throw new ApiException("Non authentifié. Appeler login() d'abord.");
+        }
+
+        HttpGet get = new HttpGet(baseUrl + "contracts");
+        get.setHeader("Authorization", "Bearer " + this.authToken);
+
+        return httpClient.execute(get, response -> {
+            int statusCode = response.getCode();
+            String responseBody = EntityUtils.toString(response.getEntity());
+
+            if (statusCode >= 200 && statusCode < 300) {
+                 ApiResponse<List<Contract>> apiResponse = objectMapper.readValue(responseBody,
+                         objectMapper.getTypeFactory().constructParametricType(ApiResponse.class, objectMapper.getTypeFactory().constructCollectionType(List.class, Contract.class)));
+
+                 if (apiResponse != null && !apiResponse.isError()) {
+                    return apiResponse.getData();
+                 } else {
+                     throw new ApiException("Échec de la récupération des contrats: " + (apiResponse != null ? apiResponse.getMessage() : "Format de réponse invalide"));
+                 }
+            } else {
+                 ErrorResponse errorResponse = parseErrorResponse(responseBody);
+                 String errorMessage = (errorResponse != null && errorResponse.getMessage() != null) ? errorResponse.getMessage() : "HTTP Error: " + statusCode;
+                throw new ApiException("Échec de la récupération des contrats: " + errorMessage);
+            }
+        });
+    }
+
+     /**
+     * Récupère la liste des devis depuis l'API.
+     *
+     * @return Une liste d'objets Quote.
+     * @throws IOException  Si la communication échoue.
+     * @throws ApiException Si non authentifié ou si l'API retourne une erreur.
+     */
+    public List<Quote> getQuotes() throws IOException, ApiException {
+        if (this.authToken == null) {
+            throw new ApiException("Non authentifié. Appeler login() d'abord.");
+        }
+
+        HttpGet get = new HttpGet(baseUrl + "quotes");
+        get.setHeader("Authorization", "Bearer " + this.authToken);
+
+        return httpClient.execute(get, response -> {
+            int statusCode = response.getCode();
+            String responseBody = EntityUtils.toString(response.getEntity());
+
+            if (statusCode >= 200 && statusCode < 300) {
+                 ApiResponse<List<Quote>> apiResponse = objectMapper.readValue(responseBody,
+                         objectMapper.getTypeFactory().constructParametricType(ApiResponse.class, objectMapper.getTypeFactory().constructCollectionType(List.class, Quote.class)));
+
+                 if (apiResponse != null && !apiResponse.isError()) {
+                    return apiResponse.getData();
+                 } else {
+                     throw new ApiException("Échec de la récupération des devis: " + (apiResponse != null ? apiResponse.getMessage() : "Format de réponse invalide"));
+                 }
+            } else {
+                 ErrorResponse errorResponse = parseErrorResponse(responseBody);
+                 String errorMessage = (errorResponse != null && errorResponse.getMessage() != null) ? errorResponse.getMessage() : "HTTP Error: " + statusCode;
+                throw new ApiException("Échec de la récupération des devis: " + errorMessage);
+            }
+        });
+    }
+
+     /**
+     * Récupère la liste des factures depuis l'API.
+     *
+     * @return Une liste d'objets Invoice.
+     * @throws IOException  Si la communication échoue.
+     * @throws ApiException Si non authentifié ou si l'API retourne une erreur.
+     */
+    public List<Invoice> getInvoices() throws IOException, ApiException {
+        if (this.authToken == null) {
+            throw new ApiException("Non authentifié. Appeler login() d'abord.");
+        }
+
+        HttpGet get = new HttpGet(baseUrl + "invoices");
+        get.setHeader("Authorization", "Bearer " + this.authToken);
+
+        return httpClient.execute(get, response -> {
+            int statusCode = response.getCode();
+            String responseBody = EntityUtils.toString(response.getEntity());
+
+            if (statusCode >= 200 && statusCode < 300) {
+                 ApiResponse<List<Invoice>> apiResponse = objectMapper.readValue(responseBody,
+                         objectMapper.getTypeFactory().constructParametricType(ApiResponse.class, objectMapper.getTypeFactory().constructCollectionType(List.class, Invoice.class)));
+
+                 if (apiResponse != null && !apiResponse.isError()) {
+                    return apiResponse.getData();
+                 } else {
+                     throw new ApiException("Échec de la récupération des factures: " + (apiResponse != null ? apiResponse.getMessage() : "Format de réponse invalide"));
+                 }
+            } else {
+                 ErrorResponse errorResponse = parseErrorResponse(responseBody);
+                 String errorMessage = (errorResponse != null && errorResponse.getMessage() != null) ? errorResponse.getMessage() : "HTTP Error: " + statusCode;
+                throw new ApiException("Échec de la récupération des factures: " + errorMessage);
+            }
+        });
+    }
+
+    /**
+     * Méthode utilitaire pour analyser les réponses d'erreur.
+     * @param responseBody Le corps de la réponse JSON.
+     * @return Objet ErrorResponse ou null si l'analyse échoue.
+     */
+    private ErrorResponse parseErrorResponse(String responseBody) {
+         try {
+             return objectMapper.readValue(responseBody, ErrorResponse.class);
+         } catch (Exception ignored) {
+             return null;
+         }
+    }
 
     public static class AuthResponse extends ErrorResponse {
         private String token;
@@ -165,4 +283,3 @@ public class ApiClient {
          
          
     }
-}

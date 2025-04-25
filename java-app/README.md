@@ -76,82 +76,63 @@ Le rapport PDF généré est destiné à être visualisé depuis l'interface `we
 
 ## État Actuel du Développement
 
-L'application est actuellement à l'état de **squelette de base**. Le point d'entrée (`ReportApplication.java`) est défini, mais la logique principale reste à implémenter :
+L'application progresse. La structure de base, la configuration, les modèles de données, et la logique de génération de la première page du rapport (Statistiques Clients) sont en place. Les prochaines étapes concernent l'implémentation des pages 2 et 3 (événements et prestations) et la gestion des données aléatoires si nécessaire.
 
-*   [ ] Authentification auprès de l'API.
-*   [ ] Récupération des données depuis les différents endpoints de l'API (sociétés, contrats, devis, factures, événements, services).
+*   [X] Configuration (`ApiConfig`, `ConfigLoader`, `Constants`)
+*   [X] Modèles de données (`model/` POJOs et Enums, y compris `ClientStats`)
+*   [X] Authentification auprès de l'API (`ApiClient.login`)
+*   [X] Récupération des données Clients/Contrats/Factures/Devis (`ApiClient` - méthodes `getCompanies`, `getContracts`, `getQuotes`, `getInvoices`)
+*   [ ] Récupération des données Événements/Prestations (`ApiClient` - méthodes à ajouter)
+*   [X] Traitement des données financières client (`service/ReportService.processClientFinancialData`)
+*   [ ] Traitement des données événements/prestations (`service/ReportService` - méthodes à ajouter)
 *   [ ] Vérification du volume de données et génération de données aléatoires si nécessaire.
-*   [ ] Implémentation de la génération des graphiques (JFreeChart).
-*   [ ] Implémentation de la structure et de la génération du document PDF (iText).
-*   [ ] Gestion d'erreurs robuste.
+*   [X] Implémentation de la génération des graphiques clients (JFreeChart - `chart/ChartGenerator`)
+*   [ ] Implémentation de la génération des graphiques événements/prestations (`chart/ChartGenerator` - méthodes à ajouter)
+*   [X] Implémentation de la structure et de la génération de la Page 1 du PDF (iText - `pdf/PdfGenerator.generateClientFinancialPage`)
+*   [ ] Implémentation de la génération des Pages 2 et 3 du PDF (`pdf/PdfGenerator` - méthodes à ajouter)
+*   [X] Gestion d'erreurs de base (via `ApiException` et `try-catch` dans `ReportApplication`).
 
 ## Détails d'Implémentation - Reporting Financier (Page 1)
 
-Cette section détaille les étapes pour implémenter la première page du rapport PDF axée sur les "Statistiques des comptes clients", en s'appuyant sur la structure de projet existante (`src/main/java/com/businesscare/reporting/`).
+Cette section détaille les étapes **implémentées** pour la première page du rapport PDF axée sur les "Statistiques des comptes clients", en s'appuyant sur la structure de projet existante (`src/main/java/com/businesscare/reporting/`).
 
-1.  **Configuration (`client/ApiConfig.java`, `util/ConfigLoader.java`):**
-    *   Définir les champs dans `ApiConfig` pour contenir l'URL de base de l'API, l'email de l'utilisateur admin et son mot de passe.
-    *   Implémenter `ConfigLoader` dans le package `util` pour lire les variables d'environnement (`API_BASE_URL`, `API_USER`, `API_PASSWORD`). Fournir les valeurs par défaut documentées si les variables d'environnement ne sont pas définies.
-    *   Instancier et utiliser l'objet `ApiConfig` peuplé dans le flux principal de l'application (`main/ReportApplication.java`).
+1.  **Configuration (`client/ApiConfig.java`, `util/ConfigLoader.java`, `util/Constants.java`):** [**Terminé**]
+    *   Les classes pour gérer la configuration via les variables d'environnement (avec valeurs par défaut) sont en place.
 
-2.  **Modèles de Données (package `model/`):**
-    *   Définir des Plain Old Java Objects (POJOs) pour chaque structure de données pertinente retournée par l'API :
-        *   `Company.java`: Représentant les données de `GET /api/admin/companies`. Inclure des champs comme `id`, `nom`, `siret`, `ville`, `taille_entreprise`, `secteur_activite`, et potentiellement des listes d'IDs pour `contracts`, `quotes`, `invoices` si les détails sont récupérés.
-        *   `Contract.java`: Représentant les données de `GET /api/admin/contracts`. Inclure des champs comme `id`, `entreprise_id`, `service_id`, `date_debut`, `date_fin`, `statut`, etc. Envisager d'intégrer `ServiceDetails`.
-        *   `Quote.java`: Représentant les données de `GET /api/admin/quotes`. Inclure `id`, `entreprise_id`, `date_creation`, `date_validite`, `montant_total`, `statut`, et potentiellement une liste d'objets `QuotePrestation` pour les lignes d'items.
-        *   `Invoice.java`: Représentant les données de `GET /api/admin/invoices`. Inclure `id`, `entreprise_id`, `numero_facture`, `date_emission`, `date_echeance`, `montant_total`, `statut`, `devis_id`, et potentiellement `line_items` dérivés du devis.
-        *   `ServiceDetails.java`: Un POJO pour représenter les détails de service intégrés dans un `Contract`.
-        *   `QuotePrestation.java`: Un POJO pour les lignes d'items dans un `Quote`.
-    *   Déplacer les classes imbriquées existantes (`AuthResponse`, `ApiResponse`, `ErrorResponse`, `User`) de `ApiClient.java` dans ce package en tant que classes de premier niveau distinctes pour une meilleure organisation.
-    *   Utiliser les annotations Jackson (`@JsonProperty`, `@JsonIgnoreProperties(ignoreUnknown = true)`) si nécessaire pour un mapping JSON correct.
+2.  **Modèles de Données (package `model/`):** [**Terminé**]
+    *   Les POJOs (`Company`, `Contract`, `Quote`, `Invoice`, `QuotePrestation`, `User`, `AuthResponse`, `ApiResponse`, `ErrorResponse`, `ClientStats`, Enums) sont définis avec les annotations Jackson nécessaires pour le mapping JSON.
 
-3.  **Améliorations du Client API (`client/ApiClient.java`):**
-    *   S'assurer que `ApiClient` est instancié avec `ApiConfig`.
-    *   Implémenter des méthodes pour récupérer les listes de données financières requises, en utilisant le jeton d'authentification :
-        *   `public List<Contract> getContracts() throws IOException, ApiException;` (Appelle `GET /api/admin/contracts`)
-        *   `public List<Quote> getQuotes() throws IOException, ApiException;` (Appelle `GET /api/admin/quotes`) - *Dépend de l'implémentation de l'API PHP.*
-        *   `public List<Invoice> getInvoices() throws IOException, ApiException;` (Appelle `GET /api/admin/invoices`) - *Dépend de l'implémentation de l'API PHP.*
-    *   Gérer les réponses de l'API, désérialiser le JSON en utilisant Jackson vers les objets `model` définis, et lancer `ApiException` en cas d'erreur.
+3.  **Améliorations du Client API (`client/ApiClient.java`):** [**Terminé**]
+    *   `ApiClient` est instancié avec `ApiConfig`.
+    *   Les méthodes `login`, `getCompanies`, `getContracts`, `getQuotes`, `getInvoices` sont implémentées, utilisant le jeton d'authentification et désérialisant le JSON en objets `model`.
+    *   La gestion des erreurs via `ApiException` est intégrée.
 
-4.  **Traitement des Données (`service/DataProcessingService.java`):**
-    *   Créer une méthode spécifique pour les statistiques clients, par ex., `public ClientStats processClientData(List<Company> companies, List<Contract> contracts, List<Invoice> invoices)`.
-    *   À l'intérieur de cette méthode, effectuer les calculs nécessaires pour la Page 1 :
-        *   Lier les factures et contrats aux entreprises en utilisant `entreprise_id`.
-        *   Calculer le revenu total par client (somme des factures payées).
-        *   Déterminer la distribution des clients par attributs spécifiés (par ex., `secteur_activite`, `taille_entreprise`).
-        *   Calculer la distribution du statut des contrats.
-        *   Identifier le Top 5 des clients selon des critères définis (par ex., revenu total).
-    *   L'objet `ClientStats` retourné doit encapsuler toutes les données agrégées nécessaires pour les graphiques et la liste du Top 5.
+4.  **Traitement des Données (`service/ReportService.java`):** [**Terminé**]
+    *   La méthode `processClientFinancialData` traite les listes `Company`, `Contract`, `Invoice`.
+    *   Elle effectue les calculs nécessaires (revenu total/client, distributions par secteur/taille, statut des contrats, Top 5 clients) et retourne un objet `ClientStats`.
 
-5.  **Génération des Graphiques (`chart/ChartGenerator.java`):**
-    *   Implémenter des méthodes pour générer les quatre graphiques de statistiques clients requis en utilisant JFreeChart :
-        *   `public JFreeChart createClientRevenueChart(ClientStats stats);` (par ex., graphique camembert de la distribution des revenus)
-        *   `public JFreeChart createClientDistributionChart(ClientStats stats);` (par ex., diagramme à barres par secteur)
-        *   `public JFreeChart createContractStatusChart(ClientStats stats);` (par ex., graphique camembert des contrats actifs/inactifs)
-        *   *(Définir le quatrième graphique selon les exigences)*
-    *   Ces méthodes prendront l'objet `ClientStats` en entrée et retourneront des instances `JFreeChart` configurées.
+5.  **Génération des Graphiques (`chart/ChartGenerator.java`):** [**Terminé**]
+    *   Les méthodes `createContractStatusChart`, `createClientDistributionBySectorChart`, `createClientDistributionBySizeChart`, et `createClientRevenueDistributionChart` génèrent les quatre graphiques requis pour la Page 1 en utilisant JFreeChart à partir de l'objet `ClientStats`.
 
-6.  **Génération du PDF (`pdf/PdfReportGenerator.java`):**
-    *   Concentrer la méthode `generate` (ou une partie dédiée de celle-ci) sur la création de la Page 1.
-    *   Utiliser iText pour :
-        *   Créer le document et un `PdfWriter` pointant vers `output/report.pdf`.
+6.  **Génération du PDF (`pdf/PdfGenerator.java`):** [**Terminé**]
+    *   La méthode `generateClientFinancialPage` utilise iText 7 pour :
+        *   Créer la première page du document.
         *   Ajouter le titre "Statistiques des comptes clients".
-        *   Convertir les quatre objets `JFreeChart` clients en objets `Image` iText.
-        *   Ajouter les quatre images à la première page, en les organisant logiquement.
-        *   Ajouter la liste "Top 5 des clients les plus fidèles", formatée clairement, en utilisant les données de l'objet `ClientStats`.
+        *   Convertir les quatre objets `JFreeChart` clients en images et les ajouter à la page.
+        *   Ajouter la liste formatée "Top 5 des clients".
 
-7.  **Flux Principal de l'Application (`main/ReportApplication.java`):**
-    *   Modifier la méthode `main` pour inclure la séquence du reporting financier :
-        *   Charger `ApiConfig`.
-        *   Instancier `ApiClient` et les autres services.
-        *   Effectuer `apiClient.login()`.
-        *   Appeler `apiClient.getCompanies()`, `apiClient.getContracts()`, `apiClient.getInvoices()`, `apiClient.getQuotes()`.
-        *   *(Optionnel : Vérifier le volume de données et générer des données si nécessaire)*.
-        *   Appeler `dataProcessingService.processClientData(...)`.
-        *   Appeler `chartGenerator.createClient...Chart(...)` pour les quatre graphiques clients.
-        *   Appeler `pdfReportGenerator.generate(...)` (en se concentrant initialement sur la logique de la Page 1).
-        *   Inclure une journalisation complète (SLF4j) et la gestion des erreurs (`try-catch` pour `ApiException`, `IOException`).
+7.  **Flux Principal de l'Application (`main/ReportApplication.java`):** [**Terminé pour Page 1**]
+    *   La méthode `main` orchestre la séquence pour la Page 1 :
+        *   Chargement de `ApiConfig`.
+        *   Instanciation des services (`ApiClient`, `ReportService`, `PdfGenerator`).
+        *   Authentification via `apiClient.login()`.
+        *   Appel des méthodes `get...()` de l'API client.
+        *   Appel de `reportService.processClientFinancialData(...)`.
+        *   Appel des méthodes `create...Chart(...)` de `ChartGenerator`.
+        *   Appel de `pdfGenerator.generateClientFinancialPage(...)`.
+        *   Sauvegarde du document PDF (`output/report.pdf`).
+        *   Journalisation (SLF4j) et gestion des erreurs (`try-catch`) pour le flux principal.
 
-8.  **Dépendances & Exigences API:**
-    *   S'assurer que le backend de l'API PHP fournit des points de terminaison `/api/admin/quotes` et `/api/admin/invoices` fonctionnels retournant les structures de données nécessaires, y compris les lignes d'items pour les détails.
-    *   Vérifier que toutes les dépendances Java (iText, JFreeChart, Jackson, HttpClient, SLF4j) sont correctement configurées dans `pom.xml`.
+8.  **Dépendances & Exigences API:** [**Vérifié/Implémenté**]
+    *   Les points de terminaison API PHP `/api/admin/companies`, `/api/admin/contracts`, `/api/admin/quotes` et `/api/admin/invoices` sont fonctionnels (selon les informations précédentes).
+    *   Les dépendances Java (iText 7, JFreeChart, Jackson, HttpClient, SLF4j) sont configurées dans `pom.xml`.
