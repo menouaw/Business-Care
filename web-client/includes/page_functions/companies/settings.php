@@ -84,56 +84,56 @@ function updateUserProfilePhoto(int $user_id, array $fileData): array
         return ['success' => false, 'message' => "Aucun fichier n'a été envoyé ou une erreur est survenue lors de l'upload.", 'new_photo_url' => null];
     }
 
-    // Utiliser getimagesize() pour vérifier le type MIME et si c'est une image valide
+    
     $imageInfo = getimagesize($fileData['tmp_name']);
     if ($imageInfo === false) {
         return ['success' => false, 'message' => "Le fichier envoyé n'est pas une image valide.", 'new_photo_url' => null];
     }
 
     $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif'];
-    $detectedMimeType = $imageInfo['mime'] ?? ''; // Récupérer le type MIME depuis getimagesize
+    $detectedMimeType = $imageInfo['mime'] ?? ''; 
 
     if (!in_array($detectedMimeType, $allowedMimeTypes)) {
         return ['success' => false, 'message' => "Type d'image non autorisé. Veuillez choisir une image JPG, PNG ou GIF.", 'new_photo_url' => null];
     }
 
-    $maxSize = 2 * 1024 * 1024; // 2 MB
+    $maxSize = 2 * 1024 * 1024; 
     if ($fileData['size'] > $maxSize) {
         return ['success' => false, 'message' => 'Le fichier est trop volumineux. La taille maximale est de 2 Mo.', 'new_photo_url' => null];
     }
 
-    // Définir le chemin de destination (Assurez-vous que ce dossier existe et est accessible en écriture)
-    // Utilise le chemin absolu basé sur la racine du projet pour plus de robustesse.
+    
+    
     $uploadDir = realpath(__DIR__ . '/../../../../uploads/photos');
     if (!$uploadDir || !is_dir($uploadDir)) {
         error_log("[ERROR] Le dossier d'upload pour les photos n'existe pas ou n'est pas un dossier: {$uploadDir}");
         return ['success' => false, 'message' => "Erreur de configuration serveur pour l'upload.", 'new_photo_url' => null];
     }
 
-    // Générer un nom de fichier unique (utiliser l'extension détectée peut être plus sûr)
+    
     $fileExtension = match ($detectedMimeType) {
         'image/jpeg' => 'jpg',
         'image/png' => 'png',
         'image/gif' => 'gif',
-        default => pathinfo($fileData['name'], PATHINFO_EXTENSION) // Fallback sur l'extension originale
+        default => pathinfo($fileData['name'], PATHINFO_EXTENSION) 
     };
     $newFileName = 'user_' . $user_id . '_' . time() . '.' . strtolower($fileExtension);
     $destinationPath = $uploadDir . DIRECTORY_SEPARATOR . $newFileName;
 
-    // Chemin relatif pour la BDD et l'affichage
+    
     $relativePath = (defined('UPLOAD_URL') ? rtrim(parse_url(UPLOAD_URL, PHP_URL_PATH), '/') : '/uploads') . '/photos/' . $newFileName;
 
-    // Déplacer le fichier uploadé
+    
     if (move_uploaded_file($fileData['tmp_name'], $destinationPath)) {
-        // Mettre à jour la base de données
+        
         $updated = updateRow(TABLE_USERS, ['photo_url' => $relativePath], 'id = :id', [':id' => $user_id]);
         if ($updated > 0) {
             logSecurityEvent($user_id, 'profile_photo_update', '[SUCCESS] Photo de profil mise à jour.');
-            // TODO: Ajouter la logique pour supprimer l'ancienne photo si elle existe et n'est pas la photo par défaut.
+            
             return ['success' => true, 'message' => 'Photo de profil mise à jour avec succès.', 'new_photo_url' => $relativePath];
         } else {
             error_log("[ERROR] Échec de la mise à jour de photo_url en BDD pour user ID: {$user_id}");
-            // Essayer de supprimer le fichier fraîchement uploadé car la BDD n'a pas été mise à jour
+            
             if (file_exists($destinationPath)) unlink($destinationPath);
             return ['success' => false, 'message' => 'Erreur lors de la mise à jour de la base de données.', 'new_photo_url' => null];
         }

@@ -1,7 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../../../../shared/web-client/db.php';
-require_once __DIR__ . '/../../../includes/init.php'; // Pour DEFAULT_ITEMS_PER_PAGE
+require_once __DIR__ . '/../../../includes/init.php'; 
 
 /**
  * Récupère une page de la liste des contrats pour une entreprise donnée,
@@ -18,12 +18,12 @@ function getCompanyContracts(int $entreprise_id, int $page = 1, int $items_per_p
         return ['contracts' => [], 'total_count' => 0];
     }
 
-    // 1. Compter le total
+    
     $countSql = "SELECT COUNT(*) FROM contrats c WHERE c.entreprise_id = :entreprise_id";
     $countStmt = executeQuery($countSql, [':entreprise_id' => $entreprise_id]);
     $total_count = (int)$countStmt->fetchColumn();
 
-    // 2. Récupérer la page actuelle
+    
     $offset = ($page - 1) * $items_per_page;
     $items_per_page = max(1, $items_per_page);
     $offset = max(0, $offset);

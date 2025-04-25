@@ -191,7 +191,7 @@ function updateEmployeeDetails(int $employee_id, int $company_id, array $data): 
         [':id' => $employee_id]
     );
 
-    return $updatedRows >= 0;
+    return $updatedRows > 0;
 }
 
 /**
