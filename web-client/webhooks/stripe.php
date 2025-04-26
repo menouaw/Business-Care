@@ -10,26 +10,24 @@ if (file_exists($autoload_path)) {
 
 if (class_exists('Dotenv\Dotenv')) {
     $dotenv_path = __DIR__ . '/../..';
-    if (file_exists($dotenv_path . '.env')) {
-        try {
-            $dotenv = Dotenv\Dotenv::createImmutable($dotenv_path);
-            $dotenv->load();
+    try {
+        $dotenv = Dotenv\Dotenv::createImmutable($dotenv_path);
+        $dotenv->load();
 
-
-            $debug_webhook_secret = $_ENV['STRIPE_WEBHOOK_SECRET'] ?? '#<NOT_SET_IN_ENV>#';
-            error_log("DEBUG (webhook script): \$_ENV['STRIPE_WEBHOOK_SECRET'] value after load: " . $debug_webhook_secret);
-        } catch (\Exception $e) {
-            error_log("Webhook Stripe: Erreur Dotenv: " . $e->getMessage());
-        }
+        
+        
+    } catch (\Dotenv\Exception\InvalidPathException $e) {
+        error_log("Webhook Stripe: Chemin Dotenv invalide: " . $e->getMessage());
+    } catch (\Exception $e) {
+        error_log("Webhook Stripe: Erreur Dotenv (ex: .env manquant ou illisible): " . $e->getMessage());
     }
 }
-
 
 require_once __DIR__ . '/../../shared/web-client/config.php';
 require_once __DIR__ . '/../../shared/web-client/db.php';
 require_once __DIR__ . '/../../shared/web-client/logging.php';
 
-error_log("--- DEBUG: Webhook script stripe.php ENTERED ---");
+
 
 use Stripe\Stripe;
 use Stripe\Webhook;
@@ -59,19 +57,17 @@ try {
         $endpoint_secret
     );
 } catch (\UnexpectedValueException $e) {
-
-    error_log("[ERROR] Webhook Stripe: Payload invalide. Signature Header: " . $sig_header . " - Erreur: " . $e->getMessage());
+    error_log("[ERROR] Webhook Stripe: Payload invalide. Signature Header: " . ($sig_header ?? 'N/A') . " - Erreur: " . $e->getMessage()); 
     http_response_code(400);
     exit();
 } catch (SignatureVerificationException $e) {
-
-    error_log("[ERROR] Webhook Stripe: Signature invalide. Signature Header: " . $sig_header . " - Erreur: " . $e->getMessage());
+    error_log("[ERROR] Webhook Stripe: Signature invalide. Signature Header: " . ($sig_header ?? 'N/A') . " - Erreur: " . $e->getMessage()); 
     http_response_code(400);
     exit();
 }
 
 
-error_log("[INFO] Webhook Stripe: Événement reçu - Type: " . $event->type . " - Payload subset: " . substr(json_encode($event->data->object), 0, 500));
+error_log("[INFO] Webhook Stripe: Événement reçu - Type: " . $event->type . " - ID: " . $event->id);
 
 
 switch ($event->type) {
@@ -84,7 +80,7 @@ switch ($event->type) {
             $company_id = isset($session->metadata->company_id) ? (int)$session->metadata->company_id : null;
             $payment_intent_id = $session->payment_intent;
 
-            error_log("[INFO] Webhook: checkout.session.completed reçu pour facture ID: " . $invoice_id);
+            error_log("[INFO] Webhook: checkout.session.completed reçu pour facture ID: " . $invoice_id); 
 
 
             try {
@@ -101,34 +97,34 @@ switch ($event->type) {
                     $updated = updateRow('factures', $updateData, 'id = :id', [':id' => $invoice_id]);
 
                     if ($updated > 0) {
-                        error_log("[SUCCESS] Webhook: Facture ID: " . $invoice_id . " marquée comme PAYEE.");
+                        error_log("[SUCCESS] Webhook: Facture ID: " . $invoice_id . " marquée comme PAYEE."); 
                     } else {
-                        error_log("[WARNING] Webhook: Facture ID: " . $invoice_id . " trouvée mais non mise à jour (peut-être déjà payée ou erreur DB).");
+                        error_log("[WARNING] Webhook: Facture ID: " . $invoice_id . " trouvée mais non mise à jour (peut-être déjà payée ou erreur DB)."); 
                     }
                 } elseif ($invoice && $invoice['statut'] === INVOICE_STATUS_PAID) {
-                    error_log("[INFO] Webhook: Facture ID: " . $invoice_id . " est déjà marquée comme PAYEE. Événement ignoré.");
+                    error_log("[INFO] Webhook: Facture ID: " . $invoice_id . " est déjà marquée comme PAYEE. Événement ignoré."); 
                 } else {
-                    error_log("[WARNING] Webhook: Facture ID: " . $invoice_id . " non trouvée dans la base de données pour l'événement checkout.session.completed.");
+                    error_log("[WARNING] Webhook: Facture ID: " . $invoice_id . " non trouvée dans la base de données pour l'événement checkout.session.completed."); 
                 }
             } catch (PDOException $e) {
-                error_log("[ERROR] Webhook: Erreur DB lors de la mise à jour de la facture ID: " . $invoice_id . " - " . $e->getMessage());
+                error_log("[ERROR] Webhook: Erreur DB lors de la mise à jour de la facture ID: " . $invoice_id . " - " . $e->getMessage()); 
 
                 http_response_code(500);
                 exit();
             }
         } else {
-            error_log("[WARNING] Webhook: checkout.session.completed reçu sans invoice_id valide dans metadata ou payment_status != 'paid'. Session ID: " . ($session->id ?? 'N/A'));
+            error_log("[WARNING] Webhook: checkout.session.completed reçu sans invoice_id valide dans metadata ou payment_status != 'paid'. Session ID: " . ($session->id ?? 'N/A')); 
         }
         break;
 
 
 
     default:
-
+        
         error_log("[INFO] Webhook: Événement non géré reçu: " . $event->type);
 }
 
-error_log("--- DEBUG: Webhook script stripe.php FINISHED PROCESSING, sending 200 --- ");
+
 
 
 http_response_code(200);

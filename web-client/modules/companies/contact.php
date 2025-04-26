@@ -68,9 +68,9 @@ include __DIR__ . '/../../templates/header.php';
 
             <?php echo displayFlashMessages(); ?>
 
-            <!-- Nouvelle structure en deux colonnes -->
+            
             <div class="row">
-                <!-- Colonne Google Maps (Gauche) -->
+                
                 <div class="col-md-5 mb-4 mb-md-0">
                     <h5>Notre Siège Social</h5>
                     <p>110 Rue de Rivoli, 75001 Paris, France</p>
@@ -87,7 +87,7 @@ include __DIR__ . '/../../templates/header.php';
                     </div>
                 </div>
 
-                <!-- Colonne Formulaire (Droite) -->
+                
                 <div class="col-md-7">
                     <h5>Envoyez-nous un message</h5>
                     <div class="card">
@@ -108,7 +108,7 @@ include __DIR__ . '/../../templates/header.php';
 
                                 <div class="mb-3">
                                     <label for="message" class="form-label">Votre message <span class="text-danger">*</span></label>
-                                    <textarea class="form-control" id="message" name="message" rows="6" required></textarea> <!-- Réduit un peu la hauteur -->
+                                    <textarea class="form-control" id="message" name="message" rows="6" required></textarea> 
                                 </div>
 
                                 <button type="submit" class="btn btn-primary">
@@ -118,7 +118,7 @@ include __DIR__ . '/../../templates/header.php';
                         </div>
                     </div>
                 </div>
-            </div> <!-- Fin de la row -->
+            </div> 
 
         </main>
     </div>

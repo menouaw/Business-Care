@@ -6,10 +6,15 @@ require_once __DIR__ . '/../../../includes/page_functions/companies/employees.ph
 requireRole(ROLE_ENTREPRISE);
 
 $entreprise_id = $_SESSION['user_entreprise'] ?? 0;
+$current_page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
 
-if (isset($_GET['action']) && isset($_GET['id'])) {
-    $action = $_GET['action'];
-    $employee_id = (int)$_GET['id'];
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($_POST['employee_id'])) {
+    verifyCsrfToken();
+
+    $action = $_POST['action'];
+    $employee_id = (int)$_POST['employee_id'];
+    $redirectUrl = WEBCLIENT_URL . '/modules/companies/employees/index.php?page=' . $current_page;
 
     if ($action === 'delete' && $employee_id > 0) {
         if (deactivateEmployee($employee_id, $entreprise_id)) {
@@ -17,8 +22,6 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
         } else {
             flashMessage('Erreur lors de la désactivation du salarié ou salarié non trouvé.', 'danger');
         }
-        $currentPage = isset($_GET['p']) ? (int)$_GET['p'] : 1;
-        $redirectUrl = WEBCLIENT_URL . '/modules/companies/employees/index.php?page=' . $currentPage;
         redirectTo($redirectUrl);
         exit;
     } elseif ($action === 'reactivate' && $employee_id > 0) {
@@ -27,12 +30,11 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
         } else {
             flashMessage('Erreur lors de la réactivation du salarié ou salarié non trouvé.', 'danger');
         }
-        $currentPage = isset($_GET['p']) ? (int)$_GET['p'] : 1;
-        $redirectUrl = WEBCLIENT_URL . '/modules/companies/employees/index.php?page=' . $currentPage;
         redirectTo($redirectUrl);
         exit;
     }
 }
+
 
 if ($entreprise_id <= 0) {
     flashMessage("Impossible d'identifier votre entreprise.", "danger");
@@ -41,7 +43,6 @@ if ($entreprise_id <= 0) {
 }
 
 $items_per_page = DEFAULT_ITEMS_PER_PAGE;
-$current_page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
 
 $employeeData = getCompanyEmployees($entreprise_id, $current_page, $items_per_page);
 $employees = $employeeData['employees'];
@@ -113,19 +114,29 @@ include __DIR__ . '/../../../templates/header.php';
                                         </a>
 
                                         <?php if ($employee['statut'] === 'actif'): ?>
-                                            <a href="<?php echo WEBCLIENT_URL; ?>/modules/companies/employees/index.php?action=delete&id=<?= $employee['id'] ?>"
-                                                class="btn btn-sm btn-outline-danger"
-                                                title="Désactiver"
-                                                onclick="return confirm('Êtes-vous sûr de vouloir désactiver ce salarié ?');">
-                                                <i class="fas fa-user-slash"></i>
-                                            </a>
+                                            <form method="post" action="<?php echo WEBCLIENT_URL; ?>/modules/companies/employees/index.php?page=<?= $current_page ?>" class="d-inline">
+                                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(generateCsrfToken()); ?>">
+                                                <input type="hidden" name="action" value="delete">
+                                                <input type="hidden" name="employee_id" value="<?= $employee['id'] ?>">
+                                                <button type="submit"
+                                                    class="btn btn-sm btn-outline-danger"
+                                                    title="Désactiver"
+                                                    onclick="return confirm('Êtes-vous sûr de vouloir désactiver ce salarié ?');">
+                                                    <i class="fas fa-user-slash"></i>
+                                                </button>
+                                            </form>
                                         <?php else: ?>
-                                            <a href="<?php echo WEBCLIENT_URL; ?>/modules/companies/employees/index.php?action=reactivate&id=<?= $employee['id'] ?>"
-                                                class="btn btn-sm btn-outline-success"
-                                                title="Réactiver"
-                                                onclick="return confirm('Êtes-vous sûr de vouloir réactiver ce salarié ?');">
-                                                <i class="fas fa-user-check"></i>
-                                            </a>
+                                            <form method="post" action="<?php echo WEBCLIENT_URL; ?>/modules/companies/employees/index.php?page=<?= $current_page ?>" class="d-inline">
+                                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(generateCsrfToken()); ?>">
+                                                <input type="hidden" name="action" value="reactivate">
+                                                <input type="hidden" name="employee_id" value="<?= $employee['id'] ?>">
+                                                <button type="submit"
+                                                    class="btn btn-sm btn-outline-success"
+                                                    title="Réactiver"
+                                                    onclick="return confirm('Êtes-vous sûr de vouloir réactiver ce salarié ?');">
+                                                    <i class="fas fa-user-check"></i>
+                                                </button>
+                                            </form>
                                         <?php endif; ?>
                                     </td>
                                 </tr>

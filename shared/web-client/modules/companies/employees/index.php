@@ -103,30 +103,30 @@ include __DIR__ . '/../../../templates/header.php';
                                         </a>
 
                                         <?php if ($employee['statut'] === 'actif'): ?>
-                                            <a href="<?php echo WEBCLIENT_URL; ?>/modules/companies/employees/index.php?action=delete&id=<?= $employee['id'] ?>"
-                                                class="btn btn-sm btn-outline-danger"
-                                                title="Désactiver"
-                                                onclick="return confirm('Êtes-vous sûr de vouloir désactiver ce salarié ?');">
-                                                <i class="fas fa-user-slash"></i>
-                                            </a>
-                                        <?php else: ?>
-                                            <a href="<?php echo WEBCLIENT_URL; ?>/modules/companies/employees/index.php?action=reactivate&id=<?= $employee['id'] ?>"
-                                                class="btn btn-sm btn-outline-success"
-                                                title="Réactiver"
-                                                onclick="return confirm('Êtes-vous sûr de vouloir réactiver ce salarié ?');">
-                                                <i class="fas fa-user-check"></i>
-                                            </a>
-                                        <?php endif; ?>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
-
-        </main>
-    </div>
+    <form method="post" action="<?php echo WEBCLIENT_URL; ?>/modules/companies/employees/index.php" class="d-inline">
+        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+        <input type="hidden" name="action" value="delete">
+        <input type="hidden" name="employee_id" value="<?= $employee['id'] ?>">
+        <button type="submit"
+                class="btn btn-sm btn-outline-danger"
+                title="Désactiver"
+                onclick="return confirm('Êtes-vous sûr de vouloir désactiver ce salarié ?');">
+            <i class="fas fa-user-slash"></i>
+        </button>
+    </form>
+<?php else: ?>
+    <form method="post" action="<?php echo WEBCLIENT_URL; ?>/modules/companies/employees/index.php" class="d-inline">
+        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+        <input type="hidden" name="action" value="reactivate">
+        <input type="hidden" name="employee_id" value="<?= $employee['id'] ?>">
+        <button type="submit"
+                class="btn btn-sm btn-outline-success"
+                title="Réactiver"
+                onclick="return confirm('Êtes-vous sûr de vouloir réactiver ce salarié ?');">
+            <i class="fas fa-user-check"></i>
+        </button>
+    </form>
+<?php endif; ?>
 </div>
 
 <?php

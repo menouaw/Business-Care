@@ -4,8 +4,6 @@ require_once __DIR__ . '/../../includes/page_functions/companies/contracts.php';
 
 requireRole(ROLE_ENTREPRISE);
 
-
-
 $entreprise_id = $_SESSION['user_entreprise'] ?? 0;
 
 if ($entreprise_id <= 0) {
@@ -176,18 +174,18 @@ include __DIR__ . '/../../templates/header.php';
         </table>
     </div>
 
-    <!-- Contrôles de Pagination -->
+
     <?php if ($total_pages > 1): ?>
         <nav aria-label="Page navigation contrats">
             <ul class="pagination justify-content-center">
-                <!-- Bouton Précédent -->
+
                 <li class="page-item <?= ($current_page <= 1) ? 'disabled' : '' ?>">
                     <a class="page-link" href="?page=<?= $current_page - 1 ?>" aria-label="Précédent">
                         <span aria-hidden="true">&laquo;</span>
                     </a>
                 </li>
 
-                <!-- Liens Numéros de Page -->
+
                 <?php
                         $start_page = max(1, $current_page - 2);
                         $end_page = min($total_pages, $current_page + 2);
@@ -213,7 +211,7 @@ include __DIR__ . '/../../templates/header.php';
                         }
                 ?>
 
-                <!-- Bouton Suivant -->
+
                 <li class="page-item <?= ($current_page >= $total_pages) ? 'disabled' : '' ?>">
                     <a class="page-link" href="?page=<?= $current_page + 1 ?>" aria-label="Suivant">
                         <span aria-hidden="true">&raquo;</span>
@@ -222,7 +220,7 @@ include __DIR__ . '/../../templates/header.php';
             </ul>
         </nav>
     <?php endif; ?>
-    <!-- Fin Contrôles de Pagination -->
+
 
 <?php endif; ?>
 

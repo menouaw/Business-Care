@@ -16,10 +16,14 @@ if ($entreprise_id <= 0 || $user_id <= 0) {
 $pageTitle = "Paramètres";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
+    if (!hash_equals($_SESSION['csrf_token'] ?? '', $_POST['csrf_token'] ?? '')) {
+        flashMessage('Jeton CSRF invalide.', 'danger');
+        redirectTo(WEBCLIENT_URL . '/modules/companies/settings.php');
+        exit;
+    }
     $current_password = $_POST['current_password'] ?? '';
-    $new_password = $_POST['new_password'] ?? '';
+    $new_password     = $_POST['new_password'] ?? '';
     $confirm_password = $_POST['confirm_password'] ?? '';
-
     if ($new_password !== $confirm_password) {
         flashMessage("Le nouveau mot de passe et sa confirmation ne correspondent pas.", "danger");
     } else {

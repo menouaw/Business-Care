@@ -1,5 +1,5 @@
 <?php
-// API pour l'authentification
+
 require_once 'logging.php';
 require_once 'config.php';
 require_once 'db.php';
@@ -237,7 +237,7 @@ function resetPassword($email)
 
     logSecurityEvent($user['id'], 'password_reset', '[SUCCESS] Demande de réinitialisation de mot de passe initiée');
 
-    // TODO: envoyer un email de reinitialisation de mot de passe
+    
 
     return true;
 }
@@ -328,7 +328,3 @@ function deleteRememberMeToken($token)
         return false;
     }
 }
-
-echo "<pre>DEBUG DASHBOARD: Session BEFORE requireRole:\n";
-print_r($_SESSION);
-echo "</pre>";

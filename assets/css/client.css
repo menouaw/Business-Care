@@ -101,7 +101,6 @@ a:hover {
     transform: translateX(-50%);
 }
 
-/* animations */
 .animate-on-scroll {
     opacity: 0;
     transform: translateY(30px);
@@ -113,7 +112,6 @@ a:hover {
     transform: translateY(0);
 }
 
-/* barre de navigation */
 .navbar {
     transition: all var(--transition-speed) ease;
     padding: 1rem 0;
@@ -145,7 +143,6 @@ a:hover {
     color: var(--primary);
 }
 
-/* section héro */
 .hero {
     position: relative;
     padding: 6rem 0;
@@ -179,7 +176,6 @@ a:hover {
     transform: scale(1.05);
 }
 
-/* cartes de services */
 .services {
     background-color: #fff;
 }
@@ -207,7 +203,6 @@ a:hover {
     margin-bottom: 1rem;
 }
 
-/* cartes de tarification */
 .pricing {
     background-color: var(--gray-light);
 }
@@ -253,7 +248,6 @@ a:hover {
     padding: 0.5rem 0;
 }
 
-/* témoignages */
 .testimonials {
     background-color: #fff;
 }
@@ -347,7 +341,6 @@ a:hover {
     margin-bottom: 0.75rem;
 }
 
-/* bouton retour en haut */
 #back-to-top {
     position: fixed;
     bottom: 20px;
@@ -370,7 +363,6 @@ a:hover {
     background-color: var(--primary-light);
 }
 
-/* footer */
 footer {
     background-color: var(--primary-dark);
     color: var(--text-light);
@@ -425,7 +417,6 @@ footer a:hover {
     font-size: 0.875rem;
 }
 
-/* responsive */
 @media (max-width: 992px) {
     .hero {
         padding: 4rem 0;
@@ -465,13 +456,13 @@ footer a:hover {
 }
 
 .avatar-sm {
-  width: 32px !important; 
+  width: 32px !important;
   height: 32px !important;
   object-fit: cover;
-  border-radius: 50%; 
-  border: 1px solid var(--gray); 
-  vertical-align: middle; 
-  display: inline-block; 
+  border-radius: 50%;
+  border: 1px solid var(--gray);
+  vertical-align: middle;
+  display: inline-block;
 }
 
 .avatar-md { 

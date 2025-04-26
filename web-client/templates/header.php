@@ -1,7 +1,5 @@
 <?php
 
-
-
 if (!isset($pageTitle)) {
     $pageTitle = "Business Care";
 }
@@ -23,8 +21,6 @@ if (!isset($userRole) && $isLoggedIn) {
 }
 
 $userNotifications = [];
-if ($isLoggedIn && isset($_SESSION['user_id'])) {
-}
 ?>
 <!DOCTYPE html>
 <html lang="<?= isset($_SESSION['user_language']) ? $_SESSION['user_language'] : 'fr' ?>">
@@ -35,19 +31,14 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title><?= htmlspecialchars($pageTitle) ?></title>
 
-    <!-- Favicon -->
     <link rel="icon" href="<?= ASSETS_URL ?>/images/logo/noBgBlack.png" type="image/png">
 
-    <!-- CSS Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 
-    <!-- CSS personnalisé -->
     <link rel="stylesheet" href="<?= ASSETS_URL ?>/css/client.css">
 </head>
 
@@ -91,7 +82,7 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
                                     <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/companies/dashboard.php">Tableau de bord</a></li>
                                     <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/companies/invoices.php">Factures</a></li>
                                     <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/companies/contracts.php">Contrats</a></li>
-                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/companies/employees.php">Gestion des salariés</a></li>
+                                    <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/companies/employees/index.php">Gestion des salariés</a></li>
                                     <li>
                                         <hr class="dropdown-divider">
                                     </li>
@@ -160,13 +151,10 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
                         <!-- Notifications Dropdown -->
                         <li class="nav-item dropdown me-3">
                             <?php
-                            // Inclure les fonctions si elles ne sont pas déjà dans init.php
                             if (function_exists('getUnreadNotificationCount')) {
                                 $unread_count = getUnreadNotificationCount($_SESSION['user_id']);
                             } else {
                                 $unread_count = 0;
-                                // Peut-être logguer une erreur ici si la fonction devrait exister
-                                // error_log("Fonction getUnreadNotificationCount non trouvée dans header.php");
                             }
                             ?>
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownNotifications" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -238,9 +226,6 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
             </div>
         </div>
     </nav>
-
-    <div style="padding-top: 76px;"></div>
-
 </body>
 
 </html>

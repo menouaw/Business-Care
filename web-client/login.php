@@ -4,21 +4,7 @@ require_once __DIR__ . '/includes/init.php';
 require_once __DIR__ . '/includes/page_functions/login.php';
 
 if (isAuthenticated()) {
-    error_log('Utilisateur authentifié');
-
-    if (isEntrepriseUser()) {
-        error_log('Utilisateur avec rôle Entreprise');
-        redirectTo(WEBCLIENT_URL . '/modules/companies/dashboard.php');
-    } elseif (isSalarieUser()) {
-        error_log('Utilisateur avec rôle Salarié');
-        redirectTo(WEBCLIENT_URL . '/modules/employees/dashboard.php');
-    } elseif (isPrestataireUser()) {
-        error_log('Utilisateur avec rôle Prestataire');
-        redirectTo(WEBCLIENT_URL . '/modules/providers/dashboard.php');
-    } else {
-        error_log('Rôle inconnu, redirection vers la page d\'accueil');
-        redirectTo(WEBCLIENT_URL);
-    }
+    redirectTo(WEBCLIENT_URL . '/modules/companies/dashboard.php');
 }
 
 $email = '';
@@ -29,31 +15,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $result = processLoginForm($_POST);
 
     if ($result['success']) {
-        error_log('Formulaire de connexion réussi');
-
         if (!empty($result['redirect'])) {
-            error_log('Redirection personnalisée : ' . $result['redirect']);
             redirectTo($result['redirect']);
         } else {
-            // Vérifier le rôle après la connexion
             if (isEntrepriseUser()) {
-                error_log('Utilisateur avec rôle Entreprise après la connexion');
                 redirectTo(WEBCLIENT_URL . '/modules/companies/dashboard.php');
             } elseif (isSalarieUser()) {
-                error_log('Utilisateur avec rôle Salarié après la connexion');
                 redirectTo(WEBCLIENT_URL . '/modules/employees/dashboard.php');
             } elseif (isPrestataireUser()) {
-                error_log('Utilisateur avec rôle Prestataire après la connexion');
                 redirectTo(WEBCLIENT_URL . '/modules/providers/dashboard.php');
             } else {
-                error_log('Rôle inconnu après la connexion, redirection vers la page d\'accueil');
                 redirectTo(WEBCLIENT_URL);
             }
         }
+        exit;
     } else {
         $error = $result['message'];
         $email = $_POST['email'] ?? '';
-        error_log('Erreur lors de la connexion : ' . $error);
     }
 }
 
