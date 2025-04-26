@@ -46,6 +46,7 @@ public class Quote {
     @JsonProperty("montant_ht")
     private BigDecimal montantHt;
 
+    @JsonProperty("tva")
     private BigDecimal tva;
 
     private QuoteStatus statut;
@@ -56,7 +57,7 @@ public class Quote {
     @JsonProperty("delai_paiement")
     private Integer delaiPaiement;
 
-    
+    @JsonProperty("prestations")
     private List<QuotePrestation> prestations;
 
     public Quote() {
