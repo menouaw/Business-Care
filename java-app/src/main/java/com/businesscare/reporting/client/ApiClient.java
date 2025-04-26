@@ -90,7 +90,7 @@ public class ApiClient {
      */
     public List<Company> getCompanies() throws IOException, ApiException {
         if (this.authToken == null) {
-            throw new ApiException("Not authenticated. Call login() first.");
+            throw new ApiException("Non authentifié. Appeler login() d'abord.");
         }
 
         HttpGet get = new HttpGet(baseUrl + "companies.php");
@@ -108,7 +108,7 @@ public class ApiClient {
                  if (apiResponse != null && !apiResponse.isError()) {
                     return apiResponse.getData();
                  } else {
-                     throw new ApiException("Failed to fetch companies: " + (apiResponse != null ? apiResponse.getMessage() : "Invalid response format"));
+                     throw new ApiException("Échec de la récupération des entreprises: " + (apiResponse != null ? apiResponse.getMessage() : "Format de réponse invalide"));
                  }
             } else {
                  ErrorResponse errorResponse = null;
@@ -116,7 +116,7 @@ public class ApiClient {
                      errorResponse = objectMapper.readValue(responseBody, ErrorResponse.class);
                 } catch (Exception ignored) { }
                  String errorMessage = (errorResponse != null && errorResponse.getMessage() != null) ? errorResponse.getMessage() : "HTTP Error: " + statusCode;
-                throw new ApiException("Failed to fetch companies: " + errorMessage);
+                throw new ApiException("Échec de la récupération des entreprises: " + errorMessage);
             }
         });
     }
