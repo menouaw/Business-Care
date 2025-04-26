@@ -187,10 +187,6 @@ public class Company {
         this.invoices = invoices;
     }
 
-    public String getEmailContact() {
-        return email;
-    }
-
     @Override
     public String toString() {
         return "Company{" +
