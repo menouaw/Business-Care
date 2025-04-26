@@ -1,7 +1,5 @@
 <?php
 
-
-
 require_once __DIR__ . '/init.php'; 
 
 if (!$isAuthenticated) {
@@ -65,7 +63,9 @@ function getContractList($companyId = null) {
         }
         $sql .= " ORDER BY c.date_debut DESC";
 
-        $contracts = fetchAll(null, null, null, 0, 0, $params, $sql); 
+        
+        $stmt = executeQuery($sql, $params); 
+        $contracts = $stmt->fetchAll(PDO::FETCH_ASSOC); 
 
         logActivity($currentUserId, 'api_contract_list', '[SUCCESS] Liste des contrats récupérée avec succès (' . count($contracts) . ' contrats)' . ($companyId ? ' pour l\'entreprise ID ' . $companyId : ''));
         sendJsonResponse(['error' => false, 'data' => $contracts], 200);

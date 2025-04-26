@@ -8,7 +8,7 @@ define('DB_CHARSET', 'utf8mb4');
 
 // Paramètres de l'application
 define('APP_NAME', 'Business Care');
-define('APP_VERSION', '0.6.0');
+define('APP_VERSION', '0.7.0');
 
 // URLs de l'application
 define('ROOT_URL', 'http://localhost');
@@ -42,6 +42,7 @@ define('TABLE_INVOICES', 'factures');
 define('TABLE_USER_PREFERENCES', 'preferences_utilisateurs');
 define('TABLE_LOGS', 'logs');
 define('TABLE_REMEMBER_ME', 'remember_me_tokens');
+define('TABLE_API_TOKENS', 'api_tokens');
 define('TABLE_HABILITATIONS', 'habilitations');
 define('TABLE_PROVIDER_SERVICES', 'prestataires_prestations');
 define('TABLE_PROVIDER_AVAILABILITY', 'prestataires_disponibilites');
@@ -82,7 +83,7 @@ define('CONTRACT_STATUSES', ['actif', 'expiré', 'résilié', 'en_attente']);
 define('DEFAULT_CONTRACT_STATUS', 'en_attente');
 
 // Constantes pour les prestations (services)
-define('PRESTATION_TYPES', ['conférence', 'webinar', 'atelier', 'consultation', 'événement', 'autre']);
+define('PRESTATION_TYPES', ['conférence', 'webinar', 'atelier', 'consultation', 'évènement', 'autre']);
 define('PRESTATION_DIFFICULTIES', ['débutant', 'intermédiaire', 'avancé']);
 define('DEFAULT_PRESTATION_STATUS', 'actif'); 
 
@@ -128,6 +129,9 @@ define('AVAILABILITY_TYPES', [AVAILABILITY_TYPE_RECURRING, AVAILABILITY_TYPE_SPE
 
 // Limites diverses
 define('DASHBOARD_RECENT_ACTIVITIES_LIMIT', 5);
+
+// Constantes financières
+define('FINANCIAL_RECENT_PAYMENT_DAYS', 7);
 
 // Définit le fuseau horaire
 date_default_timezone_set('Europe/Paris');

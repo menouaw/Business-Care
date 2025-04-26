@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
 
     if (!validateToken($csrf_token)) {
-        logSecurityEvent($employee_id, 'csrf_failure', "[SECURITY FAILURE] Tentative POST événement avec jeton invalide");
+        logSecurityEvent($employee_id, 'csrf_failure', "[SECURITY FAILURE] Tentative POST évènement avec jeton invalide");
         flashMessage("Erreur de sécurité (jeton invalide). Veuillez réessayer.", "danger");
         redirectTo(WEBCLIENT_URL . '/modules/employees/events.php');
         exit;
@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             flashMessage("Action invalide.", "danger");
         }
     } else {
-        flashMessage("ID d'événement invalide.", "danger");
+        flashMessage("ID d'évènement invalide.", "danger");
     }
 
     redirectTo(WEBCLIENT_URL . '/modules/employees/events.php');
@@ -40,7 +40,7 @@ $events = $pageData['events'] ?? [];
 $currentTypeFilter = $pageData['currentTypeFilter'] ?? 'all';
 $eventTypes = $pageData['eventTypes'] ?? [];
 
-$pageTitle = "Événements - Espace Salarié";
+$pageTitle = "Évènements - Espace Salarié";
 
 include_once __DIR__ . '/../../templates/header.php';
 
@@ -50,8 +50,8 @@ include_once __DIR__ . '/../../templates/header.php';
     <div class="container">
         <div class="row mb-4 align-items-center">
             <div class="col-md-6">
-                <h1 class="h2">Événements</h1>
-                <p class="text-muted">Découvrez et participez aux prochains événements organisés.</p>
+                <h1 class="h2">Évènements</h1>
+                <p class="text-muted">Découvrez et participez aux prochains évènements organisés.</p>
             </div>
             <div class="col-md-6 text-md-end mb-2 mb-md-0">
                 <a href="<?= WEBCLIENT_URL ?>/modules/employees/index.php" class="btn btn-outline-secondary">
@@ -82,7 +82,7 @@ include_once __DIR__ . '/../../templates/header.php';
 
         <?php if (empty($events)) : ?>
             <div class="alert alert-info text-center" role="alert">
-                Aucun événement à venir correspondant à vos filtres n'a été trouvé.
+                Aucun évènement à venir correspondant à vos filtres n'a été trouvé.
             </div>
         <?php else : ?>
             <div class="row g-4">
@@ -95,7 +95,7 @@ include_once __DIR__ . '/../../templates/header.php';
                                         <i class="<?= getEventIcon($event['type'] ?? 'autre') ?> fa-2x"></i>
                                     </div>
                                     <div>
-                                        <h5 class="card-title mb-1"><?= htmlspecialchars($event['titre'] ?? 'Événement sans titre') ?></h5>
+                                        <h5 class="card-title mb-1"><?= htmlspecialchars($event['titre'] ?? 'Évènement sans titre') ?></h5>
                                         <span class="badge bg-secondary me-1"><?= htmlspecialchars(ucfirst($event['type'] ?? 'Autre')) ?></span>
                                         <?php if (!empty($event['niveau_difficulte'])) : ?>
                                             <span class="badge bg-light text-dark"><?= htmlspecialchars(ucfirst($event['niveau_difficulte'])) ?></span>

@@ -276,6 +276,19 @@ CREATE TABLE remember_me_tokens (
     INDEX idx_expires (expires_at)
 );
 
+CREATE TABLE api_tokens (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    token VARCHAR(64) NOT NULL,          
+    expires_at DATETIME NOT NULL,       
+    last_used_at DATETIME NULL,          
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES personnes(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_api_token (token),
+    INDEX idx_api_user_id (user_id),
+    INDEX idx_api_expires (expires_at)
+);
+
 CREATE TABLE preferences_utilisateurs (
     id INT PRIMARY KEY AUTO_INCREMENT,
     personne_id INT NOT NULL,
@@ -426,8 +439,8 @@ CREATE TABLE conseils (
     resume TEXT,
     categorie VARCHAR(100),
     contenu LONGTEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Ajouté
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP -- Ajouté
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP 
 );
 
 CREATE TABLE utilisateur_interets_conseils (

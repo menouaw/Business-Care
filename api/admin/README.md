@@ -1,392 +1,308 @@
-# Business Care - API Admin pour l'Application Java de Reporting
+# Business Care - API Admin
 
-Ce document décrit les points de terminaison (endpoints) de l'API fournis sous `/api/admin/` spécifiquement destinés à être utilisés par l'application Java autonome de reporting.
+Cette API REST est conçue pour fournir un accès programmable aux données de Business Care pour les applications externes, notamment l'application Java de reporting (`java-app/`). Elle est implémentée avec PHP et sert de backend pour les opérations CRUD sur les entités principales du système.
+
+## Structure de l'API
+
+```
+api/admin/
+├── auth.php         # Points de terminaison d'authentification
+├── companies.php    # Gestion des entreprises clientes
+├── contracts.php    # Gestion des contrats
+├── services.php     # Gestion des services/prestations
+├── users.php        # Gestion des utilisateurs
+└── index.php        # Point d'entrée principal (documentation/redirection)
+```
 
 ## Authentification
 
-Toutes les requêtes vers les points de terminaison protégés listés ci-dessous nécessitent une authentification via un Jeton de Porteur (Bearer Token).
+Toutes les requêtes vers les points de terminaison protégés nécessitent une authentification via un Jeton Bearer (Bearer Token). L'API utilise JWT (JSON Web Tokens) pour l'authentification.
 
-**Mécanisme d'Authentification:**
+### Obtention d'un Token
 
-1.  L'application Java doit d'abord obtenir un jeton en appelant le point de terminaison de Connexion (Login).
-2.  Pour les requêtes suivantes vers les points de terminaison protégés, l'application Java doit inclure le jeton obtenu dans l'en-tête `Authorization`:
-    `Authorization: Bearer <votre_jeton>`
+**Endpoint:** `POST /api/admin/auth.php`
 
-### 1. Connexion (Login)
+**Corps de la Requête:**
+```json
+{
+  "email": "admin@example.com",
+  "password": "your_password"
+}
+```
 
-*   **Méthode:** `POST`
-*   **URL:** `/api/admin/auth`
-*   **Authentification:** Aucune requise.
-*   **Corps de la Requête (Request Body):**
-    ```json
+**Réponse de Succès (200 OK):**
+```json
+{
+  "error": false,
+  "message": "Authentification réussie",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": 1,
+    "nom": "Admin",
+    "prenom": "Super",
+    "email": "admin@example.com",
+    "role_id": 1
+  }
+}
+```
+
+### Utilisation du Token
+
+Pour les requêtes suivantes, incluez le token dans l'en-tête HTTP:
+
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+### Déconnexion
+
+**Endpoint:** `DELETE /api/admin/auth.php`
+
+**En-tête:** Token Bearer requis
+
+**Réponse de Succès (200 OK):**
+```json
+{
+  "error": false,
+  "message": "Déconnexion réussie"
+}
+```
+
+## Ressources Disponibles
+
+### 1. Utilisateurs
+
+**Endpoint Base:** `/api/admin/users.php`
+
+| Méthode | Endpoint                | Description                     |
+|---------|-------------------------|---------------------------------|
+| GET     | `/api/admin/users.php`  | Liste tous les utilisateurs     |
+| GET     | `/api/admin/users.php?id={id}` | Détails d'un utilisateur |
+| POST    | `/api/admin/users.php`  | Crée un nouvel utilisateur      |
+| PUT     | `/api/admin/users.php?id={id}` | Modifie un utilisateur   |
+| DELETE  | `/api/admin/users.php?id={id}` | Supprime un utilisateur  |
+
+**Exemple de Réponse (GET liste):**
+```json
+{
+  "error": false,
+  "data": [
     {
-      "email": "admin_user@example.com",
-      "password": "votre_mot_de_passe"
-    }
-    ```
-*   **Réponse de Succès (200 OK):**
-    ```json
+      "id": 1,
+      "nom": "Dupont",
+      "prenom": "Jean",
+      "email": "jean.dupont@example.com",
+      "role_id": 2,
+      "role_name": "Prestataire",
+      "est_actif": 1
+    },
+    // ... autres utilisateurs
+  ]
+}
+```
+
+### 2. Entreprises
+
+**Endpoint Base:** `/api/admin/companies.php`
+
+| Méthode | Endpoint                   | Description                     |
+|---------|----------------------------|---------------------------------|
+| GET     | `/api/admin/companies.php` | Liste toutes les entreprises    |
+| GET     | `/api/admin/companies.php?id={id}` | Détails d'une entreprise|
+| POST    | `/api/admin/companies.php` | Crée une nouvelle entreprise    |
+| PUT     | `/api/admin/companies.php?id={id}` | Modifie une entreprise  |
+| DELETE  | `/api/admin/companies.php?id={id}` | Supprime une entreprise |
+
+**Exemple de Réponse (GET détails):**
+```json
+{
+  "error": false,
+  "data": {
+    "id": 1,
+    "nom": "Entreprise ABC",
+    "siret": "12345678901234",
+    "adresse": "123 Rue de l'Innovation",
+    "code_postal": "75000",
+    "ville": "Paris",
+    "email": "contact@entrepriseabc.com",
+    "telephone": "0123456789",
+    "taille_entreprise": "51-200",
+    "secteur_activite": "Tech",
+    "contracts": [1, 3, 5],
+    "employees_count": 150
+  }
+}
+```
+
+### 3. Contrats
+
+**Endpoint Base:** `/api/admin/contracts.php`
+
+| Méthode | Endpoint                   | Description                    |
+|---------|----------------------------|--------------------------------|
+| GET     | `/api/admin/contracts.php` | Liste tous les contrats        |
+| GET     | `/api/admin/contracts.php?id={id}` | Détails d'un contrat   |
+| GET     | `/api/admin/contracts.php?company_id={id}` | Contrats d'une entreprise |
+| POST    | `/api/admin/contracts.php` | Crée un nouveau contrat        |
+| PUT     | `/api/admin/contracts.php?id={id}` | Modifie un contrat     |
+| DELETE  | `/api/admin/contracts.php?id={id}` | Supprime un contrat    |
+
+**Exemple de Réponse (GET liste):**
+```json
+{
+  "error": false,
+  "data": [
     {
-      "error": false,
-      "message": "Authentification réussie",
-      "token": "chaine_jeton_bearer_generee",
-      "user": {
+      "id": 1,
+      "entreprise_id": 1,
+      "service_id": 2,
+      "date_debut": "2023-01-15",
+      "date_fin": "2024-01-14",
+      "nombre_salaries": 150,
+      "statut": "actif",
+      "nom_entreprise": "Entreprise ABC",
+      "nom_service": "Pack Standard"
+    },
+    // ... autres contrats
+  ]
+}
+```
+
+### 4. Services
+
+**Endpoint Base:** `/api/admin/services.php`
+
+| Méthode | Endpoint                  | Description                    |
+|---------|---------------------------|--------------------------------|
+| GET     | `/api/admin/services.php` | Liste tous les services        |
+| GET     | `/api/admin/services.php?id={id}` | Détails d'un service   |
+| POST    | `/api/admin/services.php` | Crée un nouveau service        |
+| PUT     | `/api/admin/services.php?id={id}` | Modifie un service     |
+| DELETE  | `/api/admin/services.php?id={id}` | Supprime un service    |
+
+**Exemple de Réponse (GET détails):**
+```json
+{
+  "error": false,
+  "data": {
+    "id": 2,
+    "nom": "Pack Standard",
+    "description": "Accès à tous les services de base...",
+    "prix_base": 1000.00,
+    "prix_par_salarie": 5.00,
+    "duree_contrat_mois": 12,
+    "inclus_prestations": [1, 3, 5],
+    "est_actif": 1,
+    "details_prestations": [
+      {
         "id": 1,
-        "nom": "Admin",
-        "prenom": "Super",
-        "email": "admin_user@example.com",
-        "role_id": 1
-        // ... autres champs utilisateur non sensibles
-      }
-    }
-    ```
-*   **Réponses d'Erreur:**
-    *   `400 Bad Request`: Email ou mot de passe manquant.
-    *   `401 Unauthorized`: Email ou mot de passe invalide.
-    *   `500 Internal Server Error`: Problème côté serveur lors de la connexion.
+        "nom": "Atelier Gestion du Stress",
+        "description": "Workshop interactif...",
+        "prix": 500.00,
+        "type": "atelier",
+        "categorie": "Bien-être"
+      },
+      // ... autres prestations incluses
+    ]
+  }
+}
+```
 
-### 2. Déconnexion (Logout) (Optionnel pour l'App Java)
+## Gestion des Erreurs
 
-*   **Méthode:** `DELETE`
-*   **URL:** `/api/admin/auth`
-*   **Authentification:** Jeton Bearer requis.
-*   **Réponse de Succès (200 OK):**
-    ```json
-    {
-      "error": false,
-      "message": "Déconnexion réussie"
-    }
-    ```
-*   **Réponses d'Erreur:**
-    *   `400 Bad Request`: Échec de la déconnexion (ex: jeton déjà invalide).
-    *   `401 Unauthorized`: Authentification requise ou jeton invalide.
-    *   `500 Internal Server Error`: Problème côté serveur lors de la déconnexion.
+L'API utilise les codes de statut HTTP standards:
 
----
+- `200 OK` - Requête réussie
+- `201 Created` - Ressource créée avec succès
+- `400 Bad Request` - Paramètres invalides
+- `401 Unauthorized` - Authentification requise/échouée
+- `403 Forbidden` - Permissions insuffisantes
+- `404 Not Found` - Ressource introuvable
+- `500 Internal Server Error` - Erreur serveur
 
-## Points de Terminaison de Données (Data Endpoints)
+Toutes les réponses d'erreur suivent ce format:
+```json
+{
+  "error": true,
+  "message": "Description de l'erreur",
+  "code": 401
+}
+```
 
-Tous les points de terminaison ci-dessous nécessitent un Jeton Bearer valide dans l'en-tête `Authorization`. Ils supposent que l'utilisateur authentifié possède les permissions nécessaires (ex: Rôle Admin).
+## Pagination
 
-### Sociétés (`entreprises`)
+Pour les endpoints qui retournent plusieurs résultats, la pagination est supportée via:
 
-*   **Endpoint:** `/api/admin/companies`
-*   **Méthode:** `GET`
-*   **Description:** Récupère une liste de toutes les sociétés clientes.
-*   **Paramètres URL:** Aucun pour la liste. Utiliser `?id={company_id}` pour les détails.
-*   **Réponse de Succès (200 OK - Liste):**
-    ```json
-    {
-      "error": false,
-      "data": [
-        {
-          "id": 1,
-          "nom": "Client Corp A",
-          "siret": "12345678901234",
-          "ville": "Paris",
-          "taille_entreprise": "51-200",
-          "secteur_activite": "Tech"
-          // ... autres champs pertinents de la table 'entreprises'
-        },
-        // ... plus de sociétés
-      ]
-    }
-    ```
-*   **Réponse de Succès (200 OK - Détails `?id=1`):**
-    ```json
-    {
-        "error": false,
-        "data": {
-            "id": 1,
-            "nom": "Client Corp A",
-            "siret": "12345678901234",
-            "adresse": "123 Rue Example",
-            "code_postal": "75001",
-            "ville": "Paris",
-            "telephone": "0123456789",
-            "email": "contact@clienta.com",
-            // ... tous les champs de la table 'entreprises'
-            // Potentiellement ajouter les IDs des contrats, devis, factures liés ici
-            "contracts": [10, 15],
-            "quotes": [5, 8],
-            "invoices": [20, 25]
-        }
-    }
-    ```
-*   **Réponses d'Erreur:**
-    *   `401 Unauthorized`: Jeton invalide/manquant.
-    *   `403 Forbidden`: Permissions insuffisantes.
-    *   `404 Not Found`: ID de société non trouvé (pour la requête de détails).
-    *   `500 Internal Server Error`: Problème côté serveur.
+- `?page=2` - Page à récupérer (commence à 1)
+- `?limit=20` - Nombre d'éléments par page (défaut: 10, max: 100)
 
-### Contrats (`contrats`)
+Exemple: `/api/admin/users.php?page=2&limit=20`
 
-*   **Endpoint:** `/api/admin/contracts`
-*   **Méthode:** `GET`
-*   **Description:** Récupère une liste de tous les contrats. Peut être filtrée par société.
-*   **Paramètres URL:**
-    *   `?company_id={company_id}` (Optionnel): Filtrer les contrats par société.
-    *   `?id={contract_id}`: Obtenir les détails d'un contrat spécifique.
-*   **Réponse de Succès (200 OK - Liste):**
-    ```json
-    {
-      "error": false,
-      "data": [
-        {
-          "id": 10,
-          "entreprise_id": 1,
-          "service_id": 2, // ex: Basic Pack
-          "date_debut": "2023-01-15",
-          "date_fin": "2024-01-14",
-          "nombre_salaries": 150,
-          "statut": "actif"
-          // ... autres champs pertinents de la table 'contrats'
-        },
-        // ... plus de contrats
-      ]
-    }
-    ```
-*   **Réponse de Succès (200 OK - Détails `?id=10`):**
-    ```json
-    {
-        "error": false,
-        "data": {
-            "id": 10,
-            "entreprise_id": 1,
-            "service_id": 2,
-            "date_debut": "2023-01-15",
-            "date_fin": "2024-01-14",
-            "nombre_salaries": 150,
-            "statut": "actif",
-            "conditions_particulieres": "Note sur les termes spécifiques...",
-            // Inclure les détails du service associé ?
-            "service_details": { "id": 2, "type": "Basic Pack", ... }
-            // ... tous les champs de la table 'contrats'
-        }
-    }
-    ```
-*   **Réponses d'Erreur:**
-    *   `401 Unauthorized`.
-    *   `403 Forbidden`.
-    *   `404 Not Found`: ID de contrat non trouvé.
-    *   `500 Internal Server Error`.
+Réponse avec pagination:
+```json
+{
+  "error": false,
+  "data": [ /* éléments de la page */ ],
+  "pagination": {
+    "total": 135,
+    "per_page": 20,
+    "current_page": 2,
+    "last_page": 7,
+    "next_page_url": "/api/admin/users.php?page=3&limit=20",
+    "prev_page_url": "/api/admin/users.php?page=1&limit=20"
+  }
+}
+```
 
-### Services / Prestations (`services` / `prestations`)
+## Filtrage
 
-*Note: Déterminer si ceux-ci sont séparés ou combinés. Supposant que `prestations` représente les services individuels offerts.*
+Des paramètres de filtrage spécifiques sont disponibles pour certains endpoints:
 
-*   **Endpoint:** `/api/admin/services` (Supposant que cela cible la table `prestations`)
-*   **Méthode:** `GET`
-*   **Description:** Récupère une liste de tous les services/prestations disponibles.
-*   **Paramètres URL:** Aucun pour la liste. Utiliser `?id={prestation_id}` pour les détails.
-*   **Réponse de Succès (200 OK - Liste):**
-    ```json
-    {
-      "error": false,
-      "data": [
-        {
-          "id": 1,
-          "nom": "Atelier Gestion du Stress",
-          "description": "Workshop interactif...",
-          "prix": 500.00,
-          "type": "atelier",
-          "categorie": "Bien-être"
-          // ... autres champs pertinents de la table 'prestations'
-          // Potentiellement ajouter le compte d'utilisation (ex: associated_event_count)
-        },
-        // ... plus de services
-      ]
-    }
-    ```
-*   **Réponse de Succès (200 OK - Détails `?id=1`):**
-    ```json
-    {
-        "error": false,
-        "data": {
-            "id": 1,
-            "nom": "Atelier Gestion du Stress",
-            "description": "Workshop interactif...",
-            "prix": 500.00,
-            "duree": 120, // minutes
-            "type": "atelier",
-            "categorie": "Bien-être",
-            "niveau_difficulte": "debutant",
-            "capacite_max": 20,
-            // ... tous les champs de la table 'prestations'
-            // Potentiellement ajouter la liste des IDs d'événements où utilisé
-            "associated_events": [ 5, 12, 23]
-        }
-    }
-    ```
-*   **Réponses d'Erreur:**
-    *   `401 Unauthorized`.
-    *   `403 Forbidden`.
-    *   `404 Not Found`: ID de service non trouvé.
-    *   `500 Internal Server Error`.
+- `/api/admin/users.php?role_id=2` - Filtrer par rôle
+- `/api/admin/contracts.php?status=actif` - Filtrer par statut
+- `/api/admin/services.php?est_actif=1` - Filtrer par état d'activité
 
-### Événements (`evenements`)
+## Intégration avec l'Application Java
 
-*   **Endpoint:** `/api/admin/events` (Nécessite la création de `api/admin/events.php`)
-*   **Méthode:** `GET`
-*   **Description:** Récupère une liste de tous les événements.
-*   **Paramètres URL:** Aucun pour la liste. Utiliser `?id={event_id}` pour les détails.
-*   **Réponse de Succès (200 OK - Liste):**
-    ```json
-    {
-      "error": false,
-      "data": [
-        {
-          "id": 5,
-          "titre": "Webinar Nutrition",
-          "date_debut": "2024-06-15 14:00:00",
-          "date_fin": "2024-06-15 15:00:00",
-          "type": "webinar",
-          "capacite_max": 100
-          // ... autres champs pertinents de la table 'evenements'
-          // Potentiellement ajouter le compte de réservations (ex: inscription_count)
-        },
-        // ... plus d'événements
-      ]
-    }
-    ```
-*   **Réponse de Succès (200 OK - Détails `?id=5`):**
-    ```json
-    {
-        "error": false,
-        "data": {
-            "id": 5,
-            "titre": "Webinar Nutrition",
-            "description": "Présentation sur l'alimentation saine...",
-            "date_debut": "2024-06-15 14:00:00",
-            "date_fin": "2024-06-15 15:00:00",
-            "lieu": "Online",
-            "type": "webinar",
-            "capacite_max": 100,
-            // ... tous les champs de la table 'evenements'
-            // Potentiellement ajouter la liste des IDs de services associés ou détails d'inscription
-            "associated_services": [2, 7],
-            "inscriptions": [ {"personne_id": 101, "statut": "inscrit"}, ... ]
-        }
-    }
-    ```
-*   **Réponses d'Erreur:**
-    *   `401 Unauthorized`.
-    *   `403 Forbidden`.
-    *   `404 Not Found`: ID d'événement non trouvé.
-    *   `500 Internal Server Error`.
+Cette API est conçue pour être utilisée par l'application Java de reporting (`/java-app/`), qui génère des rapports PDF détaillés sur l'activité de Business Care.
 
-### Factures (`factures`)
+Pour l'intégration avec l'application Java:
+1. L'application Java s'authentifie et obtient un token
+2. Utilise ce token pour les requêtes suivantes
+3. Collecte les données nécessaires pour la génération de rapports
+4. Génère les fichiers PDF et graphiques visuels
+5. Stocke les rapports pour accès ultérieur via le panneau d'administration
 
-*   **Endpoint:** `/api/admin/invoices` (Nécessite la création de `api/admin/invoices.php`)
-*   **Méthode:** `GET`
-*   **Description:** Récupère une liste de toutes les factures. Peut être filtrée par société.
-*   **Paramètres URL:**
-    *   `?company_id={company_id}` (Optionnel): Filtrer les factures par société.
-    *   `?id={invoice_id}`: Obtenir les détails d'une facture spécifique.
-*   **Réponse de Succès (200 OK - Liste):**
-    ```json
-    {
-      "error": false,
-      "data": [
-        {
-          "id": 20,
-          "entreprise_id": 1,
-          "numero_facture": "F2024-0020",
-          "date_emission": "2024-02-01",
-          "date_echeance": "2024-03-01",
-          "montant_total": 1200.00,
-          "statut": "payee"
-          // ... autres champs pertinents de la table 'factures'
-        },
-        // ... plus de factures
-      ]
-    }
-    ```
-*   **Réponse de Succès (200 OK - Détails `?id=20`):**
-    ```json
-    {
-        "error": false,
-        "data": {
-            "id": 20,
-            "entreprise_id": 1,
-            "devis_id": 5,
-            "numero_facture": "F2024-0020",
-            "date_emission": "2024-02-01",
-            "date_echeance": "2024-03-01",
-            "montant_total": 1200.00,
-            "montant_ht": 1000.00,
-            "tva": 200.00,
-            "statut": "payee",
-            "mode_paiement": "virement",
-            "date_paiement": "2024-02-25 10:00:00",
-            // ... tous les champs de la table 'factures'
-            // Potentiellement ajouter les lignes de facture si nécessaire
-            "line_items": [ ... ]
-        }
-    }
-    ```
-*   **Réponses d'Erreur:**
-    *   `401 Unauthorized`.
-    *   `403 Forbidden`.
-    *   `404 Not Found`: ID de facture non trouvé.
-    *   `500 Internal Server Error`.
+## Sécurité et Journalisation
 
-### Devis (`devis`)
+L'API inclut:
+- Authentification sécurisée par JWT
+- Validation des entrées
+- Journalisation complète des accès (table `logs`)
+- Protection contre les attaques courantes (CSRF, XSS, Injection SQL)
+- Limites de taux (rate limiting) pour prévenir les abus
 
-*   **Endpoint:** `/api/admin/quotes` (Nécessite la création de `api/admin/quotes.php`)
-*   **Méthode:** `GET`
-*   **Description:** Récupère une liste de tous les devis. Peut être filtrée par société.
-*   **Paramètres URL:**
-    *   `?company_id={company_id}` (Optionnel): Filtrer les devis par société.
-    *   `?id={quote_id}`: Obtenir les détails d'un devis spécifique.
-*   **Réponse de Succès (200 OK - Liste):**
-    ```json
-    {
-      "error": false,
-      "data": [
-        {
-          "id": 5,
-          "entreprise_id": 1,
-          "date_creation": "2023-12-01",
-          "date_validite": "2023-12-31",
-          "montant_total": 1200.00,
-          "statut": "accepté"
-          // ... autres champs pertinents de la table 'devis'
-        },
-        // ... plus de devis
-      ]
-    }
-    ```
-*   **Réponse de Succès (200 OK - Détails `?id=5`):**
-    ```json
-    {
-        "error": false,
-        "data": {
-            "id": 5,
-            "entreprise_id": 1,
-            "service_id": 2,
-            "nombre_salaries_estimes": 150,
-            "date_creation": "2023-12-01",
-            "date_validite": "2023-12-31",
-            "montant_total": 1200.00,
-            "montant_ht": 1000.00,
-            "tva": 200.00,
-            "statut": "accepté",
-            // ... tous les champs de la table 'devis'
-            // Potentiellement ajouter les lignes de prestation (devis_prestations)
-            "prestations": [
-                {"prestation_id": 1, "quantite": 1, "prix_unitaire_devis": 500.00, "description_specifique": "Session sur site"},
-                {"prestation_id": 7, "quantite": 10, "prix_unitaire_devis": 70.00, "description_specifique": "Accès plateforme"}
-            ]
-        }
-    }
-    ```
-*   **Réponses d'Erreur:**
-    *   `401 Unauthorized`.
-    *   `403 Forbidden`.
-    *   `404 Not Found`: ID de devis non trouvé.
-    *   `500 Internal Server Error`.
+## Développement
 
----
+### Ajouter un nouvel Endpoint API
 
-**Note:** Les champs exacts retournés dans l'objet `data` pour chaque point de terminaison devront être finalisés lors de l'implémentation en fonction des besoins spécifiques de l'application Java de reporting et des données disponibles dans les tables de la base de données. Assurez-vous que les données liées (comme les détails d'un service dans un contrat, ou les lignes d'items dans une facture/devis) sont incluses lorsque nécessaire pour éviter des appels API excessifs depuis l'application Java.
+1. Créer un fichier PHP dans le dossier `/api/admin/`
+2. Inclure le fichier d'initialisation API commun
+3. Implémenter la logique selon la méthode HTTP (GET, POST, etc.)
+4. Retourner les réponses au format JSON standardisé
+5. Documenter l'endpoint ici
+
+### Tests
+
+Utilisez une application comme Postman ou cURL pour tester les endpoints API:
+
+```bash
+# Exemple d'authentification
+curl -X POST https://votredomaine.com/api/admin/auth.php \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@example.com","password":"your_password"}'
+
+# Exemple de récupération des utilisateurs avec le token
+curl -X GET https://votredomaine.com/api/admin/users.php \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```

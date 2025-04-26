@@ -1,19 +1,17 @@
 <?php
-
-
-
 require_once __DIR__ . '/init.php'; 
+
 
 if (!$isAuthenticated) {
     logSecurityEvent(null, 'api_access_denied', '[FAILURE] Tentative d\'accès à /api/admin/services sans authentification');
     sendJsonResponse(['error' => true, 'message' => 'Authentification requise'], 401);
 }
 
-if ($currentUserRole !== ROLE_ADMIN) {
+
+if ($currentUserRole !== ROLE_ADMIN) { 
     logSecurityEvent($currentUserId, 'api_access_denied', '[FAILURE] Utilisateur ID ' . $currentUserId . ' a tenté d\'accéder à /api/admin/services sans le rôle admin');
     sendJsonResponse(['error' => true, 'message' => 'Accès interdit'], 403);
 }
-
 
 $method = $_SERVER['REQUEST_METHOD'];
 

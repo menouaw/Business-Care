@@ -561,7 +561,7 @@ function getEmployeeEvents($employee_id, $event_type = 'all')
 {
     $employee_id = filter_var(sanitizeInput($employee_id), FILTER_VALIDATE_INT);
     if (!$employee_id) {
-        flashMessage("ID employé invalide pour récupérer les événements.", "danger");
+        flashMessage("ID employé invalide pour récupérer les évènements.", "danger");
         return [];
     }
 
@@ -635,8 +635,8 @@ function getEmployeeEvents($employee_id, $event_type = 'all')
 
         return $events;
     } catch (Exception $e) {
-        logSystemActivity('error', "Erreur récupération événements pour employé #$employee_id: " . $e->getMessage());
-        flashMessage("Impossible de charger la liste des événements.", "danger");
+        logSystemActivity('error', "Erreur récupération évènements pour employé #$employee_id: " . $e->getMessage());
+        flashMessage("Impossible de charger la liste des évènements.", "danger");
         return [];
     }
 }
@@ -1448,14 +1448,14 @@ function handleRegisterForEvent($employee_id, $event_id)
     $event = fetchOne('evenements', 'id = ?', $event_params);
 
     if (!$event) {
-        flashMessage("L'événement demandé n'existe pas.", "warning");
+        flashMessage("L'évènement demandé n'existe pas.", "warning");
         return false;
     }
 
     $eventStartDate = new DateTime($event['date_debut']);
     $now = new DateTime();
     if ($now >= $eventStartDate) {
-        flashMessage("Cet événement est déjà passé ou en cours, inscription impossible.", "warning");
+        flashMessage("Cet évènement est déjà passé ou en cours, inscription impossible.", "warning");
         return false;
     }
 
@@ -1466,7 +1466,7 @@ function handleRegisterForEvent($employee_id, $event_id)
         $params_exist
     );
     if ($existingRegistration) {
-        flashMessage("Vous êtes déjà inscrit à cet événement.", "info");
+        flashMessage("Vous êtes déjà inscrit à cet évènement.", "info");
         return true;
     }
 
@@ -1479,7 +1479,7 @@ function handleRegisterForEvent($employee_id, $event_id)
         );
 
         if ($registeredCount >= $event['capacite_max']) {
-            flashMessage("Désolé, cet événement est complet.", "warning");
+            flashMessage("Désolé, cet évènement est complet.", "warning");
             return false;
         }
     }
@@ -1514,12 +1514,12 @@ function handleRegisterForEvent($employee_id, $event_id)
 
         if ($success) {
             commitTransaction();
-            logActivity($employee_id, 'event_registration', "Inscription à l'événement ID: $event_id réussie.");
-            flashMessage("Inscription à l'événement réussie !", "success");
+            logActivity($employee_id, 'event_registration', "Inscription à l'évènement ID: $event_id réussie.");
+            flashMessage("Inscription à l'évènement réussie !", "success");
             return true;
         } else {
             rollbackTransaction();
-            logSystemActivity('error', "Échec de l'inscription à l'événement ID: $event_id pour l'employé ID: $employee_id");
+            logSystemActivity('error', "Échec de l'inscription à l'évènement ID: $event_id pour l'employé ID: $employee_id");
             flashMessage("Erreur technique lors de l'inscription.", "danger");
             return false;
         }
@@ -1527,7 +1527,7 @@ function handleRegisterForEvent($employee_id, $event_id)
         if (getDbConnection()->inTransaction()) {
             rollbackTransaction();
         }
-        logSystemActivity('error', "Exception lors de l'inscription à l'événement ID: $event_id: " . $e->getMessage());
+        logSystemActivity('error', "Exception lors de l'inscription à l'évènement ID: $event_id: " . $e->getMessage());
         flashMessage("Erreur technique lors de l'inscription.", "danger");
         return false;
     }
@@ -1547,14 +1547,14 @@ function handleUnregisterFromEvent($employee_id, $event_id)
 
     $event = fetchOne('evenements', 'id = ?', [$event_id]);
     if (!$event) {
-        flashMessage("L'événement demandé n'existe pas.", "warning");
+        flashMessage("L'évènement demandé n'existe pas.", "warning");
         return false;
     }
 
     $eventStartDate = new DateTime($event['date_debut']);
     $now = new DateTime();
     if ($now >= $eventStartDate) {
-        flashMessage("Cet événement est déjà passé ou en cours, désinscription impossible.", "warning");
+        flashMessage("Cet évènement est déjà passé ou en cours, désinscription impossible.", "warning");
         return false;
     }
 
@@ -1581,12 +1581,12 @@ function handleUnregisterFromEvent($employee_id, $event_id)
 
         if ($updated > 0) {
             commitTransaction();
-            logActivity($employee_id, 'event_unregistration', "Désinscription de l'événement ID: $event_id réussie.");
-            flashMessage("Désinscription de l'événement réussie.", "success");
+            logActivity($employee_id, 'event_unregistration', "Désinscription de l'évènement ID: $event_id réussie.");
+            flashMessage("Désinscription de l'évènement réussie.", "success");
             return true;
         } else {
             rollbackTransaction();
-            logSystemActivity('error', "Échec de la désinscription de l'événement ID: $event_id pour l'employé ID: $employee_id");
+            logSystemActivity('error', "Échec de la désinscription de l'évènement ID: $event_id pour l'employé ID: $employee_id");
             flashMessage("Erreur technique lors de la désinscription.", "danger");
             return false;
         }
@@ -1594,7 +1594,7 @@ function handleUnregisterFromEvent($employee_id, $event_id)
         if (getDbConnection()->inTransaction()) {
             rollbackTransaction();
         }
-        logSystemActivity('error', "Exception lors de la désinscription de l'événement ID: $event_id: " . $e->getMessage());
+        logSystemActivity('error', "Exception lors de la désinscription de l'évènement ID: $event_id: " . $e->getMessage());
         flashMessage("Erreur technique lors de la désinscription.", "danger");
         return false;
     }
@@ -1848,7 +1848,7 @@ function handleEventActionRequest($postData, $employee_id)
     $action = $postData['action'] ?? '';
 
     if (!validateToken($csrf_token)) {
-        logSecurityEvent($employee_id, 'csrf_failure', "[SECURITY FAILURE] Tentative POST événement avec jeton invalide via handleEventActionRequest");
+        logSecurityEvent($employee_id, 'csrf_failure', "[SECURITY FAILURE] Tentative POST évènement avec jeton invalide via handleEventActionRequest");
         flashMessage("Erreur de sécurité (jeton invalide).", "danger");
         return;
     }
@@ -1856,7 +1856,7 @@ function handleEventActionRequest($postData, $employee_id)
     requireRole(ROLE_SALARIE);
 
     if (!$event_id) {
-        flashMessage("ID d'événement invalide.", "danger");
+        flashMessage("ID d'évènement invalide.", "danger");
         return;
     }
 
