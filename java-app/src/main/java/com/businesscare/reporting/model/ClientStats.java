@@ -6,6 +6,10 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.HashMap;
+
 /**
  * Contient les statistiques agrégées sur les clients pour le rapport.
  */
