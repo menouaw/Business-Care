@@ -9,7 +9,7 @@ require_once 'db.php';
  *
  * La fonction recherche un utilisateur actif par son adresse email et valide le mot de passe fourni. Si l'authentification est réussie, elle
  * initialise les variables de session avec les informations de l'utilisateur et crée, si demandé, un cookie de connexion persistante ("remember me").
- * Un événement de sécurité est enregistré pour consigner le résultat de l'opération.
+ * Un évènement de sécurité est enregistré pour consigner le résultat de l'opération.
  *
  * @param string $email Email de l'utilisateur.
  * @param string $password Mot de passe de l'utilisateur.
@@ -49,7 +49,7 @@ function login($email, $password, $rememberMe = false) {
 /**
  * Déconnecte l'utilisateur authentifié et réinitialise la session.
  *
- * Cette fonction marque l'événement de déconnexion en journalisant l'action pour un utilisateur identifié,
+ * Cette fonction marque l'évènement de déconnexion en journalisant l'action pour un utilisateur identifié,
  * supprime le token "remember_me" ainsi que son cookie associé si présent,
  * puis détruit la session PHP en cours et en démarre une nouvelle afin d'assurer une déconnexion complète.
  *
@@ -77,7 +77,7 @@ function logout() {
  *
  * Cette fonction détermine d'abord si une session active existe en vérifiant la présence d'un identifiant utilisateur.
  * Si la session existe, elle compare l'heure de la dernière activité avec le délai autorisé (SESSION_LIFETIME).
- * En cas d'expiration de la session, l'événement est consigné, la fonction procède à une déconnexion automatique et retourne false.
+ * En cas d'expiration de la session, l'évènement est consigné, la fonction procède à une déconnexion automatique et retourne false.
  *
  * Si aucune session n'est active, la fonction tente une authentification via le cookie "remember_me" en validant son token.
  *
@@ -150,7 +150,7 @@ function hasRole($requiredRole) {
  * Vérifie que l'utilisateur est authentifié et possède le rôle requis, redirige sinon.
  *
  * Appelle requireAuthentication pour s'assurer que l'utilisateur est connecté.
- * Si l'utilisateur n'a pas le rôle requis, enregistre l'événement et redirige
+ * Si l'utilisateur n'a pas le rôle requis, enregistre l'évènement et redirige
  * vers la page de connexion administrateur avec une erreur.
  *
  * @param int $requiredRole Identifiant du rôle requis.
@@ -204,7 +204,7 @@ function getUserInfo($userId = null) {
  * Initialise la procédure de réinitialisation de mot de passe pour un utilisateur.
  *
  * Cette fonction vérifie si l'email fourni correspond à un utilisateur existant. Si ce n'est pas le cas,
- * elle consigne un événement de sécurité et retourne false. Sinon, elle génère un token unique et définit
+ * elle consigne un évènement de sécurité et retourne false. Sinon, elle génère un token unique et définit
  * une date d'expiration d'une heure pour le lien de réinitialisation, met à jour l'enregistrement de l'utilisateur,
  * et consigne l'initiation de la demande de réinitialisation.
  *
@@ -238,7 +238,7 @@ function resetPassword($email) {
  * Génère et stocke un token de connexion automatique "Se souvenir de moi" pour un utilisateur.
  *
  * Le token, composé d'une chaîne hexadécimale de 64 caractères, est enregistré dans la base
- * de données avec une date d'expiration fixée à 30 jours. Un événement de sécurité est loggé
+ * de données avec une date d'expiration fixée à 30 jours. Un évènement de sécurité est loggé
  * lors de sa création.
  *
  * @param int $userId Identifiant de l'utilisateur pour lequel le token est généré.
@@ -264,8 +264,8 @@ function createRememberMeToken($userId) {
  *
  * Cette fonction vérifie que le token fourni existe et n'est pas expiré dans la base de données. 
  * Si le token est valide, elle récupère les informations de l'utilisateur correspondant, initialise 
- * les variables de session et enregistre un événement de connexion automatique. En cas d'invalidité 
- * du token ou si l'utilisateur est introuvable, un événement d'échec est consigné.
+ * les variables de session et enregistre un évènement de connexion automatique. En cas d'invalidité 
+ * du token ou si l'utilisateur est introuvable, un évènement d'échec est consigné.
  *
  * @param string $token Le token à valider.
  * @return bool Renvoie true si la ré-authentification a réussi, sinon false.
@@ -298,7 +298,7 @@ function validateRememberMeToken($token) {
  * Supprime un token "Se souvenir de moi" de la base de données et journalise l'opération.
  *
  * Cette fonction recherche le token dans la table dédiée et tente de le supprimer. Elle enregistre ensuite
- * un événement de sécurité indiquant si l'opération a réussi ou échoué.
+ * un évènement de sécurité indiquant si l'opération a réussi ou échoué.
  *
  * @param string $token Token d'authentification à supprimer.
  * @return bool Retourne true si la suppression est effectuée avec succès, sinon false.

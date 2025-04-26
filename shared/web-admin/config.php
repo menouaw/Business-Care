@@ -83,7 +83,7 @@ define('CONTRACT_STATUSES', ['actif', 'expiré', 'résilié', 'en_attente']);
 define('DEFAULT_CONTRACT_STATUS', 'en_attente');
 
 // Constantes pour les prestations (services)
-define('PRESTATION_TYPES', ['conférence', 'webinar', 'atelier', 'consultation', 'événement', 'autre']);
+define('PRESTATION_TYPES', ['conférence', 'webinar', 'atelier', 'consultation', 'évènement', 'autre']);
 define('PRESTATION_DIFFICULTIES', ['débutant', 'intermédiaire', 'avancé']);
 define('DEFAULT_PRESTATION_STATUS', 'actif'); 
 

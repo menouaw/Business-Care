@@ -162,7 +162,7 @@ include_once __DIR__ . '/../../templates/header.php';
             <div class="row mb-4 align-items-center">
                 <div class="col">
                     <h1 class="h2"><?= $pageTitle ?></h1>
-                    <p class="text-muted">Rejoignez des groupes, partagez vos passions et organisez des événements.</p>
+                    <p class="text-muted">Rejoignez des groupes, partagez vos passions et organisez des évènements.</p>
                 </div>
                 <div class="col-auto">
                     <a href="javascript:history.back()" class="btn btn-outline-secondary">

@@ -53,24 +53,6 @@ if (preg_match('/Bearer\\s(\\S+)/', $authHeader, $matches)) {
 
 
 
-/*
-function validateAdminToken($token) {
-    
-    
-    
-    
-    
-    
-    
-    
-    if (!empty($token)) { 
-         
-         return [true, 1]; 
-    }
-    return [false, null];
-}
-*/
-
 
 switch ($module) {
     

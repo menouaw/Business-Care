@@ -195,10 +195,10 @@ public class ChartGenerator {
     
 
     /**
-     * Crée un graphique camembert pour la distribution des types d'événements.
+     * Crée un graphique camembert pour la distribution des types d'évènements.
      */
     public static JFreeChart createEventTypeDistributionChart(EventStats stats) {
-        logger.debug("Création du diagramme de distribution des types d'événements");
+        logger.debug("Création du diagramme de distribution des types d'évènements");
         DefaultPieDataset<String> dataset = new DefaultPieDataset<>();
         if (stats.getEventCountByType() != null) {
             stats.getEventCountByType().forEach((type, count) -> {
@@ -207,28 +207,28 @@ public class ChartGenerator {
                 }
             });
         } else {
-            logger.warn("Données de comptage des types d'événements manquantes.");
+            logger.warn("Données de comptage des types d'évènements manquantes.");
             dataset.setValue("Données manquantes", 1);
         }
 
         JFreeChart pieChart = ChartFactory.createPieChart(
-                "Répartition par Type d'Événement",
+                "Répartition par Type d'Évènement",
                 dataset,
                 true, true, false);
 
         PiePlot<String> plot = (PiePlot<String>) pieChart.getPlot();
         plot.setBackgroundPaint(Color.WHITE);
         plot.setLabelFont(new Font("SansSerif", Font.PLAIN, 10));
-        plot.setNoDataMessage("Aucun type d'événement disponible");
+        plot.setNoDataMessage("Aucun type d'évènement disponible");
 
         return pieChart;
     }
 
     /**
-     * Crée un diagramme à barres montrant la popularité (inscriptions) du Top 5 des événements.
+     * Crée un diagramme à barres montrant la popularité (inscriptions) du Top 5 des évènements.
      */
     public static JFreeChart createTop5EventsByPopularityChart(EventStats stats) {
-        logger.debug("Création du diagramme des 5 événements les plus populaires");
+        logger.debug("Création du diagramme des 5 évènements les plus populaires");
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         if (stats.getTop5EventsByPopularity() != null) {
             stats.getTop5EventsByPopularity().forEach(ep -> {
@@ -237,12 +237,12 @@ public class ChartGenerator {
                 }
             });
         } else {
-            logger.warn("Données du Top 5 des événements manquantes.");
+            logger.warn("Données du Top 5 des évènements manquantes.");
         }
 
         JFreeChart barChart = ChartFactory.createBarChart(
-                "Top 5 Événements par Popularité (Inscriptions)",
-                "Événement",
+                "Top 5 Évènements par Popularité (Inscriptions)",
+                "Évènement",
                 "Nombre d'Inscriptions",
                 dataset,
                 PlotOrientation.VERTICAL,
@@ -258,11 +258,11 @@ public class ChartGenerator {
     }
 
      /**
-     * Crée un diagramme (ex: barres) basé sur la fréquence calculée des événements par titre.
+     * Crée un diagramme (ex: barres) basé sur la fréquence calculée des évènements par titre.
      * Note: Ceci peut nécessiter une adaptation si la fréquence est calculée différemment.
      */
      public static JFreeChart createEventFrequencyChart(EventStats stats) {
-        logger.debug("Création du diagramme de fréquence des événements par titre");
+        logger.debug("Création du diagramme de fréquence des évènements par titre");
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         if (stats.getEventFrequency() != null) {
              
@@ -275,12 +275,12 @@ public class ChartGenerator {
                       }
                   });
         } else {
-            logger.warn("Données de fréquence des événements manquantes.");
+            logger.warn("Données de fréquence des évènements manquantes.");
         }
 
         JFreeChart barChart = ChartFactory.createBarChart(
-                "Fréquence des Événements (Top 10 par Inscriptions Totales)",
-                "Titre de l'Événement",
+                "Fréquence des Évènements (Top 10 par Inscriptions Totales)",
+                "Titre de l'Évènement",
                 "Fréquence (Inscriptions)",
                 dataset,
                 PlotOrientation.HORIZONTAL, 
@@ -296,16 +296,16 @@ public class ChartGenerator {
     }
 
      /**
-     * Placeholder pour le quatrième graphique d'événement.
+     * Placeholder pour le quatrième graphique d'évènement.
      * Pourrait montrer les inscriptions au fil du temps, la capacité vs inscriptions, etc.
      */
      public static JFreeChart createPlaceholderEventChart4(EventStats stats) {
-         logger.debug("Création du graphique événement placeholder 4");
+         logger.debug("Création du graphique évènement placeholder 4");
          DefaultPieDataset<String> dataset = new DefaultPieDataset<>();
-         dataset.setValue("Graphique 4 (Événements) - À Implémenter", 100);
+         dataset.setValue("Graphique 4 (Évènements) - À Implémenter", 100);
 
         JFreeChart pieChart = ChartFactory.createPieChart(
-                "Événements - Graphique 4",
+                "Évènements - Graphique 4",
                 dataset,
                 false, true, false);
 
@@ -439,7 +439,7 @@ public class ChartGenerator {
     /**
      * Crée un graphique de participation par mois (à adapter).
      *
-     * @param stats Les statistiques des événements.
+     * @param stats Les statistiques des évènements.
      * @return Un objet JFreeChart.
      */
     public JFreeChart createEventParticipationByMonthChart(EventStats stats) {
@@ -451,8 +451,8 @@ public class ChartGenerator {
         }
 
         return ChartFactory.createBarChart(
-                "Participation aux événements par mois",
-                "Événement",
+                "Participation aux évènements par mois",
+                "Évènement",
                 "Nombre de participants",
                 dataset,
                 PlotOrientation.VERTICAL,
@@ -462,7 +462,7 @@ public class ChartGenerator {
     /**
      * Crée un graphique de distribution du taux de satisfaction (à adapter).
      *
-     * @param stats Les statistiques des événements.
+     * @param stats Les statistiques des évènements.
      * @return Un objet JFreeChart.
      */
     public JFreeChart createEventSatisfactionRateChart(EventStats stats) {
@@ -474,7 +474,7 @@ public class ChartGenerator {
         }
 
         return ChartFactory.createPieChart(
-                "Taux de satisfaction des événements",
+                "Taux de satisfaction des évènements",
                 dataset,
                 true, true, false);
     }

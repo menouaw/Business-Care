@@ -166,17 +166,17 @@ public class PdfGenerator {
     }
 
     /**
-     * Génère la deuxième page du rapport PDF (Statistiques Événements) en utilisant iText 7.
+     * Génère la deuxième page du rapport PDF (Statistiques Évènements) en utilisant iText 7.
      *
      * @param pdfDoc     Le document PDF iText auquel ajouter la page.
-     * @param stats      Les statistiques événement agrégées.
+     * @param stats      Les statistiques évènement agrégées.
      * @param eventCharts La liste des graphiques JFreeChart à inclure (devrait en contenir 4).
      * @throws IOException Si une erreur I/O se produit pendant la création du PDF.
      */
     public void generateEventStatsPage(PdfDocument pdfDoc, EventStats stats, List<JFreeChart> eventCharts) throws IOException {
-        logger.info("Génération de la page des statistiques d'événements (Page 2)");
+        logger.info("Génération de la page des statistiques d'évènements (Page 2)");
         if (eventCharts == null || eventCharts.size() != 4) {
-            logger.warn("Attendu 4 graphiques événements pour la génération du PDF, mais reçu {}. La page pourrait être incomplète.",
+            logger.warn("Attendu 4 graphiques évènements pour la génération du PDF, mais reçu {}. La page pourrait être incomplète.",
                         eventCharts == null ? 0 : eventCharts.size());
             if (eventCharts == null) return;
         }
@@ -191,7 +191,7 @@ public class PdfGenerator {
         PdfFont fontBold = PdfFontFactory.createFont(com.itextpdf.io.font.constants.StandardFonts.HELVETICA_BOLD);
 
         
-        Paragraph title = new Paragraph(new Text("Page 2: Statistiques des Événements"))
+        Paragraph title = new Paragraph(new Text("Page 2: Statistiques des Évènements"))
                 .setFont(fontBold)
                 .setFontSize(FONT_SIZE_TITLE)
                 .setTextAlignment(TextAlignment.CENTER)
@@ -216,7 +216,7 @@ public class PdfGenerator {
         
         float top5YPos = y2 - CHART_HEIGHT - 30; 
 
-        Paragraph top5Title = new Paragraph(new Text("Top 5 des Événements (par popularité/inscriptions):"))
+        Paragraph top5Title = new Paragraph(new Text("Top 5 des Évènements (par popularité/inscriptions):"))
                 .setFont(fontBold)
                 .setFontSize(FONT_SIZE_SUBTITLE)
                 .setFixedPosition(pdfDoc.getNumberOfPages(), MARGIN, top5YPos, availableWidth) 
@@ -239,11 +239,11 @@ public class PdfGenerator {
                 top5List.add(new Text(line)).add("\n");
             }
         } else {
-            top5List.add(new Text("Aucune donnée de popularité disponible pour classer les événements.")).add("\n");
+            top5List.add(new Text("Aucune donnée de popularité disponible pour classer les évènements.")).add("\n");
         }
         document.add(top5List); 
 
-        logger.info("Page 2: Statistiques des Événements générée.");
+        logger.info("Page 2: Statistiques des Évènements générée.");
     }
 
     /**

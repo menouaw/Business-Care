@@ -63,7 +63,7 @@ public class ReportApplication {
             List<Invoice> invoices = apiClient.getInvoices();
             List<Event> events = apiClient.getEvents();
             List<Prestation> prestations = apiClient.getPrestations();
-            logger.info("Données récupérées: {} entreprises, {} contrats, {} devis, {} factures, {} événements, {} prestations.",
+            logger.info("Données récupérées: {} entreprises, {} contrats, {} devis, {} factures, {} évènements, {} prestations.",
                     companies.size(), contracts.size(), quotes.size(), invoices.size(), events.size(), prestations.size());
 
             
@@ -75,9 +75,9 @@ public class ReportApplication {
             logger.info("Traitement des données financières terminé.");
 
             
-            logger.info("Traitement des données d'événements...");
+            logger.info("Traitement des données d'évènements...");
             EventStats eventStats = reportService.processEventData(events);
-            logger.info("Traitement des données d'événements terminé.");
+            logger.info("Traitement des données d'évènements terminé.");
 
             
             logger.info("Traitement des données de prestations...");
@@ -95,13 +95,13 @@ public class ReportApplication {
             logger.info("{} graphiques financiers générés.", clientCharts.size());
 
             
-            logger.info("Génération des graphiques d'événements (Page 2)..." );
+            logger.info("Génération des graphiques d'évènements (Page 2)..." );
             List<JFreeChart> eventCharts = new ArrayList<>();
             eventCharts.add(ChartGenerator.createEventTypeDistributionChart(eventStats));
             eventCharts.add(ChartGenerator.createTop5EventsByPopularityChart(eventStats));
             eventCharts.add(ChartGenerator.createEventFrequencyChart(eventStats));
             eventCharts.add(ChartGenerator.createPlaceholderEventChart4(eventStats));
-            logger.info("{} graphiques d'événements générés.", eventCharts.size());
+            logger.info("{} graphiques d'évènements générés.", eventCharts.size());
 
             
             logger.info("Génération des graphiques de prestations (Page 3)..." );

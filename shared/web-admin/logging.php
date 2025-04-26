@@ -37,14 +37,14 @@ function logSystemActivity($action, $details = '') {
 }
 
 /**
- * Journalise un événement de sécurité.
+ * Journalise un évènement de sécurité.
  *
  * Enregistre une action de sécurité dans le système de journalisation en préfixant l'action avec "[SECURITY FAILURE]"
  * si l'opération a échoué (lorsque $isFailure est true), ou avec "[SECURITY]" sinon.
  *
  * @param int|null $userId Identifiant de l'utilisateur concerné.
  * @param string $action Type d'action de sécurité.
- * @param string $details Informations complémentaires sur l'événement.
+ * @param string $details Informations complémentaires sur l'évènement.
  * @param bool $isFailure Indique si l'opération a échoué.
  * @return int|false Identifiant du log créé ou false en cas d'échec.
  */

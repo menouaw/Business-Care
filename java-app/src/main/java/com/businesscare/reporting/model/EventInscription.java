@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Représente les détails d'une inscription à un événement, tels que retournés par l'API.
+ * Représente les détails d'une inscription à un évènement, tels que retournés par l'API.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class EventInscription {

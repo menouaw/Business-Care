@@ -1,128 +1,226 @@
-# Business-Care
-Projet annuel de deuxième année
+# Business Care - Plateforme de Bien-être et Services pour Entreprises
 
-## Aperçu du Projet
+Business Care est une application web complète dédiée à la gestion des services de bien-être pour les entreprises. La plateforme permet aux entreprises de souscrire à des contrats de services pour offrir des prestations de bien-être à leurs employés, telles que des cours de yoga, des séminaires sur la gestion du stress, des consultations avec des nutritionnistes, et bien plus encore.
 
-Business-Care est une application web conçue pour gérer les interactions et services entre une organisation administratrice, des entreprises clientes, leurs employés, et potentiellement des prestataires de services. Elle permet de gérer des entités telles que les entreprises, les utilisateurs (admins, employés, prestataires), les contrats, les services proposés, les devis, la facturation et les rendez-vous.
+## Architecture et Technologies
 
-## Stack Technologique
+### Frontend
+- HTML5, CSS3, JavaScript (ES6+)
+- Framework CSS : Bootstrap 5
+- jQuery pour les interactions dynamiques
+- AJAX pour les requêtes asynchrones
 
-*   **Backend (Web & API):** PHP 8.1 (Application principale et API REST distincte dans `/api`)
-*   **Backend (Reporting):** Java 17 (Application autonome dans `/java-app` utilisant Maven, iText, JFreeChart)
-*   **Frontend:** PHP, HTML, CSS, JavaScript (Interfaces séparées pour Admin dans `/web-admin` et Client dans `/web-client`)
-*   **Base de données:** MySQL 8.0 (Schéma, vues, triggers et données initiales dans `/database`)
-*   **Serveur Web:** Nginx (Configuration dans `docker/nginx/default.conf`)
-*   **Dépendances PHP:** Gérées via Composer (`composer.json`)
-*   **Dépendances Java:** Gérées via Maven (`java-app/pom.xml`), utilise `maven-shade-plugin` pour créer un JAR exécutable ("fat JAR").
-*   **Conteneurisation:** Docker & Docker Compose (Configuration dans `Dockerfile`, `java-app/Dockerfile`, `docker-compose.yml`, `docker/`)
+### Backend
+- PHP 8.1+ pour la logique serveur
+- API REST pour la communication entre le client et le serveur
+- Java pour l'application de reporting autonome
+- MySQL pour la persistance des données
+
+### Sécurité
+- Sessions PHP sécurisées
+- Protection contre les attaques CSRF
+- Validation des données côté serveur
+- Authentification à deux facteurs pour les comptes administrateurs
+- HTTPS obligatoire
+- Règles de firewalling précises
 
 ## Structure du Projet
 
-Le projet est organisé dans les répertoires principaux suivants :
+```
+business-care/
+├── api/                     # API REST pour toutes les communications client-serveur
+│   ├── admin/               # Endpoints pour l'interface admin et l'app Java
+│   └── client/              # Endpoints pour l'interface client et mobile
+├── assets/                  # Ressources statiques (CSS, JS, images)
+├── build/                   # Fichiers générés lors du build
+├── cloud-services/          # Intégrations avec services cloud (Datalog, Key Vault)
+├── database/                # Scripts de base de données
+│   ├── migrations/          # Changements incrémentels de schéma
+│   ├── schemas/             # Définition du schéma principal
+│   └── seeders/             # Données initiales
+├── desktop-app/             # Application desktop complémentaire
+├── docker/                  # Configurations Docker
+├── i18n/                    # Fichiers de traduction multilingue
+├── infrastructure/          # Configuration d'infrastructure
+├── integrations/            # Intégrations externes (Stripe, OneSignal)
+│   └── onesignal/           # Intégration pour notifications push
+├── java-app/                # Application Java pour le reporting PDF
+├── mobile-app/              # Application mobile
+├── shared/                  # Fichiers partagés entre web-admin et web-client
+│   ├── web-admin/           # Bibliothèques partagées pour l'admin
+│   └── web-client/          # Bibliothèques partagées pour le client
+├── tests/                   # Tests automatisés
+├── web-admin/               # Interface d'administration
+└── web-client/              # Interface utilisateur client
+```
 
-*   `api/`: Contient les points d'accès de l'API REST backend (service distinct).
-*   `assets/`: Fichiers statiques (CSS, JS, images, polices) servis directement par Nginx.
-*   `database/`: Schémas de base de données, migrations (si applicable), vues, triggers, seeders et scripts d'initialisation.
-*   `docker/`: Contient la configuration spécifiques à Docker (Dockerfile Nginx, PHP, script d'init DB).
-*   `java-app/`: Contient une application Java autonome (basée sur Maven) pour générer des rapports PDF périodiques basés sur les données de l'API. Le point d'entrée est `src/main/java/com/businesscare/reporting/main/ReportApplication.java`. Voir `java-app/README.md` pour plus de détails.
-*   `shared/`: Code PHP partagé (configuration, connexion BDD, fonctions utilitaires, authentification, logging) utilisé par `web-admin` et `web-client`.
-*   `web-admin/`: Interface d'administration (application PHP).
-*   `web-client/`: Interface destinée aux clients/employés (application PHP).
-*   `i18n/`: Fichiers d'internationalisation/localisation.
-*   `tests/`: Tests de l'application.
-*   `cloud-services/`, `infrastructure/`, `integrations/`, `mobile-app/`, `desktop-app/`: Répertoires de placeholders ou sous-projets liés.
+## Interfaces Principales
 
-## Installation et Configuration (Docker Recommandé)
+### Interface Client (web-client)
+Permet aux entreprises et à leurs employés d'accéder aux services de bien-être.
+- Gestion des comptes entreprises
+- Espace dédié aux employés avec tutoriel interactif à la première connexion
+- Recherche et réservation de services
+- Consultation des contrats et factures
+- Participation à des événements et communautés
 
-La méthode recommandée pour installer et exécuter Business-Care est via Docker.
+### Interface Admin (web-admin)
+Permet aux administrateurs de Business Care de gérer la plateforme.
+- Gestion des entreprises clientes
+- Gestion des prestataires de services
+- Facturation et suivi des contrats
+- Modération des communautés
+- Génération de rapports analytiques
 
-1.  **Prérequis:**
-    *   Docker ([https://www.docker.com/get-started](https://www.docker.com/get-started))
-    *   Docker Compose (généralement inclus avec Docker Desktop)
-    *   Git
-2.  **Cloner le dépôt:**
-    ```bash
-    git clone https://github.com/menouaw/Business-Care.git
-    cd Business-Care
-    ```
-3.  **Configurer l'environnement:**
-    *   Copiez le fichier d'environnement exemple s'il existe, ou créez un fichier `.env` à la racine du projet.
-    *   Assurez-vous que les variables suivantes sont définies dans `.env` (ajustez les valeurs par défaut si nécessaire, **surtout les mots de passe pour la production**) :
-        ```dotenv
-        MYSQL_DATABASE=business_care
-        MYSQL_USER=business_care_user
-        MYSQL_PASSWORD=root # Mot de passe pour l'utilisateur applicatif
-        MYSQL_ROOT_PASSWORD=root # Mot de passe root de MySQL (utilisé pour l'init)
-        MYSQL_BACKUP_PASSWORD=root # Mot de passe pour l'utilisateur de backup
-        # MYSQL_PORT=3306 # Décommentez pour exposer un port différent pour MySQL
+### Application Java de Reporting
+Application autonome générant des rapports d'activité périodiques au format PDF.
+- Statistiques sur les comptes clients
+- Analyse des événements
+- Performance des services
+- Graphiques et tableaux de synthèse
 
-        # Variables optionnelles pour l'authentification de l'app Java à l'API PHP
-        # API_USER=admin@businesscare.fr
-        # API_PASSWORD=admin123
-        ```
-    *   **Important:** Ajoutez `.env` à votre fichier `.gitignore` pour éviter de commiter des secrets.
-4.  **Construire et Lancer les Conteneurs:**
-    *   Depuis la racine du projet, exécutez :
-        ```bash
-        docker compose up --build -d
-        ```
-    *   Cette commande va construire les images nécessaires (PHP, Java via `java-app/Dockerfile`), télécharger les images Nginx et MySQL, et démarrer les services définis dans `docker-compose.yml` en arrière-plan (`-d`).
-    *   Le service `java-app` est configuré pour :
-        *   Compiler l'application Java et créer un JAR exécutable (via `maven-shade-plugin` dans `pom.xml` lors de la construction de l'image `java-app/Dockerfile`).
-        *   Exécuter le JAR (`java -jar /app/app.jar`) au démarrage du conteneur. Cette application Java est responsable de générer périodiquement (à terme) un rapport PDF.
-        *   Utiliser la variable d'environnement `API_BASE_URL=http://nginx/api/admin` (définie dans `docker-compose.yml`) pour communiquer avec l'API PHP.
-        *   Utiliser les variables `API_USER` et `API_PASSWORD` de `.env` si définies, sinon les valeurs par défaut codées dans l'app Java, pour l'authentification à l'API.
-        *   Monter uniquement le répertoire local `./java-app/output` sur `/app/output` dans le conteneur. Cela permet au rapport généré par l'application Java dans `/app/output` (par exemple `report.pdf`) d'être accessible sur l'hôte dans `./java-app/output/`, sans écraser le JAR de l'application dans `/app/`.
-5.  **Initialisation de la Base de Données:**
-    *   Lors du premier démarrage du service `db`, le script `docker/db/init.sh` sera automatiquement exécuté.
-    *   Ce script crée la base de données, importe le schéma (`business_care.sql`), les vues (`views.sql`), les triggers (`triggers.sql`), crée les utilisateurs (`business_care_user`, `business_care_backup`) et importe les données d'exemple (`sample_data.sql`) si elles existent.
-    *   Pour vérifier que l'initialisation s'est correctement déroulée, exécutez :`docker compose logs db | grep "Init complete"`
-    *   Si vous ne voyez pas ce message, vérifiez les logs complets pour identifier l'erreur : `docker compose logs db`
-6.  **Accéder à l'Application:**
-    *   L'application devrait maintenant être accessible dans votre navigateur :
-        *   Interface Admin : `http://localhost/admin`
-        *   Interface Client : `http://localhost/client` (ou simplement `http://localhost/` qui pourrait rediriger)
-    *   Vérifiez que les conteneurs sont bien en cours d'exécution :
-        ```bash
-        docker compose ps
-        ```
-    *   Si l'un des conteneurs n'est pas à l'état "Up", consultez ses logs :
-        ```bash
-        docker compose logs [nom_du_service]
-        ```
+## Installation
 
----
+### Prérequis
+- PHP 8.1+
+- MySQL 8.0+
+- Serveur Web (Apache/Nginx)
+- Java JDK 17+ (pour l'application de reporting)
+- Maven (pour compiler l'application Java)
+- Composer (pour les dépendances PHP)
+- Docker et Docker Compose (pour le déploiement conteneurisé)
 
-### Installation Manuelle (Alternative)
+### Installation avec Docker (recommandée)
 
-_(Non recommandée si Docker est disponible. Sert principalement de référence.)_
+1. **Cloner le dépôt**
+   ```bash
+   git clone https://github.com/your-organization/business-care.git
+   cd business-care
+   ```
 
-1.  **Prérequis:**
-    *   PHP 8.1+ (avec extensions `pdo_mysql`, `zip`, etc.)
-    *   MySQL 8.0+
-    *   Composer 2+
-    *   Serveur Web (Nginx ou Apache avec `mod_rewrite`)
-    *   Java 17+ (JDK)
-    *   Maven
-2.  **Cloner le dépôt:** `git clone <url-du-depot>`
-3.  **Installer les dépendances PHP:** `cd Business-Care && composer install`
-4.  **Compiler l'application Java:** `cd java-app && mvn clean package` (Voir `java-app/README.md`)
-5.  **Configurer la base de données:**
-    *   Créez une base de données MySQL (ex: `business_care`).
-    *   Créez les utilisateurs nécessaires (ex: `business_care_user`).
-    *   Importez les schémas, vues, triggers depuis `database/schemas/`.
-    *   Optionnellement, exécutez les seeders depuis `database/seeders/`.
-6.  **Configurer la connexion BDD:** Mettre à jour les identifiants dans `shared/web-admin/config.php` et `shared/web-client/config.php`.
-7.  **Configurer le serveur web:**
-    *   Configurez Nginx ou Apache.
-    *   Définissez la racine du projet comme document root ou utilisez des alias/rewrite rules pour mapper `/admin` à `web-admin/`, `/client` à `web-client/`, `/api` à `api/`, `/assets` à `assets/`, et potentiellement `/java-app/output` pour servir le rapport PDF.
-    *   Assurez-vous que la réécriture d'URL est activée et configurée pour gérer les requêtes PHP et les routes API (voir `docker/nginx/default.conf` comme exemple pour Nginx).
-8.  **Exécuter l'application Java:** (Voir `java-app/README.md` pour les détails et la configuration des variables d'environnement `API_BASE_URL`, `API_USER`, `API_PASSWORD`). L'exécution est manuelle ou via une tâche planifiée.
+2. **Configuration des variables d'environnement**
+   ```bash
+   cp .env.example .env
+   # Modifier les variables dans le fichier .env selon votre environnement
+   ```
 
-## Utilisation
+3. **Lancer les conteneurs Docker**
+   ```bash
+   docker-compose up -d
+   ```
 
-Une fois l'installation Docker terminée :
+4. **Accéder à l'application**
+   - Interface admin: `https://votre-domaine.com/web-admin/`
+   - Interface client: `https://votre-domaine.com/web-client/`
 
-*   **Interface Admin:** Accessible via `http://localhost/admin`
-*   **Interface Client:** Accessible via `http://localhost/client`
-*   **Rapport PDF (Java):** L'application Java (`java-app`) s'exécute au démarrage du conteneur Docker. Une fois la logique de génération implémentée, elle écrira le fichier `report.pdf` dans `/app/output` à l'intérieur du conteneur, qui sera visible sur votre machine hôte dans `./java-app/output/report.pdf` grâce au montage de volume configuré. L'accès au rapport depuis l'interface `web-admin` nécessitera une configuration Nginx supplémentaire (voir exemple dans `docker/nginx/default.conf` pour servir `/java-app/output`) et un lien approprié dans l'interface admin.
+### Installation manuelle
+
+1. **Cloner le dépôt**
+   ```bash
+   git clone https://github.com/your-organization/business-care.git
+   cd business-care
+   ```
+
+2. **Installation des dépendances PHP**
+   ```bash
+   composer install
+   ```
+
+3. **Configuration de la base de données**
+   ```bash
+   # Créer la base de données
+   mysql -u root -p < database/setup.sql
+   
+   # Importer le schéma
+   mysql -u root -p business_care < database/schemas/business_care.sql
+   
+   # Importer les triggers et vues
+   mysql -u root -p business_care < database/schemas/triggers.sql
+   mysql -u root -p business_care < database/schemas/views.sql
+   
+   # Importer les données d'exemple
+   mysql -u root -p business_care < database/seeders/sample_data.sql
+   ```
+
+4. **Configuration du serveur web**
+   - Configurer un vhost pointant vers le répertoire racine du projet
+   - Activer la réécriture d'URL (mod_rewrite pour Apache)
+   - Sécuriser l'accès avec HTTPS
+
+5. **Compilation de l'application Java**
+   ```bash
+   cd java-app
+   mvn clean package
+   ```
+
+## Fonctionnalités Principales
+
+### Gestion des Entreprises
+- Inscription et gestion de profil
+- Consultation des contrats actifs
+- Suivi des services utilisés par les employés
+- Accès aux factures et paiements générés automatiquement en PDF
+
+### Portail des Employés
+- Accès aux services disponibles
+- Réservation de prestations
+- Participation aux événements
+- Interaction au sein des communautés
+- Réception de notifications push
+
+### Administration
+- Gestion complète des utilisateurs
+- Création et modification des services
+- Suivi financier et facturation
+- Reporting et analyses
+
+## Conteneurisation et Déploiement
+Le projet est entièrement conteneurisé via Docker pour faciliter le développement et la production.
+Un fichier `docker-compose.yml` est fourni à la racine du projet pour orchestrer les différents services:
+- Serveur web (Nginx)
+- PHP-FPM
+- MySQL
+- Application Java
+
+Les parties 1 et 2 du projet sont déployées via Docker en cas de panne, hébergées sur l'infrastructure mise en place dans la Mission 3.
+
+## Multilinguisme
+L'application est entièrement multilingue via le dossier `i18n/` contenant les fichiers de traduction.
+La langue par défaut est le français, mais l'anglais est également disponible.
+Il est possible d'ajouter des langues sans modifier le code ni utiliser Google Traduction.
+
+## Sécurité et Sauvegarde
+- Des règles de firewalling très précises ne laissant passer que les flux désirés
+- L'accès HTTPS obligatoire via SSL/TLS
+- Un système de sauvegarde régulière des données
+- La connexion sécurisée avec des jetons d'authentification
+- Utilisation de services Cloud pour l'authentification
+
+## Intégrations
+
+### Stripe
+Intégration complète pour la gestion des paiements et la génération automatique de factures.
+
+### OneSignal
+Intégration pour l'envoi de notifications push aux employés.
+
+### Services Cloud
+- Datalog pour la journalisation
+- Key Vault pour la gestion sécurisée des secrets
+
+## API REST
+L'API REST est documentée et accessible via `/api/`. Elle est utilisée pour gérer l'ensemble des traitements de l'application.
+Les deux principales sections sont:
+- `/api/client/` - Endpoints pour l'interface client
+- `/api/admin/` - Endpoints pour l'interface admin et l'application Java
+
+## Gestion de Projet
+- Utilisation obligatoire de GitHub pour le versionnement du code
+- Mise en place d'un Trello pour la gestion des tâches
+
+## Documentation
+La documentation complète du projet est disponible via PHPDocumentor.
+Pour générer la documentation:
+```bash
+php phpDocumentor.phar -c phpdoc.xml
+```

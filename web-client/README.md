@@ -39,7 +39,7 @@ shared/web-client/           # Fichiers partagés pour l'interface client
 ├── db.php                   # Fonctions de connexion et requêtes de base de données
 ├── auth.php                 # Authentification et gestion des sessions
 ├── functions.php            # Fonctions utilitaires générales
-└── logging.php              # Journalisation des événements système
+└── logging.php              # Journalisation des évènements système
 ```
 
 ### Ressources statiques
@@ -146,7 +146,7 @@ Pour maintenir une organisation claire du code, les fonctions sont séparées se
   - `db.php` - Connexion à la base de données et fonctions de requêtes
   - `auth.php` - Fonctions d'authentification et gestion des sessions
   - `functions.php` - Fonctions utilitaires générales
-  - `logging.php` - Journalisation des événements système
+  - `logging.php` - Journalisation des évènements système
 
 - `/web-client/includes/` - Contient les fichiers spécifiques à l'interface client
   - `init.php` - Initialisation du système et inclusion des fichiers partagés
@@ -173,7 +173,7 @@ Pour maintenir une organisation claire du code, les fonctions sont séparées se
         * `getEmployeeActivityHistory()` - Historique d'activités
         * `getEmployeeCommunities()` - Communautés accessibles
         * `manageEmployeeDonations()` - Gestion des dons
-        * `getEmployeeEvents()` - Événements et défis
+        * `getEmployeeEvents()` - Évènements et défis
         * `updateEmployeeSettings()` - Préférences utilisateur
       - `providers.php` - Fonctions de gestion des prestataires
         * `getProvidersList()` - Liste des prestataires

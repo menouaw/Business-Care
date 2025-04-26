@@ -99,19 +99,19 @@ public class ReportService {
     }
 
     /**
-     * Traite la liste des événements pour générer des statistiques agrégées.
+     * Traite la liste des évènements pour générer des statistiques agrégées.
      *
-     * @param events La liste des événements.
+     * @param events La liste des évènements.
      * @return Un objet EventStats contenant les statistiques agrégées.
      */
     public EventStats processEventData(List<Event> events) {
-        logger.info("Traitement des données d'événements: {} événements", events.size());
+        logger.info("Traitement des données d'évènements: {} évènements", events.size());
 
         EventStats stats = new EventStats();
         stats.setTotalEvents(events.size());
 
         if (events.isEmpty()) {
-            logger.warn("Aucun événement à traiter.");
+            logger.warn("Aucun évènement à traiter.");
             stats.setEventCountByType(Collections.emptyMap());
             stats.setEventFrequency(Collections.emptyMap());
             stats.setTop5EventsByPopularity(Collections.emptyList());
@@ -149,7 +149,7 @@ public class ReportService {
                 .collect(Collectors.toList());
         stats.setTop5EventsByPopularity(eventPopularities);
 
-        logger.info("Traitement des données d'événements terminé.");
+        logger.info("Traitement des données d'évènements terminé.");
         logger.debug("EventStats générées: Total Events={}, Events by Type={}, Top Event Popularity={}",
                      stats.getTotalEvents(),
                      stats.getEventCountByType().size(),

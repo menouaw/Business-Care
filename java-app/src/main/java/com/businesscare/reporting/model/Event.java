@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Représente une entité Événement, correspondant à la structure de l'API et de la base de données.
+ * Représente une entité Évènement, correspondant à la structure de l'API et de la base de données.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Event {

@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Contient les statistiques agrégées sur les événements pour le rapport.
+ * Contient les statistiques agrégées sur les évènements pour le rapport.
  */
 public class EventStats {
 
@@ -56,7 +56,7 @@ public class EventStats {
     }
 
     /**
-     * Classe interne simple pour lier un événement à sa popularité (ex: nombre d'inscriptions).
+     * Classe interne simple pour lier un évènement à sa popularité (ex: nombre d'inscriptions).
      */
     public static class EventPopularity implements Comparable<EventPopularity> {
         private Event event;

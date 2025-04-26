@@ -105,13 +105,13 @@ include_once __DIR__ . '/../../templates/header.php';
                                 <i class="fas fa-users fa-2x"></i>
                             </div>
                             <div>
-                                <h6 class="card-subtitle text-muted mb-1">Événements</h6>
+                                <h6 class="card-subtitle text-muted mb-1">Évènements</h6>
                                 <h2 class="card-title mb-0"><?= count($dashboardData['upcoming_events'] ?? []) ?></h2>
                                 <small class="text-muted">À venir</small>
                             </div>
                         </div>
                         <div class="mt-3">
-                            <a href="<?= WEBCLIENT_URL ?>/modules/employees/events.php" class="btn btn-sm btn-outline-success">Explorer les événements</a>
+                            <a href="<?= WEBCLIENT_URL ?>/modules/employees/events.php" class="btn btn-sm btn-outline-success">Explorer les évènements</a>
                         </div>
                     </div>
                 </div>
@@ -205,19 +205,19 @@ include_once __DIR__ . '/../../templates/header.php';
             <div class="col-lg-6">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                        <h5 class="card-title mb-0">Événements à venir</h5>
-                        <a href="<?= WEBCLIENT_URL ?>/modules/employees/events.php" class="btn btn-sm btn-outline-primary">Tous les événements</a>
+                        <h5 class="card-title mb-0">Évènements à venir</h5>
+                        <a href="<?= WEBCLIENT_URL ?>/modules/employees/events.php" class="btn btn-sm btn-outline-primary">Tous les évènements</a>
                     </div>
                     <div class="card-body">
                         <?php if (empty($dashboardData['upcoming_events'])) : ?>
-                            <p class="text-center text-muted my-5">Aucun événement à venir</p>
+                            <p class="text-center text-muted my-5">Aucun évènement à venir</p>
                         <?php else : ?>
                             <div class="list-group list-group-flush">
                                 <?php foreach (array_slice($dashboardData['upcoming_events'], 0, 3) as $event) : ?>
                                     <div class="list-group-item border-0 px-0">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div>
-                                                <h6 class="mb-1"><?= htmlspecialchars($event['titre'] ?? 'Événement sans titre') ?></h6>
+                                                <h6 class="mb-1"><?= htmlspecialchars($event['titre'] ?? 'Évènement sans titre') ?></h6>
                                                 <p class="text-muted mb-0 small">
                                                     <i class="far fa-calendar-alt me-1"></i> <?= htmlspecialchars($event['date_debut_formatee'] ?? 'Date inconnue') ?>
                                                 </p>

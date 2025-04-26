@@ -4,21 +4,33 @@
 
 Cette application Java autonome est conçue pour générer des rapports d'activité périodiques au format PDF à destination des responsables de Business Care. Elle récupère les données nécessaires via l'API REST de l'application principale et les synthétise sous forme de graphiques et de listes pour faciliter la prise de décision.
 
-Le rapport généré doit contenir au moins trois pages :
+Le rapport généré contient trois pages :
 *   **Page 1 :** Statistiques sur les comptes clients (4 graphiques, Top 5 clients).
-*   **Page 2 :** Statistiques sur les événements (4 graphiques, Top 5 événements).
+*   **Page 2 :** Statistiques sur les évènements (4 graphiques, Top 5 évènements).
 *   **Page 3 :** Statistiques sur les prestations/services (4 graphiques, Top 5 prestations).
-
-L'application doit également s'assurer qu'elle utilise un jeu de données d'au moins 30 enregistrements par catégorie (clients, événements, prestations), en générant des données aléatoires si nécessaire (fonctionnalité à implémenter).
 
 ## Stack Technique
 
-*   **Langage :** Java (JDK 17+ recommandé)
+*   **Langage :** Java (JDK 17)
 *   **Gestion de build et dépendances :** Apache Maven
-*   **Génération PDF :** iText ([https://itextpdf.com/](https://itextpdf.com/)) - Bibliothèque pour créer et manipuler des documents PDF.
-*   **Génération Graphiques :** JFreeChart ([https://www.jfree.org/jfreechart/](https://www.jfree.org/jfreechart/)) - Framework pour générer divers types de graphiques.
-*   **Client HTTP :** Apache HttpClient 5 ([https://hc.apache.org/httpcomponents-client-5.3.x/](https://hc.apache.org/httpcomponents-client-5.3.x/)) - Utilisé pour envoyer des requêtes HTTP à l'API REST de Business Care et recevoir les réponses. Essentiel pour la communication avec le backend.
-*   **Traitement JSON :** Jackson Databind ([https://github.com/FasterXML/jackson-databind](https://github.com/FasterXML/jackson-databind)) - Permet de convertir facilement les objets Java en JSON (pour l'envoi de données à l'API, comme les identifiants de connexion) et le JSON reçu de l'API en objets Java (comme la liste des entreprises ou les détails de l'utilisateur).
+*   **Génération PDF :** iText 8.0.4 - Bibliothèque pour créer et manipuler des documents PDF.
+*   **Génération Graphiques :** JFreeChart 1.5.4 - Framework pour générer divers types de graphiques.
+*   **Client HTTP :** Apache HttpClient 5.3.1 - Utilisé pour envoyer des requêtes HTTP à l'API REST de Business Care.
+*   **Traitement JSON :** Jackson Databind 2.17.0 - Convertit les objets Java en JSON et vice-versa.
+*   **Logging :** SLF4J 2.0.12 - Façade de journalisation.
+
+## Structure du Projet
+
+L'application est organisée en plusieurs packages :
+
+*   **`com.businesscare.reporting.main`** : Point d'entrée de l'application (ReportApplication)
+*   **`com.businesscare.reporting.client`** : Communication avec l'API (ApiClient, ApiConfig)
+*   **`com.businesscare.reporting.model`** : Modèles de données et enums
+*   **`com.businesscare.reporting.service`** : Logique métier et traitement des données (ReportService)
+*   **`com.businesscare.reporting.chart`** : Génération des graphiques (ChartGenerator)
+*   **`com.businesscare.reporting.pdf`** : Génération du PDF (PdfGenerator)
+*   **`com.businesscare.reporting.util`** : Classes utilitaires (ConfigLoader, Constants)
+*   **`com.businesscare.reporting.exception`** : Exceptions personnalisées
 
 ## Prérequis
 
@@ -34,7 +46,7 @@ L'application doit également s'assurer qu'elle utilise un jeu de données d'au 
     ```bash
     mvn clean package
     ```
-3.  Le JAR exécutable sera généré dans le répertoire `target/`. Le nom ressemble généralement à `java-app-<version>-jar-with-dependencies.jar` (par exemple, `java-app-1.0-SNAPSHOT-jar-with-dependencies.jar`).
+3.  Le JAR exécutable sera généré dans le répertoire `target/` avec le nom `reporting-app.jar`.
 
 ## Configuration
 
@@ -45,8 +57,6 @@ L'application récupère sa configuration depuis les variables d'environnement :
 *   `API_USER`: L'adresse email de l'utilisateur admin pour s'authentifier auprès de l'API. Par défaut : `admin@businesscare.fr`.
 *   `API_PASSWORD`: Le mot de passe de l'utilisateur admin. Par défaut : `admin123`.
 
-Assurez-vous que ces variables sont définies dans votre environnement d'exécution si vous n'utilisez pas les valeurs par défaut ou Docker Compose.
-
 ## Exécution
 
 1.  Assurez-vous que le JAR a été construit (voir la section Build).
@@ -54,85 +64,72 @@ Assurez-vous que ces variables sont définies dans votre environnement d'exécut
 3.  Exécutez le JAR depuis le répertoire `java-app` :
 
     ```bash
-    java -jar target/java-app-<version>-jar-with-dependencies.jar
+    java -jar target/reporting-app.jar
     ```
-    (Remplacez `<version>` par la version actuelle).
 
-L'application tentera de s'authentifier, de récupérer les données, puis (une fois implémenté) de générer le rapport.
+L'application s'authentifie, récupère les données via l'API, traite ces données et génère un rapport PDF complet.
 
 ## Sortie (Output)
 
-L'application est conçue pour générer un fichier PDF nommé `report.pdf` dans le sous-répertoire `output/` du répertoire `java-app` (`java-app/output/report.pdf`).
+L'application génère un fichier PDF nommé `report.pdf` dans le sous-répertoire `output/` du répertoire `java-app` (`java-app/output/report.pdf`).
 
-*   Le répertoire `output/` sera créé automatiquement s'il n'existe pas.
-*   Dans l'environnement Docker, le répertoire local `./java-app/output` est monté sur `/app/output` dans le conteneur, rendant le PDF généré accessible directement sur la machine hôte.
+*   Le répertoire `output/` est créé automatiquement s'il n'existe pas.
+*   Dans l'environnement Docker, le répertoire local `./java-app/output` est monté sur `/app/output` dans le conteneur, rendant le PDF généré accessible sur la machine hôte.
 
 ## Intégration avec `web-admin`
 
 Le rapport PDF généré est destiné à être visualisé depuis l'interface `web-admin`.
 
 *   Un lien direct vers le fichier `java-app/output/report.pdf` peut être ajouté dans `web-admin` (par exemple, dans `web-admin/modules/reports/view_java_report.php`).
-*   Cela nécessite que le serveur web (Nginx/Apache) soit configuré pour servir les fichiers statiques du répertoire `java-app/output/` (par exemple via un alias ou une directive `location`).
+*   Cela nécessite que le serveur web (Nginx/Apache) soit configuré pour servir les fichiers statiques du répertoire `java-app/output/` (via un alias ou une directive `location`).
 
-## État Actuel du Développement
+## Flux d'exécution
 
-L'application progresse. La structure de base, la configuration, les modèles de données, et la logique de génération de la première page du rapport (Statistiques Clients) sont en place. Les prochaines étapes concernent l'implémentation des pages 2 et 3 (événements et prestations) et la gestion des données aléatoires si nécessaire.
+L'application suit le flux suivant :
 
-*   [X] Configuration (`ApiConfig`, `ConfigLoader`, `Constants`)
-*   [X] Modèles de données (`model/` POJOs et Enums, y compris `ClientStats`)
-*   [X] Authentification auprès de l'API (`ApiClient.login`)
-*   [X] Récupération des données Clients/Contrats/Factures/Devis (`ApiClient` - méthodes `getCompanies`, `getContracts`, `getQuotes`, `getInvoices`)
-*   [ ] Récupération des données Événements/Prestations (`ApiClient` - méthodes à ajouter)
-*   [X] Traitement des données financières client (`service/ReportService.processClientFinancialData`)
-*   [ ] Traitement des données événements/prestations (`service/ReportService` - méthodes à ajouter)
-*   [ ] Vérification du volume de données et génération de données aléatoires si nécessaire.
-*   [X] Implémentation de la génération des graphiques clients (JFreeChart - `chart/ChartGenerator`)
-*   [ ] Implémentation de la génération des graphiques événements/prestations (`chart/ChartGenerator` - méthodes à ajouter)
-*   [X] Implémentation de la structure et de la génération de la Page 1 du PDF (iText - `pdf/PdfGenerator.generateClientFinancialPage`)
-*   [ ] Implémentation de la génération des Pages 2 et 3 du PDF (`pdf/PdfGenerator` - méthodes à ajouter)
-*   [X] Gestion d'erreurs de base (via `ApiException` et `try-catch` dans `ReportApplication`).
+1. **Configuration :** Chargement des paramètres via ConfigLoader.
+2. **Authentification :** Login auprès de l'API admin via ApiClient.
+3. **Collecte des données :** Récupération des informations sur les entreprises, contrats, devis, factures, événements et prestations.
+4. **Traitement :** Calcul des statistiques client, événement et prestation via ReportService.
+5. **Génération des graphiques :** Création de 12 graphiques (4 par catégorie) avec ChartGenerator et JFreeChart.
+6. **Création du PDF :** Génération d'un document PDF à 3 pages avec tableaux et graphiques via PdfGenerator et iText.
+7. **Sauvegarde :** Enregistrement du rapport dans le répertoire output/.
 
-## Détails d'Implémentation - Reporting Financier (Page 1)
+## Points d'API utilisés
 
-Cette section détaille les étapes **implémentées** pour la première page du rapport PDF axée sur les "Statistiques des comptes clients", en s'appuyant sur la structure de projet existante (`src/main/java/com/businesscare/reporting/`).
+L'application utilise les endpoints suivants de l'API :
 
-1.  **Configuration (`client/ApiConfig.java`, `util/ConfigLoader.java`, `util/Constants.java`):** [**Terminé**]
-    *   Les classes pour gérer la configuration via les variables d'environnement (avec valeurs par défaut) sont en place.
+* `/api/admin/auth.php` - Authentification
+* `/api/admin/companies.php` - Données des entreprises clientes
+* `/api/admin/contracts.php` - Données des contrats
+* `/api/admin/quotes.php` - Données des devis
+* `/api/admin/invoices.php` - Données des factures
+* `/api/admin/events.php` - Données des événements
+* `/api/admin/services.php` - Données des prestations/services
 
-2.  **Modèles de Données (package `model/`):** [**Terminé**]
-    *   Les POJOs (`Company`, `Contract`, `Quote`, `Invoice`, `QuotePrestation`, `User`, `AuthResponse`, `ApiResponse`, `ErrorResponse`, `ClientStats`, Enums) sont définis avec les annotations Jackson nécessaires pour le mapping JSON.
+## Fonctionnalités implémentées
 
-3.  **Améliorations du Client API (`client/ApiClient.java`):** [**Terminé**]
-    *   `ApiClient` est instancié avec `ApiConfig`.
-    *   Les méthodes `login`, `getCompanies`, `getContracts`, `getQuotes`, `getInvoices` sont implémentées, utilisant le jeton d'authentification et désérialisant le JSON en objets `model`.
-    *   La gestion des erreurs via `ApiException` est intégrée.
+L'application a implémenté toutes les fonctionnalités requises :
 
-4.  **Traitement des Données (`service/ReportService.java`):** [**Terminé**]
-    *   La méthode `processClientFinancialData` traite les listes `Company`, `Contract`, `Invoice`.
-    *   Elle effectue les calculs nécessaires (revenu total/client, distributions par secteur/taille, statut des contrats, Top 5 clients) et retourne un objet `ClientStats`.
+* [X] Configuration (`ApiConfig`, `ConfigLoader`, `Constants`)
+* [X] Modèles de données (`model/` POJOs et Enums pour tous les types de données)
+* [X] Authentification auprès de l'API (`ApiClient.login`)
+* [X] Récupération des données Clients/Contrats/Factures/Devis (`ApiClient`)
+* [X] Récupération des données Évènements/Prestations (`ApiClient`)
+* [X] Traitement des données financières client (`ReportService.processClientFinancialData`)
+* [X] Traitement des données évènements (`ReportService.processEventData`)
+* [X] Traitement des données prestations (`ReportService.processPrestationData`)
+* [X] Génération des graphiques clients (`ChartGenerator`)
+* [X] Génération des graphiques évènements/prestations (`ChartGenerator`)
+* [X] Structure et génération de la Page 1 du PDF (clients) (`PdfGenerator.generateClientFinancialPage`)
+* [X] Génération des Pages 2 et 3 du PDF (événements et prestations) (`PdfGenerator`)
+* [X] Gestion d'erreurs (`ApiException`, `ReportGenerationException`, et `try-catch` dans `ReportApplication`)
 
-5.  **Génération des Graphiques (`chart/ChartGenerator.java`):** [**Terminé**]
-    *   Les méthodes `createContractStatusChart`, `createClientDistributionBySectorChart`, `createClientDistributionBySizeChart`, et `createClientRevenueDistributionChart` génèrent les quatre graphiques requis pour la Page 1 en utilisant JFreeChart à partir de l'objet `ClientStats`.
+## Containerisation
 
-6.  **Génération du PDF (`pdf/PdfGenerator.java`):** [**Terminé**]
-    *   La méthode `generateClientFinancialPage` utilise iText 7 pour :
-        *   Créer la première page du document.
-        *   Ajouter le titre "Statistiques des comptes clients".
-        *   Convertir les quatre objets `JFreeChart` clients en images et les ajouter à la page.
-        *   Ajouter la liste formatée "Top 5 des clients".
+Un Dockerfile est fourni pour containeriser l'application. Pour exécuter l'application dans Docker :
 
-7.  **Flux Principal de l'Application (`main/ReportApplication.java`):** [**Terminé pour Page 1**]
-    *   La méthode `main` orchestre la séquence pour la Page 1 :
-        *   Chargement de `ApiConfig`.
-        *   Instanciation des services (`ApiClient`, `ReportService`, `PdfGenerator`).
-        *   Authentification via `apiClient.login()`.
-        *   Appel des méthodes `get...()` de l'API client.
-        *   Appel de `reportService.processClientFinancialData(...)`.
-        *   Appel des méthodes `create...Chart(...)` de `ChartGenerator`.
-        *   Appel de `pdfGenerator.generateClientFinancialPage(...)`.
-        *   Sauvegarde du document PDF (`output/report.pdf`).
-        *   Journalisation (SLF4j) et gestion des erreurs (`try-catch`) pour le flux principal.
+1. Construire l'image : `docker build -t business-care/reporting-app .`
+2. Exécuter le conteneur : `docker run -e API_BASE_URL=http://nginx/api/admin -v ./output:/app/output business-care/reporting-app`
 
-8.  **Dépendances & Exigences API:** [**Vérifié/Implémenté**]
-    *   Les points de terminaison API PHP `/api/admin/companies`, `/api/admin/contracts`, `/api/admin/quotes` et `/api/admin/invoices` sont fonctionnels (selon les informations précédentes).
-    *   Les dépendances Java (iText 7, JFreeChart, Jackson, HttpClient, SLF4j) sont configurées dans `pom.xml`.
+Alternativement, utilisez docker-compose qui configure automatiquement les services, réseaux et volumes.
