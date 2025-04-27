@@ -21,12 +21,12 @@ function getCompanyQuotes(int $entreprise_id): array
                 d.date_validite,
                 d.montant_total,
                 d.statut,
-                s.type as service_nom, -- Nom du service principal si lié
+                s.type as service_nom, 
                 d.updated_at
             FROM
                 devis d
             LEFT JOIN
-                services s ON d.service_id = s.id -- Jointure pour le service principal
+                services s ON d.service_id = s.id 
             WHERE
                 d.entreprise_id = :entreprise_id
             ORDER BY

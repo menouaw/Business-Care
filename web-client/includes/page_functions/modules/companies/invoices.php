@@ -25,7 +25,7 @@ function getCompanyInvoices(int $entreprise_id): array
                 montant_total, 
                 statut,
                 date_paiement
-                -- pdf_path -- Colonne à ajouter si le chemin du PDF est stocké
+                
             FROM 
                 factures 
             WHERE 

@@ -32,7 +32,7 @@ function getCompanyContracts(int $entreprise_id, int $current_page = 1, int $ite
                 c.date_debut, 
                 c.date_fin, 
                 c.statut, 
-                s.type as service_nom,  -- Assurez-vous que 'type' est la bonne colonne (ou changez pour 'nom')
+                s.type as service_nom,  
                 c.updated_at
             FROM 
                 contrats c

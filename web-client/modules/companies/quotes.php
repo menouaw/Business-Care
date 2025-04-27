@@ -38,9 +38,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_quote'])) {
 
 
 
-if (!function_exists('getQuoteStatusBadgeClass')) { /* ... */
-}
-
 $entreprise_id = $_SESSION['user_entreprise'] ?? 0;
 
 
