@@ -8,10 +8,8 @@ requireRole(ROLE_ENTREPRISE);
 $entreprise_id = $_SESSION['user_entreprise'] ?? 0;
 $current_page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
 
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($_POST['employee_id'])) {
     verifyCsrfToken();
-
     $action = $_POST['action'];
     $employee_id = (int)$_POST['employee_id'];
     $redirectUrl = WEBCLIENT_URL . '/modules/companies/employees/index.php?page=' . $current_page;
@@ -20,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($_
         if (deactivateEmployee($employee_id, $entreprise_id)) {
             flashMessage('Salarié désactivé avec succès.', 'success');
         } else {
-            flashMessage('Erreur lors de la désactivation du salarié ou salarié non trouvé.', 'danger');
+            flashMessage('Erreur lors de la désactivation.', 'danger');
         }
         redirectTo($redirectUrl);
         exit;
@@ -28,13 +26,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($_
         if (reactivateEmployee($employee_id, $entreprise_id)) {
             flashMessage('Salarié réactivé avec succès.', 'success');
         } else {
-            flashMessage('Erreur lors de la réactivation du salarié ou salarié non trouvé.', 'danger');
+            flashMessage('Erreur lors de la réactivation.', 'danger');
         }
         redirectTo($redirectUrl);
         exit;
     }
 }
-
 
 if ($entreprise_id <= 0) {
     flashMessage("Impossible d'identifier votre entreprise.", "danger");
@@ -43,7 +40,6 @@ if ($entreprise_id <= 0) {
 }
 
 $items_per_page = DEFAULT_ITEMS_PER_PAGE;
-
 $employeeData = getCompanyEmployees($entreprise_id, $current_page, $items_per_page);
 $employees = $employeeData['employees'];
 $total_employees = $employeeData['total_count'];
@@ -92,7 +88,7 @@ include __DIR__ . '/../../../templates/header.php';
                     <tbody>
                         <?php if (empty($employees)): ?>
                             <tr>
-                                <td colspan="8" class="text-center">Aucun salarié trouvé.</td>
+                                <td colspan="8" class="text-center">Aucun salarié trouvé pour cette entreprise.</td>
                             </tr>
                         <?php else: ?>
                             <?php foreach ($employees as $employee): ?>
@@ -118,24 +114,14 @@ include __DIR__ . '/../../../templates/header.php';
                                                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(generateCsrfToken()); ?>">
                                                 <input type="hidden" name="action" value="delete">
                                                 <input type="hidden" name="employee_id" value="<?= $employee['id'] ?>">
-                                                <button type="submit"
-                                                    class="btn btn-sm btn-outline-danger"
-                                                    title="Désactiver"
-                                                    onclick="return confirm('Êtes-vous sûr de vouloir désactiver ce salarié ?');">
-                                                    <i class="fas fa-user-slash"></i>
-                                                </button>
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Désactiver" onclick="return confirm('Êtes-vous sûr de vouloir désactiver ce salarié ?');"><i class="fas fa-user-slash"></i></button>
                                             </form>
                                         <?php else: ?>
                                             <form method="post" action="<?php echo WEBCLIENT_URL; ?>/modules/companies/employees/index.php?page=<?= $current_page ?>" class="d-inline">
                                                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(generateCsrfToken()); ?>">
                                                 <input type="hidden" name="action" value="reactivate">
                                                 <input type="hidden" name="employee_id" value="<?= $employee['id'] ?>">
-                                                <button type="submit"
-                                                    class="btn btn-sm btn-outline-success"
-                                                    title="Réactiver"
-                                                    onclick="return confirm('Êtes-vous sûr de vouloir réactiver ce salarié ?');">
-                                                    <i class="fas fa-user-check"></i>
-                                                </button>
+                                                <button type="submit" class="btn btn-sm btn-outline-success" title="Réactiver" onclick="return confirm('Êtes-vous sûr de vouloir réactiver ce salarié ?');"><i class="fas fa-user-check"></i></button>
                                             </form>
                                         <?php endif; ?>
                                     </td>
@@ -147,46 +133,19 @@ include __DIR__ . '/../../../templates/header.php';
             </div>
 
             <?php if ($total_pages > 1): ?>
-                <nav aria-label="Page navigation employés">
-                    <ul class="pagination justify-content-center">
-                        <li class="page-item <?= ($current_page <= 1) ? 'disabled' : '' ?>">
-                            <a class="page-link" href="?page=<?= $current_page - 1 ?>" aria-label="Précédent">
-                                <span aria-hidden="true">&laquo;</span>
-                            </a>
-                        </li>
+                <?php
+                // Préparer les données pour renderPagination
+                $paginationData = [
+                    'currentPage' => $current_page,
+                    'totalPages' => $total_pages
+                    // Si renderPagination a besoin d'autres clés, ajoutez-les ici.
+                ];
+                // Définir le modèle d'URL pour les liens de page
+                $urlPattern = '?page={page}'; // Garde les autres paramètres GET s'il y en a
 
-                        <?php
-                        $start_page = max(1, $current_page - 2);
-                        $end_page = min($total_pages, $current_page + 2);
-
-                        if ($start_page > 1) {
-                            echo '<li class="page-item"><a class="page-link" href="?page=1">1</a></li>';
-                            if ($start_page > 2) {
-                                echo '<li class="page-item disabled"><span class="page-link">...</span></li>';
-                            }
-                        }
-
-                        for ($i = $start_page; $i <= $end_page; $i++): ?>
-                            <li class="page-item <?= ($i == $current_page) ? 'active' : '' ?>">
-                                <a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a>
-                            </li>
-                        <?php endfor;
-
-                        if ($end_page < $total_pages) {
-                            if ($end_page < $total_pages - 1) {
-                                echo '<li class="page-item disabled"><span class="page-link">...</span></li>';
-                            }
-                            echo '<li class="page-item"><a class="page-link" href="?page=' . $total_pages . '">' . $total_pages . '</a></li>';
-                        }
-                        ?>
-
-                        <li class="page-item <?= ($current_page >= $total_pages) ? 'disabled' : '' ?>">
-                            <a class="page-link" href="?page=<?= $current_page + 1 ?>" aria-label="Suivant">
-                                <span aria-hidden="true">&raquo;</span>
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
+                // Afficher la pagination générée par la fonction
+                echo renderPagination($paginationData, $urlPattern);
+                ?>
             <?php endif; ?>
 
         </main>

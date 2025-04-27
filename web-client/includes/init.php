@@ -30,11 +30,7 @@ if (class_exists('Dotenv\Dotenv')) {
 
 session_start();
 
-require_once __DIR__ . '/../../shared/web-client/config.php';
-require_once __DIR__ . '/../../shared/web-client/db.php';
-require_once __DIR__ . '/../../shared/web-client/functions.php';
 require_once __DIR__ . '/../../shared/web-client/auth.php';
-require_once __DIR__ . '/../../shared/web-client/logging.php';
 
 
 function generateCsrfToken()

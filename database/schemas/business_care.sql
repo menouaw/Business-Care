@@ -355,11 +355,6 @@ CREATE TABLE communaute_messages (
     INDEX idx_communaute_date (communaute_id, created_at)
 );
 
-CREATE TABLE evenement_inscriptions (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    nom VARCHAR(255) NOT NULL UNIQUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
 
 CREATE TABLE evenement_inscriptions (
     id INT PRIMARY KEY AUTO_INCREMENT,

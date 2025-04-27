@@ -1,13 +1,5 @@
 <?php
 
-
-/*
-if (class_exists('Dotenv\Dotenv')) { ... } else { ... }
-*/
-
-
-
-
 define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
 define('DB_NAME', getenv('MYSQL_DATABASE') ?: 'business_care');
 define('DB_USER', getenv('MYSQL_USER') ?: 'business_care_user');

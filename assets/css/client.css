@@ -30,6 +30,7 @@ body {
     color: var(--text-dark);
     line-height: 1.6;
     overflow-x: hidden;
+    padding-top: 70px;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -456,13 +457,13 @@ footer a:hover {
 }
 
 .avatar-sm {
-  width: 32px !important;
-  height: 32px !important;
-  object-fit: cover;
-  border-radius: 50%;
-  border: 1px solid var(--gray);
-  vertical-align: middle;
-  display: inline-block;
+    width: 32px !important;
+    /* Utilisation de !important ici pour assurer la priorité initiale */
+    height: 32px !important;
+    object-fit: cover;
+    border-radius: 50%;
+    vertical-align: middle;
+    /* Peut aider à l'alignement */
 }
 
 .avatar-md { 

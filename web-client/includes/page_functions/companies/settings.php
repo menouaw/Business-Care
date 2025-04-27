@@ -1,7 +1,5 @@
 <?php
-require_once __DIR__ . '/../../../../shared/web-client/db.php';
 require_once __DIR__ . '/../../../../shared/web-client/auth.php';
-require_once __DIR__ . '/../../../../shared/web-client/logging.php';
 
 /**
  * Récupère les détails d'une entreprise pour l'affichage dans les paramètres.

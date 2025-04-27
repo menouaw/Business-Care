@@ -144,14 +144,14 @@ INSERT INTO conseils (titre, icone, resume, categorie, contenu) VALUES
 ('L\'Importance de l\'Activité Physique', 'fas fa-running', 'Intégrer l\'exercice dans votre routine quotidienne.', 'Activité Physique', 'L\'activité physique est essentielle pour le corps et l\'esprit. Elle aide à réduire le stress, améliorer le sommeil et maintenir un poids santé.\n\nComment bouger plus :\n- Privilégiez les escaliers à l\'ascenseur.\n- Descendez un arrêt de bus/métro plus tôt et marchez.\n- Profitez de la pause déjeuner pour faire une courte marche.\n- Fixez-vous des objectifs réalisables : 30 minutes de marche rapide par jour, par exemple.\n- Trouvez une activité qui vous plaît : natation, danse, vélo, randonnée...');
 
 INSERT INTO utilisateur_interets_conseils (personne_id, categorie_conseil) VALUES
-(7, 'bien_etre'),         
-(7, 'sport'),             
-(7, 'nutrition'),
-(5, 'stress'),
-(5, 'sommeil'),
-(5, 'nutrition'),
-(6, 'activité physique'),
-(6, 'stress');
+(7, 'Stress'),            
+(7, 'Activité Physique'),  
+(7, 'Nutrition'),         
+(5, 'Stress'),            
+(5, 'Sommeil'),           
+(5, 'Nutrition'),         
+(6, 'Activité Physique'),  
+(6, 'Stress');            
 
 INSERT INTO consultation_creneaux (prestation_id, praticien_id, start_time, end_time, is_booked, site_id) VALUES
 (1, 3, NOW() + INTERVAL 2 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 2 DAY + INTERVAL '09:45' HOUR_MINUTE, FALSE, 1), 

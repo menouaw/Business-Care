@@ -36,10 +36,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $newEmployeeId = addEmployee($entreprise_id, $employeeData);
 
     if ($newEmployeeId) {
+
+
         redirectTo(WEBCLIENT_URL . '/modules/companies/employees/index.php');
         exit;
     } else {
-        flashMessage("Erreur lors de l'ajout du salarié.", "danger");
     }
 }
 
