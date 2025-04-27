@@ -68,9 +68,7 @@ include __DIR__ . '/../../templates/header.php';
 
             <?php echo displayFlashMessages(); ?>
 
-            <!-- Nouvelle structure en deux colonnes -->
             <div class="row">
-                <!-- Colonne Google Maps (Gauche) -->
                 <div class="col-md-5 mb-4 mb-md-0">
                     <h5>Notre Siège Social</h5>
                     <p>110 Rue de Rivoli, 75001 Paris, France</p>
@@ -79,7 +77,8 @@ include __DIR__ . '/../../templates/header.php';
                             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2624.815915847293!2d2.33941291567496!3d48.86191427928787!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47e66e23079e1d6b%3A0xcf34bd3f5d1e5a87!2s110%20Rue%20de%20Rivoli%2C%2075001%20Paris!5e0!3m2!1sfr!2sfr!4v1678886047123!5m2!1sfr!2sfr"
                             width="100%"
                             height="350"
-                            style="border:0; border-radius: 0.375rem;" /* Ajout arrondi */
+                            style="border:0; border-radius: 0.375rem;"
+                            sandbox="allow-scripts allow-same-origin"
                             allowfullscreen=""
                             loading="lazy"
                             referrerpolicy="no-referrer-when-downgrade">
@@ -87,7 +86,6 @@ include __DIR__ . '/../../templates/header.php';
                     </div>
                 </div>
 
-                <!-- Colonne Formulaire (Droite) -->
                 <div class="col-md-7">
                     <h5>Envoyez-nous un message</h5>
                     <div class="card">
@@ -108,7 +106,7 @@ include __DIR__ . '/../../templates/header.php';
 
                                 <div class="mb-3">
                                     <label for="message" class="form-label">Votre message <span class="text-danger">*</span></label>
-                                    <textarea class="form-control" id="message" name="message" rows="6" required></textarea> <!-- Réduit un peu la hauteur -->
+                                    <textarea class="form-control" id="message" name="message" rows="6" required maxlength="1000"></textarea>
                                 </div>
 
                                 <button type="submit" class="btn btn-primary">
@@ -118,7 +116,8 @@ include __DIR__ . '/../../templates/header.php';
                         </div>
                     </div>
                 </div>
-            </div> <!-- Fin de la row -->
+            </div>
+
 
         </main>
     </div>

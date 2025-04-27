@@ -403,7 +403,7 @@ function isActivePage(string $url): bool
 {
     $current_uri = $_SERVER['REQUEST_URI'] ?? '';
 
-    
+
     $base_url = parse_url(WEBCLIENT_URL, PHP_URL_PATH) ?? '';
     $link_uri = parse_url($url, PHP_URL_PATH) ?? '';
 
@@ -427,32 +427,32 @@ function isActivePage(string $url): bool
 function getStatusBadgeClass(?string $status): string
 {
     if ($status === null) {
-        return 'light'; 
+        return 'light';
     }
 
     $status = strtolower($status);
 
-    
+
     $statusMap = [
-        
+
         'actif' => 'success',
         'expire' => 'secondary',
         'resilie' => 'danger',
-        'en_attente' => 'warning', 
+        'en_attente' => 'warning',
 
-        
+
         'payee' => 'success',
         'annulee' => 'secondary',
         'retard' => 'danger',
         'impayee' => 'danger',
 
-        
+
         'accepte' => 'success',
         'refuse' => 'danger',
-        
+
         'demande_en_cours' => 'info',
 
-        
+
         'inactif' => 'secondary',
         'suspendu' => 'secondary',
         'planifie' => 'primary',
@@ -464,7 +464,7 @@ function getStatusBadgeClass(?string $status): string
         'clos' => 'secondary'
     ];
 
-    return $statusMap[$status] ?? 'light'; 
+    return $statusMap[$status] ?? 'light';
 }
 
 /**
@@ -488,22 +488,37 @@ function createNotification(int $user_id, string $title, string $message, string
         'titre' => $title,
         'message' => $message,
         'type' => in_array($type, ['info', 'success', 'warning', 'error']) ? $type : 'info',
-        'lien' => $link
+        'lien' => $link,
+        'date_creation' => date('Y-m-d H:i:s')
     ];
 
-    return insertRow('notifications', $data);
+    $success = insertRow('notifications', $data);
+
+    if (!$success) {
+        error_log("Erreur lors de l'insertion de la notification pour user_id: $user_id");
+        return false;
+    } else {
+        try {
+            $pdo = getDbConnection();
+            $lastId = $pdo->lastInsertId();
+            return $lastId ? (int)$lastId : false;
+        } catch (PDOException $e) {
+            error_log("Erreur PDO lors de la récupération de lastInsertId pour la notification user_id: $user_id - " . $e->getMessage());
+            return false;
+        }
+    }
 }
 
 function getUnreadNotificationCount(int $userId): int
 {
     if ($userId <= 0) return 0;
 
-    
+
     $sql = "SELECT COUNT(*) FROM notifications WHERE personne_id = :user_id AND lu = 0";
     $stmt = executeQuery($sql, [':user_id' => $userId]);
 
-    
-    
+
+
     return (int)$stmt->fetchColumn();
 }
 

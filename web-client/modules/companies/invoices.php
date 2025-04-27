@@ -45,10 +45,10 @@ if ($action === 'create-checkout-session' && $invoice_id) {
         exit;
     }
 
-    if (empty(STRIPE_SECRET_KEY)) {
+    if (!defined('STRIPE_SECRET_KEY') || empty(STRIPE_SECRET_KEY)) {
         flashMessage("La configuration pour le paiement en ligne est incomplète. Veuillez contacter le support.", "danger");
-        error_log("[FATAL] Clé secrète Stripe non configurée dans les variables d'environnement.");
-        redirectTo(WEBCLIENT_URL . '/modules/companies/invoices.php');
+        error_log("[FATAL] Clé secrète Stripe non configurée dans les variables d'environnement ou config.php.");
+        redirectTo(WEBCLIENT_URL . '/modules/companies/invoices.php?action=view&id=' . $invoice_id);
         exit;
     }
 
@@ -266,7 +266,7 @@ include __DIR__ . '/../../templates/header.php';
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                             <a href="<?= WEBCLIENT_URL ?>/modules/companies/invoices.php?action=download&id=<?= $invoice_item['id'] ?>" class="btn btn-sm btn-outline-primary me-1" title="Télécharger le PDF">
-                                                <i class="fas fa-download"></i>
+                                                <i class="fas fa-download"></i><span class="visually-hidden">Télécharger PDF</span>
                                             </a>
                                             <?php
                                             $payable_statuses = [INVOICE_STATUS_PENDING, INVOICE_STATUS_LATE, INVOICE_STATUS_UNPAID];

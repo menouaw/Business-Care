@@ -18,24 +18,24 @@ function getCompanyEmployees(int $entreprise_id, int $page = 1, int $items_per_p
         return ['employees' => [], 'total_count' => 0];
     }
 
-    // 1. Compter le nombre total de salariés (sans pagination)
+    
     $countSql = "SELECT COUNT(*) 
                  FROM personnes p
                  WHERE p.entreprise_id = :entreprise_id 
                  AND p.role_id = :role_salarie";
-    // Ajoutez ici d'autres conditions si nécessaire (ex: statut = 'actif')
+    
 
     $countStmt = executeQuery($countSql, [
         ':entreprise_id' => $entreprise_id,
         ':role_salarie' => ROLE_SALARIE
-        // Ajoutez les paramètres correspondants aux conditions ajoutées
+        
     ]);
     $total_count = (int)$countStmt->fetchColumn();
 
-    // 2. Récupérer les salariés pour la page actuelle
+    
     $offset = ($page - 1) * $items_per_page;
-    $items_per_page = max(1, $items_per_page); // Assurer au moins 1 item par page
-    $offset = max(0, $offset); // Assurer un offset non négatif
+    $items_per_page = max(1, $items_per_page); 
+    $offset = max(0, $offset); 
 
     $sql = "SELECT 
                 p.id, 
@@ -54,17 +54,17 @@ function getCompanyEmployees(int $entreprise_id, int $page = 1, int $items_per_p
                 p.entreprise_id = :entreprise_id 
             AND 
                 p.role_id = :role_salarie
-            -- Ajoutez ici les mêmes conditions que pour le COUNT si nécessaire
+            
             ORDER BY 
                 p.nom ASC, p.prenom ASC
-            LIMIT :limit OFFSET :offset"; // Ajout de LIMIT et OFFSET
+            LIMIT :limit OFFSET :offset"; 
 
     $stmt = executeQuery($sql, [
         ':entreprise_id' => $entreprise_id,
         ':role_salarie' => ROLE_SALARIE,
         ':limit' => $items_per_page,
         ':offset' => $offset
-        // Ajoutez les paramètres correspondants aux conditions ajoutées
+        
     ]);
 
     $employees = $stmt->fetchAll();

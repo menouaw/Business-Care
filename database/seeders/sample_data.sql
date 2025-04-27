@@ -31,6 +31,7 @@ TRUNCATE TABLE associations;
 TRUNCATE TABLE signalements;
 TRUNCATE TABLE services;
 TRUNCATE TABLE roles;
+TRUNCATE TABLE support_tickets;
 SET FOREIGN_KEY_CHECKS = 1;
 
 INSERT INTO roles (nom, description) VALUES

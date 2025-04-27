@@ -31,6 +31,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_photo'])) {
+    verifyCsrfToken();
+
     if (isset($_FILES['profile_photo'])) {
         $result = updateUserProfilePhoto($user_id, $_FILES['profile_photo']);
         if ($result['success'] && $result['new_photo_url']) {
