@@ -1,192 +1,180 @@
 <?php
-
 require_once __DIR__ . '/../../includes/init.php';
-require_once __DIR__ . '/../../includes/page_functions/modules/companies.php';
+require_once __DIR__ . '/../../includes/page_functions/modules/companies/settings.php';
 
 requireRole(ROLE_ENTREPRISE);
 
-$entrepriseId = $_SESSION['user_entreprise'];
-$userId = $_SESSION['user_id'];
+$entreprise_id = $_SESSION['user_entreprise'] ?? 0;
+$user_id = $_SESSION['user_id'] ?? 0;
 
-$profileErrors = [];
-$passwordErrors = [];
-$profileSubmittedData = [];
-
-if (isset($_POST['update_profile'])) {
-    $result = processProfileUpdateRequest($_POST, $userId);
-    if ($result['success']) {
-        $successMessage = urlencode('Profil mis à jour avec succès.');
-        redirectTo('settings.php?profile_success=' . $successMessage);
-        exit;
-    } else {
-        $profileErrors = $result['errors'];
-        $profileSubmittedData = $result['submittedData'];
-    }
-} elseif (isset($_POST['change_password'])) {
-    $result = processPasswordChangeRequest($_POST, $userId);
-    if ($result['success']) {
-        $successMessage = urlencode('Mot de passe modifié avec succès.');
-        redirectTo('settings.php?password_success=' . $successMessage);
-        exit;
-    } else {
-        $passwordErrors = $result['errors'];
-    }
-}
-
-$viewData = prepareSettingsViewData($entrepriseId, $userId, $profileSubmittedData);
-
-if (isset($viewData['redirectUrl'])) {
-    redirectTo($viewData['redirectUrl']);
+if ($entreprise_id <= 0 || $user_id <= 0) {
+    flashMessage("Impossible d'identifier votre compte ou votre entreprise.", "danger");
+    redirectTo(WEBCLIENT_URL . '/modules/companies/dashboard.php');
     exit;
 }
 
-$companyDetails = $viewData['companyDetails'];
-$currentUser = $viewData['currentUser'];
-$profileSubmittedData = $viewData['profileSubmittedData'];
+$pageTitle = "Paramètres";
 
-$pageTitle = "Paramètres - Espace Entreprise";
-include_once __DIR__ . '/../../templates/header.php';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
+    $current_password = $_POST['current_password'] ?? '';
+    $new_password = $_POST['new_password'] ?? '';
+    $confirm_password = $_POST['confirm_password'] ?? '';
 
+    if ($new_password !== $confirm_password) {
+        flashMessage("Le nouveau mot de passe et sa confirmation ne correspondent pas.", "danger");
+    } else {
+        $result = updateCompanyRepresentativePassword($user_id, $current_password, $new_password);
+        flashMessage($result['message'], $result['success'] ? 'success' : 'danger');
+    }
+    redirectTo(WEBCLIENT_URL . '/modules/companies/settings.php');
+    exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_photo'])) {
+    verifyCsrfToken();
+
+    if (isset($_FILES['profile_photo'])) {
+        $result = updateUserProfilePhoto($user_id, $_FILES['profile_photo']);
+        if ($result['success'] && $result['new_photo_url']) {
+            $_SESSION['user_photo'] = $result['new_photo_url'];
+        }
+        flashMessage($result['message'], $result['success'] ? 'success' : 'danger');
+    } else {
+        flashMessage("Aucun fichier photo n'a été envoyé.", "warning");
+    }
+    redirectTo(WEBCLIENT_URL . '/modules/companies/settings.php');
+    exit;
+}
+
+$company_details = getCompanyDetailsForSettings($entreprise_id);
+$user_info = getUserInfo($user_id);
+
+include __DIR__ . '/../../templates/header.php';
 ?>
 
-<main class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="mb-0">Paramètres</h1>
-        <a href="index.php" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-1"></i> Retour
-        </a>
-    </div>
+<div class="container-fluid">
+    <div class="row">
+        <?php include __DIR__ . '/../../templates/sidebar.php'; ?>
 
-    <?php
-
-    if (isset($_GET['profile_success'])) {
-        $successMessageDecoded = urldecode($_GET['profile_success']);
-        echo '<div class="alert alert-success alert-dismissible fade show" role="alert">'
-            . htmlspecialchars($successMessageDecoded)
-            . '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>'
-            . '</div>';
-    } elseif (isset($_GET['password_success'])) {
-        $successMessageDecoded = urldecode($_GET['password_success']);
-        echo '<div class="alert alert-success alert-dismissible fade show" role="alert">'
-            . htmlspecialchars($successMessageDecoded)
-            . '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>'
-            . '</div>';
-    }
-    ?>
-
-    <style>
-        #back-to-top {
-            display: none !important;
-        }
-    </style>
-
-    <div class="row g-4">
-        <div class="col-lg-6">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">Informations de l'Entreprise</h5>
-                </div>
-                <div class="card-body">
-                    <p><strong>Nom :</strong> <?= htmlspecialchars($companyDetails['nom'] ?? 'N/A') ?></p>
-                    <p><strong>SIRET :</strong> <?= htmlspecialchars($companyDetails['siret'] ?? 'N/A') ?></p>
-                    <p><strong>Adresse :</strong></p>
-                    <address class="text-muted">
-                        <?= !empty($companyDetails['adresse_ligne1']) ? htmlspecialchars($companyDetails['adresse_ligne1']) . '<br>' : '' ?>
-                        <?= !empty($companyDetails['adresse_ligne2']) ? htmlspecialchars($companyDetails['adresse_ligne2']) . '<br>' : '' ?>
-                        <?= htmlspecialchars($companyDetails['code_postal'] ?? '') ?> <?= htmlspecialchars($companyDetails['ville'] ?? '') ?><br>
-                        <?= htmlspecialchars($companyDetails['pays'] ?? '') ?>
-                    </address>
-                    <p class="small text-muted">Pour modifier ces informations, veuillez contacter votre administrateur.</p>
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 pt-3">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+                <h1 class="h2"><?= htmlspecialchars($pageTitle) ?></h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="<?= WEBCLIENT_URL ?>/modules/companies/dashboard.php" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Retour au Tableau de Bord
+                    </a>
                 </div>
             </div>
-        </div>
 
-        <div class="col-lg-6">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">Mon Profil</h5>
+            <?php echo displayFlashMessages(); ?>
+
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-building me-1"></i> Informations sur l'entreprise
                 </div>
                 <div class="card-body">
-                    <?php if (!empty($profileErrors)): ?>
-                        <div class="alert alert-danger">
-                            <strong>Erreur(s) :</strong>
-                            <ul><?php foreach ($profileErrors as $error): ?><li><?= htmlspecialchars($error) ?></li><?php endforeach; ?></ul>
-                        </div>
-                    <?php endif; ?>
-                    <form action="settings.php" method="POST">
-                        <input type="hidden" name="update_profile" value="1">
-                        <input type="hidden" name="csrf_token" value="<?= generateCsrfToken() ?>">
+                    <?php if ($company_details): ?>
+                        <dl class="row">
+                            <dt class="col-sm-3">Nom:</dt>
+                            <dd class="col-sm-9"><?= htmlspecialchars($company_details['nom']) ?></dd>
 
-                        <div class="mb-3">
-                            <label for="prenom" class="form-label">Prénom</label>
-                            <input type="text" class="form-control" id="prenom" name="prenom" value="<?= htmlspecialchars($profileSubmittedData['prenom'] ?? '') ?>" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="nom" class="form-label">Nom</label>
-                            <input type="text" class="form-control" id="nom" name="nom" value="<?= htmlspecialchars($profileSubmittedData['nom'] ?? '') ?>" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" name="email" value="<?= htmlspecialchars($profileSubmittedData['email'] ?? '') ?>" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
-                    </form>
+                            <dt class="col-sm-3">SIRET:</dt>
+                            <dd class="col-sm-9"><?= htmlspecialchars($company_details['siret'] ?? 'N/A') ?></dd>
+
+                            <dt class="col-sm-3">Adresse:</dt>
+                            <dd class="col-sm-9"><?= htmlspecialchars($company_details['adresse'] ?? '') ?>, <?= htmlspecialchars($company_details['code_postal'] ?? '') ?> <?= htmlspecialchars($company_details['ville'] ?? '') ?></dd>
+
+                            <dt class="col-sm-3">Téléphone:</dt>
+                            <dd class="col-sm-9"><?= htmlspecialchars($company_details['telephone'] ?? 'N/A') ?></dd>
+
+                            <dt class="col-sm-3">Email Contact:</dt>
+                            <dd class="col-sm-9"><?= htmlspecialchars($company_details['email'] ?? 'N/A') ?></dd>
+                        </dl>
+                    <?php else: ?>
+                        <p class="text-danger">Impossible de charger les informations de l'entreprise.</p>
+                    <?php endif; ?>
                 </div>
             </div>
-        </div>
 
-        <div class="col-lg-6">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">Changer le Mot de Passe</h5>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-user me-1"></i> Vos informations personnelles
                 </div>
                 <div class="card-body">
-                    <?php if (!empty($passwordErrors)): ?>
-                        <div class="alert alert-danger">
-                            <strong>Erreur(s) :</strong>
-                            <ul><?php foreach ($passwordErrors as $error): ?><li><?= htmlspecialchars($error) ?></li><?php endforeach; ?></ul>
+                    <div class="row">
+                        <div class="col-md-9">
+                            <?php if ($user_info): ?>
+                                <dl class="row">
+                                    <dt class="col-sm-3">Nom:</dt>
+                                    <dd class="col-sm-9"><?= htmlspecialchars($user_info['prenom'] . ' ' . $user_info['nom']) ?></dd>
+
+                                    <dt class="col-sm-3">Email:</dt>
+                                    <dd class="col-sm-9"><?= htmlspecialchars($user_info['email']) ?></dd>
+
+                                    <dt class="col-sm-3">Rôle:</dt>
+                                    <dd class="col-sm-9">Représentant Entreprise</dd>
+
+                                    <dt class="col-sm-3">Téléphone:</dt>
+                                    <dd class="col-sm-9"><?= htmlspecialchars($user_info['telephone'] ?? 'Non renseigné') ?></dd>
+                                </dl>
+                            <?php else: ?>
+                                <p class="text-danger">Impossible de charger vos informations utilisateur.</p>
+                            <?php endif; ?>
                         </div>
-                    <?php endif; ?>
-                    <form action="settings.php" method="POST">
+                        <div class="col-md-3 text-center">
+                            <h5>Photo de Profil</h5>
+                            <img src="<?= htmlspecialchars($_SESSION['user_photo'] ?? ASSETS_URL . '/images/user_default.png') ?>" alt="Photo de profil" class="img-thumbnail rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: contain;">
+
+                            <form method="POST" action="<?= WEBCLIENT_URL ?>/modules/companies/settings.php" enctype="multipart/form-data">
+                                <input type="hidden" name="change_photo" value="1">
+                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken()); ?>">
+
+                                <div class="mb-3">
+                                    <label for="profile_photo" class="form-label">Changer la photo</label>
+                                    <input class="form-control form-control-sm" type="file" id="profile_photo" name="profile_photo" accept="image/jpeg, image/png, image/gif" required>
+                                    <div class="form-text">Taille max 2Mo. Formats: JPG, PNG, GIF.</div>
+                                </div>
+                                <button type="submit" class="btn btn-secondary btn-sm"><i class="fas fa-upload me-1"></i> Mettre à jour la photo</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-key me-1"></i> Changer votre mot de passe
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="<?= WEBCLIENT_URL ?>/modules/companies/settings.php">
                         <input type="hidden" name="change_password" value="1">
-                        <input type="hidden" name="csrf_token" value="<?= generateCsrfToken() ?>">
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken()); ?>">
 
                         <div class="mb-3">
-                            <label for="current_password" class="form-label">Mot de passe actuel</label>
+                            <label for="current_password" class="form-label">Mot de passe actuel <span class="text-danger">*</span></label>
                             <input type="password" class="form-control" id="current_password" name="current_password" required>
                         </div>
                         <div class="mb-3">
-                            <label for="new_password" class="form-label">Nouveau mot de passe</label>
+                            <label for="new_password" class="form-label">Nouveau mot de passe <span class="text-danger">*</span></label>
                             <input type="password" class="form-control" id="new_password" name="new_password" required>
-                            <div class="form-text">Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule et un chiffre.</div>
-
+                            <div class="form-text">Minimum <?= defined('MIN_PASSWORD_LENGTH') ? MIN_PASSWORD_LENGTH : 8 ?> caractères.</div>
                         </div>
                         <div class="mb-3">
-                            <label for="confirm_password" class="form-label">Confirmer le nouveau mot de passe</label>
+                            <label for="confirm_password" class="form-label">Confirmer le nouveau mot de passe <span class="text-danger">*</span></label>
                             <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
                         </div>
-                        <button type="submit" class="btn btn-warning">Changer le mot de passe</button>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Mettre à jour le mot de passe</button>
                     </form>
                 </div>
             </div>
-        </div>
 
-        <div class="col-lg-6">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">Préférences</h5>
-                </div>
-                <div class="card-body">
-                    <p class="text-muted">Section à venir pour les préférences de notification, etc.</p>
-
-                </div>
-            </div>
-        </div>
-
+        </main>
     </div>
-
-</main>
+</div>
 
 <?php
-include_once __DIR__ . '/../../templates/footer.php';
+include __DIR__ . '/../../templates/footer.php';
 ?>

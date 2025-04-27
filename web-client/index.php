@@ -1,6 +1,5 @@
 <?php
 
-
 require_once __DIR__ . '/includes/init.php';
 
 $isLoggedIn = isAuthenticated();
@@ -20,18 +19,18 @@ if ($isLoggedIn) {
 
 $available_services_for_pricing = [];
 try {
-    $stmt = executeQuery("SELECT id, nom, description FROM services WHERE actif = 1 ORDER BY ordre");
+    $sql_debug = "SELECT id, type, description FROM services WHERE actif = 1 ORDER BY ordre";
+    $stmt = executeQuery($sql_debug);
     $available_services_for_pricing = $stmt->fetchAll();
 } catch (Exception $e) {
     error_log("Erreur lors de la récupération des services pour la page d'accueil: " . $e->getMessage());
-    // Gérer l'erreur discrètement ou afficher un message si nécessaire
 }
 
 $serviceCategories = [
     [
         'title' => 'Santé & Bien-être',
         'description' => 'Séances individuelles, formations, webinars et ateliers pour le bien-être physique et psychologique de vos collaborateurs.',
-        'icon' => 'fa-heartbeat' // Changé pour une icône plus générale
+        'icon' => 'fa-heartbeat'
     ],
     [
         'title' => 'Cohésion & Activités d\'équipe',
@@ -50,7 +49,7 @@ include_once __DIR__ . '/templates/header.php';
 ?>
 
 <main class="landing-page">
-    <!-- section héro -->
+    
     <section class="hero bg-primary text-white">
         <div class="container">
             <div class="row align-items-center">
@@ -71,7 +70,7 @@ include_once __DIR__ . '/templates/header.php';
         </div>
     </section>
 
-    <!-- section services -->
+    
     <section id="services" class="services py-5">
         <div class="container">
             <div class="section-title text-center mb-5">
@@ -97,7 +96,7 @@ include_once __DIR__ . '/templates/header.php';
         </div>
     </section>
 
-    <!-- section offres -->
+    
     <section id="offres" class="pricing py-5 bg-light">
         <div class="container">
             <div class="section-title text-center mb-5">
@@ -114,15 +113,15 @@ include_once __DIR__ . '/templates/header.php';
                         $buttonClass = 'btn btn-outline-primary';
                         $badge = '';
 
-                        // Placeholder pour le prix et les caractéristiques
-                        // TODO: Remplacer par une logique de récupération des prix/caractéristiques réels si nécessaire
+
+
                         $pricingText = "Prix sur devis";
                         $features = [
                             'Accès aux services de base',
                             'Support client',
                             'Interface intuitive'
                         ];
-                        if ($service['id'] == 1) { // Exemple de personnalisation pour Starter (ID 1)
+                        if ($service['id'] == 1) {
                             $pricingText = "À partir de 20€ <small class=\"text-muted\">/ salarié / an</small>";
                             $features = [
                                 'Conseils hebdomadaires',
@@ -130,7 +129,7 @@ include_once __DIR__ . '/templates/header.php';
                                 'Accès webinars collectifs',
                                 '2 RDV médicaux / salarié'
                             ];
-                        } elseif ($service['id'] == 2) { // Exemple pour Basic (ID 2)
+                        } elseif ($service['id'] == 2) {
                             $pricingText = "À partir de 35€ <small class=\"text-muted\">/ salarié / an</small>";
                             $features = [
                                 'Avantages Starter',
@@ -139,7 +138,7 @@ include_once __DIR__ . '/templates/header.php';
                                 '4 RDV médicaux / salarié',
                                 'Programme personnalisé'
                             ];
-                        } elseif ($service['id'] == 3) { // Exemple pour Premium (ID 3)
+                        } elseif ($service['id'] == 3) {
                             $pricingText = "À partir de 50€ <small class=\"text-muted\">/ salarié / an</small>";
                             $features = [
                                 'Avantages Basic',
@@ -155,7 +154,7 @@ include_once __DIR__ . '/templates/header.php';
                         <div class="col-md-4">
                             <div class="card h-100 <?php echo $cardClass; ?>">
                                 <div class="card-header text-center bg-primary text-white">
-                                    <h3 class="my-0"><?php echo htmlspecialchars($service['nom']); ?></h3>
+                                    <h3 class="my-0"><?php echo htmlspecialchars($service['type']); ?></h3>
                                 </div>
                                 <div class="card-body d-flex flex-column">
                                     <h4 class="card-title pricing-card-title text-center"><?php echo $pricingText; ?></h4>
@@ -181,7 +180,7 @@ include_once __DIR__ . '/templates/header.php';
         </div>
     </section>
 
-    <!-- section témoignages -->
+    
     <section class="testimonials py-5">
         <div class="container">
             <div class="section-title text-center mb-5">
@@ -241,7 +240,7 @@ include_once __DIR__ . '/templates/header.php';
         </div>
     </section>
 
-    <!-- section contact/cta -->
+    
     <section class="cta py-5 bg-primary text-white">
         <div class="container">
             <div class="row align-items-center">
@@ -257,7 +256,7 @@ include_once __DIR__ . '/templates/header.php';
     </section>
 
     <?php if ($isLoggedIn): ?>
-        <!-- section tableau de bord (si connecté) -->
+        
         <section class="dashboard py-5">
             <div class="container">
                 <div class="section-title text-center mb-5">
@@ -267,7 +266,7 @@ include_once __DIR__ . '/templates/header.php';
 
                 <div class="row g-4 <?php if ($userRole === 'entreprise') echo 'justify-content-center'; ?>">
                     <?php if ($userRole === 'entreprise'): ?>
-                        <!-- dashboard entreprise -->
+                        
                         <div class="col-md-4">
                             <div class="card dashboard-card h-100">
                                 <div class="card-body">
@@ -288,7 +287,7 @@ include_once __DIR__ . '/templates/header.php';
                         </div>
 
                     <?php elseif ($userRole === 'salarie'): ?>
-                        <!-- dashboard salarié -->
+                        
                         <div class="col-md-4">
                             <div class="card dashboard-card">
                                 <div class="card-body">
@@ -317,7 +316,7 @@ include_once __DIR__ . '/templates/header.php';
                             </div>
                         </div>
                     <?php elseif ($userRole === 'prestataire'): ?>
-                        <!-- dashboard prestataire -->
+                        
                         <div class="col-md-4">
                             <div class="card dashboard-card">
                                 <div class="card-body">
@@ -344,6 +343,6 @@ include_once __DIR__ . '/templates/header.php';
 </main>
 
 <?php
-// inclure le pied de page
+
 include_once __DIR__ . '/templates/footer.php';
 ?>

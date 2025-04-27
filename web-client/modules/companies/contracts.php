@@ -1,225 +1,184 @@
 <?php
-
-
 require_once __DIR__ . '/../../includes/init.php';
-require_once __DIR__ . '/../../includes/page_functions/modules/companies.php';
+require_once __DIR__ . '/../../includes/page_functions/modules/companies/contracts.php';
 
 requireRole(ROLE_ENTREPRISE);
 
-$entrepriseId = $_SESSION['user_entreprise'];
-$personneId = $_SESSION['user_id'];
 
-if (!isset($_SESSION['user_entreprise']) || !filter_var($_SESSION['user_entreprise'], FILTER_VALIDATE_INT) || $_SESSION['user_entreprise'] <= 0) {
-    logSystemActivity('error', "ID entreprise manquant ou invalide en session pour user_id: " . ($personneId ?? 'inconnu') . " lors de l'accès à contracts.php");
-    flashMessage("Impossible de vérifier votre entreprise. Veuillez vous reconnecter.", "danger");
-    redirectTo(WEBCLIENT_URL . '/index.php');
+
+$entreprise_id = $_SESSION['user_entreprise'] ?? 0;
+
+if ($entreprise_id <= 0) {
+    flashMessage("Impossible d'identifier votre entreprise.", "danger");
+    redirectTo(WEBCLIENT_URL . '/modules/companies/dashboard.php');
     exit;
 }
 
-$contractId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-$action = isset($_GET['action']) ? $_GET['action'] : '';
+$action = filter_input(INPUT_GET, 'action', FILTER_SANITIZE_SPECIAL_CHARS);
+$contract_id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 
-if ($contractId > 0) {
+$pageTitle = "Gestion des Contrats";
+$contract = null;
+$contracts = [];
+$total_contracts = 0;
+$total_pages = 1;
+$current_page = 1;
 
-    $contract = getCompanyContractDetails($entrepriseId, $contractId);
-
+if ($action === 'view' && $contract_id) {
+    $contract = getContractDetails($contract_id, $entreprise_id);
     if (!$contract) {
-        flashMessage("Contrat introuvable ou accès non autorisé.", "danger");
+        flashMessage("Contrat non trouvé ou accès refusé.", "warning");
         redirectTo(WEBCLIENT_URL . '/modules/companies/contracts.php');
         exit;
     }
-
-    $pageTitle = "Détails du contrat #" . htmlspecialchars($contract['reference'] ?? $contractId);
-
-    include_once __DIR__ . '/../../templates/header.php';
-
-?>
-    <main class="container py-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1><?php echo $pageTitle; ?></h1>
-            <div>
-                <a href="index.php" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-2"></i>Retour au tableau de bord
-                </a>
-            </div>
-        </div>
-
-        <?php echo displayFlashMessages(); ?>
-
-
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Informations générales</h5>
-                <div class="btn-group">
-                    <?php  ?>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <p class="mb-1"><strong>Référence:</strong> <?php echo htmlspecialchars($contract['reference'] ?? 'N/A'); ?></p>
-                        <?php
-                        $contractTypeDisplay = 'N/A';
-                        if (!empty($contract['services']) && isset($contract['services'][0]['nom'])) {
-                            $contractTypeDisplay = $contract['services'][0]['nom'];
-                        } elseif (!empty($contract['prestation_nom'])) {
-                            $contractTypeDisplay = $contract['prestation_nom'];
-                        }
-                        ?>
-                        <p class="mb-1"><strong>Type:</strong> <?php echo htmlspecialchars($contractTypeDisplay); ?></p>
-                        <p class="mb-1"><strong>Date de début:</strong> <?php echo isset($contract['date_debut']) ? formatDate($contract['date_debut'], 'd/m/Y') : 'N/A'; ?></p>
-                        <p class="mb-1"><strong>Date de fin:</strong> <?php echo isset($contract['date_fin']) && $contract['date_fin'] ? formatDate($contract['date_fin'], 'd/m/Y') : 'Indéterminée'; ?></p>
-                    </div>
-                    <div class="col-md-6">
-                        <p class="mb-1"><strong>Statut:</strong> <?php echo isset($contract['statut']) ? getStatusBadge($contract['statut']) : 'N/A'; ?></p>
-                        <p class="mb-1"><strong>Montant mensuel:</strong> <?php echo isset($contract['montant_mensuel']) ? formatMoney($contract['montant_mensuel']) : 'N/A'; ?></p>
-                        <p class="mb-1"><strong>Nombre de salariés couverts:</strong> <?php echo htmlspecialchars($contract['nombre_salaries'] ?? 'Non spécifié'); ?></p>
-                        <p class="mb-1"><strong>Date de création:</strong> <?php echo isset($contract['created_at']) ? formatDate($contract['created_at'], 'd/m/Y H:i') : 'N/A'; ?></p>
-                    </div>
-                </div>
-                <?php if (!empty($contract['conditions_particulieres'])):
-                ?>
-                    <div class="mt-4">
-                        <h6>Conditions particulières:</h6>
-                        <div class="p-3 bg-light rounded border">
-                            <?php echo nl2br(htmlspecialchars($contract['conditions_particulieres'])); ?>
-                        </div>
-                    </div>
-                <?php endif; ?>
-            </div>
-        </div>
-
-
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-white">
-                <h5 class="mb-0">Prestations incluses</h5>
-            </div>
-            <div class="card-body">
-                <?php if (!empty($contract['services'])):
-                ?>
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Service</th>
-                                    <th>Description</th>
-                                    <th>Catégorie</th>
-                                    <th>Prix indicatif</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($contract['services'] as $service):
-                                ?>
-                                    <tr>
-                                        <td><?php echo htmlspecialchars($service['nom'] ?? 'N/A'); ?></td>
-                                        <td><?php echo htmlspecialchars($service['description'] ?? '-'); ?></td>
-                                        <td><?php echo htmlspecialchars(ucfirst($service['categorie'] ?? '-')); ?></td>
-                                        <td><?php echo htmlspecialchars($service['prix_formate'] ?? 'N/A'); ?></td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                <?php else:
-                ?>
-                    <p class="text-muted text-center my-3">Aucune prestation spécifique n'est listée pour ce contrat.</p>
-                <?php endif; ?>
-            </div>
-        </div>
-
-
-
-    </main>
-<?php
-
-    include_once __DIR__ . '/../../templates/footer.php';
-
-    exit;
+    $pageTitle = "Détails du Contrat #" . $contract['id'];
 } else {
+    $action = 'list';
+    $pageTitle = "Mes Contrats";
 
-    $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+    $items_per_page = DEFAULT_ITEMS_PER_PAGE;
+    $current_page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
 
-    $mainLimit = 10;
-    $contractsData = getCompanyContracts($entrepriseId, null, $currentPage, $mainLimit);
-    $contrats = $contractsData['contracts'];
-    $mainPaginationInfo = $contractsData['pagination'];
+    $contractsData = getCompanyContracts($entreprise_id, $current_page, $items_per_page);
+    $contracts = $contractsData['contracts'];
+    $total_contracts = $contractsData['total_count'];
+    $total_pages = ceil($total_contracts / $items_per_page);
+}
 
-    $mainUrlPattern = "?page={page}";
-
-    $mainPaginationDataForRender = [
-        'currentPage' => $mainPaginationInfo['current'],
-        'totalPages' => $mainPaginationInfo['totalPages'],
-        'totalItems' => $mainPaginationInfo['total'],
-        'perPage' => $mainPaginationInfo['limit']
-    ];
-
-    $mainPaginationHtmlCorrected = renderPagination($mainPaginationDataForRender, $mainUrlPattern);
-
-    $pageTitle = "Vos Contrats - Espace Entreprise";
-
-    include_once __DIR__ . '/../../templates/header.php';
+include __DIR__ . '/../../templates/header.php';
 ?>
 
-    <main class="container py-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1>Vos Contrats</h1>
-            <div>
-                <a href="index.php" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-2"></i>Retour au tableau de bord
-                </a>
-            </div>
-        </div>
+<div class="container-fluid">
+    <div class="row">
+        <?php include __DIR__ . '/../../templates/sidebar.php'; ?>
 
-        <?php echo displayFlashMessages(); ?>
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 pt-3">
 
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap">
-                <h5 class="card-title mb-0 me-3">Tous vos contrats</h5>
-            </div>
-            <div class="card-body">
-                <?php if (empty($contrats)): ?>
-                    <p class="text-center text-muted my-5">Vous n'avez aucun contrat enregistré pour le moment.</p>
-                    <div class="text-center">
-                        <a href="quotes.php" class="btn btn-primary">Demander un nouveau devis</a>
+            <?php echo displayFlashMessages(); ?>
+
+            <?php if ($action === 'view' && $contract): ?>
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+                    <h1 class="h2"><?= htmlspecialchars($pageTitle) ?></h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <a href="<?= WEBCLIENT_URL ?>/modules/companies/dashboard.php" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Retour au Tableau de Bord
+                        </a>
                     </div>
-                <?php else: ?>
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        Informations sur le contrat
+                    </div>
+                    <div class="card-body">
+                        <dl class="row">
+                            <dt class="col-sm-3">ID Contrat:</dt>
+                            <dd class="col-sm-9"><?= htmlspecialchars($contract['id']) ?></dd>
+
+                            <dt class="col-sm-3">Service / Pack:</dt>
+                            <dd class="col-sm-9"><?= htmlspecialchars($contract['service_nom'] ?? 'N/D') ?></dd>
+
+                            <dt class="col-sm-3">Date de Début:</dt>
+                            <dd class="col-sm-9"><?= htmlspecialchars(date('d/m/Y', strtotime($contract['date_debut']))) ?></dd>
+
+                            <dt class="col-sm-3">Date de Fin:</dt>
+                            <dd class="col-sm-9"><?= $contract['date_fin'] ? htmlspecialchars(date('d/m/Y', strtotime($contract['date_fin']))) : 'Indéfinie' ?></dd>
+
+                            <dt class="col-sm-3">Nombre de salariés couverts:</dt>
+                            <dd class="col-sm-9"><?= htmlspecialchars($contract['nombre_salaries'] ?? 'N/D') ?></dd>
+
+                            <dt class="col-sm-3">Statut:</dt>
+                            <dd class="col-sm-9">
+                                <span class="badge bg-<?= getStatusBadgeClass($contract['statut']) ?>">
+                                    <?= htmlspecialchars(ucfirst($contract['statut'])) ?>
+                                </span>
+                            </dd>
+
+                            <dt class="col-sm-3">Conditions Particulières:</dt>
+                            <dd class="col-sm-9">
+                                <pre><?= htmlspecialchars($contract['conditions_particulieres'] ?? 'Aucune') ?></pre>
+                            </dd>
+
+                            <dt class="col-sm-3">Date Création (Système):</dt>
+                            <dd class="col-sm-9"><?= htmlspecialchars(date(DEFAULT_DATE_FORMAT, strtotime($contract['created_at']))) ?></dd>
+
+                            <dt class="col-sm-3">Dernière Mise à Jour:</dt>
+                            <dd class="col-sm-9"><?= htmlspecialchars(date(DEFAULT_DATE_FORMAT, strtotime($contract['updated_at']))) ?></dd>
+                        </dl>
+                    </div>
+                </div>
+            <?php else: ?>
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+                    <h1 class="h2"><?= htmlspecialchars($pageTitle) ?></h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <a href="<?= WEBCLIENT_URL ?>/modules/companies/dashboard.php" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Retour au Tableau de Bord
+                        </a>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-striped table-sm">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Service / Pack</th>
+                                <th>Date Début</th>
+                                <th>Date Fin</th>
+                                <th>Statut</th>
+                                <th>Dernière MAJ</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (empty($contracts)): ?>
                                 <tr>
-                                    <th>Référence</th>
-                                    <th>Type de Contrat</th>
-                                    <th>Date de Début</th>
-                                    <th>Date de Fin</th>
-                                    <th>Statut</th>
-                                    <th>Actions</th>
+                                    <td colspan="7" class="text-center">Aucun contrat trouvé.</td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($contrats as $contratItem): ?>
+                            <?php else: ?>
+                                <?php foreach ($contracts as $contract_item): ?>
                                     <tr>
-                                        <td><?= htmlspecialchars($contratItem['reference'] ?? 'N/A') ?></td>
-                                        <td><?= htmlspecialchars($contratItem['service_nom'] ?? 'N/A') ?></td>
-                                        <td><?= formatDate($contratItem['date_debut'], 'd/m/Y') ?></td>
-                                        <td><?= $contratItem['date_fin'] ? formatDate($contratItem['date_fin'], 'd/m/Y') : 'Indéterminée' ?></td>
-                                        <td><?= getStatusBadge($contratItem['statut']) ?></td>
+                                        <td><?= htmlspecialchars($contract_item['id']) ?></td>
+                                        <td><?= htmlspecialchars($contract_item['service_nom'] ?? 'N/A') ?></td>
+                                        <td><?= htmlspecialchars(date('d/m/Y', strtotime($contract_item['date_debut']))) ?></td>
+                                        <td><?= $contract_item['date_fin'] ? htmlspecialchars(date('d/m/Y', strtotime($contract_item['date_fin']))) : 'Indéfinie' ?></td>
                                         <td>
-                                            <a href="contracts.php?id=<?= $contratItem['id'] ?>" class="btn btn-sm btn-info me-1" title="Voir les détails"><i class="fas fa-eye"></i></a>
+                                            <span class="badge bg-<?= getStatusBadgeClass($contract_item['statut']) ?>">
+                                                <?= htmlspecialchars(ucfirst($contract_item['statut'])) ?>
+                                            </span>
+                                        </td>
+                                        <td><?= htmlspecialchars(date(DEFAULT_DATE_FORMAT, strtotime($contract_item['updated_at']))) ?></td>
+                                        <td>
+                                            <a href="<?= WEBCLIENT_URL ?>/modules/companies/contracts.php?action=view&id=<?= $contract_item['id'] ?>" class="btn btn-sm btn-outline-info" title="Voir Détails">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                    <?= $mainPaginationHtmlCorrected ?>
-                <?php endif; ?>
-            </div>
-        </div>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
 
-    </main>
+                <?php
+
+                $paginationData = [
+                    'currentPage' => $current_page,
+                    'totalPages' => $total_pages
+
+                ];
+
+                $urlPattern = '?page={page}';
+
+
+                echo renderPagination($paginationData, $urlPattern);
+                ?>
+
+            <?php endif; ?>
+
+        </main>
+    </div>
+</div>
 
 <?php
-
-    include_once __DIR__ . '/../../templates/footer.php';
-}
+include __DIR__ . '/../../templates/footer.php';
 ?>

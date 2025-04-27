@@ -30,6 +30,7 @@ body {
     color: var(--text-dark);
     line-height: 1.6;
     overflow-x: hidden;
+    padding-top: 70px;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -41,11 +42,6 @@ h1, h2, h3, h4, h5, h6 {
 a {
     color: var(--primary);
     transition: color var(--transition-speed) ease;
-}
-
-a:hover {
-    color: var(--primary-light);
-    text-decoration: none;
 }
 
 .bg-primary {
@@ -101,7 +97,6 @@ a:hover {
     transform: translateX(-50%);
 }
 
-/* animations */
 .animate-on-scroll {
     opacity: 0;
     transform: translateY(30px);
@@ -113,7 +108,6 @@ a:hover {
     transform: translateY(0);
 }
 
-/* barre de navigation */
 .navbar {
     transition: all var(--transition-speed) ease;
     padding: 1rem 0;
@@ -145,7 +139,6 @@ a:hover {
     color: var(--primary);
 }
 
-/* section héro */
 .hero {
     position: relative;
     padding: 6rem 0;
@@ -175,11 +168,6 @@ a:hover {
     transition: transform 0.5s ease;
 }
 
-.hero-image:hover {
-    transform: scale(1.05);
-}
-
-/* cartes de services */
 .services {
     background-color: #fff;
 }
@@ -189,12 +177,6 @@ a:hover {
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-    transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
-}
-
-.service-card-hover {
-    transform: translateY(-10px);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
 }
 
 .service-card .icon-wrapper {
@@ -207,7 +189,6 @@ a:hover {
     margin-bottom: 1rem;
 }
 
-/* cartes de tarification */
 .pricing {
     background-color: var(--gray-light);
 }
@@ -217,30 +198,11 @@ a:hover {
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-    transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
 }
 
 .pricing-card.border-primary {
     border: 2px solid var(--primary) !important;
-    transform: scale(1.05);
     z-index: 1;
-}
-
-.pricing-card-hover {
-    transform: translateY(-10px);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
-}
-
-.pricing-card .card-header {
-    padding: 1.5rem;
-    border-bottom: none;
-    position: relative;
-}
-
-.pricing-card .badge {
-    position: absolute;
-    top: 10px;
-    right: 10px;
 }
 
 .pricing-card-title {
@@ -253,7 +215,6 @@ a:hover {
     padding: 0.5rem 0;
 }
 
-/* témoignages */
 .testimonials {
     background-color: #fff;
 }
@@ -334,12 +295,6 @@ a:hover {
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-    transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
-}
-
-.dashboard-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
 }
 
 .dashboard-card .card-title {
@@ -347,30 +302,6 @@ a:hover {
     margin-bottom: 0.75rem;
 }
 
-/* bouton retour en haut */
-#back-to-top {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 40px;
-    height: 40px;
-    background-color: var(--primary);
-    color: white;
-    border-radius: 50%;
-    text-align: center;
-    line-height: 40px;
-    z-index: 999;
-    cursor: pointer;
-    display: none;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    transition: background-color var(--transition-speed) ease;
-}
-
-#back-to-top:hover {
-    background-color: var(--primary-light);
-}
-
-/* footer */
 footer {
     background-color: var(--primary-dark);
     color: var(--text-light);
@@ -396,11 +327,6 @@ footer a {
     transition: color var(--transition-speed) ease;
 }
 
-footer a:hover {
-    color: var(--secondary);
-    text-decoration: none;
-}
-
 .footer-social a {
     display: inline-block;
     width: 36px;
@@ -410,12 +336,6 @@ footer a:hover {
     text-align: center;
     line-height: 36px;
     margin-right: 10px;
-    transition: background-color var(--transition-speed) ease;
-}
-
-.footer-social a:hover {
-    background-color: var(--secondary);
-    color: var(--primary-dark);
 }
 
 .footer-bottom {
@@ -425,7 +345,6 @@ footer a:hover {
     font-size: 0.875rem;
 }
 
-/* responsive */
 @media (max-width: 992px) {
     .hero {
         padding: 4rem 0;
@@ -462,4 +381,21 @@ footer a:hover {
     .cta {
         text-align: center;
     }
+}
+
+.avatar-sm {
+    width: 32px !important;
+    /* Utilisation de !important ici pour assurer la priorité initiale */
+    height: 32px !important;
+    object-fit: cover;
+    border-radius: 50%;
+    vertical-align: middle;
+    /* Peut aider à l'alignement */
+}
+
+.avatar-md { 
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 50%;
 }

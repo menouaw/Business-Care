@@ -1,19 +1,10 @@
 <?php
-
-
 require_once __DIR__ . '/includes/init.php';
+
 require_once __DIR__ . '/includes/page_functions/login.php';
 
 if (isAuthenticated()) {
-    if (isEntrepriseUser()) {
-        redirectTo(WEBCLIENT_URL . '/modules/companies/index.php');
-    } elseif (isSalarieUser()) {
-        redirectTo(WEBCLIENT_URL . '/modules/employees/index.php');
-    } elseif (isPrestataireUser()) {
-        redirectTo(WEBCLIENT_URL . '/modules/providers/index.php');
-    } else {
-        redirectTo(WEBCLIENT_URL);
-    }
+    redirectTo(WEBCLIENT_URL . '/modules/companies/dashboard.php');
 }
 
 $email = '';
@@ -28,15 +19,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             redirectTo($result['redirect']);
         } else {
             if (isEntrepriseUser()) {
-                redirectTo(WEBCLIENT_URL . '/modules/companies/index.php');
+                redirectTo(WEBCLIENT_URL . '/modules/companies/dashboard.php');
             } elseif (isSalarieUser()) {
-                redirectTo(WEBCLIENT_URL . '/modules/employees/index.php');
+                redirectTo(WEBCLIENT_URL . '/modules/employees/dashboard.php');
             } elseif (isPrestataireUser()) {
-                redirectTo(WEBCLIENT_URL . '/modules/providers/index.php');
+                redirectTo(WEBCLIENT_URL . '/modules/providers/dashboard.php');
             } else {
                 redirectTo(WEBCLIENT_URL);
             }
         }
+        exit;
     } else {
         $error = $result['message'];
         $email = $_POST['email'] ?? '';
@@ -49,6 +41,8 @@ $pageTitle = "Connexion - Business Care";
 
 include_once __DIR__ . '/templates/header.php';
 ?>
+
+
 
 <main class="login-page py-5">
     <div class="container">

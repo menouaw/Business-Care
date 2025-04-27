@@ -1,6 +1,6 @@
 <?php
-require_once 'config.php';
-require_once 'db.php';
+require_once __DIR__ . '/../../shared/web-client/config.php';
+require_once __DIR__ . '/../../shared/web-client/db.php';
 
 /**
  * Formate une date selon un format spécifié.
@@ -67,7 +67,7 @@ function timeAgo($time)
     if (!is_numeric($time)) {
         $time = strtotime($time);
         if ($time === false) {
-            error_log("timeAgo: Impossible de convertir l'entrée en timestamp.");
+
             return 'date invalide';
         }
     }
@@ -356,24 +356,6 @@ function isTimeSlotAvailable($dateHeure, $duree, $prestationId)
 }
 
 
-function generateInvoiceNumber()
-{
-    $date = date('Ymd');
-
-    $sql = "SELECT MAX(SUBSTRING_INDEX(numero_facture, '-', -1)) AS last_id
-            FROM factures
-            WHERE numero_facture LIKE :pattern";
-
-    $stmt = executeQuery($sql, ['pattern' => "F-$date-%"]);
-    $result = $stmt->fetch();
-
-    $lastId = $result['last_id'] ?? 0;
-    $nextId = str_pad($lastId + 1, 4, '0', STR_PAD_LEFT);
-
-    return INVOICE_PREFIX . "-$date-$nextId";
-}
-
-
 function formatCurrency($amount, $currencySymbol = '€')
 {
     if ($amount === null || !is_numeric($amount)) {
@@ -403,10 +385,167 @@ function handleClientCsrfFailureRedirect($actionDescription = 'action', $redirec
     $redirectUrl = $redirectUrl ?? WEBCLIENT_URL . '/index.php';
     flashMessage('Jeton de sécurité invalide ou expiré. Veuillez réessayer.', 'danger');
     $requestMethod = $_SERVER['REQUEST_METHOD'] ?? 'UNKNOWN';
+
     logSecurityEvent(
         $_SESSION['user_id'] ?? null,
         'csrf_failure',
         "[SECURITY FAILURE] Tentative de {$actionDescription} avec jeton invalide via {$requestMethod} sur web-client"
     );
     redirectTo($redirectUrl);
+}
+
+/**
+ * Vérifie si l'URL fournie correspond à la page actuelle pour les liens de navigation.
+ *
+ * @param string $url L'URL du lien de navigation.
+ * @return bool True si l'URL correspond à la page actuelle, false sinon.
+ */
+function isActivePage(string $url): bool
+{
+    $current_uri = $_SERVER['REQUEST_URI'] ?? '';
+
+
+    $base_url = parse_url(WEBCLIENT_URL, PHP_URL_PATH) ?? '';
+    $link_uri = parse_url($url, PHP_URL_PATH) ?? '';
+
+    if ($base_url && str_starts_with($current_uri, $base_url)) {
+        $current_uri = substr($current_uri, strlen($base_url));
+    }
+    if ($base_url && str_starts_with($link_uri, $base_url)) {
+        $link_uri = substr($link_uri, strlen($base_url));
+    }
+
+    return $current_uri === $link_uri;
+}
+
+/**
+ * Retourne la classe CSS Bootstrap pour le badge de statut.
+ * Utilise une map pour les statuts communs (contrats, factures, etc.)
+ *
+ * @param string|null $status Le statut.
+ * @return string La classe CSS du badge (ex: 'success', 'warning', 'danger').
+ */
+function getStatusBadgeClass(?string $status): string
+{
+    if ($status === null) {
+        return 'light';
+    }
+
+    $status = strtolower($status);
+
+
+    $statusMap = [
+
+        'actif' => 'success',
+        'expire' => 'secondary',
+        'resilie' => 'danger',
+        'en_attente' => 'warning',
+
+
+        'payee' => 'success',
+        'annulee' => 'secondary',
+        'retard' => 'danger',
+        'impayee' => 'danger',
+
+
+        'accepte' => 'success',
+        'refuse' => 'danger',
+
+        'demande_en_cours' => 'info',
+
+
+        'inactif' => 'secondary',
+        'suspendu' => 'secondary',
+        'planifie' => 'primary',
+        'termine' => 'info',
+        'confirme' => 'success',
+        'nouveau' => 'primary',
+        'en_cours' => 'info',
+        'resolu' => 'success',
+        'clos' => 'secondary'
+    ];
+
+    return $statusMap[$status] ?? 'light';
+}
+
+/**
+ * Crée une notification pour un utilisateur spécifique.
+ *
+ * @param int $user_id ID de l'utilisateur destinataire.
+ * @param string $title Titre de la notification.
+ * @param string $message Message de la notification.
+ * @param string $type Type de notification (info, success, warning, error).
+ * @param string|null $link Lien optionnel associé.
+ * @return int|false L'ID de la notification créée ou false en cas d'erreur.
+ */
+function createNotification(int $user_id, string $title, string $message, string $type = 'info', ?string $link = null): int|false
+{
+    if ($user_id <= 0 || empty($title) || empty($message)) {
+        // error_log("createNotification: Invalid parameters..."); // Log commenté
+        return false;
+    }
+
+    $data = [
+        'personne_id' => $user_id, // Assurez-vous que le nom de colonne est correct
+        'titre' => $title,
+        'message' => $message,
+        'type' => in_array($type, ['info', 'success', 'warning', 'error', 'danger']) ? $type : 'info',
+        'lien' => $link
+        // 'date_creation' => date('Y-m-d H:i:s') // SUPPRIMÉ
+    ];
+
+    // error_log("DEBUG createNotification: Attempting insert..."); // Log commenté
+
+    $success = insertRow('notifications', $data);
+
+    if (!$success) {
+        error_log("Erreur lors de l'insertion de la notification pour user_id: $user_id"); // Log d'erreur gardé
+        return false;
+    } else {
+        try {
+            $pdo = getDbConnection();
+            $lastId = $pdo->lastInsertId();
+            if ($lastId) {
+                // error_log("DEBUG createNotification: Insert successful..."); // Log commenté
+                return (int)$lastId;
+            } else {
+                error_log("Erreur createNotification: insertRow succeeded but lastInsertId returned invalid value for user_id: $user_id."); // Log d'erreur gardé
+                return false;
+            }
+        } catch (PDOException $e) {
+            error_log("Erreur PDO lors de la récupération de lastInsertId pour notification user_id: $user_id - " . $e->getMessage()); // Log d'erreur gardé
+            return false;
+        }
+    }
+}
+
+function getUnreadNotificationCount(int $userId): int
+{
+    if ($userId <= 0) return 0;
+
+
+    $sql = "SELECT COUNT(*) FROM notifications WHERE personne_id = :user_id AND lu = 0";
+    $stmt = executeQuery($sql, [':user_id' => $userId]);
+
+
+
+    return (int)$stmt->fetchColumn();
+}
+
+/**
+ * Marque toutes les notifications non lues d'un utilisateur comme lues.
+ *
+ * @param int $userId L'ID de l'utilisateur.
+ * @return int Le nombre de notifications mises à jour.
+ */
+function markNotificationsAsRead(int $userId): int
+{
+    if ($userId <= 0) return 0;
+
+    $updateData = [
+        'lu' => 1,
+        'date_lecture' => date('Y-m-d H:i:s')
+    ];
+
+    return updateRow('notifications', $updateData, 'personne_id = :user_id AND lu = 0', [':user_id' => $userId]);
 }

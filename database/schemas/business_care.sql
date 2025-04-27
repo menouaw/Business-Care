@@ -1,3 +1,4 @@
+
 CREATE TABLE roles (
     id INT PRIMARY KEY AUTO_INCREMENT,
     nom VARCHAR(50) NOT NULL UNIQUE,
@@ -26,6 +27,19 @@ CREATE TABLE entreprises (
     INDEX idx_ville (ville)
 );
 
+CREATE TABLE sites (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nom VARCHAR(255) NOT NULL,
+    adresse TEXT,
+    code_postal VARCHAR(10),
+    ville VARCHAR(100),
+    entreprise_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (entreprise_id) REFERENCES entreprises(id) ON DELETE CASCADE,
+    INDEX idx_ville (ville)
+);
+
 CREATE TABLE personnes (
     id INT PRIMARY KEY AUTO_INCREMENT,
     nom VARCHAR(100) NOT NULL,
@@ -38,12 +52,14 @@ CREATE TABLE personnes (
     photo_url VARCHAR(255),
     role_id INT NOT NULL,
     entreprise_id INT,
+    site_id INT NULL,
     statut ENUM('actif', 'inactif', 'en_attente', 'suspendu') DEFAULT 'actif',
     derniere_connexion DATETIME,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (role_id) REFERENCES roles(id),
-    FOREIGN KEY (entreprise_id) REFERENCES entreprises(id),
+    FOREIGN KEY (entreprise_id) REFERENCES entreprises(id) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE SET NULL ON UPDATE CASCADE,
     INDEX idx_email (email),
     INDEX idx_role (role_id),
     INDEX idx_entreprise (entreprise_id)
@@ -67,6 +83,24 @@ CREATE TABLE prestations (
     INDEX idx_categorie (categorie)
 );
 
+CREATE TABLE consultation_creneaux (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    prestation_id INT NOT NULL,
+    praticien_id INT NULL,
+    start_time DATETIME NOT NULL,
+    end_time DATETIME NOT NULL,
+    is_booked BOOLEAN DEFAULT FALSE,
+    site_id INT NULL,
+
+    FOREIGN KEY (prestation_id) REFERENCES prestations(id) ON DELETE CASCADE,
+    FOREIGN KEY (praticien_id) REFERENCES personnes(id) ON DELETE SET NULL,
+    FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE SET NULL ON UPDATE CASCADE,
+
+    INDEX idx_prestation_time (prestation_id, start_time, is_booked),
+    UNIQUE KEY unique_slot (prestation_id, praticien_id, start_time)
+);
+
+
 CREATE TABLE services (
     id INT PRIMARY KEY AUTO_INCREMENT,
     type ENUM('Starter Pack', 'Basic Pack', 'Premium Pack') NOT NULL UNIQUE,
@@ -79,6 +113,7 @@ CREATE TABLE services (
     chatbot_questions_limite INT NULL,
     conseils_hebdo_personnalises BOOLEAN DEFAULT FALSE,
     tarif_annuel_par_salarie DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    prix_base_indicatif DECIMAL(10,2) NULL DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_type (type),
@@ -115,7 +150,7 @@ CREATE TABLE devis (
     montant_total DECIMAL(10,2) NOT NULL,
     montant_ht DECIMAL(10,2),
     tva DECIMAL(5,2),
-    statut ENUM('en_attente', 'accepte', 'refuse', 'expire') DEFAULT 'en_attente',
+    statut ENUM('en_attente', 'accepte', 'refuse', 'expire', 'demande_en_cours') DEFAULT 'en_attente',
     conditions_paiement TEXT,
     delai_paiement INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -157,7 +192,7 @@ CREATE TABLE rendez_vous (
     date_rdv DATETIME NOT NULL,
     duree INT NOT NULL,
     lieu VARCHAR(255),
-    type_rdv ENUM('presentiel', 'visio', 'telephone'),
+    type_rdv ENUM('presentiel', 'visio', 'telephone', 'consultation'),
     statut ENUM('planifie', 'confirme', 'annule', 'termine', 'no_show') DEFAULT 'planifie',
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -182,8 +217,10 @@ CREATE TABLE evenements (
     niveau_difficulte ENUM('debutant', 'intermediaire', 'avance'),
     materiel_necessaire TEXT,
     prerequis TEXT,
+    site_id INT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE SET NULL ON UPDATE CASCADE,
     INDEX idx_dates (date_debut, date_fin),
     INDEX idx_type (type)
 );
@@ -318,84 +355,6 @@ CREATE TABLE contrats_prestations (
     FOREIGN KEY (prestation_id) REFERENCES prestations(id) ON DELETE CASCADE
 );
 
-CREATE TABLE factures_prestataires (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    prestataire_id INT NOT NULL,
-    numero_facture VARCHAR(50) UNIQUE,
-    date_facture DATE NOT NULL,
-    periode_debut DATE,
-    periode_fin DATE,
-    montant_total DECIMAL(10,2) NOT NULL,
-    statut ENUM('generation_attendue', 'impayee', 'payee') DEFAULT 'generation_attendue',
-    date_paiement DATETIME NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (prestataire_id) REFERENCES personnes(id) ON DELETE CASCADE,
-    INDEX idx_numero (numero_facture),
-    INDEX idx_periode (periode_debut, periode_fin),
-    INDEX idx_statut (statut),
-    INDEX idx_prestataire (prestataire_id)
-);
-
-CREATE TABLE facture_prestataire_lignes (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    facture_prestataire_id INT NOT NULL,
-    rendez_vous_id INT UNIQUE,
-    description TEXT NOT NULL,
-    montant DECIMAL(10,2) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (facture_prestataire_id) REFERENCES factures_prestataires(id) ON DELETE CASCADE,
-    FOREIGN KEY (rendez_vous_id) REFERENCES rendez_vous(id) ON DELETE SET NULL,
-    INDEX idx_facture_id (facture_prestataire_id)
-);
-
-CREATE TABLE habilitations (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    prestataire_id INT NOT NULL,
-    type ENUM('diplome', 'certification', 'agrement', 'autre') NOT NULL,
-    nom_document VARCHAR(255),
-    document_url VARCHAR(255),
-    organisme_emission VARCHAR(150),
-    date_obtention DATE,
-    date_expiration DATE,
-    statut ENUM('en_attente_validation', 'verifiee', 'rejetee', 'expiree') DEFAULT 'en_attente_validation',
-    notes TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (prestataire_id) REFERENCES personnes(id) ON DELETE CASCADE,
-    INDEX idx_prestataire_id (prestataire_id),
-    INDEX idx_statut (statut),
-    INDEX idx_date_expiration (date_expiration)
-);
-
-CREATE TABLE prestataires_prestations (
-    prestataire_id INT NOT NULL,
-    prestation_id INT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (prestataire_id, prestation_id),
-    FOREIGN KEY (prestataire_id) REFERENCES personnes(id) ON DELETE CASCADE,
-    FOREIGN KEY (prestation_id) REFERENCES prestations(id) ON DELETE CASCADE
-);
-
-CREATE TABLE prestataires_disponibilites (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    prestataire_id INT NOT NULL,
-    type ENUM('recurrente', 'specifique', 'indisponible') NOT NULL,
-    date_debut DATETIME,
-    date_fin DATETIME,
-    heure_debut TIME,
-    heure_fin TIME,
-    jour_semaine TINYINT,
-    recurrence_fin DATE NULL,
-    notes TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (prestataire_id) REFERENCES personnes(id) ON DELETE CASCADE,
-    INDEX idx_prestataire_id (prestataire_id),
-    INDEX idx_type (type),
-    INDEX idx_date_debut (date_debut),
-    INDEX idx_jour_semaine (jour_semaine)
-);
 
 CREATE TABLE communaute_messages (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -408,6 +367,7 @@ CREATE TABLE communaute_messages (
     FOREIGN KEY (personne_id) REFERENCES personnes(id) ON DELETE CASCADE,
     INDEX idx_communaute_date (communaute_id, created_at)
 );
+
 
 CREATE TABLE evenement_inscriptions (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -438,30 +398,22 @@ CREATE TABLE conseils (
     icone VARCHAR(50),
     resume TEXT,
     categorie VARCHAR(100),
-    contenu LONGTEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP 
+    contenu LONGTEXT NOT NULL
 );
 
-CREATE TABLE utilisateur_interets_conseils (
-    personne_id INT NOT NULL,                          
-    categorie_conseil VARCHAR(100) NOT NULL,            
-    PRIMARY KEY (personne_id, categorie_conseil),
-    FOREIGN KEY (personne_id) REFERENCES personnes(id) ON DELETE CASCADE
-);
-
-CREATE TABLE communaute_membres (
+CREATE TABLE support_tickets (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    personne_id INT NOT NULL,
-    communaute_id INT NOT NULL,
-    date_adhesion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    statut ENUM('actif', 'inactif', 'banni') DEFAULT 'actif',
+    entreprise_id INT NULL, 
+    personne_id INT NULL, 
+    sujet VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    statut ENUM('nouveau', 'en_cours', 'resolu', 'clos') DEFAULT 'nouveau', 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (personne_id) REFERENCES personnes(id) ON DELETE CASCADE,
-    FOREIGN KEY (communaute_id) REFERENCES communautes(id) ON DELETE CASCADE,
-    UNIQUE KEY unique_membre (personne_id, communaute_id), 
-    INDEX idx_statut (statut)
+    FOREIGN KEY (entreprise_id) REFERENCES entreprises(id) ON DELETE SET NULL,
+    FOREIGN KEY (personne_id) REFERENCES personnes(id) ON DELETE SET NULL,
+    INDEX idx_statut (statut),
+    INDEX idx_entreprise_id (entreprise_id),
+    INDEX idx_personne_id (personne_id)
 );
-
 

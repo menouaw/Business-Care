@@ -1,5 +1,5 @@
 <?php
-// API pour l'authentification
+
 require_once 'logging.php';
 require_once 'config.php';
 require_once 'db.php';
@@ -17,9 +17,10 @@ require_once 'db.php';
  *
  * @return bool Retourne true si l'authentification réussit, sinon false.
  */
-function login($email, $password, $rememberMe = false) {
+function login($email, $password, $rememberMe = false)
+{
     $user = fetchOne('personnes', "email = '$email' AND statut = 'actif'");
-    
+
     if ($user && password_verify($password, $user['mot_de_passe'])) {
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['user_name'] = $user['prenom'] . ' ' . $user['nom'];
@@ -27,14 +28,14 @@ function login($email, $password, $rememberMe = false) {
         $_SESSION['user_role'] = $user['role_id'];
         $_SESSION['user_photo'] = $user['photo_url'];
         $_SESSION['last_activity'] = time();
-        
+
         if ($rememberMe) {
             $token = createRememberMeToken($user['id']);
             setcookie('remember_me', $token, time() + (30 * 24 * 60 * 60), '/', '', true, true);
         }
-        
+
         logSecurityEvent($user['id'], 'login', '[SUCCESS] Connexion réussie');
-        
+
         return true;
     } else {
         if ($user) {
@@ -55,20 +56,21 @@ function login($email, $password, $rememberMe = false) {
  *
  * @return bool Indique si la déconnexion a été effectuée avec succès.
  */
-function logout() {
+function logout()
+{
     if (isset($_SESSION['user_id'])) {
         logSecurityEvent($_SESSION['user_id'], 'logout', '[SUCCESS] Utilisateur déconnecté');
     }
-    
+
     if (isset($_COOKIE['remember_me'])) {
         deleteRememberMeToken($_COOKIE['remember_me']);
         setcookie('remember_me', '', time() - 3600, '/', '', true, true);
     }
-    
+
     session_unset();
     session_destroy();
     session_start();
-    
+
     return true;
 }
 
@@ -83,18 +85,19 @@ function logout() {
  *
  * @return bool Retourne true si l'utilisateur est authentifié, false sinon.
  */
-function isAuthenticated() {
+function isAuthenticated()
+{
     if (isset($_SESSION['user_id'])) {
         if (time() - $_SESSION['last_activity'] > SESSION_LIFETIME) {
             logSecurityEvent($_SESSION['user_id'], 'session_timeout', '[FAILURE] Session expirée pour l\'utilisateur ID: ' . $_SESSION['user_id']);
             logout();
             return false;
         }
-        
+
         $_SESSION['last_activity'] = time();
         return true;
     }
-    
+
     if (isset($_COOKIE['remember_me'])) {
         $result = validateRememberMeToken($_COOKIE['remember_me']);
         if (!$result) {
@@ -102,7 +105,7 @@ function isAuthenticated() {
         }
         return $result;
     }
-    
+
     return false;
 }
 
@@ -115,7 +118,8 @@ function isAuthenticated() {
  *
  * @return void
  */
-function requireAuthentication() {
+function requireAuthentication()
+{
     if (!isAuthenticated()) {
         logSystemActivity('[SECURITY]:auth_required', '[FAILURE] Redirection vers la page de connexion - Accès à une page protégée: ' . $_SERVER['REQUEST_URI']);
         $_SESSION['redirect_after_login'] = $_SERVER['REQUEST_URI'];
@@ -129,7 +133,8 @@ function requireAuthentication() {
  * @param int $requiredRole Identifiant du rôle requis.
  * @return bool Retourne true si l'utilisateur est authentifié et a le rôle requis, sinon false.
  */
-function hasRole($requiredRole) {
+function hasRole($requiredRole)
+{
     if (!isAuthenticated()) {
         logSecurityEvent(null, 'role_check', '[FAILURE] Vérification de rôle échouée - Utilisateur non authentifié', true);
         return false;
@@ -156,17 +161,18 @@ function hasRole($requiredRole) {
  * @param int $requiredRole Identifiant du rôle requis.
  * @return void
  */
-function requireRole($requiredRole) {
+function requireRole($requiredRole)
+{
     requireAuthentication();
 
     if (!hasRole($requiredRole)) {
         logSecurityEvent(
             $_SESSION['user_id'] ?? null,
-            'permission_denied', 
-            '[FAILURE] Accès refusé à ' . $_SERVER['REQUEST_URI'] . " - Rôle requis: $requiredRole", 
+            'permission_denied',
+            '[FAILURE] Accès refusé à ' . $_SERVER['REQUEST_URI'] . " - Rôle requis: $requiredRole",
             true
         );
-        
+
         redirectTo(WEBADMIN_URL . '/login.php?error=permission_denied');
     }
 }
@@ -180,7 +186,8 @@ function requireRole($requiredRole) {
  * @param int|null $userId Identifiant de l'utilisateur à récupérer. Utilise l'utilisateur connecté si null.
  * @return array|false Tableau associatif des informations utilisateur, ou false en cas d'absence d'utilisateur valide.
  */
-function getUserInfo($userId = null) {
+function getUserInfo($userId = null)
+{
     if ($userId === null) {
         if (!isAuthenticated()) {
             logSystemActivity('user_info', '[FAILURE] Tentative d\'accès aux informations utilisateur ');
@@ -188,15 +195,15 @@ function getUserInfo($userId = null) {
         }
         $userId = $_SESSION['user_id'];
     }
-    
+
     $userInfo = fetchOne('personnes', "id = $userId");
-    
+
     if ($userInfo) {
         logActivity($userId, 'user_info', "[SUCCESS] Récupération des informations utilisateur ID: $userId");
     } else {
         logSystemActivity('user_info', "[FAILURE] Échec de récupération des informations pour l'utilisateur ID: $userId");
     }
-    
+
     return $userInfo;
 }
 
@@ -211,26 +218,27 @@ function getUserInfo($userId = null) {
  * @param string $email Email de l'utilisateur concerné.
  * @return bool Retourne true si la procédure de réinitialisation a été initiée avec succès, false sinon.
  */
-function resetPassword($email) {
+function resetPassword($email)
+{
     $user = fetchOne('personnes', "email = '$email'");
-    
+
     if (!$user) {
         logSecurityEvent(null, 'password_reset', "[FAILURE] Tentative de réinitialisation pour email inexistant: $email", true);
         return false;
     }
-    
+
     $token = bin2hex(random_bytes(32));
     $expires = date('Y-m-d H:i:s', strtotime('+1 hour'));
-    
+
     updateRow('personnes', [
         'token' => $token,
         'expires' => $expires
     ], "id = {$user['id']}");
-    
+
     logSecurityEvent($user['id'], 'password_reset', '[SUCCESS] Demande de réinitialisation de mot de passe initiée');
+
     
-    // TODO: envoyer un email de reinitialisation de mot de passe
-    
+
     return true;
 }
 
@@ -244,18 +252,19 @@ function resetPassword($email) {
  * @param int $userId Identifiant de l'utilisateur pour lequel le token est généré.
  * @return string Le token généré.
  */
-function createRememberMeToken($userId) {
+function createRememberMeToken($userId)
+{
     $token = bin2hex(random_bytes(32));
     $expires = date('Y-m-d H:i:s', strtotime('+30 days'));
-    
+
     insertRow('remember_me_tokens', [
         'user_id' => $userId,
         'token' => $token,
         'expires_at' => $expires
     ]);
-    
+
     logSecurityEvent($userId, 'remember_token', '[SUCCESS] Création de token "Se souvenir de moi"');
-    
+
     return $token;
 }
 
@@ -270,9 +279,10 @@ function createRememberMeToken($userId) {
  * @param string $token Le token à valider.
  * @return bool Renvoie true si la ré-authentification a réussi, sinon false.
  */
-function validateRememberMeToken($token) {
+function validateRememberMeToken($token)
+{
     $result = fetchOne('remember_me_tokens', "token = '$token' AND expires_at > NOW()");
-    
+
     if ($result) {
         $user = getUserInfo($result['user_id']);
         if ($user) {
@@ -282,7 +292,7 @@ function validateRememberMeToken($token) {
             $_SESSION['user_role'] = $user['role_id'];
             $_SESSION['user_photo'] = $user['photo_url'];
             $_SESSION['last_activity'] = time();
-            
+
             logSecurityEvent($user['id'], 'auto_login', 'Connexion automatique via token "Se souvenir de moi"');
             return true;
         } else {
@@ -303,12 +313,13 @@ function validateRememberMeToken($token) {
  * @param string $token Token d'authentification à supprimer.
  * @return bool Retourne true si la suppression est effectuée avec succès, sinon false.
  */
-function deleteRememberMeToken($token) {
+function deleteRememberMeToken($token)
+{
     $tokenInfo = fetchOne('remember_me_tokens', "token = '$token'");
     $userId = $tokenInfo ? $tokenInfo['user_id'] : null;
-    
+
     $rowsAffected = deleteRow('remember_me_tokens', "token = '$token'");
-    
+
     if ($rowsAffected > 0) {
         logSecurityEvent($userId, 'remember_token', '[SUCCESS] Suppression du token "Se souvenir de moi"');
         return true;
@@ -316,4 +327,4 @@ function deleteRememberMeToken($token) {
         logSecurityEvent($userId, 'remember_token', '[FAILURE] Échec de suppression du token "Se souvenir de moi"', true);
         return false;
     }
-} 
+}

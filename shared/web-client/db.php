@@ -40,12 +40,11 @@ function executeQuery($sql, $params = [])
             error_log("Warning: executeQuery called with non-array params. SQL: " . $sql);
             $params = [];
         }
-
         $stmt->execute($params);
 
         return $stmt;
     } catch (PDOException $e) {
-        error_log(message: "PDOException in executeQuery: " . $e->getMessage() . " | SQL: " . $sql . " | Params: " . json_encode($params));
+        error_log("PDOException in executeQuery: " . $e->getMessage() . " | SQL: " . $sql . " | Params: " . json_encode($params));
         throw $e;
     }
 }
@@ -111,8 +110,6 @@ function fetchOne($table, $where, $params = [], $orderBy = '')
     }
     $sql .= " LIMIT 1";
 
-    error_log("[DEBUG] fetchOne called for table: $table | WHERE: $where | Params: " . json_encode($params) . " | SQL: $sql");
-
     $stmt = executeQuery($sql, $params);
 
 
@@ -131,8 +128,14 @@ function insertRow($table, $data)
 
     $sql = "INSERT INTO $table (" . implode(', ', $fields) . ") VALUES (" . implode(', ', $placeholders) . ")";
 
-    $stmt = executeQuery($sql, $data);
-    return $stmt->rowCount() > 0 ? getDbConnection()->lastInsertId() : false;
+    try {
+        $stmt = executeQuery($sql, $data);
+
+        return true;
+    } catch (Exception $e) {
+        error_log("Exception caught within insertRow: " . $e->getMessage() . " | SQL: $sql | Params: " . json_encode($data));
+        return false;
+    }
 }
 
 
@@ -183,11 +186,7 @@ function deleteRow($table, $where, $params = [])
     return $stmt->rowCount();
 }
 
-/**
- * Démarre une transaction SQL
- * 
- * @return void
- */
+
 function beginTransaction()
 {
     getDbConnection()->beginTransaction();

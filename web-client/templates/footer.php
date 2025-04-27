@@ -1,5 +1,5 @@
-    <footer>
-        <div class="container py-5">
+    <footer class="rounded-top">
+        <div class="container-fluid py-3">
             <div class="row g-4">
                 <div class="col-lg-4 col-md-6">
                     <h5>Business Care</h5>
@@ -10,7 +10,7 @@
                         <p><i class="fas fa-envelope me-2"></i> contact@business-care.fr</p>
                     </div>
                 </div>
-                
+
                 <div class="col-lg-2 col-md-6 col-6">
                     <h5>Liens rapides</h5>
                     <ul class="mt-3 list-unstyled">
@@ -20,7 +20,7 @@
                         <li><a href="<?= WEBCLIENT_URL ?>/contact.php">Contact</a></li>
                     </ul>
                 </div>
-                
+
                 <div class="col-lg-2 col-md-6 col-6">
                     <h5>Ressources</h5>
                     <ul class="mt-3 list-unstyled">
@@ -30,14 +30,14 @@
                         <li><a href="<?= WEBCLIENT_URL ?>/devenir-prestataire.php">Devenir prestataire</a></li>
                     </ul>
                 </div>
-                
+
                 <div class="col-lg-4 col-md-6">
                     <h5>Newsletter</h5>
                     <p class="mt-3">Recevez nos dernières actualités et offres spéciales.</p>
                     <form class="mt-3 newsletter-form">
                         <div class="input-group">
                             <input type="email" class="form-control" placeholder="Votre adresse email" aria-label="Votre adresse email">
-                            <button class="btn btn-secondary" type="submit">S'abonner</button>
+                            <button class="btn btn-primary" type="submit">S'abonner</button>
                         </div>
                     </form>
                     <div class="footer-social mt-4">
@@ -49,9 +49,9 @@
                 </div>
             </div>
         </div>
-        
-        <div class="footer-bottom py-3">
-            <div class="container">
+
+        <div class="footer-bottom py-2">
+            <div class="container-fluid">
                 <div class="row align-items-center">
                     <div class="col-md-6 text-center text-md-start">
                         <p class="mb-0">&copy; <?= date('Y') ?> Business Care. Tous droits réservés.</p>
@@ -67,15 +67,16 @@
             </div>
         </div>
     </footer>
-    
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <script src="<?= ASSETS_URL ?>/js/client.js"></script>
-    
+
     <?php if (isset($pageScripts) && is_array($pageScripts)): ?>
         <?php foreach ($pageScripts as $script): ?>
             <script src="<?= $script ?>"></script>
         <?php endforeach; ?>
     <?php endif; ?>
-</body>
-</html>
+    </body>
+
+    </html>

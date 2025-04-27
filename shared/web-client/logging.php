@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Service centralisé pour la journalisation des activités dans l'application
  */
@@ -12,7 +13,8 @@ require_once 'db.php';
  * @param string $details Informations supplémentaires
  * @return int|false ID du journal créé ou false en cas d'échec
  */
-function logActivity($userId, $action, $details = '') {
+function logActivity($userId, $action, $details = '')
+{
     $data = [
         'personne_id' => $userId,
         'action' => $action,
@@ -21,7 +23,7 @@ function logActivity($userId, $action, $details = '') {
         'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? null,
         'created_at' => date('Y-m-d H:i:s')
     ];
-    
+
     return insertRow('logs', $data);
 }
 
@@ -32,7 +34,8 @@ function logActivity($userId, $action, $details = '') {
  * @param string $details Informations supplémentaires
  * @return int|false ID du journal créé ou false en cas d'échec
  */
-function logSystemActivity($action, $details = '') {
+function logSystemActivity($action, $details = '')
+{
     return logActivity(null, $action, $details);
 }
 
@@ -45,7 +48,8 @@ function logSystemActivity($action, $details = '') {
  * @param bool $isFailure Indique si l'opération a échoué
  * @return int|false Identifiant du journal créé ou false en cas d'échec
  */
-function logSecurityEvent($userId, $action, $details = '', $isFailure = false) {
+function logSecurityEvent($userId, $action, $details = '', $isFailure = false)
+{
     $securityPrefix = $isFailure ? '[SECURITY FAILURE]' : '[SECURITY]';
     return logActivity($userId, $securityPrefix . ':' . $action, $details);
 }
@@ -60,7 +64,8 @@ function logSecurityEvent($userId, $action, $details = '', $isFailure = false) {
  * @param string $details Informations complémentaires sur l'opération.
  * @return int|false L'ID de l'entrée de journal créée ou false en cas d'échec.
  */
-function logBusinessOperation($userId, $action, $details = '') {
+function logBusinessOperation($userId, $action, $details = '')
+{
     return logActivity($userId, '[BUSINESS OPERATION]' . $action, $details);
 }
 
@@ -73,7 +78,8 @@ function logBusinessOperation($userId, $action, $details = '') {
  * @param string $details Détails supplémentaires
  * @return int|false ID du journal créé ou false en cas d'échec
  */
-function logReservationActivity($userId, $prestationId, $action, $details = '') {
+function logReservationActivity($userId, $prestationId, $action, $details = '')
+{
     $actionPrefix = 'reservation:' . $action;
     $fullDetails = "prestation_id: $prestationId, " . $details;
     return logActivity($userId, $actionPrefix, $fullDetails);
@@ -88,7 +94,8 @@ function logReservationActivity($userId, $prestationId, $action, $details = '') 
  * @param string $statut Statut du paiement
  * @return int|false ID du journal créé ou false en cas d'échec
  */
-function logPaymentActivity($userId, $refTransaction, $montant, $statut) {
+function logPaymentActivity($userId, $refTransaction, $montant, $statut)
+{
     $details = "reference: $refTransaction, montant: $montant, statut: $statut";
     return logActivity($userId, '[PAYMENT]' . $details);
-} 
+}

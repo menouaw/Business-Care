@@ -36,7 +36,7 @@ $errorMessage = $errorDetails['message'];
                 <h1 class="card-title text-danger"><?php echo htmlspecialchars($errorDetails['title']) . ' (' . $statusCode . ')'; ?></h1>
                 <p class="card-text"><?php echo htmlspecialchars($errorMessage); ?></p>
                 <hr>
-                <a href="/client/index.php" class="btn btn-primary">Retour à l'accueil</a>
+                <a href="<?php echo WEBCLIENT_URL; ?>" class="btn btn-primary">Retour à l'accueil</a>
             </div>
         </div>
     </div>

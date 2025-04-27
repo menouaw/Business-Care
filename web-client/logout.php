@@ -1,4 +1,5 @@
 <?php
+
 /**
  * script de déconnexion
  *
@@ -7,17 +8,31 @@
 
 require_once __DIR__ . '/includes/init.php';
 
-// Si l'utilisateur n'est pas connecté, rediriger vers la page d'accueil
-if (!isAuthenticated()) {
-    redirectTo(WEBCLIENT_URL);
+
+logSecurityEvent($_SESSION['user_id'] ?? null, 'logout', '[INFO] Déconnexion utilisateur ID: ' . ($_SESSION['user_id'] ?? 'Inconnu'));
+
+
+$_SESSION = array();
+
+
+
+
+if (ini_get("session.use_cookies")) {
+    $params = session_get_cookie_params();
+    setcookie(
+        session_name(),
+        '',
+        time() - 42000,
+        $params["path"],
+        $params["domain"],
+        $params["secure"],
+        $params["httponly"]
+    );
 }
 
-// Déconnecter l'utilisateur
-logout();
 
-// Ajouter un message flash de confirmation
-flashMessage('Vous avez été déconnecté avec succès', 'success');
+session_destroy();
 
-// Rediriger vers la page d'accueil
-redirectTo(WEBCLIENT_URL);
-?>
+
+redirectTo(WEBCLIENT_URL . '/login.php');
+exit; 
