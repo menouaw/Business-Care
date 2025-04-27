@@ -35,7 +35,7 @@ $serviceCategories = [
     ],
     [
         'title' => 'Cohésion & Activités d\'équipe',
-        'description' => 'Conseils hebdomadaires, défis sportifs, séances de yoga et événements de team building pour renforcer les liens.',
+        'description' => 'Conseils hebdomadaires, défis sportifs, séances de yoga et évènements de team building pour renforcer les liens.',
         'icon' => 'fa-users'
     ],
     [

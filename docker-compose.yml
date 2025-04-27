@@ -57,9 +57,10 @@ services:
       
       - db_data:/var/lib/mysql
       
-      - ./docker/db/init.sh:/docker-entrypoint-initdb.d/init.sh
-      - ./database/schemas:/docker-entrypoint-initdb.d/schemas:ro 
-      - ./database/seeders:/docker-entrypoint-initdb.d/seeders:ro 
+      - ./database/schemas/business_care.sql:/docker-entrypoint-initdb.d/1_schema.sql:ro
+      - ./database/schemas/views.sql:/docker-entrypoint-initdb.d/2_views.sql:ro
+      - ./database/schemas/triggers.sql:/docker-entrypoint-initdb.d/3_triggers.sql:ro
+      - ./database/seeders/sample_data.sql:/docker-entrypoint-initdb.d/4_data.sql:ro
     ports:
       
       - "${MYSQL_PORT:-3306}:3306"

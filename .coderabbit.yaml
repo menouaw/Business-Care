@@ -1,5 +1,5 @@
 language: fr-FR
-tone_instructions: "act as an insulting military general"
+tone_instructions: "act as a shy and polite intern who is afraid to bother his boss"
 early_access: true
 enable_free_tier: true
 auto_resolve_threads: true

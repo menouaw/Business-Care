@@ -1,20 +1,23 @@
 package com.businesscare.reporting.util;
 
-public class Constants {
+public final class Constants {
+
+    private Constants() {
+         
+    }
 
     
-    public static final String API_BASE_URL = System.getenv().getOrDefault("API_BASE_URL", "http://localhost/api/admin");
+    public static final String ENV_API_BASE_URL = "API_BASE_URL";
+    public static final String ENV_API_USER = "API_USER";
+    public static final String ENV_API_PASSWORD = "API_PASSWORD";
 
     
-    public static final String AUTH_ENDPOINT = "/auth.php"; 
-    public static final String COMPANIES_ENDPOINT = "/companies.php"; 
-    public static final String CONTRACTS_ENDPOINT = "/contracts.php";
-    public static final String QUOTES_ENDPOINT = "/quotes.php";
-    public static final String INVOICES_ENDPOINT = "/invoices.php";
-    public static final String EVENTS_ENDPOINT = "/events.php";
-    public static final String SERVICES_ENDPOINT = "/services.php";
+    public static final String DEFAULT_API_BASE_URL = "http://localhost/api/admin";
+    public static final String DEFAULT_API_USER = "admin@businesscare.fr";
+    public static final String DEFAULT_API_PASSWORD = "admin123"; 
 
     
-    public static final String PDF_OUTPUT_PATH = "output/report.pdf";
+    public static final String OUTPUT_DIRECTORY = "output";
+    public static final String REPORT_FILENAME = "report.pdf";
 
 }

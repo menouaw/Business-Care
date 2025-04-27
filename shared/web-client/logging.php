@@ -40,7 +40,7 @@ function logSystemActivity($action, $details = '')
 }
 
 /**
- * Journalise un événement de sécurité
+ * Journalise un évènement de sécurité
  *
  * @param int|null $userId Identifiant de l'utilisateur concerné
  * @param string $action Type d'action de sécurité

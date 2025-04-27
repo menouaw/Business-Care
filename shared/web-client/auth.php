@@ -159,8 +159,8 @@ function getUserInfo($userId = null)
  *
  * Cette fonction vérifie l'existence d'un utilisateur correspondant à l'email fourni.
  * Si l'utilisateur est trouvé, elle génère un token de réinitialisation ainsi qu'une date d'expiration,
- * met à jour les informations de l'utilisateur dans la base de données, et consigne l'événement de la demande.
- * Si aucun utilisateur n'est associé à l'email, l'événement est consigné comme un échec.
+ * met à jour les informations de l'utilisateur dans la base de données, et consigne l'évènement de la demande.
+ * Si aucun utilisateur n'est associé à l'email, l'évènement est consigné comme un échec.
  *
  * @param string $email L'adresse email de l'utilisateur concerné.
  * @return bool Retourne true si la procédure a été initiée avec succès, false sinon.
@@ -214,7 +214,7 @@ function loadUserPreferences($userId)
  * Crée et stocke un jeton "Se souvenir de moi" unique pour l'utilisateur.
  *
  * Ce jeton, valable pendant 30 jours, permet une reconnexion automatique en l'absence de session active.
- * Le jeton est enregistré dans la base de données et un événement de sécurité est consigné.
+ * Le jeton est enregistré dans la base de données et un évènement de sécurité est consigné.
  *
  * @param int $userId L'identifiant de l'utilisateur pour lequel générer le jeton.
  * @return string Le jeton généré.

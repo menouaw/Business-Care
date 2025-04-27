@@ -28,8 +28,8 @@ if ($method === 'GET') {
         getAllEvents();
     } else {
         
-        logActivity($currentUserId, 'api_event_request', '[FAILURE] Format d\'ID d\'événement invalide demandé : ' . ($_GET['id'] ?? 'null'));
-        sendJsonResponse(['error' => true, 'message' => 'ID d\'événement invalide ou non fourni correctement.'], 400);
+        logActivity($currentUserId, 'api_event_request', '[FAILURE] Format d\'ID d\'évènement invalide demandé : ' . ($_GET['id'] ?? 'null'));
+        sendJsonResponse(['error' => true, 'message' => 'ID d\'évènement invalide ou non fourni correctement.'], 400);
     }
 } else {
     
@@ -38,7 +38,7 @@ if ($method === 'GET') {
 }
 
 /**
- * Récupère et renvoie la liste de tous les événements.
+ * Récupère et renvoie la liste de tous les évènements.
  */
 function getAllEvents() {
     global $currentUserId;
@@ -51,18 +51,18 @@ function getAllEvents() {
         
         
 
-        logActivity($currentUserId, 'api_event_list', '[SUCCESS] Liste des événements récupérée avec succès (' . count($events) . ' événements)');
+        logActivity($currentUserId, 'api_event_list', '[SUCCESS] Liste des évènements récupérée avec succès (' . count($events) . ' évènements)');
         sendJsonResponse(['error' => false, 'data' => $events], 200); 
 
     } catch (Exception $e) {
-        logSystemActivity('api_event_list', '[ERROR] Échec de la récupération de la liste des événements : ' . $e->getMessage());
-        sendJsonResponse(['error' => true, 'message' => 'Erreur lors de la récupération de la liste des événements.'], 500);
+        logSystemActivity('api_event_list', '[ERROR] Échec de la récupération de la liste des évènements : ' . $e->getMessage());
+        sendJsonResponse(['error' => true, 'message' => 'Erreur lors de la récupération de la liste des évènements.'], 500);
     }
 }
 
 /**
- * Récupère et renvoie les détails d'un événement spécifique, y compris les services associés et les inscriptions.
- * @param int $id ID de l'événement.
+ * Récupère et renvoie les détails d'un évènement spécifique, y compris les services associés et les inscriptions.
+ * @param int $id ID de l'évènement.
  */
 function getEventDetails($id) {
     global $currentUserId;
@@ -102,16 +102,16 @@ function getEventDetails($id) {
             $event['associated_services'] = $associatedServiceIds; 
             $event['inscriptions'] = $inscriptionDetails; 
 
-            logActivity($currentUserId, 'api_event_detail', '[SUCCESS] Détails récupérés avec succès pour l\'événement ID : ' . $id);
+            logActivity($currentUserId, 'api_event_detail', '[SUCCESS] Détails récupérés avec succès pour l\'évènement ID : ' . $id);
             sendJsonResponse(['error' => false, 'data' => $event], 200); 
 
         } else {
-            logActivity($currentUserId, 'api_event_detail', '[FAILURE] Événement non trouvé pour l\'ID : ' . $id);
-            sendJsonResponse(['error' => true, 'message' => 'Événement non trouvé'], 404);
+            logActivity($currentUserId, 'api_event_detail', '[FAILURE] Évènement non trouvé pour l\'ID : ' . $id);
+            sendJsonResponse(['error' => true, 'message' => 'Évènement non trouvé'], 404);
         }
     } catch (Exception $e) {
-        logSystemActivity('api_event_detail', '[ERROR] Échec de la récupération des détails pour l\'événement ID ' . $id . ' : ' . $e->getMessage());
-        sendJsonResponse(['error' => true, 'message' => 'Erreur lors de la récupération des détails de l\'événement.'], 500);
+        logSystemActivity('api_event_detail', '[ERROR] Échec de la récupération des détails pour l\'évènement ID ' . $id . ' : ' . $e->getMessage());
+        sendJsonResponse(['error' => true, 'message' => 'Erreur lors de la récupération des détails de l\'évènement.'], 500);
     }
 }
 ?>

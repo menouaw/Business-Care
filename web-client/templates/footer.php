@@ -26,7 +26,7 @@
                     <ul class="mt-3 list-unstyled">
                         <li><a href="<?= WEBCLIENT_URL ?>/blog.php">Blog</a></li>
                         <li><a href="<?= WEBCLIENT_URL ?>/faq.php">FAQ</a></li>
-                        <li><a href="<?= WEBCLIENT_URL ?>/evenements.php">Événements</a></li>
+                        <li><a href="<?= WEBCLIENT_URL ?>/evenements.php">Évènements</a></li>
                         <li><a href="<?= WEBCLIENT_URL ?>/devenir-prestataire.php">Devenir prestataire</a></li>
                     </ul>
                 </div>
