@@ -5,7 +5,7 @@ use Stripe\Checkout\Session as StripeCheckoutSession;
 use Stripe\Exception\ApiErrorException as StripeApiErrorException;
 
 require_once __DIR__ . '/../../includes/init.php';
-require_once __DIR__ . '/../../includes/page_functions/companies/invoices.php';
+require_once __DIR__ . '/../../includes/page_functions/modules/companies/invoices.php';
 
 requireRole(ROLE_ENTREPRISE);
 
@@ -272,7 +272,7 @@ include __DIR__ . '/../../templates/header.php';
                                             $payable_statuses = [INVOICE_STATUS_PENDING, INVOICE_STATUS_LATE, INVOICE_STATUS_UNPAID];
                                             if (in_array($invoice_item['statut'], $payable_statuses)) : ?>
                                                 <a href="<?= WEBCLIENT_URL ?>/modules/companies/invoices.php?action=create-checkout-session&id=<?= $invoice_item['id'] ?>" class="btn btn-sm btn-success" title="Payer cette facture">
-                                                    <i class="fas fa-credit-card"></i>
+                                                    <i class="fas fa-credit-card"></i><span class="visually-hidden">Payer facture</span>
                                                 </a>
                                             <?php endif; ?>
                                             <?php

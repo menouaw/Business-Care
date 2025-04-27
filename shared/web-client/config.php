@@ -113,3 +113,7 @@ define('PDF_MARGIN_RIGHT', 15);
 define('PDF_MARGIN_BOTTOM', 15);
 define('PDF_FONT_NAME_MAIN', 'helvetica');
 define('PDF_FONT_SIZE_MAIN', 10);
+
+
+define('ENVIRONMENT', $_ENV['APP_ENV'] ?? getenv('APP_ENV') ?: 'production');
+define('DEVIS_STATUT_VALIDE', 'validé');

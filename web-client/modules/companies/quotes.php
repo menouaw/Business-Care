@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../../includes/init.php';
-require_once __DIR__ . '/../../includes/page_functions/companies/quotes.php';
+require_once __DIR__ . '/../../includes/page_functions/modules/companies/quotes.php';
 
 requireRole(ROLE_ENTREPRISE);
 
@@ -228,7 +228,7 @@ include __DIR__ . '/../../templates/header.php';
                             <i class="fas fa-arrow-left me-1"></i> Retour au Tableau de Bord
                         </a>
                         <a href="<?= WEBCLIENT_URL ?>/modules/companies/quotes.php?action=request" class="btn btn-sm btn-success">
-                            <i class="fas fa-plus me-1"></i> Demander un Devis 
+                            <i class="fas fa-plus me-1"></i> Demander un Devis
                         </a>
                     </div>
                 </div>

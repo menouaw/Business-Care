@@ -1,6 +1,5 @@
 <?php
-
-require_once __DIR__ . '/../../../../shared/web-client/db.php';
+require_once __DIR__ . '/../../../init.php';
 
 
 
@@ -189,9 +188,9 @@ function getInvoiceStatusBadgeClass(string $status): string
 function generateInvoiceNumber(): string
 {
     $date = date('Ymd');
-    $prefix = defined('INVOICE_PREFIX') ? INVOICE_PREFIX : 'F'; 
+    $prefix = defined('INVOICE_PREFIX') ? INVOICE_PREFIX : 'F';
 
-    
+
     $sql = "SELECT MAX(CAST(SUBSTRING_INDEX(numero_facture, '-', -1) AS UNSIGNED)) AS last_id
             FROM factures
             WHERE numero_facture LIKE :pattern";

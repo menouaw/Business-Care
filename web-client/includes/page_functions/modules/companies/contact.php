@@ -1,21 +1,5 @@
 <?php
-require_once __DIR__ . '/../../../../shared/web-client/db.php';
-
-function getStatusBadgeClass($status)
-    {
-        switch ($status) {
-            case 'actif':
-                return 'success';
-            case 'expire':
-                return 'secondary';
-            case 'resilie':
-                return 'danger';
-            case 'en_attente':
-                return 'warning';
-            default:
-                return 'light';
-        }
-    }
+require_once __DIR__ . '/../../../../../shared/web-client/db.php';
 
 /**
  * Enregistre un nouveau message de contact/support dans la base de données.

@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../../includes/init.php';
-require_once __DIR__ . '/../../includes/page_functions/companies/notifications.php';
+require_once __DIR__ . '/../../includes/page_functions/modules/companies/notifications.php';
 
 requireRole(ROLE_ENTREPRISE);
 
@@ -12,11 +12,8 @@ if ($user_id <= 0) {
     exit;
 }
 
-markNotificationsAsRead($user_id);
-
 $action = filter_input(INPUT_GET, 'action', FILTER_SANITIZE_SPECIAL_CHARS);
 $notification_id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
-
 
 if ($action === 'read' && $notification_id > 0) {
     if (markNotificationAsRead($notification_id, $user_id)) {
@@ -27,7 +24,6 @@ if ($action === 'read' && $notification_id > 0) {
     redirectTo(WEBCLIENT_URL . '/modules/companies/notifications.php');
     exit;
 }
-
 
 if ($action === 'readall') {
     $count = markAllNotificationsAsRead($user_id);

@@ -14,20 +14,18 @@ if (class_exists('Dotenv\Dotenv')) {
         try {
             $dotenv = Dotenv\Dotenv::createImmutable($dotenv_path);
             $dotenv->load();
-
-            
-            
-            
         } catch (\Exception $e) {
-            error_log("Webhook Stripe: Erreur Dotenv: " . $e->getMessage()); 
+            error_log("Webhook Stripe: Erreur Dotenv: " . $e->getMessage());
         }
     }
 }
 
+// Chemins corrects vers les fichiers partagés
 require_once __DIR__ . '/../../shared/web-client/config.php';
 require_once __DIR__ . '/../../shared/web-client/db.php';
 require_once __DIR__ . '/../../shared/web-client/logging.php';
-require_once __DIR__ . '/../../includes/page_functions/companies/stripe_handlers.php';
+// Chemin correct vers le handler local
+require_once __DIR__ . '/../../includes/page_functions/modules/companies/stripe_handlers.php';
 
 use Stripe\Stripe;
 use Stripe\Webhook;
@@ -57,11 +55,11 @@ try {
         $endpoint_secret
     );
 } catch (\UnexpectedValueException $e) {
-    error_log("[ERROR] Webhook Stripe: Payload invalide. Signature Header: " . ($sig_header ?? 'N/A') . " - Erreur: " . $e->getMessage()); 
+    error_log("[ERROR] Webhook Stripe: Payload invalide. Signature Header: " . ($sig_header ?? 'N/A') . " - Erreur: " . $e->getMessage());
     http_response_code(400);
     exit();
 } catch (SignatureVerificationException $e) {
-    error_log("[ERROR] Webhook Stripe: Signature invalide. Signature Header: " . ($sig_header ?? 'N/A') . " - Erreur: " . $e->getMessage()); 
+    error_log("[ERROR] Webhook Stripe: Signature invalide. Signature Header: " . ($sig_header ?? 'N/A') . " - Erreur: " . $e->getMessage());
     http_response_code(400);
     exit();
 }
@@ -75,21 +73,19 @@ error_log("[INFO] Webhook Stripe: Événement reçu - Type: " . $event->type . "
 switch ($event->type) {
     case 'checkout.session.completed':
         $session = $event->data->object;
-        
+
         $processing_success = handleCheckoutSessionCompleted($session);
 
         if (!$processing_success) {
-            
-            error_log("[ERROR] Webhook: Le traitement de checkout.session.completed (Facture ID: " . ($session->metadata->invoice_id ?? 'N/A') . ") a rencontré un problème.");
-            
-            
-        }
-        break; 
 
-    
-    
-    
-    
+            error_log("[ERROR] Webhook: Le traitement de checkout.session.completed (Facture ID: " . ($session->metadata->invoice_id ?? 'N/A') . ") a rencontré un problème.");
+        }
+        break;
+
+
+
+
+
 
     default:
         error_log("[INFO] Webhook: Événement non géré reçu: " . $event->type);
@@ -97,5 +93,3 @@ switch ($event->type) {
 
 http_response_code(200);
 echo 'Événement reçu';
-
-

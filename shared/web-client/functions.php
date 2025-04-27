@@ -67,7 +67,7 @@ function timeAgo($time)
     if (!is_numeric($time)) {
         $time = strtotime($time);
         if ($time === false) {
-            error_log("timeAgo: Impossible de convertir l'entrée en timestamp.");
+
             return 'date invalide';
         }
     }
@@ -385,6 +385,7 @@ function handleClientCsrfFailureRedirect($actionDescription = 'action', $redirec
     $redirectUrl = $redirectUrl ?? WEBCLIENT_URL . '/index.php';
     flashMessage('Jeton de sécurité invalide ou expiré. Veuillez réessayer.', 'danger');
     $requestMethod = $_SERVER['REQUEST_METHOD'] ?? 'UNKNOWN';
+
     logSecurityEvent(
         $_SESSION['user_id'] ?? null,
         'csrf_failure',
@@ -480,30 +481,39 @@ function getStatusBadgeClass(?string $status): string
 function createNotification(int $user_id, string $title, string $message, string $type = 'info', ?string $link = null): int|false
 {
     if ($user_id <= 0 || empty($title) || empty($message)) {
+        // error_log("createNotification: Invalid parameters..."); // Log commenté
         return false;
     }
 
     $data = [
-        'personne_id' => $user_id,
+        'personne_id' => $user_id, // Assurez-vous que le nom de colonne est correct
         'titre' => $title,
         'message' => $message,
-        'type' => in_array($type, ['info', 'success', 'warning', 'error']) ? $type : 'info',
-        'lien' => $link,
-        'date_creation' => date('Y-m-d H:i:s')
+        'type' => in_array($type, ['info', 'success', 'warning', 'error', 'danger']) ? $type : 'info',
+        'lien' => $link
+        // 'date_creation' => date('Y-m-d H:i:s') // SUPPRIMÉ
     ];
+
+    // error_log("DEBUG createNotification: Attempting insert..."); // Log commenté
 
     $success = insertRow('notifications', $data);
 
     if (!$success) {
-        error_log("Erreur lors de l'insertion de la notification pour user_id: $user_id");
+        error_log("Erreur lors de l'insertion de la notification pour user_id: $user_id"); // Log d'erreur gardé
         return false;
     } else {
         try {
             $pdo = getDbConnection();
             $lastId = $pdo->lastInsertId();
-            return $lastId ? (int)$lastId : false;
+            if ($lastId) {
+                // error_log("DEBUG createNotification: Insert successful..."); // Log commenté
+                return (int)$lastId;
+            } else {
+                error_log("Erreur createNotification: insertRow succeeded but lastInsertId returned invalid value for user_id: $user_id."); // Log d'erreur gardé
+                return false;
+            }
         } catch (PDOException $e) {
-            error_log("Erreur PDO lors de la récupération de lastInsertId pour la notification user_id: $user_id - " . $e->getMessage());
+            error_log("Erreur PDO lors de la récupération de lastInsertId pour notification user_id: $user_id - " . $e->getMessage()); // Log d'erreur gardé
             return false;
         }
     }

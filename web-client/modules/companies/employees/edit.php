@@ -1,7 +1,7 @@
 <?php
-require_once __DIR__ . '/../../includes/init.php';
+require_once __DIR__ . '/../../../includes/init.php';
 
-require_once __DIR__ . '/../../includes/page_functions/companies/employees.php';
+require_once __DIR__ . '/../../../includes/page_functions/modules/companies/employees.php';
 
 requireRole(ROLE_ENTREPRISE);
 
@@ -13,9 +13,9 @@ $pageTitle = "Modifier Salarié";
 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    
+
     $employee_id_post = filter_input(INPUT_POST, 'employee_id', FILTER_VALIDATE_INT);
-    
+
 
     if ($employee_id_post) {
         $nom = filter_input(INPUT_POST, 'nom', FILTER_SANITIZE_SPECIAL_CHARS);
@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (updateEmployeeDetails($employee_id_post, $entreprise_id, $updateData)) {
                 flashMessage('Informations du salarié mises à jour avec succès.', 'success');
             } else {
-                flashMessage('Erreur lors de la mise à jour ou aucune modification détectée.', 'warning'); 
+                flashMessage('Erreur lors de la mise à jour ou aucune modification détectée.', 'warning');
             }
         } else {
             flashMessage('Erreur de validation. Veuillez vérifier les champs obligatoires (Nom, Prénom, Email valide).', 'danger');
@@ -44,15 +44,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         flashMessage('ID du salarié manquant pour la mise à jour.', 'danger');
     }
-    
-    redirectTo(WEBCLIENT_URL . '/modules/companies/index.php');
+
+    redirectTo(WEBCLIENT_URL . '/modules/companies/employees/index.php');
     exit;
 }
 
 
 if (!$employee_id) {
     flashMessage('ID du salarié manquant ou invalide.', 'danger');
-    redirectTo(WEBCLIENT_URL . '/modules/companies/index.php');
+    redirectTo(WEBCLIENT_URL . '/modules/companies/employees/index.php');
     exit;
 }
 
@@ -60,34 +60,34 @@ $employee_details = getEmployeeDetails($employee_id, $entreprise_id);
 
 if (!$employee_details) {
     flashMessage('Salarié non trouvé ou n\'appartient pas à votre entreprise.', 'danger');
-    redirectTo(WEBCLIENT_URL . '/modules/companies/index.php');
+    redirectTo(WEBCLIENT_URL . '/modules/companies/employees/index.php');
     exit;
 }
 
 $company_sites = getCompanySites($entreprise_id);
 $pageTitle = "Modifier Salarié : " . htmlspecialchars($employee_details['prenom'] . ' ' . $employee_details['nom']);
 
-include __DIR__ . '/../../templates/header.php';
+include __DIR__ . '/../../../templates/header.php';
 ?>
 
 <div class="container-fluid">
     <div class="row">
-        <?php include __DIR__ . '/../../templates/sidebar.php'; ?>
+        <?php include __DIR__ . '/../../../templates/sidebar.php'; ?>
 
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 pt-3">
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
                 <h1 class="h2"><?= $pageTitle ?></h1>
                 <div class="btn-toolbar mb-2 mb-md-0">
-                    <a href="<?= WEBCLIENT_URL ?>/modules/companies/index.php" class="btn btn-sm btn-outline-secondary">
+                    <a href="<?= WEBCLIENT_URL ?>/modules/companies/employees/index.php" class="btn btn-sm btn-outline-secondary">
                         <i class="fas fa-arrow-left me-1"></i> Retour à la liste
                     </a>
                 </div>
             </div>
 
-            <?php echo displayFlashMessages(); 
+            <?php echo displayFlashMessages();
             ?>
 
-            <form method="POST" action="<?= WEBCLIENT_URL ?>/modules/companies/edit.php?id=<?= $employee_id ?>"> <!
+            <form method="POST" action="<?= WEBCLIENT_URL ?>/modules/companies/employees/edit.php?id=<?= $employee_id ?>">
                 <input type="hidden" name="employee_id" value="<?= (int)$employee_details['id'] ?>">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken()) ?>">
 
@@ -112,11 +112,11 @@ include __DIR__ . '/../../templates/header.php';
                         <label for="site_id" class="form-label">Site d'affectation</label>
                         <select class="form-select" id="site_id" name="site_id">
                             <option value="">
-                            <?php foreach ($company_sites as $site): ?>
-                                <option value="<?= $site['id'] ?>" <?= ($employee_details['site_id'] == $site['id']) ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($site['nom']) ?>
-                                </option>
-                            <?php endforeach; ?>
+                                <?php foreach ($company_sites as $site): ?>
+                            <option value="<?= $site['id'] ?>" <?= ($employee_details['site_id'] == $site['id']) ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($site['nom']) ?>
+                            </option>
+                        <?php endforeach; ?>
                         </select>
                     </div>
                     <div class="col-md-6">
@@ -129,7 +129,7 @@ include __DIR__ . '/../../templates/header.php';
                 <hr class="my-4">
 
                 <button class="btn btn-primary" type="submit">Enregistrer les modifications</button>
-                <a href="<?= WEBCLIENT_URL ?>/modules/companies/index.php" class="btn btn-secondary">Annuler</a> <!
+                <a href="<?= WEBCLIENT_URL ?>/modules/companies/employees/index.php" class="btn btn-secondary">Annuler</a>
             </form>
 
         </main>
@@ -137,5 +137,5 @@ include __DIR__ . '/../../templates/header.php';
 </div>
 
 <?php
-include __DIR__ . '/../../templates/footer.php';
+include __DIR__ . '/../../../templates/footer.php';
 ?>

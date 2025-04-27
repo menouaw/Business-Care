@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../../includes/init.php';
+require_once __DIR__ . '/../../includes/page_functions/modules/companies/contact.php';
 
 
 requireRole(ROLE_ENTREPRISE);
@@ -17,20 +18,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
 
     if ($personne_id && !empty($sujet) && !empty($message)) {
 
-        // Enregistrement réel du message dans la table support_tickets
+
         $ticketData = [
             'personne_id' => $personne_id,
-            'entreprise_id' => $entreprise_id, // Peut être null si l'entreprise n'est pas trouvée
+            'entreprise_id' => $entreprise_id,
             'sujet' => $sujet,
             'message' => $message,
-            'statut' => 'nouveau' // Statut initial
+            'statut' => 'nouveau'
         ];
         $newTicketId = insertRow('support_tickets', $ticketData);
 
         if ($newTicketId) {
             flashMessage("Votre message a bien été envoyé. Notre équipe vous répondra dès que possible.", "success");
 
-            // Notification Utilisateur (déjà ajoutée)
+
             createNotification(
                 $personne_id,
                 'Message envoyé',
@@ -40,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
             );
         } else {
             flashMessage("Une erreur est survenue lors de l'enregistrement de votre message.", "danger");
-            // Logguer l'erreur ici serait utile
+
             error_log("[ERROR] Failed to insert support ticket for personne_id: {$personne_id}, entreprise_id: {$entreprise_id}");
         }
     } else {

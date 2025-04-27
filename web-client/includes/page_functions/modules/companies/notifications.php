@@ -1,5 +1,6 @@
 <?php
-require_once __DIR__ . '/../../../../shared/web-client/db.php';
+
+require_once __DIR__ . '/../../../init.php';
 
 /**
  * Récupère les notifications pour un utilisateur donné.

@@ -1,7 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../../../includes/init.php';
-require_once __DIR__ . '/../../../includes/page_functions/companies/employees.php';
+require_once __DIR__ . '/../../../includes/page_functions/modules/companies/employees.php';
 
 requireRole(ROLE_ENTREPRISE);
 
@@ -134,16 +134,16 @@ include __DIR__ . '/../../../templates/header.php';
 
             <?php if ($total_pages > 1): ?>
                 <?php
-                // Préparer les données pour renderPagination
+
                 $paginationData = [
                     'currentPage' => $current_page,
                     'totalPages' => $total_pages
-                    // Si renderPagination a besoin d'autres clés, ajoutez-les ici.
-                ];
-                // Définir le modèle d'URL pour les liens de page
-                $urlPattern = '?page={page}'; // Garde les autres paramètres GET s'il y en a
 
-                // Afficher la pagination générée par la fonction
+                ];
+
+                $urlPattern = '?page={page}';
+
+
                 echo renderPagination($paginationData, $urlPattern);
                 ?>
             <?php endif; ?>

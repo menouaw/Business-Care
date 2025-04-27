@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../../includes/init.php';
-require_once __DIR__ . '/../../includes/page_functions/companies/contracts.php';
+require_once __DIR__ . '/../../includes/page_functions/modules/companies/contracts.php';
 
 requireRole(ROLE_ENTREPRISE);
 
@@ -160,16 +160,16 @@ include __DIR__ . '/../../templates/header.php';
                 </div>
 
                 <?php
-                // Préparer les données pour renderPagination
+
                 $paginationData = [
                     'currentPage' => $current_page,
                     'totalPages' => $total_pages
-                    // Ajoutez d'autres clés si renderPagination en a besoin
-                ];
-                // Définir le modèle d'URL
-                $urlPattern = '?page={page}'; // Ajoutez d'autres paramètres GET si nécessaire, ex: '?sort=nom&page={page}'
 
-                // Afficher la pagination
+                ];
+
+                $urlPattern = '?page={page}';
+
+
                 echo renderPagination($paginationData, $urlPattern);
                 ?>
 

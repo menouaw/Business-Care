@@ -1,6 +1,6 @@
 <?php
+require_once __DIR__ . '/../../../init.php';
 
-require_once __DIR__ . '/../../../../shared/web-client/db.php';
 
 /**
  * Récupère la liste des devis pour une entreprise donnée.
@@ -156,7 +156,7 @@ function saveQuoteRequest(int $entreprise_id, array $data): int|false
     $newQuoteId = insertRow('devis', $insertData);
 
     if ($newQuoteId) {
-        $user_id = $_SESSION['user_id'] ?? null; 
+        $user_id = $_SESSION['user_id'] ?? null;
         if ($user_id) {
             $quote_link = WEBCLIENT_URL . '/modules/companies/quotes.php?action=view&id=' . $newQuoteId;
             $notif_title = 'Demande de devis enregistrée';

@@ -1,39 +1,38 @@
 <?php
 
-require_once __DIR__ . '/../../../../shared/web-client/db.php';
-require_once __DIR__ . '/../../../includes/init.php'; 
+require_once __DIR__ . '/../../../init.php';
 
 /**
- * Récupère une page de la liste des contrats pour une entreprise donnée,
- * ainsi que le nombre total de contrats.
+ * Récupère la liste paginée des contrats pour une entreprise donnée.
  *
  * @param int $entreprise_id L'ID de l'entreprise.
- * @param int $page Le numéro de la page actuelle (commence à 1).
- * @param int $items_per_page Le nombre de contrats par page.
- * @return array Un tableau contenant ['contracts' => [liste des contrats], 'total_count' => total des contrats].
+ * @param int $current_page La page actuelle.
+ * @param int $items_per_page Le nombre d'éléments par page.
+ * @return array Un tableau contenant 'contracts' (liste des contrats pour la page) et 'total_count' (nombre total de contrats).
  */
-function getCompanyContracts(int $entreprise_id, int $page = 1, int $items_per_page = DEFAULT_ITEMS_PER_PAGE): array
+function getCompanyContracts(int $entreprise_id, int $current_page = 1, int $items_per_page = 10): array
 {
     if ($entreprise_id <= 0) {
         return ['contracts' => [], 'total_count' => 0];
     }
 
     
-    $countSql = "SELECT COUNT(*) FROM contrats c WHERE c.entreprise_id = :entreprise_id";
+    $countSql = "SELECT COUNT(*) as total 
+                 FROM contrats 
+                 WHERE entreprise_id = :entreprise_id";
     $countStmt = executeQuery($countSql, [':entreprise_id' => $entreprise_id]);
-    $total_count = (int)$countStmt->fetchColumn();
+    $total_count = $countStmt->fetchColumn() ?: 0;
 
     
-    $offset = ($page - 1) * $items_per_page;
-    $items_per_page = max(1, $items_per_page);
-    $offset = max(0, $offset);
+    $offset = max(0, ($current_page - 1) * $items_per_page);
+    $limit = max(1, $items_per_page);
 
     $sql = "SELECT 
                 c.id, 
                 c.date_debut, 
                 c.date_fin, 
                 c.statut, 
-                s.type as service_nom, 
+                s.type as service_nom,  -- Assurez-vous que 'type' est la bonne colonne (ou changez pour 'nom')
                 c.updated_at
             FROM 
                 contrats c
@@ -47,12 +46,13 @@ function getCompanyContracts(int $entreprise_id, int $page = 1, int $items_per_p
 
     $stmt = executeQuery($sql, [
         ':entreprise_id' => $entreprise_id,
-        ':limit' => $items_per_page,
+        ':limit' => $limit,
         ':offset' => $offset
     ]);
 
     $contracts = $stmt->fetchAll();
 
+    
     return [
         'contracts' => $contracts,
         'total_count' => $total_count

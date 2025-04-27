@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../../../includes/init.php';
-require_once __DIR__ . '/../../../includes/page_functions/companies/employees.php';
+require_once __DIR__ . '/../../../includes/page_functions/modules/companies/employees.php';
 
 requireRole(ROLE_ENTREPRISE);
 
