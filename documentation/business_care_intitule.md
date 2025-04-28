@@ -10,7 +10,7 @@ Business Care (BC) est une société proposant une solution qui améliore la san
 
 Elle a été créée à Paris en 2018 et a connu une croissance rapide depuis sa création, principalement en raison de la qualité et de la richesse de ses prestations.
 
-Elle  offre  des  services  variés,  aussi  bien  au  niveau  de  la  prévention  en  santé  mentale  (séances individuelles  avec  des  praticiens  en  présentiel  ou  en  visioconférence,  formations  par  le  biais  de webinars ou d'ateliers sur site ou dans ses propres bureaux, signalements anonymes de situations critiques ...), qu'en créant des événements divers pour assurer une cohésion d'équipe (conseils bien- être envoyés chaque semaine, organisation de défis sportifs seuls ou en équipe, séances de yoga, mobilisation autour d'un objectif solidaire au profit d'une association, webinars, conférences ...).
+Elle  offre  des  services  variés,  aussi  bien  au  niveau  de  la  prévention  en  santé  mentale  (séances individuelles  avec  des  praticiens  en  présentiel  ou  en  visioconférence,  formations  par  le  biais  de webinars ou d'ateliers sur site ou dans ses propres bureaux, signalements anonymes de situations critiques ...), qu'en créant des évènements divers pour assurer une cohésion d'équipe (conseils bien- être envoyés chaque semaine, organisation de défis sportifs seuls ou en équipe, séances de yoga, mobilisation autour d'un objectif solidaire au profit d'une association, webinars, conférences ...).
 
 Les  salariés  des  sociétés  clientes  peuvent  également,  au  travers  de  BC,  s’investir  dans  le fonctionnement d’une association avec par exemple :
 
@@ -80,15 +80,15 @@ Chaque société souhaitant travailler avec Business Care doit pouvoir au traver
 - Accès aux paiements des abonnements et frais non liés aux locations. 
 - Une possibilité de devis en temps réel. 
 
-**Partie dédiée aux salariés (événements de tout type, planning, historique des activités)** 
+**Partie dédiée aux salariés (évènements de tout type, planning, historique des activités)** 
 
-**Les salariés disposent d'un espace personnel sur lequel ils sont avertis des différentes activités proposées  par  Business  Care.  Ils  peuvent  réserver  des  services,  participer  à  des  événements, prendre des rendez-vous avec les thérapeutes, gérer leur planning etc ... au travers de la plateforme.** 
+**Les salariés disposent d'un espace personnel sur lequel ils sont avertis des différentes activités proposées  par  Business  Care.  Ils  peuvent  réserver  des  services,  participer  à  des  évènements, prendre des rendez-vous avec les thérapeutes, gérer leur planning etc ... au travers de la plateforme.** 
 
 - Un accès au catalogue de services avec la possibilité de faire une demande de réservation (Webinars, conférences, RDV médicaux, rencontres sportives ...) 
 - Un chatbot de réponse automatique aux différentes questions que peut se poser un salarié, ainsi qu'une possibilité de signalement anonyme 
 - Un espace Conseils 
 - Un espace Associations et gestion 
-- Un espace de communautés entre salariés (permet de se retrouver autour d’une passion commune  ou  organiser  un  événement  entre  salariés).  Cet  espace  est  automatisé  (une modération automatique du contenu via la plateforme est à prévoir). 
+- Un espace de communautés entre salariés (permet de se retrouver autour d’une passion commune  ou  organiser  un  évènement  entre  salariés).  Cet  espace  est  automatisé  (une modération automatique du contenu via la plateforme est à prévoir). 
 
 **Attention, pour que le salarié se sente à l'aise avec le site, un tutoriel sur le site, affichable à la première connexion (bloquer l’utilisateur et utiliser des overlays)** 
 
@@ -109,7 +109,7 @@ Chaque société souhaitant travailler avec Business Care doit pouvoir au traver
 Cette offre ne peut être possible qu'à condition de disposer d'un système informatique fiable dans la gestion quotidienne des accès, offres et propositions :  
 
 - la gestion des sociétés, des contrats, des salariés et des prestataires  
-- la gestion des événements et le suivi de la réalisation des différentes prestations (attention les RDV médicaux des salariés doivent être anonymisés au niveau de l’entreprise) 
+- la gestion des évènements et le suivi de la réalisation des différentes prestations (attention les RDV médicaux des salariés doivent être anonymisés au niveau de l’entreprise) 
 - la gestion du catalogue des prestations disponibles au travers des prestataires 
 - la gestion financière 
 
@@ -152,8 +152,8 @@ Le  jeu  de  données  devra  comporter  30  enregistrements  minimum  pour  cha
 - une page de 4 diagrammes (camemberts, barres, etc.) pour résumer les statistiques des comptes clients (ex: répartition par CA, par type de client,  etc.) avec un top 5 des clients les plus fidèles 
 - une  page  de  4  diagrammes  pour  résumer  les  statistiques  des  évènements  (ex: répartition par type, fréquence de planification, etc.) avec un top 5 des évènements les plus demandés 
 - une page de 4 diagrammes pour résumer les statistiques de prestations (répartition par  type,  par  coût,  par  nombre  d’évènements  associés,  etc.)  avec  un  top  5  des prestations les plus fréquentes 
-- d’une application Android destinée aux salariés, permettant d’accéder à leurs événements, plannings etc ... 
-- de plus, la société Business Care offre à tous les salariés des sociétés clients une carte NFC, permettant l'entrée dans ses locaux pour la participation aux événements externes.  
+- d’une application Android destinée aux salariés, permettant d’accéder à leurs évènements, plannings etc ... 
+- de plus, la société Business Care offre à tous les salariés des sociétés clients une carte NFC, permettant l'entrée dans ses locaux pour la participation aux évènements externes.  
 
 La liste n'est pas exhaustive, et là-aussi, il est possible de rajouter un certain nombre de modules, à condition de le faire valider par la direction.
 
@@ -356,7 +356,7 @@ ATTENTION : Les document écrits doivent être fournis aux dates de suivi indiqu
 <tr><td colspan="5">Accès au chatbot </td><td colspan="1">6 questions </td><td colspan="3">20 questions </td><td colspan="1">illimité </td></tr>
 <tr><td colspan="5">Accès aux fiches pratiques BC </td><td colspan="1">illimité </td><td colspan="3">illimité </td><td colspan="1">illimité </td></tr>
 <tr><td colspan="5">Conseils hebdomadaires </td><td colspan="1">non </td><td colspan="3">oui (non personnalisés) </td><td colspan="1">oui personnalisés (suggestion d'activités) </td></tr>
-<tr><td colspan="5">Evénements / Communautés (sans intervention des prestataires de BC, événements internes de l'entreprise) </td><td colspan="5">accès illimité </td></tr>
+<tr><td colspan="5">Evènements / Communautés (sans intervention des prestataires de BC, évènements internes de l'entreprise) </td><td colspan="5">accès illimité </td></tr>
 </table>
 
 

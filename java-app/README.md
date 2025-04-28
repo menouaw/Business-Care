@@ -89,8 +89,8 @@ L'application suit le flux suivant :
 
 1. **Configuration :** Chargement des paramètres via ConfigLoader.
 2. **Authentification :** Login auprès de l'API admin via ApiClient.
-3. **Collecte des données :** Récupération des informations sur les entreprises, contrats, devis, factures, événements et prestations.
-4. **Traitement :** Calcul des statistiques client, événement et prestation via ReportService.
+3. **Collecte des données :** Récupération des informations sur les entreprises, contrats, devis, factures, évènements et prestations.
+4. **Traitement :** Calcul des statistiques client, évènement et prestation via ReportService.
 5. **Génération des graphiques :** Création de 12 graphiques (4 par catégorie) avec ChartGenerator et JFreeChart.
 6. **Création du PDF :** Génération d'un document PDF à 3 pages avec tableaux et graphiques via PdfGenerator et iText.
 7. **Sauvegarde :** Enregistrement du rapport dans le répertoire output/.
@@ -104,7 +104,7 @@ L'application utilise les endpoints suivants de l'API :
 * `/api/admin/contracts.php` - Données des contrats
 * `/api/admin/quotes.php` - Données des devis
 * `/api/admin/invoices.php` - Données des factures
-* `/api/admin/events.php` - Données des événements
+* `/api/admin/events.php` - Données des évènements
 * `/api/admin/services.php` - Données des prestations/services
 
 ## Fonctionnalités implémentées
@@ -122,7 +122,7 @@ L'application a implémenté toutes les fonctionnalités requises :
 * [X] Génération des graphiques clients (`ChartGenerator`)
 * [X] Génération des graphiques évènements/prestations (`ChartGenerator`)
 * [X] Structure et génération de la Page 1 du PDF (clients) (`PdfGenerator.generateClientFinancialPage`)
-* [X] Génération des Pages 2 et 3 du PDF (événements et prestations) (`PdfGenerator`)
+* [X] Génération des Pages 2 et 3 du PDF (évènements et prestations) (`PdfGenerator`)
 * [X] Gestion d'erreurs (`ApiException`, `ReportGenerationException`, et `try-catch` dans `ReportApplication`)
 
 ## Containerisation

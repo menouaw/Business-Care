@@ -230,7 +230,7 @@ public class ApiClient {
     }
 
     /**
-     * Récupère la liste des événements depuis l'API.
+     * Récupère la liste des évènements depuis l'API.
      *
      * @return Une liste d'objets Event.
      * @throws IOException  Si la communication échoue.
@@ -255,12 +255,12 @@ public class ApiClient {
                  if (apiResponse != null && !apiResponse.isError()) {
                     return apiResponse.getData();
                  } else {
-                     throw new ApiException("Échec de la récupération des événements: " + (apiResponse != null ? apiResponse.getMessage() : "Format de réponse invalide"));
+                     throw new ApiException("Échec de la récupération des évènements: " + (apiResponse != null ? apiResponse.getMessage() : "Format de réponse invalide"));
                  }
             } else {
                  ErrorResponse errorResponse = parseErrorResponse(responseBody);
                  String errorMessage = (errorResponse != null && errorResponse.getMessage() != null) ? errorResponse.getMessage() : "HTTP Error: " + statusCode;
-                throw new ApiException("Échec de la récupération des événements: " + errorMessage);
+                throw new ApiException("Échec de la récupération des évènements: " + errorMessage);
             }
         });
     }

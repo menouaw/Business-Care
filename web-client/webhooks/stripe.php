@@ -65,7 +65,7 @@ try {
 }
 
 
-error_log("[INFO] Webhook Stripe: Événement reçu - Type: " . $event->type . " - ID: " . $event->id);
+error_log("[INFO] Webhook Stripe: Évènement reçu - Type: " . $event->type . " - ID: " . $event->id);
 
 
 
@@ -88,8 +88,8 @@ switch ($event->type) {
 
 
     default:
-        error_log("[INFO] Webhook: Événement non géré reçu: " . $event->type);
+        error_log("[INFO] Webhook: Évènement non géré reçu: " . $event->type);
 }
 
 http_response_code(200);
-echo 'Événement reçu';
+echo 'Évènement reçu';

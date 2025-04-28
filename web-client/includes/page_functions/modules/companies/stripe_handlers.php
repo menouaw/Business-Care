@@ -3,7 +3,7 @@
 use Stripe\Checkout\Session as StripeCheckoutSession;
 
 /**
- * Gère l'événement Stripe 'checkout.session.completed'.
+ * Gère l'évènement Stripe 'checkout.session.completed'.
  * Met à jour le statut de la facture associée dans la base de données.
  *
  * @param StripeCheckoutSession $session L'objet Session de Stripe.

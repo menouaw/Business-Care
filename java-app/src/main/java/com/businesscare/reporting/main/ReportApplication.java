@@ -12,6 +12,7 @@ import com.businesscare.reporting.util.Constants;
 
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
 
 import org.jfree.chart.JFreeChart;
 
@@ -23,6 +24,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -76,29 +78,31 @@ public class ReportApplication {
             PrestationStats prestationStats = reportService.processPrestationData(prestations);
             logger.info("Traitement des données de prestations terminé.");
 
-            logger.info("Génération des graphiques financiers (Page 1)...");
-            List<JFreeChart> clientCharts = new ArrayList<>();
-            
-            clientCharts.add(ChartGenerator.createContractStatusChart(clientStats));
-            clientCharts.add(ChartGenerator.createClientDistributionBySectorChart(clientStats));
-            clientCharts.add(ChartGenerator.createClientDistributionBySizeChart(clientStats));
-            clientCharts.add(ChartGenerator.createClientRevenueDistributionChart(clientStats));
+            logger.info("Génération des graphiques financiers...");
+            Map<String, JFreeChart> clientCharts = Map.of(
+                "Répartition des Contrats par Statut", ChartGenerator.createContractStatusChart(clientStats),
+                "Répartition des Clients par Secteur", ChartGenerator.createClientDistributionBySectorChart(clientStats),
+                "Répartition des Clients par Taille", ChartGenerator.createClientDistributionBySizeChart(clientStats),
+                "Répartition des Revenus par Client", ChartGenerator.createClientRevenueDistributionChart(clientStats)
+            );
             logger.info("{} graphiques financiers générés.", clientCharts.size());
 
-            logger.info("Génération des graphiques d'évènements (Page 2)...");
-            List<JFreeChart> eventCharts = new ArrayList<>();
-            eventCharts.add(ChartGenerator.createEventTypeDistributionChart(eventStats));
-            eventCharts.add(ChartGenerator.createTop5EventsByPopularityChart(eventStats));
-            eventCharts.add(ChartGenerator.createEventFrequencyChart(eventStats));
-            eventCharts.add(ChartGenerator.createPlaceholderEventChart4(eventStats));
+            logger.info("Génération des graphiques d'évènements...");
+            Map<String, JFreeChart> eventCharts = Map.of(
+                "Répartition des Évènements par Type (Camembert)", ChartGenerator.createEventTypeDistributionChart(eventStats),
+                "Top 5 Évènements par Popularité", ChartGenerator.createTop5EventsByPopularityChart(eventStats),
+                "Fréquence des Évènements par Mois", ChartGenerator.createEventFrequencyChart(eventStats),
+                "Répartition des Évènements par Type (Barres)", ChartGenerator.createEventTypeDistributionBarChart(eventStats)
+            );
             logger.info("{} graphiques d'évènements générés.", eventCharts.size());
 
-            logger.info("Génération des graphiques de prestations (Page 3)...");
-            List<JFreeChart> prestationCharts = new ArrayList<>();
-            prestationCharts.add(ChartGenerator.createPrestationTypeDistributionChart(prestationStats));
-            prestationCharts.add(ChartGenerator.createPrestationCategoryDistributionChart(prestationStats));
-            prestationCharts.add(ChartGenerator.createTop5PrestationsByFrequencyChart(prestationStats));
-            prestationCharts.add(ChartGenerator.createPlaceholderPrestationChart4(prestationStats));
+            logger.info("Génération des graphiques de prestations...");
+            Map<String, JFreeChart> prestationCharts = Map.of(
+                "Répartition des Prestations par Type", ChartGenerator.createPrestationTypeDistributionChart(prestationStats),
+                "Répartition des Prestations par Catégorie", ChartGenerator.createPrestationCategoryDistributionChart(prestationStats),
+                "Top 5 Prestations par Fréquence", ChartGenerator.createTop5PrestationsByFrequencyChart(prestationStats),
+                "Fréquence des Prestations par Nom", ChartGenerator.createPrestationFrequencyByNameChart(prestationStats)
+            );
             logger.info("{} graphiques de prestations générés.", prestationCharts.size());
 
             logger.info("Génération du rapport PDF : {}", outputPath);
@@ -113,14 +117,40 @@ public class ReportApplication {
                 }
             }
 
+            
             try (PdfWriter writer = new PdfWriter(outputPath);
-                 PdfDocument pdfDoc = new PdfDocument(writer)) {
+                 PdfDocument pdfDoc = new PdfDocument(writer);
+                 Document document = new Document(pdfDoc)) {
 
-                pdfGenerator.generateClientFinancialPage(pdfDoc, clientStats, clientCharts);
-                pdfGenerator.generateEventStatsPage(pdfDoc, eventStats, eventCharts);
-                pdfGenerator.generatePrestationStatsPage(pdfDoc, prestationStats, prestationCharts);
+                 
+                 document.setMargins(50, 50, 50, 50); 
 
-                logger.info("Rapport PDF généré avec succès.");
+                 
+                 
+
+                
+                for (Map.Entry<String, JFreeChart> entry : clientCharts.entrySet()) {
+                    pdfGenerator.addChartToNewPage(document, entry.getValue(), entry.getKey());
+                }
+                
+                pdfGenerator.generateClientTop5Page(document, clientStats);
+
+                
+                for (Map.Entry<String, JFreeChart> entry : eventCharts.entrySet()) {
+                    pdfGenerator.addChartToNewPage(document, entry.getValue(), entry.getKey());
+                }
+                
+                pdfGenerator.generateEventTop5Page(document, eventStats);
+
+                
+                for (Map.Entry<String, JFreeChart> entry : prestationCharts.entrySet()) {
+                    pdfGenerator.addChartToNewPage(document, entry.getValue(), entry.getKey());
+                }
+                
+                pdfGenerator.generatePrestationTop5Page(document, prestationStats);
+
+                
+                logger.info("Rapport PDF généré avec succès ({} pages).", pdfDoc.getNumberOfPages());
 
             } catch (FileNotFoundException fnfe) {
                 logger.error("Impossible de créer ou d'écrire dans le fichier PDF : {} ({})", outputPath, fnfe.getMessage(), fnfe);
@@ -134,7 +164,7 @@ public class ReportApplication {
             logger.error("Erreur inattendue dans l'application: {} ({})", e.getMessage(), e.getClass().getSimpleName(), e);
         } finally {
             logger.info("Application de reporting terminée.");
-            if (apiClient instanceof AutoCloseable) { 
+            if (apiClient instanceof AutoCloseable) {
                 try {
                      ((AutoCloseable) apiClient).close();
                      logger.debug("HttpClient fermé.");
