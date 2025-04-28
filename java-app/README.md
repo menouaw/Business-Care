@@ -44,7 +44,7 @@ L'application est organisée en plusieurs packages :
 2.  Exécutez la commande Maven suivante pour compiler le code, exécuter les tests (s'il y en a) et créer un JAR exécutable ("fat JAR") incluant toutes les dépendances :
 
     ```bash
-    mvn clean package
+    mvnd clean package
     ```
 3.  Le JAR exécutable sera généré dans le répertoire `target/` avec le nom `reporting-app.jar`.
 
@@ -57,31 +57,31 @@ L'application récupère sa configuration depuis les variables d'environnement :
 *   `API_USER`: L'adresse email de l'utilisateur admin pour s'authentifier auprès de l'API. Par défaut : `admin@businesscare.fr`.
 *   `API_PASSWORD`: Le mot de passe de l'utilisateur admin. Par défaut : `admin123`.
 
-## Exécution
+## Exécution (via Docker)
 
-1.  Assurez-vous que le JAR a été construit (voir la section Build).
-2.  Définissez les variables d'environnement nécessaires si besoin (voir Configuration).
-3.  Exécutez le JAR depuis le répertoire `java-app` :
+L'application est conçue pour être exécutée automatiquement dans son conteneur Docker via une tâche `cron`.
 
-    ```bash
-    java -jar target/reporting-app.jar
-    ```
+1.  Assurez-vous que l'image Docker a été construite (voir la section Build et Containerisation).
+2.  Lancez l'ensemble des services avec `docker-compose up -d`.
+3.  La tâche `cron` configurée dans le `java-app/Dockerfile` exécutera automatiquement l'application (`java -jar /app/app.jar`) à l'heure définie (par défaut, 2h00 du matin).
+4.  Les logs de l'exécution sont visibles via `docker logs business_care_java_app -f`.
 
-L'application s'authentifie, récupère les données via l'API, traite ces données et génère un rapport PDF complet.
+L'exécution manuelle via `java -jar target/reporting-app.jar` est toujours possible localement pour des tests, mais n'est pas le mode de fonctionnement prévu en production.
 
 ## Sortie (Output)
 
-L'application génère un fichier PDF nommé `report.pdf` dans le sous-répertoire `output/` du répertoire `java-app` (`java-app/output/report.pdf`).
+L'application génère un fichier PDF nommé `report_JJ-MM-AAAA.pdf` (où `JJ-MM-AAAA` représente la date de génération) dans le sous-répertoire `output/` du répertoire `java-app` (`java-app/output/report_JJ-MM-AAAA.pdf`).
 
-*   Le répertoire `output/` est créé automatiquement s'il n'existe pas.
-*   Dans l'environnement Docker, le répertoire local `./java-app/output` est monté sur `/app/output` dans le conteneur, rendant le PDF généré accessible sur la machine hôte.
+*   Le répertoire `output/` est créé automatiquement s'il n'existe pas lors de l'exécution.
+*   Dans l'environnement Docker, le répertoire local `./java-app/output` est monté sur `/app/output` dans le conteneur via un volume défini dans `docker-compose.yml`, rendant les PDFs générés accessibles sur la machine hôte.
 
 ## Intégration avec `web-admin`
 
-Le rapport PDF généré est destiné à être visualisé depuis l'interface `web-admin`.
+Les rapports PDF générés sont destinés à être visualisés depuis l'interface `web-admin`.
 
-*   Un lien direct vers le fichier `java-app/output/report.pdf` peut être ajouté dans `web-admin` (par exemple, dans `web-admin/modules/reports/view_java_report.php`).
-*   Cela nécessite que le serveur web (Nginx/Apache) soit configuré pour servir les fichiers statiques du répertoire `java-app/output/` (via un alias ou une directive `location`).
+*   Étant donné que le nom du fichier change quotidiennement, l'interface `web-admin` ne peut pas utiliser un lien direct statique.
+*   Une approche possible serait pour `web-admin` (par exemple, une page `web-admin/modules/reports/index.php`) de lister les fichiers `.pdf` présents dans le répertoire `./java-app/output` (accessible car il est dans le même projet ou via un chemin relatif/absolu configuré) et de proposer des liens vers les rapports existants, en triant par date par exemple.
+*   Cela nécessite que le serveur web (Nginx/Apache) soit configuré pour servir les fichiers statiques du répertoire `java-app/output/` (via un alias ou une directive `location` dans la configuration Nginx ou Apache).
 
 ## Flux d'exécution
 
@@ -127,9 +127,16 @@ L'application a implémenté toutes les fonctionnalités requises :
 
 ## Containerisation
 
-Un Dockerfile est fourni pour containeriser l'application. Pour exécuter l'application dans Docker :
+Un `Dockerfile` (`java-app/Dockerfile`) est fourni pour containeriser l'application.
 
-1. Construire l'image : `docker build -t business-care/reporting-app .`
-2. Exécuter le conteneur : `docker run -e API_BASE_URL=http://nginx/api/admin -v ./output:/app/output business-care/reporting-app`
+*   Il utilise une approche multi-stage : une étape `build` avec Maven pour compiler le code et créer le JAR, et une étape finale basée sur `eclipse-temurin:17-jre-alpine`.
+*   **Nouveau :** L'étape finale installe `dcron` (le démon cron pour Alpine) et configure une tâche cron via `/etc/cron.d/reporting-cron` pour exécuter `java -jar /app/app.jar` selon la planification définie (par défaut `0 2 * * *`).
+*   Le `CMD` final du Dockerfile lance le démon `crond` en avant-plan pour que le conteneur reste actif et exécute les tâches planifiées.
+*   Le fichier `docker-compose.yml` à la racine du projet définit le service `java-app`, construit l'image à partir de ce Dockerfile, monte le volume `./java-app/output:/app/output`, et fournit les variables d'environnement nécessaires (`API_BASE_URL`, `API_USER`, `API_PASSWORD`) pour que l'application puisse s'authentifier auprès de l'API.
 
-Alternativement, utilisez docker-compose qui configure automatiquement les services, réseaux et volumes.
+Pour lancer l'application via Docker Compose :
+```bash
+docker compose up -d --build # La première fois ou pour reconstruire
+# ou
+docker compose up -d         # Pour démarrer les conteneurs existants
+```

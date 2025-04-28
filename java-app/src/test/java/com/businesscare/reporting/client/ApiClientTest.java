@@ -157,7 +157,7 @@ class ApiClientTest {
             apiClient.getCompanies();
         });
 
-        assertTrue(exception.getMessage().contains("Failed to fetch companies: Authentification requise"),
+        assertTrue(exception.getMessage().contains("Échec de la récupération des entreprises: Authentification requise"),
                    "Exception message should indicate failure cause. Was: " + exception.getMessage());
     }
 
@@ -169,7 +169,8 @@ class ApiClientTest {
             apiClient.getCompanies();
         });
 
-        assertTrue(exception.getMessage().contains("Not authenticated"));
+        assertTrue(exception.getMessage().contains("Non authentifié. Appeler login() d'abord."),
+                   "Exception message should indicate not authenticated. Was: " + exception.getMessage());
 
         verify(mockHttpClient, never()).execute(any(HttpGet.class), any(HttpClientResponseHandler.class));
     }
