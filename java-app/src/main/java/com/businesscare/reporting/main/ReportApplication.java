@@ -90,8 +90,6 @@ public class ReportApplication {
             logger.info("Génération des graphiques d'évènements...");
             Map<String, JFreeChart> eventCharts = Map.of(
                 "Répartition des Évènements par Type (Camembert)", ChartGenerator.createEventTypeDistributionChart(eventStats),
-                "Top 5 Évènements par Popularité", ChartGenerator.createTop5EventsByPopularityChart(eventStats),
-                "Fréquence des Évènements par Mois", ChartGenerator.createEventFrequencyChart(eventStats),
                 "Répartition des Évènements par Type (Barres)", ChartGenerator.createEventTypeDistributionBarChart(eventStats)
             );
             logger.info("{} graphiques d'évènements générés.", eventCharts.size());
@@ -99,9 +97,7 @@ public class ReportApplication {
             logger.info("Génération des graphiques de prestations...");
             Map<String, JFreeChart> prestationCharts = Map.of(
                 "Répartition des Prestations par Type", ChartGenerator.createPrestationTypeDistributionChart(prestationStats),
-                "Répartition des Prestations par Catégorie", ChartGenerator.createPrestationCategoryDistributionChart(prestationStats),
-                "Top 5 Prestations par Fréquence", ChartGenerator.createTop5PrestationsByFrequencyChart(prestationStats),
-                "Fréquence des Prestations par Nom", ChartGenerator.createPrestationFrequencyByNameChart(prestationStats)
+                "Répartition des Prestations par Catégorie", ChartGenerator.createPrestationCategoryDistributionChart(prestationStats)
             );
             logger.info("{} graphiques de prestations générés.", prestationCharts.size());
 
@@ -122,35 +118,27 @@ public class ReportApplication {
                  PdfDocument pdfDoc = new PdfDocument(writer);
                  Document document = new Document(pdfDoc)) {
 
-                 
                  document.setMargins(50, 50, 50, 50); 
 
+                 pdfGenerator.generateTitlePage(document, formattedDate);
+
+                 for (Map.Entry<String, JFreeChart> entry : clientCharts.entrySet()) {
+                     pdfGenerator.addChartToNewPage(document, entry.getValue(), entry.getKey());
+                 }
                  
+                 pdfGenerator.generateClientTop5Page(document, clientStats);
+
+                 for (Map.Entry<String, JFreeChart> entry : eventCharts.entrySet()) {
+                     pdfGenerator.addChartToNewPage(document, entry.getValue(), entry.getKey());
+                 }
                  
+                 pdfGenerator.generateEventTop5Page(document, eventStats);
 
-                
-                for (Map.Entry<String, JFreeChart> entry : clientCharts.entrySet()) {
-                    pdfGenerator.addChartToNewPage(document, entry.getValue(), entry.getKey());
-                }
-                
-                pdfGenerator.generateClientTop5Page(document, clientStats);
-
-                
-                for (Map.Entry<String, JFreeChart> entry : eventCharts.entrySet()) {
-                    pdfGenerator.addChartToNewPage(document, entry.getValue(), entry.getKey());
-                }
-                
-                pdfGenerator.generateEventTop5Page(document, eventStats);
-
-                
-                for (Map.Entry<String, JFreeChart> entry : prestationCharts.entrySet()) {
-                    pdfGenerator.addChartToNewPage(document, entry.getValue(), entry.getKey());
-                }
-                
-                pdfGenerator.generatePrestationTop5Page(document, prestationStats);
-
-                
-                logger.info("Rapport PDF généré avec succès ({} pages).", pdfDoc.getNumberOfPages());
+                 for (Map.Entry<String, JFreeChart> entry : prestationCharts.entrySet()) {
+                     pdfGenerator.addChartToNewPage(document, entry.getValue(), entry.getKey());
+                 }
+                 
+                 logger.info("Rapport PDF généré avec succès ({} pages).", pdfDoc.getNumberOfPages());
 
             } catch (FileNotFoundException fnfe) {
                 logger.error("Impossible de créer ou d'écrire dans le fichier PDF : {} ({})", outputPath, fnfe.getMessage(), fnfe);

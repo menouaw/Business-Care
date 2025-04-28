@@ -19,6 +19,7 @@ import com.itextpdf.layout.element.Text;
 import com.itextpdf.layout.properties.AreaBreakType;
 import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
+import com.itextpdf.layout.properties.VerticalAlignment;
 import org.jfree.chart.JFreeChart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,10 +37,35 @@ public class PdfGenerator {
 
     
     private static final float MARGIN = 50;
+    private static final float FONT_SIZE_REPORT_TITLE = 24;
     private static final float FONT_SIZE_TITLE = 18;
     private static final float FONT_SIZE_SUBTITLE = 14;
     private static final float FONT_SIZE_NORMAL = 10;
     private static final float LEADING_NORMAL = 14f;
+
+    /**
+     * Génère la page de titre du rapport.
+     *
+     * @param document Le document iText principal.
+     * @param formattedDate La date formatée (JJ-MM-AAAA) à inclure dans le titre.
+     * @throws IOException Si une erreur I/O se produit lors de la création de la police.
+     */
+    public void generateTitlePage(Document document, String formattedDate) throws IOException {
+        logger.info("Génération de la page de titre...");
+        PageSize pageSize = document.getPdfDocument().getDefaultPageSize();
+        float pageHeight = pageSize.getHeight();
+
+        PdfFont fontTitle = PdfFontFactory.createFont(com.itextpdf.io.font.constants.StandardFonts.HELVETICA_BOLD);
+
+        Paragraph title = new Paragraph("Business Care\nRapport du " + formattedDate)
+                .setFont(fontTitle)
+                .setFontSize(FONT_SIZE_REPORT_TITLE)
+                .setTextAlignment(TextAlignment.CENTER)
+                .setMarginTop(pageHeight / 2 - FONT_SIZE_REPORT_TITLE * 2);
+
+        document.add(title);
+        logger.info("Page de titre générée.");
+    }
 
     /**
      * Ajoute un seul graphique JFreeChart à une nouvelle page du document PDF.
