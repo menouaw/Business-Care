@@ -15,6 +15,8 @@ public enum CompanySize {
     S201_500("201-500"),
     S500_PLUS("500+");
 
+    private static final String UNKNOWN_VALUE_MSG = "Valeur CompanySize inconnue : ";
+
     private final String value;
 
     CompanySize(String value) {
@@ -31,6 +33,6 @@ public enum CompanySize {
         return Arrays.stream(CompanySize.values())
                 .filter(size -> size.value.equalsIgnoreCase(value))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Unknown CompanySize value: " + value));
+                .orElseThrow(() -> new IllegalArgumentException(UNKNOWN_VALUE_MSG + value));
     }
 }

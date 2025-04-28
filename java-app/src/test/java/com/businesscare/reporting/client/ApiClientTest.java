@@ -113,9 +113,9 @@ class ApiClientTest {
         ApiException exception = assertThrows(ApiException.class, () -> {
             apiClient.login("admin@test.com", "wrongpassword");
         });
-        String expectedMessage = "API authentication failed: Identifiants invalides ou accès non autorisé.";
+        String expectedMessage = "Échec de l\'authentification API :  : Identifiants invalides ou accès non autorisé.";
         assertEquals(expectedMessage, exception.getMessage(),
-                     "Exception message should match the expected format.");
+                     "Exception message should match the expected format. Was: " + exception.getMessage());
     }
 
     @Test
@@ -157,8 +157,9 @@ class ApiClientTest {
             apiClient.getCompanies();
         });
 
-        assertTrue(exception.getMessage().contains("Échec de la récupération des entreprises: Authentification requise"),
-                   "Exception message should indicate failure cause. Was: " + exception.getMessage());
+        String expectedSubstring = "Échec de la récupération des entreprises : Authentification requise";
+        assertTrue(exception.getMessage().contains(expectedSubstring),
+                   "Exception message should contain '" + expectedSubstring + "'. Was: " + exception.getMessage());
     }
 
     @Test

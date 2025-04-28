@@ -5,33 +5,26 @@ import com.businesscare.reporting.model.enums.ContractStatus;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.HashMap;
+import java.util.Objects;
 
 /**
  * Contient les statistiques agrégées sur les clients pour le rapport.
  */
 public class ClientStats {
 
-    private Map<String, Long> clientCountBySector; 
-    private Map<String, Long> clientCountBySize;   
-    private Map<ContractStatus, Long> contractCountByStatus; 
-    private Map<Integer, BigDecimal> totalRevenueByClientId; 
-    private List<CompanyRevenue> top5ClientsByRevenue; 
-    private BigDecimal totalRevenueOverall; 
-    private long totalClients; 
-    private long totalContracts; 
-    private long totalPaidInvoices; 
-
-    
+    private Map<String, Long> clientCountBySector;
+    private Map<String, Long> clientCountBySize;
+    private Map<ContractStatus, Long> contractCountByStatus;
+    private Map<Integer, BigDecimal> totalRevenueByClientId;
+    private List<CompanyRevenue> top5ClientsByRevenue;
+    private BigDecimal totalRevenueOverall;
+    private long totalClients;
+    private long totalContracts;
+    private long totalPaidInvoices;
 
     public ClientStats() {
         
     }
-
-    
 
     public Map<String, Long> getClientCountBySector() {
         return clientCountBySector;
@@ -106,15 +99,17 @@ public class ClientStats {
     }
 
     /**
-     * Classe interne simple pour lier une entreprise à son revenu pour le classement.
+     * Classe interne pour lier une entreprise à son revenu pour le classement.
+     * Implémente Comparable pour trier par revenu (décroissant).
      */
     public static class CompanyRevenue implements Comparable<CompanyRevenue> {
-        private Company company;
-        private BigDecimal revenue;
+        private static final String NULL_COMPANY_NAME = "Inconnu";
+        private final Company company;
+        private final BigDecimal revenue;
 
         public CompanyRevenue(Company company, BigDecimal revenue) {
-            this.company = company;
-            this.revenue = revenue != null ? revenue : BigDecimal.ZERO;
+            this.company = company; 
+            this.revenue = Objects.requireNonNullElse(revenue, BigDecimal.ZERO);
         }
 
         public Company getCompany() {
@@ -123,6 +118,10 @@ public class ClientStats {
 
         public BigDecimal getRevenue() {
             return revenue;
+        }
+
+        public String getCompanyName() {
+            return company != null ? company.getNom() : NULL_COMPANY_NAME;
         }
 
         @Override
@@ -134,8 +133,8 @@ public class ClientStats {
         @Override
         public String toString() {
             return "CompanyRevenue{" +
-                   "companyName=" + (company != null ? company.getNom() : "null") +
-                   ", revenue=" + revenue +
+                   "nomEntreprise='" + getCompanyName() + '\'' +
+                   ", revenu=" + revenue +
                    '}';
         }
     }

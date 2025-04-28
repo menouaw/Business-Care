@@ -1,7 +1,7 @@
 package com.businesscare.reporting.exception;
 
 /**
- * Exception related to API interactions.
+ * Exception liée aux interactions avec l'API.
  */
 public class ApiException extends RuntimeException {
 
