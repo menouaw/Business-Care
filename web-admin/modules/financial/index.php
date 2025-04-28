@@ -23,7 +23,7 @@ include '../../templates/header.php';
                 <h1 class="h2"><?php echo htmlspecialchars($pageTitle); ?></h1>
                  <div class="btn-toolbar mb-2 mb-md-0">
                     
-                    <a href="<?php echo JAVA_URL; ?>/output/report.pdf" target="_blank" class="btn btn-sm btn-outline-secondary">
+                    <a href="<?php echo JAVA_URL . '/output/report_' . date('d-m-Y') . '.pdf'; ?>" target="_blank" class="btn btn-sm btn-outline-secondary">
                         <i class="fas fa-file-pdf me-2"></i> Voir Rapport d'activité (PDF)
                         
                     </a>
