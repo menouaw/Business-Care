@@ -44,7 +44,6 @@ public class PdfGenerator {
     private static final String REPORT_TITLE_PREFIX = "Business Care\nRapport du ";
     private static final String CLIENT_TOP5_TITLE = "Top 5 des clients (par revenu total des factures payées)";
     private static final String EVENT_TOP5_TITLE = "Top 5 des évènements (par popularité/inscriptions)";
-    private static final String PRESTATION_TOP5_TITLE = "Top 5 des prestations (par fréquence d'utilisation)";
     private static final String UNKNOWN_ENTITY_NAME = "(Inconnu)";
     private static final String CLIENT_TOP5_FORMAT = "%d. %s - Revenu: %.2f €";
     private static final String EVENT_TOP5_FORMAT = "%d. %s - Popularité: %d";
@@ -153,25 +152,6 @@ public class PdfGenerator {
                         item.getRevenue()),
                 NO_DATA_CLIENTS);
         logger.info("Contenu Top 5 clients ajouté (Page {}).", document.getPdfDocument().getNumberOfPages());
-    }
-
-    /**
-     * Génère une page dédiée à la liste Top 5 des évènements.
-     *
-     * @param document Le document iText principal.
-     * @param stats    Les statistiques évènement contenant le Top 5.
-     */
-    public void generateEventTop5Page(Document document, EventStats stats) {
-        logger.info("Génération de la page Top 5 évènements...");
-        List<EventStats.EventPopularity> topList = stats.getTop5EventsByPopularity();
-
-        generateTopListPage(document, EVENT_TOP5_TITLE, topList, (item, rank) ->
-                String.format(EVENT_TOP5_FORMAT,
-                        rank,
-                        item.getEventTitle(), 
-                        item.getPopularityMetric()),
-                NO_DATA_EVENTS);
-        logger.info("Contenu Top 5 évènements ajouté (Page {}).", document.getPdfDocument().getNumberOfPages());
     }
 
     /**

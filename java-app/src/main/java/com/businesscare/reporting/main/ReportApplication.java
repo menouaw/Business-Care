@@ -227,7 +227,6 @@ public class ReportApplication {
             for (Map.Entry<String, JFreeChart> entry : eventCharts.entrySet()) {
                 pdfGenerator.addChartToNewPage(document, entry.getValue(), entry.getKey());
             }
-            pdfGenerator.generateEventTop5Page(document, stats.eventStats);
 
             
             for (Map.Entry<String, JFreeChart> entry : prestationCharts.entrySet()) {
