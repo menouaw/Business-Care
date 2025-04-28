@@ -3,7 +3,6 @@ package com.businesscare.reporting.chart;
 import com.businesscare.reporting.model.ClientStats;
 import com.businesscare.reporting.model.EventStats;
 import com.businesscare.reporting.model.PrestationStats;
-import com.businesscare.reporting.model.enums.*;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
@@ -22,9 +21,6 @@ import org.slf4j.LoggerFactory;
 import java.awt.Color;
 import java.awt.Font;
 import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 /**
