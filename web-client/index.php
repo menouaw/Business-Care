@@ -49,7 +49,7 @@ include_once __DIR__ . '/templates/header.php';
 ?>
 
 <main class="landing-page">
-    
+
     <section class="hero bg-primary text-white">
         <div class="container">
             <div class="row align-items-center">
@@ -58,6 +58,8 @@ include_once __DIR__ . '/templates/header.php';
                     <p class="lead">Business Care propose des solutions pour améliorer la santé, le bien-être et la cohésion en milieu professionnel.</p>
                     <?php if (!$isLoggedIn): ?>
                         <div class="mt-4">
+                            <a href="<?= WEBCLIENT_URL ?>/login.php" class="btn btn-light btn-lg me-2">Connexion</a>
+                            <a href="<?= WEBCLIENT_URL ?>/inscription.php" class="btn btn-outline-light btn-lg">Inscription</a>
                             <a href="login.php" class="btn btn-light btn-lg me-2">Connexion</a>
                             <a href="inscription.php" class="btn btn-outline-light btn-lg">Inscription</a>
                         </div>
@@ -70,7 +72,7 @@ include_once __DIR__ . '/templates/header.php';
         </div>
     </section>
 
-    
+
     <section id="services" class="services py-5">
         <div class="container">
             <div class="section-title text-center mb-5">
@@ -96,7 +98,7 @@ include_once __DIR__ . '/templates/header.php';
         </div>
     </section>
 
-    
+
     <section id="offres" class="pricing py-5 bg-light">
         <div class="container">
             <div class="section-title text-center mb-5">
@@ -180,7 +182,7 @@ include_once __DIR__ . '/templates/header.php';
         </div>
     </section>
 
-    
+
     <section class="testimonials py-5">
         <div class="container">
             <div class="section-title text-center mb-5">
@@ -240,7 +242,7 @@ include_once __DIR__ . '/templates/header.php';
         </div>
     </section>
 
-    
+
     <section class="cta py-5 bg-primary text-white">
         <div class="container">
             <div class="row align-items-center">
@@ -256,7 +258,7 @@ include_once __DIR__ . '/templates/header.php';
     </section>
 
     <?php if ($isLoggedIn): ?>
-        
+
         <section class="dashboard py-5">
             <div class="container">
                 <div class="section-title text-center mb-5">
@@ -266,7 +268,7 @@ include_once __DIR__ . '/templates/header.php';
 
                 <div class="row g-4 <?php if ($userRole === 'entreprise') echo 'justify-content-center'; ?>">
                     <?php if ($userRole === 'entreprise'): ?>
-                        
+
                         <div class="col-md-4">
                             <div class="card dashboard-card h-100">
                                 <div class="card-body">
@@ -287,7 +289,7 @@ include_once __DIR__ . '/templates/header.php';
                         </div>
 
                     <?php elseif ($userRole === 'salarie'): ?>
-                        
+
                         <div class="col-md-4">
                             <div class="card dashboard-card">
                                 <div class="card-body">
@@ -316,7 +318,7 @@ include_once __DIR__ . '/templates/header.php';
                             </div>
                         </div>
                     <?php elseif ($userRole === 'prestataire'): ?>
-                        
+
                         <div class="col-md-4">
                             <div class="card dashboard-card">
                                 <div class="card-body">

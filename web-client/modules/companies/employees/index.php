@@ -141,7 +141,7 @@ include __DIR__ . '/../../../templates/header.php';
 
                 ];
 
-                $urlPattern = '?page={page}';
+                $urlPattern = WEBCLIENT_URL . '/modules/companies/employees/index.php?page={page}';
 
 
                 echo renderPagination($paginationData, $urlPattern);

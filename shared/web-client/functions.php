@@ -278,16 +278,28 @@ function paginateResults($table, $page, $perPage = DEFAULT_ITEMS_PER_PAGE, $wher
 
 function renderPagination($pagination, $urlPattern)
 {
+    if (!is_array($pagination) || !isset($pagination['totalPages'], $pagination['currentPage'])) {
+        error_log("renderPagination: Données de pagination invalides ou manquantes.");
+        return '';
+    }
+
     if ($pagination['totalPages'] <= 1) return '';
 
-    $html = '<nav aria-label="Page navigation"><ul class="pagination">';
+    $html = '<nav aria-label="Page navigation"><ul class="pagination pagination-sm justify-content-center">';
 
     $prevDisabled = $pagination['currentPage'] <= 1 ? ' disabled' : '';
-    $prevUrl = str_replace('{page}', $pagination['currentPage'] - 1, $urlPattern);
+    $prevUrl = $pagination['currentPage'] <= 1 ? '#' : str_replace('{page}', $pagination['currentPage'] - 1, $urlPattern);
     $html .= '<li class="page-item' . $prevDisabled . '"><a class="page-link" href="' . $prevUrl . '">Précédent</a></li>';
 
     $startPage = max(1, $pagination['currentPage'] - 2);
     $endPage = min($pagination['totalPages'], $pagination['currentPage'] + 2);
+
+    if ($startPage > 1) {
+        $html .= '<li class="page-item"><a class="page-link" href="' . str_replace('{page}', 1, $urlPattern) . '">1</a></li>';
+        if ($startPage > 2) {
+            $html .= '<li class="page-item disabled"><span class="page-link">...</span></li>';
+        }
+    }
 
     for ($i = $startPage; $i <= $endPage; $i++) {
         $active = $i == $pagination['currentPage'] ? ' active' : '';
@@ -295,8 +307,15 @@ function renderPagination($pagination, $urlPattern)
         $html .= '<li class="page-item' . $active . '"><a class="page-link" href="' . $url . '">' . $i . '</a></li>';
     }
 
+    if ($endPage < $pagination['totalPages']) {
+        if ($endPage < $pagination['totalPages'] - 1) {
+            $html .= '<li class="page-item disabled"><span class="page-link">...</span></li>';
+        }
+        $html .= '<li class="page-item"><a class="page-link" href="' . str_replace('{page}', $pagination['totalPages'], $urlPattern) . '">' . $pagination['totalPages'] . '</a></li>';
+    }
+
     $nextDisabled = $pagination['currentPage'] >= $pagination['totalPages'] ? ' disabled' : '';
-    $nextUrl = str_replace('{page}', $pagination['currentPage'] + 1, $urlPattern);
+    $nextUrl = $pagination['currentPage'] >= $pagination['totalPages'] ? '#' : str_replace('{page}', $pagination['currentPage'] + 1, $urlPattern);
     $html .= '<li class="page-item' . $nextDisabled . '"><a class="page-link" href="' . $nextUrl . '">Suivant</a></li>';
 
     $html .= '</ul></nav>';

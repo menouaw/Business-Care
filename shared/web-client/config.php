@@ -11,13 +11,13 @@ define('APP_NAME', 'Business Care');
 define('APP_VERSION', '0.4.0');
 
 
-define('ROOT_URL', 'http://localhost/Business-Care');
-define('WEBCLIENT_URL', ROOT_URL . '/web-client');
+define('ROOT_URL', 'http://localhost');
+define('WEBCLIENT_URL', ROOT_URL . '/client');
 
-define('SHARED_URL', ROOT_URL . '/shared');
+define('SHARED_URL', ROOT_URL . '/../shared');
 define('ASSETS_URL', ROOT_URL . '/assets');
-define('API_URL', ROOT_URL . '/api');
-define('UPLOAD_URL', ROOT_URL . '/uploads/');
+define('API_URL', ROOT_URL . '/../api');
+define('UPLOAD_URL', WEBCLIENT_URL . '/uploads/');
 
 
 define('ROLE_ADMIN', 1);

@@ -25,12 +25,12 @@ function getCompanyEmployees(int $entreprise_id, int $current_page = 1, int $ite
         ':role_salarie' => ROLE_SALARIE
     ];
 
-    
+
     $countSql = "SELECT COUNT(p.id) as total " . $baseSqlWhere;
     $countStmt = executeQuery($countSql, $params);
     $total_count = $countStmt->fetchColumn() ?: 0;
 
-    
+
     $offset = max(0, ($current_page - 1) * $items_per_page);
     $limit = max(1, $items_per_page);
 
@@ -48,14 +48,14 @@ function getCompanyEmployees(int $entreprise_id, int $current_page = 1, int $ite
                 p.nom ASC, p.prenom ASC
             LIMIT :limit OFFSET :offset";
 
-    
+
     $params[':limit'] = $limit;
     $params[':offset'] = $offset;
 
     $stmt = executeQuery($sql, $params);
     $employees = $stmt->fetchAll();
 
-    
+
     return [
         'employees' => $employees,
         'total_count' => $total_count
@@ -75,7 +75,7 @@ function deactivateEmployee(int $employee_id, int $company_id): bool
         return false;
     }
 
-    
+
     $employee = fetchOne('personnes', 'id = :id AND entreprise_id = :company_id AND role_id = :role_salarie', [
         ':id' => $employee_id,
         ':company_id' => $company_id,
@@ -83,11 +83,11 @@ function deactivateEmployee(int $employee_id, int $company_id): bool
     ]);
 
     if (!$employee) {
-        
+
         return false;
     }
 
-    
+
     $updatedRows = updateRow(
         'personnes',
         ['statut' => 'inactif'],
@@ -95,21 +95,21 @@ function deactivateEmployee(int $employee_id, int $company_id): bool
         [':id' => $employee_id]
     );
 
-    
+
     if ($updatedRows > 0) {
         $actor_id = $_SESSION['user_id'] ?? null;
         if ($actor_id && function_exists('createNotification')) {
             $employee_name = htmlspecialchars($employee['prenom'] . ' ' . $employee['nom']);
             $title = 'Salarié désactivé';
             $message = "Le salarié {$employee_name} (ID: {$employee_id}) a été désactivé.";
-            $link = WEBCLIENT_URL . '/modules/companies/employees/index.php'; 
+            $link = WEBCLIENT_URL . '/modules/companies/employees/index.php';
             createNotification($actor_id, $title, $message, 'warning', $link);
         }
-        return true; 
+        return true;
     }
-    
 
-    return false; 
+
+    return false;
 }
 
 /**
@@ -125,7 +125,7 @@ function reactivateEmployee(int $employee_id, int $company_id): bool
         return false;
     }
 
-    
+
     $employee = fetchOne('personnes', 'id = :id AND entreprise_id = :company_id AND role_id = :role_salarie', [
         ':id' => $employee_id,
         ':company_id' => $company_id,
@@ -133,11 +133,11 @@ function reactivateEmployee(int $employee_id, int $company_id): bool
     ]);
 
     if (!$employee) {
-        
+
         return false;
     }
 
-    
+
     $updatedRows = updateRow(
         'personnes',
         ['statut' => 'actif'],
@@ -145,21 +145,21 @@ function reactivateEmployee(int $employee_id, int $company_id): bool
         [':id' => $employee_id]
     );
 
-    
+
     if ($updatedRows > 0) {
         $actor_id = $_SESSION['user_id'] ?? null;
         if ($actor_id && function_exists('createNotification')) {
             $employee_name = htmlspecialchars($employee['prenom'] . ' ' . $employee['nom']);
             $title = 'Salarié réactivé';
             $message = "Le salarié {$employee_name} (ID: {$employee_id}) a été réactivé.";
-            $link = WEBCLIENT_URL . '/modules/companies/employees/index.php'; 
+            $link = WEBCLIENT_URL . '/modules/companies/employees/index.php';
             createNotification($actor_id, $title, $message, 'success', $link);
         }
-        return true; 
+        return true;
     }
-    
 
-    return false; 
+
+    return false;
 }
 
 /**
@@ -217,23 +217,23 @@ function updateEmployeeDetails(int $employee_id, int $company_id, array $data): 
         return false;
     }
 
-    
+
     $employee = getEmployeeDetails($employee_id, $company_id);
     if (!$employee) {
-        return false; 
+        return false;
     }
 
-    
-    
-    $allowed_data = $data; 
+
+
+    $allowed_data = $data;
     unset($allowed_data['statut'], $allowed_data['role_id'], $allowed_data['entreprise_id'], $allowed_data['mot_de_passe']);
 
     if (empty($allowed_data)) {
         flashMessage("Aucune donnée modifiable fournie.", "info");
-        return false; 
+        return false;
     }
 
-    
+
     $updatedRows = updateRow(
         'personnes',
         $allowed_data,
@@ -241,27 +241,27 @@ function updateEmployeeDetails(int $employee_id, int $company_id, array $data): 
         [':id' => $employee_id]
     );
 
-    
-    
-    
-    
+
+
+
+
     if ($updatedRows !== false) {
         $actor_id = $_SESSION['user_id'] ?? null;
         if ($actor_id && function_exists('createNotification')) {
-            
+
             $employee_name = htmlspecialchars($employee['prenom'] . ' ' . $employee['nom']);
             $title = 'Salarié modifié';
             $message = "Les informations du salarié {$employee_name} (ID: {$employee_id}) ont été mises à jour.";
-            
+
             $link = WEBCLIENT_URL . '/modules/companies/employees/edit.php?id=' . $employee_id;
             createNotification($actor_id, $title, $message, 'info', $link);
         }
-        
+
         return true;
     }
-    
 
-    
+
+
     flashMessage("Erreur lors de la mise à jour du salarié.", "danger");
     return false;
 }

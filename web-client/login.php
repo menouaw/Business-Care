@@ -70,7 +70,7 @@ include_once __DIR__ . '/templates/header.php';
                             </div>
                         <?php endif; ?>
 
-                        <form action="<?= $_SERVER['PHP_SELF'] ?>" method="post" class="needs-validation" novalidate>
+                        <form action="<?= WEBCLIENT_URL ?>/login.php" method="post" class="needs-validation" novalidate>
                             <div class="mb-3">
                                 <label for="email" class="form-label">Adresse email</label>
                                 <div class="input-group">
