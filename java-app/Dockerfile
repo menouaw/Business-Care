@@ -14,8 +14,6 @@ FROM eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
 
-RUN apk add --no-cache bash
-
 RUN mkdir -p output && chmod 777 /app/output
 
 COPY --from=build /app/target/reporting-app*.jar ./app.jar
