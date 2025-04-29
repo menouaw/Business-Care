@@ -4,7 +4,6 @@
 USE business_care;
 
 SET FOREIGN_KEY_CHECKS = 0;
-TRUNCATE TABLE utilisateur_interets_conseils;
 TRUNCATE TABLE consultation_creneaux;
 TRUNCATE TABLE evenement_inscriptions;
 TRUNCATE TABLE communaute_messages;
@@ -83,10 +82,20 @@ INSERT INTO personnes (nom, prenom, email, mot_de_passe, telephone, date_naissan
 ('Dupois', 'Jacques', 'jacques.dupois@techsolutions.fr', '$2y$10$CGP1gfg0khtXjAZcJFC6iO3oYisjwlPfkm8tQ8Q/OxWpFdR7tOiqO', '0612345666', '1995-03-15', 'M', '/photos/jacques.dupois.jpg', 2, 1, 1, 'inactif', NOW() - INTERVAL 10 DAY),
 ('Representant', 'SantePlus', 'rep.santeplus@businesscare.fr', '$2y$10$CGP1gfg0khtXjAZcJFC6iO3oYisjwlPfkm8tQ8Q/OxWpFdR7tOiqO', '0000000001', '1980-01-01', 'Autre', '/photos/default.jpg', 4, 2, 2, 'actif', NOW());
 
+INSERT INTO services (id, type, description, actif, ordre, tarif_annuel_par_salarie, prix_base_indicatif) VALUES
+(1, 'Starter Pack', 'Pour les petites équipes (jusqu\'à 30 salariés)', TRUE, 10, 180.00, 100.00),
+(2, 'Basic Pack', 'Solution équilibrée (jusqu\'à 250 salariés)', TRUE, 20, 150.00, 500.00),
+(3, 'Premium Pack', 'Offre complète pour grandes entreprises (251+ salariés)', TRUE, 30, 100.00, 1000.00);
+
 INSERT INTO contrats (entreprise_id, service_id, date_debut, date_fin, nombre_salaries, statut, conditions_particulieres) VALUES
 (1, 3, '2024-01-01', '2025-12-31', 150, 'actif', 'Acces a toutes les prestations premium'),
 (2, 2, '2024-02-01', NULL, 300, 'actif', 'Acces illimite aux prestations'),
 (3, 1, '2024-03-01', '2025-08-31', 35, 'actif', 'Acces aux prestations de base');
+
+INSERT INTO contrats_prestations (contrat_id, prestation_id) VALUES
+(1, 1), 
+(2, 2), 
+(3, 3); 
 
 INSERT INTO devis (entreprise_id, date_creation, date_validite, montant_total, montant_ht, tva, statut, conditions_paiement, delai_paiement) VALUES
 (1, '2024-01-15', '2024-02-15', 1500.00, 1250.00, 20.00, 'accepte', 'Paiement a 30 jours', 30), 
@@ -110,6 +119,11 @@ INSERT INTO communautes (nom, description, type, niveau, capacite_max) VALUES
 ('Yoga & Meditation', 'Groupe de pratique du yoga et de la meditation', 'bien_etre', 'debutant', 20), 
 ('Running Club', 'Club de course a pied pour tous niveaux', 'sport', 'intermediaire', 30); 
 
+INSERT INTO associations (id, nom) VALUES
+(1, 'Association Bienfaiteurs'),
+(2, 'Aide et Partage'),
+(3, 'Sourire pour Tous');
+
 INSERT INTO dons (personne_id, association_id, montant, type, description, date_don, statut) VALUES
 (5, 1, 50.00, 'financier', 'Don pour le programme de bien-etre', '2024-03-01', 'valide'),
 (6, 2, NULL, 'materiel', 'Don de materiel informatique (ecran)', '2024-03-15', 'valide'),
@@ -129,31 +143,11 @@ INSERT INTO logs (personne_id, action, details, ip_address, created_at) VALUES
 (1, 'admin_action', 'Désactivation contrat ID 3', '127.0.0.1', NOW() - INTERVAL 2 DAY),
 (2, 'login', 'Connexion réussie', '192.168.1.20', NOW() - INTERVAL 1 HOUR);
 
-INSERT INTO contrats_prestations (contrat_id, prestation_id) VALUES
-(1, 1), 
-(2, 2), 
-(3, 3); 
-
-INSERT INTO services (id, type, description, actif, ordre, tarif_annuel_par_salarie, prix_base_indicatif) VALUES
-(1, 'Starter Pack', 'Pour les petites équipes (jusqu\'à 30 salariés)', TRUE, 10, 180.00, 100.00),
-(2, 'Basic Pack', 'Solution équilibrée (jusqu\'à 250 salariés)', TRUE, 20, 150.00, 500.00),
-(3, 'Premium Pack', 'Offre complète pour grandes entreprises (251+ salariés)', TRUE, 30, 100.00, 1000.00);
-
 INSERT INTO conseils (titre, icone, resume, categorie, contenu) VALUES
 ('Gestion du Stress au Travail', 'fas fa-brain', 'Apprenez des techniques pour mieux gérer la pression.', 'Stress', 'Le stress chronique peut avoir des effets néfastes sur votre santé physique et mentale.\n\nVoici quelques techniques simples :\n1. Respiration profonde : Inspirez lentement par le nez, retenez quelques secondes, expirez lentement par la bouche. Répétez 5 fois.\n2. Pause active : Levez-vous et marchez quelques minutes toutes les heures.\n3. Priorisation : Utilisez la matrice d\'Eisenhower (urgent/important) pour organiser vos tâches.\n4. Communication : Exprimez vos difficultés à votre manager ou à un collègue de confiance.\n\nN\'oubliez pas de faire des pauses régulières, même courtes, pour déconnecter.'),
 ('Améliorer son Sommeil', 'fas fa-moon', 'Des conseils pratiques pour retrouver un sommeil réparateur.', 'Sommeil', 'Un bon sommeil est crucial pour la concentration, l\'humeur et la santé générale.\n\nConseils :\n- Couchez-vous et levez-vous à heures régulières, même le week-end.\n- Créez un environnement propice au sommeil : chambre sombre, calme et fraîche.\n- Évitez les écrans (téléphone, tablette, ordinateur) au moins 30 minutes avant le coucher.\n- Limitez la caféine et l\'alcool, surtout en fin de journée.\n- Pratiquez une activité relaxante avant de dormir (lecture, musique douce, bain chaud).'),
 ('Alimentation Équilibrée au Bureau', 'fas fa-apple-alt', 'Comment bien manger au travail, même pressé.', 'Nutrition', 'Manger sainement au bureau est possible ! Cela booste votre énergie et votre concentration.\n\nIdées :\n- Préparez vos déjeuners : salades composées, soupes, plats maison réchauffés.\n- Snacks sains : fruits frais, yaourts nature, oléagineux (amandes, noix), légumes croquants.\n- Hydratez-vous : buvez de l\'eau régulièrement tout au long de la journée.\n- Évitez les distributeurs automatiques et les fast-foods trop fréquents.\n\n**Recette Rapide : Salade Quinoa-Poulet-Avocat**\nIngrédients : Quinoa cuit, blanc de poulet grillé coupé en dés, 1/2 avocat en tranches, tomates cerises coupées en deux, quelques feuilles d\'épinards frais, vinaigrette légère (huile d\'olive, jus de citron, sel, poivre).\nMélangez le tout dans une boîte hermétique. Simple, sain et délicieux !'),
-('L\'Importance de l\'Activité Physique', 'fas fa-running', 'Intégrer l\'exercice dans votre routine quotidienne.', 'Activité Physique', 'L\'activité physique est essentielle pour le corps et l\'esprit. Elle aide à réduire le stress, améliorer le sommeil et maintenir un poids santé.\n\nComment bouger plus :\n- Privilégiez les escaliers à l\'ascenseur.\n- Descendez un arrêt de bus/métro plus tôt et marchez.\n- Profitez de la pause déjeuner pour faire une courte marche.\n- Fixez-vous des objectifs réalisables : 30 minutes de marche rapide par jour, par exemple.\n- Trouvez une activité qui vous plaît : natation, danse, vélo, randonnée...');
-
-INSERT INTO utilisateur_interets_conseils (personne_id, categorie_conseil) VALUES
-(7, 'Stress'),            
-(7, 'Activité Physique'),  
-(7, 'Nutrition'),         
-(5, 'Stress'),            
-(5, 'Sommeil'),           
-(5, 'Nutrition'),         
-(6, 'Activité Physique'),  
-(6, 'Stress');            
+('L\'Importance de l\'Activité Physique', 'fas fa-running', 'Intégrer l\'exercice dans votre routine quotidienne.', 'Activité Physique', 'L\'activité physique est essentielle pour le corps et l\'esprit. Elle aide à réduire le stress, améliorer le sommeil et maintenir un poids santé.\n\nComment bouger plus :\n- Privilégiez les escaliers à l\'ascenseur.\n- Descendez un arrêt de bus/métro plus tôt et marchez.\n- Profitez de la pause déjeuner pour faire une courte marche.\n- Fixez-vous des objectifs réalisables : 30 minutes de marche rapide par jour, par exemple.\n- Trouvez une activité qui vous plaît : natation, danse, vélo, randonnée...');      
 
 INSERT INTO consultation_creneaux (prestation_id, praticien_id, start_time, end_time, is_booked, site_id) VALUES
 (1, 3, NOW() + INTERVAL 2 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 2 DAY + INTERVAL '09:45' HOUR_MINUTE, FALSE, 1), 

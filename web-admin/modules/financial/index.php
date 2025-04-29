@@ -24,7 +24,7 @@ include '../../templates/header.php';
                  <div class="btn-toolbar mb-2 mb-md-0">
                     
                     <a href="<?php echo JAVA_URL . '/output/report_' . date('d-m-Y') . '.pdf'; ?>" target="_blank" class="btn btn-sm btn-outline-secondary">
-                        <i class="fas fa-file-pdf me-2"></i> Voir Rapport d'activité (PDF)
+                        <i class="fas fa-file-pdf me-2"></i> Rapport du jour (PDF)
                         
                     </a>
                 </div>
@@ -77,24 +77,6 @@ include '../../templates/header.php';
                         </div>
                     </div>
                 </div>
-                 <div class="col-md-4 mb-3">
-                    <div class="card h-100">
-                        <div class="card-body d-flex flex-column justify-content-between">
-                            <h5 class="card-title">Statut facturation client</h5>
-                            <p class="card-text">Suivre les factures clients en retard.</p>
-                            <a href="<?php echo WEBADMIN_URL; ?>/modules/financial/billing_status.php" class="btn btn-sm btn-outline-primary mt-auto">Consulter</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <div class="card h-100">
-                        <div class="card-body d-flex flex-column justify-content-between">
-                            <h5 class="card-title">Analyse des devis</h5>
-                            <p class="card-text">Analyser les taux de conversion des devis.</p>
-                            <a href="<?php echo WEBADMIN_URL; ?>/modules/financial/quotes_analysis.php" class="btn btn-sm btn-outline-primary mt-auto">Consulter</a>
-                        </div>
-                    </div>
-                </div>
                 <div class="col-md-4 mb-3">
                     <div class="card h-100">
                         <div class="card-body d-flex flex-column justify-content-between">
@@ -116,39 +98,7 @@ include '../../templates/header.php';
             </div>
             
             
-            <div class="row mb-4">
-                <div class="col-md-12">
-                    <div class="card">
-                        <div class="card-header">
-                           Graphiques d'activité
-                        </div>
-                        <div class="card-body">
-                           
-                            
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <h6>Statistiques clients</h6>
-                                    
-                                </div>
-                                <div class="col-md-4">
-                                    <h6>Statistiques évènements</h6>
-                                    
-                                </div>
-                                <div class="col-md-4">
-                                     <h6>Statistiques prestations</h6>
-                                     
-                                </div>
-                            </div>
-                            <div class="alert alert-info mt-3">
-                                <i class="fas fa-info-circle me-2"></i>
-                                Les graphiques détaillés sont générés périodiquement et consultables via le rapport PDF.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            
+           
 
             <?php include '../../templates/footer.php'; ?>
         </main>
