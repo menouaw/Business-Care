@@ -63,13 +63,14 @@ L'application récupère sa configuration depuis les variables d'environnement :
 
 ## Exécution (via Docker)
 
-L'application est conçue pour être exécutée **une seule fois** lors du démarrage de son conteneur Docker.
+L'application est configurée pour s'exécuter automatiquement selon la planification suivante:
 
 1.  Assurez-vous que l'image Docker a été construite (voir la section Build et Containerisation).
 2.  Lancez l'ensemble des services avec `docker-compose up -d`.
-3.  Le conteneur `java-app` exécutera la commande `java -jar /app/app.jar` dès son lancement, générant ainsi le rapport.
-4.  Une fois l'exécution terminée, le conteneur s'arrêtera (sauf si configuré autrement dans `docker-compose.yml`).
-5.  Les logs de l'exécution sont visibles via `docker logs business_care_java_app` (avant qu'il ne s'arrête ou si vous le relancez).
+3.  Le conteneur `java-app` exécutera automatiquement:
+    * Une génération initiale de rapport au démarrage du conteneur
+    * Une génération quotidienne à 2h00 du matin
+4.  Les logs peuvent être consultés via `docker logs business_care_java_app`.
 
 L'exécution manuelle via `java -jar target/reporting-app.jar` est toujours possible localement pour des tests ou une génération ponctuelle.
 
@@ -90,7 +91,7 @@ Les rapports PDF générés sont destinés à être visualisés depuis l'interfa
 
 ## Flux d'exécution
 
-L'application suit le flux suivant lors de son unique exécution :
+L'application suit le flux suivant lors de son exécution :
 
 1. **Configuration :** Chargement des paramètres via ConfigLoader.
 2. **Authentification :** Login auprès de l'API admin via ApiClient.
@@ -139,12 +140,14 @@ Un `Dockerfile` (`java-app/Dockerfile`) est fourni pour containeriser l'applicat
     *   Une étape finale basée sur `eclipse-temurin:17-jre-alpine` (image JRE légère).
 *   L'étape finale copie le JAR `reporting-app.jar` dans le conteneur.
 *   Elle crée un répertoire `/app/output` pour les rapports générés.
-*   Le `CMD` final du Dockerfile est `java -jar /app/app.jar`, ce qui **lance l'application une seule fois** au démarrage du conteneur pour générer le rapport.
+*   Un script `docker-entrypoint.sh` est utilisé comme point d'entrée pour:
+    * Générer un rapport initial au démarrage du conteneur
+    * Planifier l'exécution quotidienne à 2h00 du matin
 *   Le fichier `docker-compose.yml` à la racine du projet définit le service `java-app`, construit l'image à partir de ce Dockerfile, monte le volume local `./java-app/output` sur `/app/output` dans le conteneur, et fournit les variables d'environnement nécessaires (`API_BASE_URL`, `API_USER`, `API_PASSWORD`) pour que l'application puisse s'authentifier auprès de l'API.
 
 Pour lancer l'application via Docker Compose :
 ```bash
 docker compose up -d --build # La première fois ou pour reconstruire
 # ou
-docker compose up -d         # Pour démarrer les conteneurs existants (lancera la génération du rapport)
+docker compose up -d         # Pour démarrer les conteneurs existants
 ```

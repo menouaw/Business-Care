@@ -78,6 +78,7 @@ Application autonome générant des rapports d'activité périodiques au format 
 - Analyse des évènements
 - Performance des services
 - Graphiques et tableaux de synthèse
+- Génération automatique quotidienne à 2h00 du matin
 
 ## Installation
 
