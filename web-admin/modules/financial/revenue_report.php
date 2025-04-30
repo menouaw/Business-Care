@@ -46,7 +46,7 @@ if ($action === 'export_csv') {
 
 $reportData = financialGetDetailedRevenueReport($startDate, $endDate, $filters, $sortBy, $sortOrder);
 $summary = financialGetTaxSummaryReport($startDate, $endDate, $filters);
-$companies = companiesGetList(); 
+$companies = companiesGetList(1, 999);
 $mainServicePacks = getMainServicePacks(); 
 
 
