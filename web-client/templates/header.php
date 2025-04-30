@@ -118,10 +118,10 @@ $userNotifications = [];
                                 <a class="nav-link" href="<?= WEBCLIENT_URL ?>/modules/employees/chatbot.php"><i class="fas fa-robot me-1"></i>Assistance</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="<?= WEBCLIENT_URL ?>/modules/employees/signalement.php"><i class="fas fa-exclamation-triangle me-1"></i>Signalement</a>
+                                <a class="nav-link" href="<?= WEBCLIENT_URL ?>/modules/employees/signalements.php"><i class="fas fa-exclamation-triangle me-1"></i>Signalement</a>
                             </li>
                         <?php elseif ($userRole === 'prestataire'): ?>
-                            
+
                             <li class="nav-item">
                                 <a class="nav-link" href="<?= WEBCLIENT_URL ?>/modules/companies/contact.php"><i class="fas fa-headset me-1"></i>Contact</a>
                             </li>
@@ -148,14 +148,10 @@ $userNotifications = [];
 
                 <ul class="navbar-nav ms-auto">
                     <?php if ($isLoggedIn): ?>
-                        
+
                         <li class="nav-item dropdown me-3">
                             <?php
-                            if (function_exists('getUnreadNotificationCount')) {
-                                $unread_count = getUnreadNotificationCount($_SESSION['user_id']);
-                            } else {
-                                $unread_count = 0;
-                            }
+                            $unread_count = getUnreadNotificationCount($_SESSION['user_id']);
                             ?>
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownNotifications" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="fas fa-bell"></i>
@@ -172,7 +168,7 @@ $userNotifications = [];
                                 </li>
 
                                 <?php
-                                $notifications_link = WEBCLIENT_URL . '/notifications.php'; 
+                                $notifications_link = WEBCLIENT_URL . '/notifications.php';
                                 if (isset($userRole)) {
                                     switch ($userRole) {
                                         case 'entreprise':
@@ -191,7 +187,7 @@ $userNotifications = [];
                             </ul>
                         </li>
 
-                        
+
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <?php if (isset($_SESSION['user_photo']) && !empty($_SESSION['user_photo'])): ?>

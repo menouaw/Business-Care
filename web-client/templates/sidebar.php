@@ -104,8 +104,8 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= isActivePage('/modules/employees/reports.php') ?>"
-                        href="<?= WEBCLIENT_URL ?>/modules/employees/reports.php">
+                    <a class="nav-link <?= isActivePage('/modules/employees/signalements.php') ?>"
+                        href="<?= WEBCLIENT_URL ?>/modules/employees/signalements.php">
                         <i class="fas fa-exclamation-triangle fa-fw me-2"></i>Signalement
                     </a>
                 </li>
