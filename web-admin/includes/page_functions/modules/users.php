@@ -388,7 +388,7 @@ function usersDelete($id) {
         beginTransaction();
 
         
-        deleteRow('notifications', "personne_id = ?", [$id]);
+        deleteRow(TABLE_NOTIFICATIONS, "personne_id = ?", [$id]);
 
         
         deleteRow(TABLE_DONATIONS, "personne_id = ?", [$id]);
@@ -396,9 +396,6 @@ function usersDelete($id) {
         
         deleteRow(TABLE_EVALUATIONS, "personne_id = ?", [$id]);
 
-        
-        
-        
         
         deleteRow(TABLE_APPOINTMENTS, "personne_id = ? OR praticien_id = ?", [$id, $id]);
 
@@ -408,20 +405,9 @@ function usersDelete($id) {
         
         deleteRow(TABLE_REMEMBER_ME, "user_id = ?", [$id]);
 
-        
         deleteRow(TABLE_API_TOKENS, "user_id = ?", [$id]);
 
-        
         deleteRow(TABLE_USER_PREFERENCES, "personne_id = ?", [$id]);
-
-        
-        
-        
-        
-        
-        
-        
-        
 
         
         $deletedRows = deleteRow(TABLE_USERS, "id = ?", [$id]);
