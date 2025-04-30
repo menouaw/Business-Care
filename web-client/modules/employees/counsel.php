@@ -2,9 +2,8 @@
 require_once __DIR__ . '/../../includes/init.php';
 require_once __DIR__ . '/../../includes/page_functions/modules/employees/counsel.php';
 
-
 $viewData = setupCounselPage();
-extract($viewData);
+extract($viewData); 
 
 include __DIR__ . '/../../templates/header.php';
 ?>
@@ -23,20 +22,21 @@ include __DIR__ . '/../../templates/header.php';
 
             <?php echo displayFlashMessages(); ?>
 
-            <?php if (empty($conseilsGrouped)):
+            <?php if (empty($conseilsGrouped)): 
             ?>
-                <div class="alert alert-info">Aucun conseil bien-être n'est disponible pour le moment.</div>
+                <div class="alert alert-info">Aucun conseil bien-être n'est disponible pour le moment ou pour cette page.</div>
                 <?php else:
+                
                 foreach ($conseilsGrouped as $categorie => $conseils):
                 ?>
                     <h3 class="mt-4 mb-3"><?= htmlspecialchars($categorie) ?></h3>
                     <div class="list-group mb-4">
                         <?php
+                        
                         foreach ($conseils as $conseil):
                             $titre = htmlspecialchars($conseil['titre'] ?? 'Conseil sans titre');
                             $resume = !empty($conseil['resume']) ? htmlspecialchars($conseil['resume']) : 'Pas de résumé.';
-                            $icone = !empty($conseil['icone']) ? htmlspecialchars($conseil['icone']) : 'fas fa-info-circle'; // Icône par défaut
-                            // Lien vers la page de détail
+                            $icone = 'fas fa-info-circle'; 
                             $detailUrl = WEBCLIENT_URL . '/modules/employees/counsel_detail.php?id=' . $conseil['id'];
                         ?>
                             <a href="<?= $detailUrl ?>" class="list-group-item list-group-item-action">
@@ -48,12 +48,18 @@ include __DIR__ . '/../../templates/header.php';
                                 </div>
                                 <p class="mb-1 mt-2 ms-4 ps-1 small text-muted"><?= $resume ?></p>
                             </a>
-                        <?php endforeach; // Fin boucle conseils 
+                        <?php endforeach; 
                         ?>
                     </div>
             <?php
-                endforeach; // Fin boucle catégories
-            endif; // Fin empty check
+                endforeach; 
+            endif; 
+            ?>
+
+            <?php 
+            
+            $paginationUrlPattern = WEBCLIENT_URL . '/modules/employees/counsel.php?page={page}';
+            echo renderPagination($pagination, $paginationUrlPattern);
             ?>
 
         </main>
