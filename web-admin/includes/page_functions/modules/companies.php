@@ -80,13 +80,13 @@ function companiesGetDetails($id) {
 }
 
 /**
- * Crée ou met à jour une entreprise.
+ * Crée une nouvelle entreprise ou met à jour une entreprise existante avec les données fournies.
  *
- * Utilise insertRow ou updateRow de db.php.
+ * Valide les champs obligatoires et la taille d'entreprise, puis effectue l'opération en base de données dans une transaction. Retourne le statut de l'opération, un message de succès ou d'erreur, et l'identifiant créé en cas de création.
  *
- * @param array $data Tableau associatif des informations de l'entreprise.
- * @param int $id Identifiant de l'entreprise (0 pour création).
- * @return array Résultat ['success' => bool, 'message' => string|null, 'errors' => array|null]
+ * @param array $data Données de l'entreprise à enregistrer.
+ * @param int $id Identifiant de l'entreprise à mettre à jour (0 pour une création).
+ * @return array Résultat de l'opération : ['success' => bool, 'message' => string|null, 'errors' => array|null, 'newId' => int|null]
  */
 function companiesSave($data, $id = 0) {
     $errors = [];
@@ -163,15 +163,13 @@ function companiesSave($data, $id = 0) {
     }
 }
 
-/**
- * Supprime une entreprise ainsi que toutes ses données associées (contrats, devis, factures, sites).
+/****
+ * Supprime une entreprise ainsi que toutes ses données associées (contrats, devis, factures, sites) de manière atomique.
  *
- * Utilise une transaction pour assurer la suppression atomique des données dépendantes
- * avant de supprimer l'entreprise elle-même.
- * Les utilisateurs liés à l'entreprise verront leur `entreprise_id` mis à NULL grâce à la contrainte FK `ON DELETE SET NULL`.
+ * Effectue la suppression dans une transaction pour garantir la cohérence des données. Les utilisateurs liés à l'entreprise voient leur champ `entreprise_id` mis à NULL via la contrainte de clé étrangère. Retourne un tableau indiquant le succès ou l'échec de l'opération ainsi qu'un message explicatif.
  *
- * @param int $id L'identifiant de l'entreprise.
- * @return array Résultat ['success' => bool, 'message' => string]
+ * @param int $id Identifiant de l'entreprise à supprimer.
+ * @return array Résultat de la suppression avec les clés 'success' (booléen) et 'message' (string).
  */
 function companiesDelete($id) {
     
