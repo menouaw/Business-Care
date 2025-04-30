@@ -64,7 +64,7 @@
                 </li>
                 <li class="nav-item border-bottom">
                     <a class="nav-link d-inline-flex align-items-center" href="#"> 
-                        <i class="fas fa-calendar-alt fa-fw me-2"></i>Événements & Ateliers
+                        <i class="fas fa-calendar-alt fa-fw me-2"></i>Évènements & Ateliers
                     </a>
                 </li>
                 <li class="nav-item border-bottom">

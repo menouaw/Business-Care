@@ -53,7 +53,7 @@ web-admin/
 - `db.php` - Fonctions de connexion et d'interaction avec la base de données
 - `auth.php` - Système d'authentification (login, logout, vérification rôles)
 - `functions.php` - Utilitaires communs (formatage, validation, pagination)
-- `logging.php` - Journalisation des événements et activités
+- `logging.php` - Journalisation des évènements et activités
 
 ## Flux d'Exécution Typique
 
@@ -87,7 +87,7 @@ web-admin/
 - **Bibliothèques Frontend** - Bootstrap 5, Font Awesome 6, Chart.js
 - **Accès Base de Données** - Couche d'abstraction PDO avec requêtes préparées via `shared/web-admin/db.php`
 - **Sécurité** - Protection CSRF, validation des entrées, authentification par session
-- **Logging** - Système de journalisation des activités et événements de sécurité
+- **Logging** - Système de journalisation des activités et évènements de sécurité
 
 ## Setup (Docker Recommandé)
 
@@ -117,7 +117,7 @@ web-admin/
 **Conventions de Codage :**
 - Préfixer les fonctions métier avec le nom du module (ex: `usersGetList()`, `companiesCreate()`)
 - Utiliser les fonctions de validation et de nettoyage (`sanitizeInput()`, `validateInput()`)
-- Consigner les événements importants avec les fonctions de journalisation
+- Consigner les évènements importants avec les fonctions de journalisation
 - Vérifier les permissions requises au début de chaque page
 
 ## Sécurité

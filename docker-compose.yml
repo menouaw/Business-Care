@@ -6,41 +6,32 @@ services:
     container_name: business_care_php
     restart: unless-stopped
     environment:
-      
       DB_HOST: db
       DB_DATABASE: ${MYSQL_DATABASE:-business_care}
       DB_USERNAME: ${MYSQL_USER:-business_care_user}
       DB_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
-      
-      
       - .:/var/www/html
-    
     depends_on:
       db:
         condition: service_healthy
     networks:
       - app-network
 
-  
   nginx:
     image: nginx:stable-alpine
     container_name: business_care_nginx
     restart: unless-stopped
     ports:
-      
       - "80:80"
     volumes:
-      
       - .:/var/www/html
-      
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - php 
     networks:
       - app-network
 
-  
   db:
     image: mysql:8.0
     container_name: business_care_db
@@ -51,20 +42,14 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_BACKUP_PASSWORD: ${MYSQL_BACKUP_PASSWORD}
-      
-      
     volumes:
-      
       - db_data:/var/lib/mysql
-      
       - ./database/schemas/business_care.sql:/docker-entrypoint-initdb.d/1_schema.sql:ro
       - ./database/schemas/views.sql:/docker-entrypoint-initdb.d/2_views.sql:ro
       - ./database/schemas/triggers.sql:/docker-entrypoint-initdb.d/3_triggers.sql:ro
       - ./database/seeders/sample_data.sql:/docker-entrypoint-initdb.d/4_data.sql:ro
     ports:
-      
       - "${MYSQL_PORT:-3306}:3306"
-    
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u$${MYSQL_ROOT_USER:-root}", "-p$${MYSQL_ROOT_PASSWORD}"]
       interval: 10s
@@ -74,7 +59,6 @@ services:
     networks:
       - app-network
 
-  
   java-app:
     build:
       context: ./java-app 
@@ -82,36 +66,24 @@ services:
     container_name: business_care_java_app
     restart: unless-stopped
     volumes:
-      
-      
-      
-      
-      
       - ./java-app/output:/app/output
     networks:
       - app-network
     depends_on:
-      
       nginx:
         condition: service_started
       db:
         condition: service_healthy
     environment:
-      
-      
+      # URL de l'API pour récupérer les données (pointe vers le service Nginx)
       API_BASE_URL: http://nginx/api/admin
-      
-      
-      
-      
-      
-      
-      
+      # Identifiants pour l'authentification à l'API
+      API_USER: ${API_USER:-admin@businesscare.fr}
+      API_PASSWORD: ${API_PASSWORD:-admin123}
 
 networks:
   app-network:
     driver: bridge
-
 
 volumes:
   db_data:

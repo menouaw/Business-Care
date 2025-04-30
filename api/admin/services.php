@@ -58,7 +58,7 @@ function getAllPrestations() {
 }
 
 /**
- * Récupère et renvoie les détails d'une prestation spécifique, y compris les IDs d'événements liés.
+ * Récupère et renvoie les détails d'une prestation spécifique, y compris les IDs d'évènements liés.
  * @param int $id ID de la prestation.
  */
 function getPrestationDetails($id) {
