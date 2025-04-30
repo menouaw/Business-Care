@@ -1,6 +1,3 @@
-
-
-
 USE business_care;
 
 SET FOREIGN_KEY_CHECKS = 0;
@@ -241,7 +238,7 @@ INSERT INTO contrats_prestations (contrat_id, prestation_id) VALUES
 (15, 1), (15, 6), (15, 12), (15, 21), 
 (16, 3), (16, 11), 
 (18, 1), (18, 4), (18, 9), 
-(16, 1), (16, 5), (16, 7), (16, 10), (16, 14), (16, 25), (16, 30); 
+(19, 1), (19, 5), (19, 7), (19, 10), (19, 14), (19, 25), (19, 30); 
 
 INSERT INTO devis (entreprise_id, service_id, nombre_salaries_estimes, date_creation, date_validite, montant_total, montant_ht, tva, statut, conditions_paiement, delai_paiement) VALUES
 (1, NULL, NULL, '2024-01-15', '2024-02-15', 1500.00, 1250.00, 20.00, 'accepte', 'Paiement a 30 jours', 30), 
