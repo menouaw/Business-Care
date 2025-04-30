@@ -164,57 +164,84 @@ function companiesSave($data, $id = 0) {
 }
 
 /**
- * Supprime une entreprise en vérifiant l'absence d'associations.
+ * Supprime une entreprise ainsi que toutes ses données associées (contrats, devis, factures, sites).
  *
- * Utilise executeQuery pour les vérifications et deleteRow pour la suppression.
+ * Utilise une transaction pour assurer la suppression atomique des données dépendantes
+ * avant de supprimer l'entreprise elle-même.
+ * Les utilisateurs liés à l'entreprise verront leur `entreprise_id` mis à NULL grâce à la contrainte FK `ON DELETE SET NULL`.
  *
  * @param int $id L'identifiant de l'entreprise.
  * @return array Résultat ['success' => bool, 'message' => string]
  */
 function companiesDelete($id) {
     
+    $companyToDelete = fetchOne(TABLE_COMPANIES, 'id = ?', '', [$id]);
+    if (!$companyToDelete) {
+        return ['success' => false, 'message' => "Entreprise non trouvée."]; 
+    }
+    $companyName = $companyToDelete['nom']; 
+
     try {
         beginTransaction();
 
-        $personCount = executeQuery("SELECT COUNT(id) FROM " . TABLE_USERS . " WHERE entreprise_id = ?", [$id])->fetchColumn();
-        if ($personCount > 0) {
-            rollbackTransaction();
-            logBusinessOperation($_SESSION['user_id'], 'company_delete_attempt', "[ERROR] ID: $id - Utilisateurs associés existent");
-            return ['success' => false, 'message' => "Impossible de supprimer car des utilisateurs sont associés"];
-        }
-
-        $contractCount = executeQuery("SELECT COUNT(id) FROM " . TABLE_CONTRACTS . " WHERE entreprise_id = ?", [$id])->fetchColumn();
-        if ($contractCount > 0) {
-            rollbackTransaction();
-            logBusinessOperation($_SESSION['user_id'], 'company_delete_attempt', "[ERROR] ID: $id - Contrats associés existent");
-            return ['success' => false, 'message' => "Impossible de supprimer car des contrats sont associés"];
-        }
-
-        $deletedRows = deleteRow(TABLE_COMPANIES, "id = ?", [$id]);
         
+        
+        deleteRow(TABLE_INVOICES, "entreprise_id = ?", [$id]);
+
+        
+        
+        
+        deleteRow(TABLE_QUOTES, "entreprise_id = ?", [$id]);
+
+        
+        
+        
+        deleteRow(TABLE_CONTRACTS, "entreprise_id = ?", [$id]);
+
+        
+        
+        
+        deleteRow('sites', "entreprise_id = ?", [$id]);
+
+        
+        
+        
+
+        
+        
+        $deletedRows = deleteRow(TABLE_COMPANIES, "id = ?", [$id]);
+
         if ($deletedRows > 0) {
             commitTransaction();
-            logBusinessOperation($_SESSION['user_id'], 'company_delete', 
-                "[SUCCESS] Suppression entreprise ID: $id");
+            logBusinessOperation($_SESSION['user_id'] ?? 0, 'company_delete',
+                "[SUCCESS] Suppression entreprise ID: $id (Nom: $companyName)");
             return [
                 'success' => true,
-                'message' => "L'entreprise a ete supprimee avec succes"
+                'message' => "L'entreprise et ses données associées ont été supprimées avec succès"
             ];
         } else {
+            
             rollbackTransaction();
-            logBusinessOperation($_SESSION['user_id'], 'company_delete_attempt', 
-                "[ERROR] Tentative échouée de suppression entreprise ID: $id - Entreprise non trouvée?");
+            logBusinessOperation($_SESSION['user_id'] ?? 0, 'company_delete_attempt',
+                "[ERROR] Tentative échouée de suppression entreprise ID: $id - Entreprise non trouvée lors de la suppression finale.");
             return [
                 'success' => false,
-                'message' => "Impossible de supprimer l'entreprise (non trouvée ou déjà supprimée)"
+                'message' => "Impossible de supprimer l'entreprise (non trouvée ou déjà supprimée lors de l'étape finale)"
             ];
         }
-    } catch (Exception $e) {
+    } catch (PDOException $e) { 
         rollbackTransaction();
-        logSystemActivity('error', "[ERROR] Erreur BDD dans companiesDelete: " . $e->getMessage());
+        logSystemActivity('error', "[ERROR] Erreur SQL dans companiesDelete (ID: $id, Transaction annulée): " . $e->getMessage() . " | SQL State: " . $e->getCode());
         return [
             'success' => false,
-            'message' => "Erreur de base de données lors de la suppression."
+            'message' => "Erreur de base de données lors de la suppression (Transaction annulée): " . $e->getMessage()
+        ];
+    } catch (Exception $e) { 
+        rollbackTransaction();
+        logSystemActivity('error', "[ERROR] Erreur générale dans companiesDelete (ID: $id, Transaction annulée): " . $e->getMessage());
+        return [
+            'success' => false,
+            'message' => "Erreur inattendue lors de la suppression (Transaction annulée)."
         ];
     }
 }
