@@ -14,7 +14,7 @@ FROM eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
 
-RUN mkdir -p output && chmod 777 /app/output
+RUN mkdir -p output && chmod 755 /app/output
 
 COPY --from=build /app/target/reporting-app*.jar ./app.jar
 
