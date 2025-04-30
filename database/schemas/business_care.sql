@@ -150,7 +150,7 @@ CREATE TABLE devis (
     montant_total DECIMAL(10,2) NOT NULL,
     montant_ht DECIMAL(10,2),
     tva DECIMAL(5,2),
-    statut ENUM('en_attente', 'accepte', 'refuse', 'expire', 'demande_en_cours') DEFAULT 'en_attente',
+    statut ENUM('en_attente', 'accepte', 'refuse', 'expire') DEFAULT 'en_attente',
     conditions_paiement TEXT,
     delai_paiement INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

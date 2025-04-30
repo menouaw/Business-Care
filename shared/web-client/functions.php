@@ -451,7 +451,7 @@ function getStatusBadgeClass(?string $status): string
         'accepte' => 'success',
         'refuse' => 'danger',
 
-        'demande_en_cours' => 'info',
+        'en_attente' => 'info',
 
 
         'inactif' => 'secondary',

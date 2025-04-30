@@ -262,14 +262,14 @@ INSERT INTO devis (entreprise_id, service_id, nombre_salaries_estimes, date_crea
 (13, 2, 200, '2024-04-20', '2024-05-20', 30000.00, 25000.00, 20.00, 'accepte', 'Paiement a 45 jours', 45),
 (15, 2, 380, '2024-04-25', '2024-05-25', 57000.00, 47500.00, 20.00, 'en_attente', 'Paiement a 30 jours', 30),
 (16, 1, 28, '2024-05-01', '2024-06-01', 2520.00, 2100.00, 20.00, 'accepte', 'Paiement a 30 jours', 30),
-(17, 1, 7, '2024-05-05', '2024-06-05', 800.00, 666.67, 20.00, 'demande_en_cours', 'Paiement a 30 jours', 30),
+(17, 1, 7, '2024-05-05', '2024-06-05', 800.00, 666.67, 20.00, 'en_attente', 'Paiement a 30 jours', 30),
 (18, 2, 130, '2024-05-10', '2024-06-10', 19500.00, 16250.00, 20.00, 'accepte', 'Paiement a 30 jours', 30),
 (20, 1, 40, '2024-05-15', '2024-06-15', 3600.00, 3000.00, 20.00, 'en_attente', 'Paiement a 30 jours', 30),
 (21, 1, 9, '2024-05-20', '2024-06-20', 900.00, 750.00, 20.00, 'expire', 'Paiement a 30 jours', 30),
 (23, 1, 45, '2024-05-25', '2024-06-25', 4050.00, 3375.00, 20.00, 'accepte', 'Paiement a reception', 0),
 (24, 2, 180, '2024-06-01', '2024-07-01', 27000.00, 22500.00, 20.00, 'accepte', 'Paiement a 60 jours', 60),
 (27, 1, 35, '2024-06-05', '2024-07-05', 3150.00, 2625.00, 20.00, 'en_attente', 'Paiement a 30 jours', 30),
-(30, 2, 150, '2024-06-10', '2024-07-10', 22500.00, 18750.00, 20.00, 'demande_en_cours', 'Paiement a 45 jours', 45);
+(30, 2, 150, '2024-06-10', '2024-07-10', 22500.00, 18750.00, 20.00, 'en_attente', 'Paiement a 45 jours', 45);
 
 INSERT INTO evaluations (personne_id, prestation_id, note, commentaire, date_evaluation) VALUES
 (5, 1, 5, 'Excellent service, tres professionnel', '2024-04-21'),
