@@ -320,48 +320,83 @@ function financialGetRevenueComparison($currentStartDate, $currentEndDate, $prev
     ];
 }
 
-
-
 /**
- * Récupère la liste détaillée des factures prestataires avec filtres et tri.
+ * Récupère la liste détaillée des factures prestataires avec filtres et pagination.
+ * Le tri est fixé par date de facture décroissante.
  *
- * @param string $startDate Date de début (Y-m-d) de facture prestataire.
- * @param string $endDate Date de fin (Y-m-d) de facture prestataire.
+ * @param string|null $startDate Date de début (Y-m-d) de facture prestataire (optionnel).
+ * @param string|null $endDate Date de fin (Y-m-d) de facture prestataire (optionnel).
  * @param array $filters Filtres optionnels (ex: ['prestataire_id' => 1, 'statut' => 'impayee']).
- * @param string $sortBy Champ pour le tri (ex: 'fp.date_facture').
- * @param string $sortOrder Ordre de tri ('ASC' ou 'DESC').
- * @return array Liste des factures prestataires.
+ * @param int $page Numéro de la page courante.
+ * @param int $perPage Nombre d'éléments par page.
+ * @return array Tableau contenant les données paginées et les informations de pagination.
  */
-function financialGetDetailedProviderPayouts($startDate, $endDate, $filters = [], $sortBy = 'fp.date_facture', $sortOrder = 'DESC') {
-    $params = [$startDate, $endDate];
-    $whereClauses = ["DATE(fp.date_facture) BETWEEN ? AND ?"];
-    $joins = " LEFT JOIN " . TABLE_USERS . " p ON fp.prestataire_id = p.id"; 
+function financialGetDetailedProviderPayouts($startDate = null, $endDate = null, $filters = [], $page = 1, $perPage = DEFAULT_ITEMS_PER_PAGE) {
+    $params = [];
+    $whereClauses = ["1=1"]; 
+    $joins = " LEFT JOIN " . TABLE_USERS . " p ON fp.prestataire_id = p.id";
     $selectFields = "fp.*, CONCAT(p.prenom, ' ', p.nom) as nom_prestataire";
 
-    
+    if ($startDate && $endDate) {
+        $whereClauses[] = "DATE(fp.date_facture) BETWEEN ? AND ?";
+        $params[] = $startDate;
+        $params[] = $endDate;
+    } elseif ($startDate) {
+        $whereClauses[] = "DATE(fp.date_facture) >= ?";
+        $params[] = $startDate;
+    } elseif ($endDate) {
+        $whereClauses[] = "DATE(fp.date_facture) <= ?";
+        $params[] = $endDate;
+    }
+
     if (!empty($filters['prestataire_id']) && is_numeric($filters['prestataire_id'])) {
         $whereClauses[] = "fp.prestataire_id = ?";
-        $params[] = $filters['prestataire_id'];
+        $params[] = (int)$filters['prestataire_id'];
     }
     if (!empty($filters['statut']) && in_array($filters['statut'], PRACTITIONER_INVOICE_STATUSES)) {
         $whereClauses[] = "fp.statut = ?";
         $params[] = $filters['statut'];
     }
 
-    
-    $allowedSortBy = ['fp.numero_facture', 'nom_prestataire', 'fp.date_facture', 'fp.montant_total', 'fp.statut'];
-    if (!in_array($sortBy, $allowedSortBy)) {
-        $sortBy = 'fp.date_facture'; 
-    }
-    $sortOrder = strtoupper($sortOrder) === 'ASC' ? 'ASC' : 'DESC';
+    $whereSql = implode(' AND ', $whereClauses);
 
+    
+    $countSql = "SELECT COUNT(fp.id) 
+                 FROM " . TABLE_PRACTITIONER_INVOICES . " fp
+                 $joins
+                 WHERE " . $whereSql;
+    $totalItems = executeQuery($countSql, $params)->fetchColumn();
+
+    
+    $totalPages = $totalItems > 0 ? ceil($totalItems / $perPage) : 1;
+    $page = max(1, min($page, $totalPages));
+    $offset = ($page - 1) * $perPage;
+
+    
+    $defaultSortBy = 'fp.date_facture';
+    $defaultSortOrder = 'DESC';
+
+    
     $sql = "SELECT $selectFields
             FROM " . TABLE_PRACTITIONER_INVOICES . " fp
             $joins
-            WHERE " . implode(' AND ', $whereClauses) .
-           " ORDER BY $sortBy $sortOrder";
+            WHERE " . $whereSql .
+           " ORDER BY $defaultSortBy $defaultSortOrder
+            LIMIT ? OFFSET ?";
 
-    return executeQuery($sql, $params)->fetchAll();
+    
+    $params[] = $perPage;
+    $params[] = $offset;
+
+    $items = executeQuery($sql, $params)->fetchAll();
+
+    return [
+        'items' => $items,
+        'currentPage' => $page,
+        'totalPages' => $totalPages,
+        'totalItems' => $totalItems,
+        'perPage' => $perPage
+    ];
 }
 
 /**
@@ -403,9 +438,16 @@ function financialGetPayoutsGroupedByProvider($startDate, $endDate, $filters = [
  * @return string Contenu CSV.
  */
 function financialGenerateProviderPayoutsCSV($startDate, $endDate, $filters = []) {
-    $data = financialGetDetailedProviderPayouts($startDate, $endDate, $filters);
+    
+    $data = financialGetDetailedProviderPayouts($startDate, $endDate, $filters, 1, -1); 
+    if ($data['totalItems'] > 0) {
+         $data = financialGetDetailedProviderPayouts($startDate, $endDate, $filters, 1, $data['totalItems']); 
+    } else {
+         $data['items'] = []; 
+    }
+    
 
-    if (empty($data)) {
+    if (empty($data['items'])) {
         return '';
     }
 
@@ -413,7 +455,7 @@ function financialGenerateProviderPayoutsCSV($startDate, $endDate, $filters = []
     $df = fopen("php://output", 'w');
     fputcsv($df, ['Num Facture', 'Prestataire', 'Date Facture', 'Période Début', 'Période Fin', 'Montant Total', 'Statut', 'Date Paiement'], ';');
 
-    foreach ($data as $row) {
+    foreach ($data['items'] as $row) {
         fputcsv($df, [
             $row['numero_facture'],
             $row['nom_prestataire'] ?? 'N/A',
@@ -428,8 +470,6 @@ function financialGenerateProviderPayoutsCSV($startDate, $endDate, $filters = []
     fclose($df);
     return ob_get_clean();
 }
-
-
 
 /**
  * Calcule le résumé de la TVA collectée par mois sur une période.
@@ -508,6 +548,71 @@ function financialGenerateTaxSummaryCSV($startDate, $endDate, $filters = [], $by
  */
 function financialGetCurrencySymbol() {
     return DEFAULT_CURRENCY;
+}
+
+/**
+ * Marque une facture prestataire comme payée.
+ *
+ * @param int $invoiceId ID de la facture prestataire à mettre à jour.
+ * @param string|null $paymentDate Date de paiement (Y-m-d H:i:s). Si null, utilise la date/heure actuelle.
+ * @return array Résultat ['success' => bool, 'message' => string].
+ */
+function financialMarkProviderInvoicePaid($invoiceId, $paymentDate = null) {
+    $invoiceId = (int)$invoiceId;
+    if ($invoiceId <= 0) {
+        return ['success' => false, 'message' => 'ID de facture invalide.'];
+    }
+
+    
+    if ($paymentDate === null) {
+        $paymentDate = date('Y-m-d H:i:s');
+    } else {
+        
+        $d = DateTime::createFromFormat('Y-m-d H:i:s', $paymentDate);
+        if (!$d || $d->format('Y-m-d H:i:s') !== $paymentDate) {
+             return ['success' => false, 'message' => 'Format de date de paiement invalide. Utilisez YYYY-MM-DD HH:MM:SS.'];
+        }
+    }
+
+    try {
+        beginTransaction();
+
+        
+        $invoice = fetchOne(TABLE_PRACTITIONER_INVOICES, "id = ? AND statut = ?", [$invoiceId, PRACTITIONER_INVOICE_STATUS_UNPAID]);
+        if (!$invoice) {
+            rollbackTransaction();
+            
+            $existing = fetchOne(TABLE_PRACTITIONER_INVOICES, "id = ?", [$invoiceId]);
+            if ($existing && $existing['statut'] === PRACTITIONER_INVOICE_STATUS_PAID) {
+                 return ['success' => false, 'message' => 'La facture est déjà marquée comme payée.'];
+            }
+             return ['success' => false, 'message' => 'Facture non trouvée ou n\'est pas en statut impayé.'];
+        }
+
+        $dataToUpdate = [
+            'statut' => PRACTITIONER_INVOICE_STATUS_PAID,
+            'date_paiement' => $paymentDate,
+            
+        ];
+
+        $affectedRows = updateRow(TABLE_PRACTITIONER_INVOICES, $dataToUpdate, "id = :where_id", [':where_id' => $invoiceId]);
+
+        if ($affectedRows > 0) {
+            commitTransaction();
+            logBusinessOperation($_SESSION['user_id'] ?? 0, 'provider_invoice_paid', "Facture prestataire ID: {$invoiceId} marquée comme payée.");
+            return ['success' => true, 'message' => 'Facture marquée comme payée avec succès.'];
+        } else {
+            
+            rollbackTransaction();
+            logSystemActivity('error', "Échec de la mise à jour du statut de paiement pour la facture prestataire ID: {$invoiceId} (affectedRows=0)");
+            return ['success' => false, 'message' => 'La mise à jour du statut de la facture a échoué. Aucune modification détectée.'];
+        }
+
+    } catch (Exception $e) {
+        rollbackTransaction();
+        logSystemActivity('error', "Erreur BDD dans financialMarkProviderInvoicePaid: " . $e->getMessage());
+        return ['success' => false, 'message' => 'Erreur de base de données lors de la mise à jour de la facture: ' . $e->getMessage()];
+    }
 }
 
 ?>
