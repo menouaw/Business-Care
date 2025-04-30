@@ -142,7 +142,8 @@ function financialGetDetailedRevenueReport($startDate, $endDate, $filters = [], 
 
     
     
-    if (!empty($filters['service_id']) && is_numeric($filters['service_id'])) {
+    if (!empty($filters['service_id']) && is_numeric($filters['service_id']) && strpos($joins, TABLE_QUOTES) === false) {
+        $joins .= " LEFT JOIN " . TABLE_QUOTES . " d ON f.devis_id = d.id";
         $whereClauses[] = "d.service_id = ?";
         $params[] = $filters['service_id'];
     }
@@ -188,7 +189,7 @@ function financialGetTaxSummaryReport($startDate, $endDate, $filters = []) {
         $params[] = $filters['company_id'];
     }
     
-    if (!empty($filters['service_id']) && is_numeric($filters['service_id'])) {
+    if (!empty($filters['service_id']) && is_numeric($filters['service_id']) && strpos($joins, TABLE_QUOTES) === false) {
         $joins .= " LEFT JOIN " . TABLE_QUOTES . " d ON f.devis_id = d.id";
         $whereClauses[] = "d.service_id = ?";
         $params[] = $filters['service_id'];
@@ -229,7 +230,7 @@ function financialGetRevenueGroupedBy($startDate, $endDate, $groupBy, $filters =
         $whereClauses[] = "f.entreprise_id = ?";
         $params[] = $filters['company_id'];
     }
-    if (!empty($filters['service_id']) && is_numeric($filters['service_id'])) {
+    if (!empty($filters['service_id']) && is_numeric($filters['service_id']) && strpos($joins, TABLE_QUOTES) === false) {
         $joins .= " LEFT JOIN " . TABLE_QUOTES . " d ON f.devis_id = d.id";
         $whereClauses[] = "d.service_id = ?";
         $params[] = $filters['service_id'];
@@ -242,8 +243,9 @@ function financialGetRevenueGroupedBy($startDate, $endDate, $groupBy, $filters =
             $groupBySql = " GROUP BY f.entreprise_id, e.nom";
             break;
         case 'service':
-            
-            $joins .= " LEFT JOIN " . TABLE_QUOTES . " d ON f.devis_id = d.id";
+            if (strpos($joins, TABLE_QUOTES . ' d') === false) {
+                 $joins .= " LEFT JOIN " . TABLE_QUOTES . " d ON f.devis_id = d.id";
+            }
             $joins .= " LEFT JOIN " . TABLE_SERVICES . " s ON d.service_id = s.id";
             $selectFields .= ", d.service_id, s.type as group_name"; 
             $groupBySql = " GROUP BY d.service_id, s.type";
@@ -368,9 +370,25 @@ function financialGetDetailedProviderPayouts($startDate = null, $endDate = null,
     $totalItems = executeQuery($countSql, $params)->fetchColumn();
 
     
-    $totalPages = $totalItems > 0 ? ceil($totalItems / $perPage) : 1;
-    $page = max(1, min($page, $totalPages));
-    $offset = ($page - 1) * $perPage;
+    $limitClause = "";
+    $limitParams = [];
+    $finalPerPage = $perPage; 
+
+    if (isset($perPage) && is_numeric($perPage) && $perPage > 0) {
+        $perPage = (int)$perPage; 
+        $totalPages = $totalItems > 0 ? ceil($totalItems / $perPage) : 1;
+        $page = max(1, min((int)$page, $totalPages)); 
+        $offset = ($page - 1) * $perPage;
+        $limitClause = " LIMIT ? OFFSET ?";
+        $limitParams[] = $perPage;
+        $limitParams[] = $offset;
+    } else {
+        
+        $page = 1;
+        $totalPages = 1;
+        $offset = 0; 
+        
+    }
 
     
     $defaultSortBy = 'fp.date_facture';
@@ -381,21 +399,19 @@ function financialGetDetailedProviderPayouts($startDate = null, $endDate = null,
             FROM " . TABLE_PRACTITIONER_INVOICES . " fp
             $joins
             WHERE " . $whereSql .
-           " ORDER BY $defaultSortBy $defaultSortOrder
-            LIMIT ? OFFSET ?";
+           " ORDER BY $defaultSortBy $defaultSortOrder" . $limitClause; 
 
     
-    $params[] = $perPage;
-    $params[] = $offset;
+    $finalParams = array_merge($params, $limitParams); 
 
-    $items = executeQuery($sql, $params)->fetchAll();
+    $items = executeQuery($sql, $finalParams)->fetchAll();
 
     return [
         'items' => $items,
         'currentPage' => $page,
         'totalPages' => $totalPages,
         'totalItems' => $totalItems,
-        'perPage' => $perPage
+        'perPage' => ($finalPerPage > 0) ? (int)$finalPerPage : null 
     ];
 }
 
