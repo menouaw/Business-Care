@@ -49,6 +49,7 @@ define('TABLE_PROVIDER_SERVICES', 'prestataires_prestations');
 define('TABLE_PROVIDER_AVAILABILITY', 'prestataires_disponibilites');
 define('TABLE_EVENEMENTS', 'evenements');
 define('TABLE_EVENEMENT_INSCRIPTIONS', 'evenement_inscriptions');
+define('TABLE_NOTIFICATIONS', 'notifications');
 
 // Constantes pour les devis (quotes)
 define('QUOTE_STATUS_PENDING', 'en_attente');
