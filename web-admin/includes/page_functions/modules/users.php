@@ -228,19 +228,13 @@ function usersGetEntreprises() {
 }
 
 /**
- * Crée ou met à jour un utilisateur dans la base de données.
+ * Crée un nouvel utilisateur ou met à jour un utilisateur existant avec validation complète des données.
  *
- * Valide les informations fournies dans le tableau de données ($data) pour s'assurer que les champs obligatoires
- * (nom, prénom, email, et mot de passe lors de la création) ainsi que le rôle et, le cas échéant, l'entreprise sont corrects.
- * Vérifie également l'unicité de l'email avant de procéder à l'insertion ou à la mise à jour dans la table 'personnes'.
- * En cas de données invalides, retourne immédiatement un tableau d'erreurs sans modifier la base.
- * Si l'opération est réussie, consigne l'action dans les logs business et de sécurité et retourne un tableau indiquant le succès
- * de l'opération. Pour une création, le résultat inclut la clé 'newId' correspondant au nouvel identifiant de l'utilisateur.
+ * Valide les champs obligatoires, l'unicité de l'email, la cohérence des mots de passe et l'existence des rôles et entreprises associés. Retourne un tableau d'erreurs en cas de validation échouée, ou effectue l'opération en base de données dans une transaction. Enregistre les actions dans les logs métier et sécurité. Retourne un tableau indiquant le succès ou l'échec, avec un message et l'identifiant créé ou mis à jour si applicable.
  *
- * @param array $data Informations de l'utilisateur incluant au minimum 'nom', 'prenom', 'email', 'mot_de_passe' (lors de la création), 'role_id'
- *                    et éventuellement 'entreprise_id' et 'statut'.
- * @param int $id Identifiant de l'utilisateur à mettre à jour ou 0 pour créer un nouvel utilisateur.
- * @return array Tableau contenant 'success' (bool) et, selon le résultat, 'message' (string|null) ou 'errors' (array|null).
+ * @param array $data Données de l'utilisateur à enregistrer.
+ * @param int $id Identifiant de l'utilisateur à modifier, ou 0 pour une création.
+ * @return array Résultat de l'opération : 'success' (bool), 'message' (string) et 'userId' ou 'newId' (int) en cas de succès, ou 'errors' (array) en cas d'échec.
  */
 function usersSave($data, $id = 0) {
     $errors = [];
@@ -363,14 +357,12 @@ function usersSave($data, $id = 0) {
 }
 
 /**
- * Supprime un utilisateur en vérifiant l'absence de dépendances critiques et en empêchant la suppression du compte connecté.
+ * Supprime un utilisateur ainsi que toutes ses données associées, sauf si l'utilisateur est le compte actuellement connecté.
  *
- * La fonction empêche la suppression du compte actuellement connecté.
- * Elle supprime ensuite l'utilisateur ainsi que ses données liées (notifications, dons, évaluations, rendez-vous, logs, tokens, préférences)
- * à l'aide d'une transaction pour garantir la cohérence des opérations.
+ * La suppression inclut les notifications, dons, évaluations, rendez-vous (en tant que client ou praticien), logs, tokens API, préférences et autres données liées. L'opération est réalisée dans une transaction pour garantir la cohérence. Retourne un tableau indiquant le succès ou l'échec de l'opération, avec un message explicatif.
  *
  * @param int $id Identifiant de l'utilisateur à supprimer.
- * @return array Tableau contenant 'success' (booléen indiquant le résultat) et 'message' (description du résultat de l'opération).
+ * @return array Résultat de l'opération avec les clés 'success' (booléen) et 'message' (texte explicatif).
  */
 function usersDelete($id) {
     if ($id == ($_SESSION['user_id'] ?? 0)) {
