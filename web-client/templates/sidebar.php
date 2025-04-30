@@ -86,8 +86,8 @@
             </h6>
             <ul class="nav flex-column mb-3">
                 <li class="nav-item">
-                    <a class="nav-link <?= isActivePage('/modules/employees/advice.php') ?>"
-                        href="<?= WEBCLIENT_URL ?>/modules/employees/advice.php">
+                    <a class="nav-link <?= isActivePage('/modules/employees/counsel.php') ?>"
+                        href="<?= WEBCLIENT_URL ?>/modules/employees/counsel.php">
                         <i class="fas fa-heartbeat fa-fw me-2"></i>Conseils Bien-être
                     </a>
                 </li>

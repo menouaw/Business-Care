@@ -59,7 +59,7 @@ include __DIR__ . '/../../templates/header.php';
                     <?php endforeach; ?>
                 </div>
             <?php
-                // Afficher la pagination
+                
                 if (!empty($pagination) && $pagination['totalPages'] > 1) {
                     echo renderPagination($pagination, WEBCLIENT_URL . '/modules/employees/services.php?page={page}');
                 }
