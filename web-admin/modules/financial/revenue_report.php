@@ -5,7 +5,7 @@ require_once '../../includes/page_functions/modules/services.php';
 
 requireRole(ROLE_ADMIN);
 
-$pageTitle = "Rapport des revenus";
+$pageTitle = "Revenus";
 
 
 $queryData = getQueryData(); 

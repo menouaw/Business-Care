@@ -23,7 +23,7 @@ include '../../templates/header.php';
                 <h1 class="h2"><?php echo htmlspecialchars($pageTitle); ?></h1>
                  <div class="btn-toolbar mb-2 mb-md-0">
                     
-                    <a href="<?php echo JAVA_URL . '/output/report_' . date('d-m-Y') . '.pdf'; ?>" target="_blank" class="btn btn-sm btn-outline-secondary">
+                    <a href="<?php echo JAVA_REPORTS_URL . '/report_' . date('d-m-Y') . '.pdf'; ?>" target="_blank" class="btn btn-sm btn-outline-secondary">
                         <i class="fas fa-file-pdf me-2"></i> Rapport du jour (PDF)
                         
                     </a>
@@ -68,30 +68,21 @@ include '../../templates/header.php';
 
             
             <div class="row mb-4">
-                <div class="col-md-4 mb-3">
+                <div class="col-md-6 mb-3"> 
                     <div class="card h-100">
                         <div class="card-body d-flex flex-column justify-content-between">
-                            <h5 class="card-title">Rapport de revenus</h5>
+                            <h5 class="card-title">Revenus</h5>
                             <p class="card-text">Voir les revenus détaillés par période.</p>
                             <a href="<?php echo WEBADMIN_URL; ?>/modules/financial/revenue_report.php" class="btn btn-sm btn-outline-primary mt-auto">Consulter</a>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4 mb-3">
+                <div class="col-md-6 mb-3"> 
                     <div class="card h-100">
                         <div class="card-body d-flex flex-column justify-content-between">
                             <h5 class="card-title">Paiements prestataires</h5>
                             <p class="card-text">Voir les montants dus aux prestataires.</p>
                             <a href="<?php echo WEBADMIN_URL; ?>/modules/financial/provider_payouts.php" class="btn btn-sm btn-outline-primary mt-auto">Consulter</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <div class="card h-100">
-                        <div class="card-body d-flex flex-column justify-content-between">
-                            <h5 class="card-title">Résumé fiscal (TVA)</h5>
-                            <p class="card-text">Consulter le résumé de la TVA collectée.</p>
-                            <a href="<?php echo WEBADMIN_URL; ?>/modules/financial/tax_summary.php" class="btn btn-sm btn-outline-primary mt-auto">Consulter</a>
                         </div>
                     </div>
                 </div>

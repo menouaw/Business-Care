@@ -19,6 +19,7 @@ define('ASSETS_URL', ROOT_URL . '/assets');
 define('API_URL', ROOT_URL . '/api');
 define('UPLOAD_URL', ROOT_URL . '/uploads/');
 define('JAVA_URL', ROOT_URL . '/java-app');
+define('JAVA_REPORTS_URL', ROOT_URL . '/java-app/output');
 
 // Constantes pour les rôles utilisateurs
 define('ROLE_ADMIN', 1);
