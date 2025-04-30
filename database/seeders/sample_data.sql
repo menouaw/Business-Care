@@ -1,4 +1,4 @@
--- source C:/MAMP/htdocs/Business-Care/database/seeders/sample_data.sql
+
 
 
 USE business_care;
@@ -229,19 +229,19 @@ INSERT INTO contrats_prestations (contrat_id, prestation_id) VALUES
 (1, 1), 
 (2, 2), 
 (3, 3),
-(1, 4), (1, 5), (1, 7), (1, 11), -- Contrat 1 (Premium Pack) gets more prestations
-(2, 6), (2, 9), (2, 10), (2, 12), (2, 14), -- Contrat 2 (Basic Pack) gets more prestations
-(3, 13), (3, 17), -- Contrat 3 (Starter Pack) gets more prestations
-(4, 1), (4, 2), (4, 13), -- Contrat 4 (Starter Pack)
-(5, 1), (5, 2), (5, 3), (5, 6), (5, 7), (5, 8), (5, 10), (5, 11), -- Contrat 5 (Premium Pack)
-(7, 1), (7, 2), (7, 5), (7, 15), (7, 20), -- Contrat 7 (Basic Pack)
-(9, 3), (9, 16), -- Contrat 9 (Starter Pack)
-(10, 1), (10, 4), (10, 5), (10, 9), (10, 22), -- Contrat 10 (Premium Pack)
-(13, 2), (13, 8), (13, 18), -- Contrat 13 (Basic Pack)
-(15, 1), (15, 6), (15, 12), (15, 21), -- Contrat 15 (Basic Pack)
-(16, 3), (16, 11), -- Contrat 16 (Starter Pack)
-(18, 1), (18, 4), (18, 9), -- Contrat 18 (Basic Pack)
-(16, 1), (16, 5), (16, 7), (16, 10), (16, 14), (16, 25), (16, 30); -- Contrat 19 (Premium Pack) -> Corrected to Contrat ID 16
+(1, 4), (1, 5), (1, 7), (1, 11), 
+(2, 6), (2, 9), (2, 10), (2, 12), (2, 14), 
+(3, 13), (3, 17), 
+(4, 1), (4, 2), (4, 13), 
+(5, 1), (5, 2), (5, 3), (5, 6), (5, 7), (5, 8), (5, 10), (5, 11), 
+(7, 1), (7, 2), (7, 5), (7, 15), (7, 20), 
+(9, 3), (9, 16), 
+(10, 1), (10, 4), (10, 5), (10, 9), (10, 22), 
+(13, 2), (13, 8), (13, 18), 
+(15, 1), (15, 6), (15, 12), (15, 21), 
+(16, 3), (16, 11), 
+(18, 1), (18, 4), (18, 9), 
+(16, 1), (16, 5), (16, 7), (16, 10), (16, 14), (16, 25), (16, 30); 
 
 INSERT INTO devis (entreprise_id, service_id, nombre_salaries_estimes, date_creation, date_validite, montant_total, montant_ht, tva, statut, conditions_paiement, delai_paiement) VALUES
 (1, NULL, NULL, '2024-01-15', '2024-02-15', 1500.00, 1250.00, 20.00, 'accepte', 'Paiement a 30 jours', 30), 
@@ -269,7 +269,13 @@ INSERT INTO devis (entreprise_id, service_id, nombre_salaries_estimes, date_crea
 (23, 1, 45, '2024-05-25', '2024-06-25', 4050.00, 3375.00, 20.00, 'accepte', 'Paiement a reception', 0),
 (24, 2, 180, '2024-06-01', '2024-07-01', 27000.00, 22500.00, 20.00, 'accepte', 'Paiement a 60 jours', 60),
 (27, 1, 35, '2024-06-05', '2024-07-05', 3150.00, 2625.00, 20.00, 'en_attente', 'Paiement a 30 jours', 30),
-(30, 2, 150, '2024-06-10', '2024-07-10', 22500.00, 18750.00, 20.00, 'en_attente', 'Paiement a 45 jours', 45);
+(30, 2, 150, '2024-06-10', '2024-07-10', 22500.00, 18750.00, 20.00, 'en_attente', 'Paiement a 45 jours', 45),
+(19, 3, 480, '2024-03-10', '2024-04-09', 48000.00, 40000.00, 20.00, 'accepte', 'Paiement a 30 jours', 30), 
+(22, 3, 550, '2024-04-20', '2024-05-20', 60000.00, 50000.00, 20.00, 'accepte', 'Paiement a 30 jours', 30), 
+(25, 2, 300, '2024-06-05', '2024-07-05', 42000.00, 35000.00, 20.00, 'accepte', 'Paiement a 30 jours', 30), 
+(26, 1, 5, '2024-05-15', '2024-06-15', 550.00, 458.33, 20.00, 'accepte', 'Paiement a 30 jours', 30), 
+(28, 1, 8, '2024-02-20', '2024-03-20', 1800.00, 1500.00, 20.00, 'accepte', 'Paiement a 30 jours', 30), 
+(29, 1, 40, '2024-06-15', '2024-07-15', 4500.00, 3750.00, 20.00, 'accepte', 'Paiement a 30 jours', 30); 
 
 INSERT INTO evaluations (personne_id, prestation_id, note, commentaire, date_evaluation) VALUES
 (5, 1, 5, 'Excellent service, tres professionnel', '2024-04-21'),
@@ -378,20 +384,20 @@ INSERT INTO consultation_creneaux (prestation_id, praticien_id, start_time, end_
 (7, 11, NOW() + INTERVAL 2 DAY + INTERVAL '12:15' HOUR_MINUTE, NOW() + INTERVAL 2 DAY + INTERVAL '13:15' HOUR_MINUTE, FALSE, 2), 
 (7, 3, NOW() + INTERVAL 4 DAY + INTERVAL '16:00' HOUR_MINUTE, NOW() + INTERVAL 4 DAY + INTERVAL '17:00' HOUR_MINUTE, FALSE, NULL);
 
--- Link prestataires to prestations they offer
-INSERT INTO prestataires_prestations (prestataire_id, prestation_id) VALUES
-(3, 1), (3, 9), (3, 7), -- Prestataire Test (Psychologue, Sophrologue, Coach Vie)
-(11, 1), (11, 4), (11, 15), -- Sophie Durand (Psychologue, Nutritionniste, Arret Tabac)
-(27, 1), (27, 29), -- Mathilde Blanc (Psychologue, Hypnose Relaxation)
-(28, 2), (28, 5), (28, 11), (28, 30), (28, 41), -- Romain Petit (Yoga, Meditation, Massage Amma, Auto-massage, Tai Chi)
-(29, 4), (29, 17), (29, 24), -- Emma Sanchez (Nutritionniste, Cuisine Saine, Dietetique)
-(30, 9), (30, 27), -- Leo Mercier (Sophrologie, Hypnose Relaxation)
-(31, 21), -- Ines Chevalier (Reflexologie Plantaire)
-(32, 19), -- Hugo Perez (Secourisme)
-(33, 29), (33, 39), -- Louise Andre (Hypnose Relaxation, Musicotherapie)
-(34, 41); -- Gabriel Fernandez (Conseil en Image)
 
--- Add some habilitations for prestataires
+INSERT INTO prestataires_prestations (prestataire_id, prestation_id) VALUES
+(3, 1), (3, 9), (3, 7), 
+(11, 1), (11, 4), (11, 15), 
+(27, 1), (27, 29), 
+(28, 2), (28, 5), (28, 11), (28, 30), (28, 41), 
+(29, 4), (29, 17), (29, 24), 
+(30, 9), (30, 27), 
+(31, 21), 
+(32, 19), 
+(33, 29), (33, 39), 
+(34, 41); 
+
+
 INSERT INTO habilitations (prestataire_id, type, nom_document, organisme_emission, date_obtention, date_expiration, statut) VALUES
 (3, 'diplome', 'Master Psychologie Clinique', 'Universite Paris Cite', '2010-06-15', NULL, 'verifiee'),
 (11, 'diplome', 'DUT Nutrition', 'IUT Lyon 1', '2012-07-01', NULL, 'verifiee'),
@@ -399,33 +405,53 @@ INSERT INTO habilitations (prestataire_id, type, nom_document, organisme_emissio
 (28, 'certification', 'Professeur de Yoga 200h', 'Yoga Alliance', '2015-03-10', NULL, 'verifiee'),
 (32, 'agrement', 'Formateur SST', 'INRS', '2020-01-25', '2026-01-24', 'en_attente_validation');
 
--- Define some availabilities/unavailabilities for prestataires
+
 INSERT INTO prestataires_disponibilites (prestataire_id, type, date_debut, date_fin, heure_debut, heure_fin, jour_semaine, recurrence_fin, notes) VALUES
-(3, 'recurrente', NULL, NULL, '09:00:00', '18:00:00', 1, NULL, 'Disponible les lundis'), -- Lundi 9h-18h
-(3, 'recurrente', NULL, NULL, '09:00:00', '12:00:00', 3, NULL, 'Disponible les mercredis matin'), -- Mercredi 9h-12h
-(11, 'recurrente', NULL, NULL, '10:00:00', '17:00:00', 2, '2025-12-31', 'Disponible les mardis jusqu''a fin 2025'), -- Mardi 10h-17h
+(3, 'recurrente', NULL, NULL, '09:00:00', '18:00:00', 1, NULL, 'Disponible les lundis'), 
+(3, 'recurrente', NULL, NULL, '09:00:00', '12:00:00', 3, NULL, 'Disponible les mercredis matin'), 
+(11, 'recurrente', NULL, NULL, '10:00:00', '17:00:00', 2, '2025-12-31', 'Disponible les mardis jusqu''a fin 2025'), 
 (28, 'specifique', NOW() + INTERVAL 10 DAY, NOW() + INTERVAL 10 DAY + INTERVAL 1 DAY, NULL, NULL, NULL, NULL, 'Disponible pour atelier Yoga du Rire (Evenement ID 8)'),
 (3, 'indisponible', NOW() + INTERVAL 1 MONTH, NOW() + INTERVAL 1 MONTH + INTERVAL 7 DAY, NULL, NULL, NULL, NULL, 'Conges annuels');
 
--- Create some rendez-vous linking salaries, prestataires, and prestations
-INSERT INTO rendez_vous (personne_id, prestation_id, praticien_id, date_rdv, duree, lieu, type_rdv, statut, notes) VALUES
-(5, 1, 3, NOW() + INTERVAL 2 DAY + INTERVAL '09:00' HOUR_MINUTE, 45, 'Bureau Presta Test / Visio', 'visio', 'confirme', 'Premier RDV'), -- Marie Dupont with Prestataire Test (Psy)
-(6, 4, 11, NOW() + INTERVAL 4 DAY + INTERVAL '10:00' HOUR_MINUTE, 60, 'Cabinet Sante+ / Tel', 'telephone', 'planifie', 'Bilan nutritionnel'), -- Jean Martin with Sophie Durand (Nutri)
-(8, 7, 3, NOW() + INTERVAL 5 DAY + INTERVAL '14:00' HOUR_MINUTE, 60, 'Visio', 'visio', 'termine', 'Seance coaching OK'), -- Pierre Dubois with Prestataire Test (Coach)
-(10, 9, 30, NOW() + INTERVAL 6 DAY + INTERVAL '16:00' HOUR_MINUTE, 50, 'Bureau Presta Leo', 'presentiel', 'planifie', ''), -- Julie Richard with Leo Mercier (Sophro)
-(12, 11, 28, NOW() + INTERVAL 8 DAY + INTERVAL '13:00' HOUR_MINUTE, 20, 'Entreprise Tech Solutions', 'presentiel', 'confirme', 'Massage Amma sur site'), -- Hugo Moreau with Romain Petit (Amma)
-(17, 1, 11, NOW() + INTERVAL 3 DAY + INTERVAL '14:00' HOUR_MINUTE, 45, 'Bureau Sante Plus', 'presentiel', 'annule', 'Annule par le salarie'); -- Camille Lefevre with Sophie Durand (Psy) - Canceled
 
--- Create some factures for entreprises, linking to existing devis
+INSERT INTO rendez_vous (personne_id, prestation_id, praticien_id, date_rdv, duree, lieu, type_rdv, statut, notes) VALUES
+(5, 1, 3, NOW() + INTERVAL 2 DAY + INTERVAL '09:00' HOUR_MINUTE, 45, 'Bureau Presta Test / Visio', 'visio', 'confirme', 'Premier RDV'), 
+(6, 4, 11, NOW() + INTERVAL 4 DAY + INTERVAL '10:00' HOUR_MINUTE, 60, 'Cabinet Sante+ / Tel', 'telephone', 'planifie', 'Bilan nutritionnel'), 
+(8, 7, 3, NOW() + INTERVAL 5 DAY + INTERVAL '14:00' HOUR_MINUTE, 60, 'Visio', 'visio', 'termine', 'Seance coaching OK'), 
+(10, 9, 30, NOW() + INTERVAL 6 DAY + INTERVAL '16:00' HOUR_MINUTE, 50, 'Bureau Presta Leo', 'presentiel', 'planifie', ''), 
+(12, 11, 28, NOW() + INTERVAL 8 DAY + INTERVAL '13:00' HOUR_MINUTE, 20, 'Entreprise Tech Solutions', 'presentiel', 'confirme', 'Massage Amma sur site'), 
+(17, 1, 11, NOW() + INTERVAL 3 DAY + INTERVAL '14:00' HOUR_MINUTE, 45, 'Bureau Sante Plus', 'presentiel', 'annule', 'Annule par le salarie'); 
+
+
 INSERT INTO factures (entreprise_id, devis_id, numero_facture, date_emission, date_echeance, montant_total, montant_ht, tva, statut, mode_paiement, date_paiement) VALUES
 (1, 1, 'FACT-2024-001', '2024-02-16', '2024-03-17', 1500.00, 1250.00, 20.00, 'payee', 'virement', '2024-03-10 10:00:00'),
 (2, 2, 'FACT-2024-002', '2024-03-02', '2024-04-16', 2000.00, 1666.67, 20.00, 'payee', 'prelevement', '2024-04-15 11:00:00'),
 (1, 4, 'FACT-2024-003', '2024-02-11', '2024-02-26', 3200.00, 2666.67, 20.00, 'retard', 'virement', NULL),
 (3, 6, 'FACT-2024-004', '2024-02-26', '2024-03-27', 2800.00, 2333.33, 20.00, 'en_attente', 'carte', NULL),
 (5, 8, 'FACT-2024-005', '2024-04-11', '2024-05-11', 55000.00, 45833.33, 20.00, 'en_attente', 'virement', NULL),
-(7, 10, 'FACT-2024-006', '2024-04-21', '2024-06-20', 39000.00, 32500.00, 20.00, 'en_attente', 'virement', NULL);
+(7, 10, 'FACT-2024-006', '2024-04-21', '2024-06-20', 39000.00, 32500.00, 20.00, 'en_attente', 'virement', NULL),
+(9, 12, 'FACT-2024-007', '2024-05-02', '2024-05-02', 4500.00, 3750.00, 20.00, 'payee', 'carte', NOW() - INTERVAL 3 DAY),
+(11, 14, 'FACT-2024-008', '2024-05-11', '2024-06-10', 650.00, 541.67, 20.00, 'en_attente', 'prelevement', NULL),
+(12, 15, 'FACT-2024-009', '2024-05-16', '2024-06-15', 2700.00, 2250.00, 20.00, 'annulee', NULL, NULL),
+(13, 16, 'FACT-2024-010', '2024-05-21', '2024-07-05', 30000.00, 25000.00, 20.00, 'payee', 'virement', NOW() - INTERVAL 1 DAY),
+(15, 17, 'FACT-2024-011', '2024-05-26', '2024-06-25', 57000.00, 47500.00, 20.00, 'impayee', 'virement', NULL),
+(16, 18, 'FACT-2024-012', '2024-06-02', '2024-07-02', 2520.00, 2100.00, 20.00, 'en_attente', 'carte', NULL),
+(18, 20, 'FACT-2024-013', '2024-06-11', '2024-07-11', 19500.00, 16250.00, 20.00, 'retard', 'prelevement', NULL),
+(23, 23, 'FACT-2024-014', '2024-05-26', '2024-05-26', 4050.00, 3375.00, 20.00, 'payee', 'carte', NOW() - INTERVAL 2 HOUR),
+(24, 24, 'FACT-2024-015', '2024-07-02', '2024-08-31', 27000.00, 22500.00, 20.00, 'en_attente', 'virement', NULL),
+(4, 7, 'FACT-2024-016', '2024-04-06', '2024-05-06', 950.00, 791.67, 20.00, 'payee', 'virement', '2024-05-01 14:30:00'),
+(19, 27, 'FACT-2024-017', '2024-03-15', '2024-04-14', 5000.00, 4166.67, 20.00, 'en_attente', 'virement', NULL),
+(20, 21, 'FACT-2024-018', '2024-02-20', '2024-03-21', 1200.00, 1000.00, 20.00, 'payee', 'carte', NOW() - INTERVAL 10 DAY),
+(21, 22, 'FACT-2024-019', '2024-05-25', '2024-06-24', 800.00, 666.67, 20.00, 'retard', 'virement', NULL),
+(22, 28, 'FACT-2024-020', '2024-05-05', '2024-06-04', 60000.00, 50000.00, 20.00, 'impayee', 'prelevement', NULL),
+(25, 29, 'FACT-2024-021', '2024-06-15', '2024-07-15', 42000.00, 35000.00, 20.00, 'payee', 'virement', NOW() - INTERVAL 5 DAY),
+(26, 30, 'FACT-2024-022', '2024-06-01', '2024-07-01', 550.00, 458.33, 20.00, 'en_attente', 'carte', NULL),
+(27, 25, 'FACT-2024-023', '2024-06-06', '2024-07-06', 3150.00, 2625.00, 20.00, 'annulee', NULL, NULL),
+(28, 31, 'FACT-2024-024', '2024-03-05', '2024-04-04', 1800.00, 1500.00, 20.00, 'payee', 'prelevement', NOW() - INTERVAL 2 DAY),
+(29, 32, 'FACT-2024-025', '2024-07-01', '2024-07-31', 4500.00, 3750.00, 20.00, 'en_attente', 'virement', NULL),
+(30, 26, 'FACT-2024-026', '2024-06-12', '2024-07-27', 22500.00, 18750.00, 20.00, 'retard', 'prelevement', NULL);
 
--- Link prestations to devis
+
 INSERT INTO devis_prestations (devis_id, prestation_id, quantite, prix_unitaire_devis, description_specifique) VALUES
 (1, 1, 10, 75.00, '10 consultations psy incluses'),
 (1, 2, 5, 110.00, '5 ateliers Yoga'),
@@ -436,47 +462,47 @@ INSERT INTO devis_prestations (devis_id, prestation_id, quantite, prix_unitaire_
 (8, 1, 500, 60.00, 'Pack 500 consultations psy Premium'),
 (8, 11, 500, 15.00, 'Pack 500 massages Amma Premium');
 
--- Create some factures for prestataires
-INSERT INTO factures_prestataires (prestataire_id, numero_facture, date_facture, periode_debut, periode_fin, montant_total, statut, date_paiement) VALUES
-(3, 'FP-2024-03-001', '2024-04-05', '2024-03-01', '2024-03-31', 225.00, 'impayee', NULL), -- 1 RDV Psy (75) + 1 RDV Coach (150)
-(11, 'FP-2024-03-002', '2024-04-05', '2024-03-01', '2024-03-31', 85.00, 'payee', NOW() - INTERVAL 5 DAY), -- 1 RDV Nutri (85)
-(28, 'FP-2024-04-001', '2024-05-05', '2024-04-01', '2024-04-30', 25.00, 'generation_attendue', NULL), -- 1 RDV Amma (25)
-(30, 'FP-2024-04-002', '2024-05-05', '2024-04-01', '2024-04-30', 70.00, 'impayee', NULL); -- 1 RDV Sophro (70)
 
--- Create line items for prestataire factures, linking to rendez_vous
--- Note: rendez_vous_id must be UNIQUE in this table
+INSERT INTO factures_prestataires (prestataire_id, numero_facture, date_facture, periode_debut, periode_fin, montant_total, statut, date_paiement) VALUES
+(3, 'FP-2024-03-001', '2024-04-05', '2024-03-01', '2024-03-31', 225.00, 'impayee', NULL), 
+(11, 'FP-2024-03-002', '2024-04-05', '2024-03-01', '2024-03-31', 85.00, 'payee', NOW() - INTERVAL 5 DAY), 
+(28, 'FP-2024-04-001', '2024-05-05', '2024-04-01', '2024-04-30', 25.00, 'generation_attendue', NULL), 
+(30, 'FP-2024-04-002', '2024-05-05', '2024-04-01', '2024-04-30', 70.00, 'impayee', NULL); 
+
+
+
 INSERT INTO facture_prestataire_lignes (facture_prestataire_id, rendez_vous_id, description, montant) VALUES
 (1, 1, 'Consultation Psychologique - M. Dupont', 75.00),
 (1, 3, 'Coaching de Vie - P. Dubois', 150.00),
 (2, 2, 'Consultation Nutritionniste - J. Martin', 85.00),
 (3, 5, 'Massage Amma Assis - H. Moreau', 25.00),
 (4, 4, 'Sophrologie Relaxation - J. Richard', 70.00);
--- (FP ID 1, RDV ID 6, 'Consultation Psy - C. Lefevre (Annule)', 0.00), -- Example if we invoice cancelled appointments
 
--- Register some personnes for evenements
+
+
 INSERT INTO evenement_inscriptions (personne_id, evenement_id, statut) VALUES
-(5, 1, 'inscrit'), -- Marie Dupont -> Conf Bien-etre Paris
-(8, 1, 'inscrit'), -- Pierre Dubois -> Conf Bien-etre Paris
-(6, 2, 'inscrit'), -- Jean Martin -> Webinar Stress
-(12, 4, 'inscrit'), -- Hugo Moreau -> Defi Sportif
-(7, 5, 'annule'), -- Chloe Bernard -> Atelier Sophro (canceled)
-(18, 6, 'inscrit'); -- Thomas Girard -> Conf Nutrition
+(5, 1, 'inscrit'), 
+(8, 1, 'inscrit'), 
+(6, 2, 'inscrit'), 
+(12, 4, 'inscrit'), 
+(7, 5, 'annule'), 
+(18, 6, 'inscrit'); 
 
--- Add some messages to communautes
+
 INSERT INTO communaute_messages (communaute_id, personne_id, message) VALUES
 (1, 5, 'Quelqu''un a essaye le cours de Yoga Avance ?'),
 (2, 6, 'Motivation pour le semi-marathon ce week-end ! Qui court ?'),
 (1, 8, 'La seance de meditation de ce matin etait top !'),
 (2, 12, 'Nouveau record perso sur 10km ! :-)');
 
--- Create some support tickets
+
 INSERT INTO support_tickets (entreprise_id, personne_id, sujet, message, statut) VALUES
 (1, 5, 'Probleme connexion espace salarie', 'Bonjour, je n''arrive pas a me connecter depuis ce matin.', 'en_cours'),
 (NULL, 7, 'Question sur une prestation', 'Est-ce que l''atelier Yoga est adapte aux grands debutants ?', 'nouveau'),
 (3, NULL, 'Demande information contrat', 'Pouvez-vous nous renvoyer les details de notre contrat Bien-etre Corp ?', 'resolu'),
 (NULL, NULL, 'Bug affichage page evenements', 'La liste des evenements ne s''affiche pas correctement sur mobile.', 'nouveau');
 
--- Create some signalements
+
 INSERT INTO signalements (sujet, description, statut) VALUES
 ('Commentaire inaproprie communaute', 'Un utilisateur a poste un message deplace dans le Running Club.', 'en_cours'),
 ('Erreur calcul facture prestataire', 'Ma derniere facture (FP-2024-03-001) semble incorrecte.', 'nouveau'),
