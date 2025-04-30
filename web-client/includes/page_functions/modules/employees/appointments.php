@@ -1,4 +1,5 @@
 <?php
+
 require_once __DIR__ . '/../../../../includes/init.php';
 
 function getSalarieAppointments(int $salarie_id, string $orderBy = 'rdv.date_rdv DESC'): array
@@ -94,7 +95,7 @@ function getAppointmentDetailsForEmployee(int $salarie_id, int $rdv_id): array|f
             LEFT JOIN " . TABLE_PRESTATIONS . " pres ON rdv.prestation_id = pres.id
             LEFT JOIN " . TABLE_USERS . " prat ON rdv.praticien_id = prat.id AND prat.role_id = :role_prestataire
             LEFT JOIN consultation_creneaux cc ON rdv.consultation_creneau_id = cc.id
-            LEFT JOIN sites s ON cc.site_id = s.id OR pres.site_id = s.id
+            LEFT JOIN sites s ON cc.site_id = s.id
             WHERE rdv.id = :rdv_id AND rdv.personne_id = :salarie_id
             LIMIT 1";
 
@@ -112,8 +113,6 @@ function getAppointmentDetailsForEmployee(int $salarie_id, int $rdv_id): array|f
         return false;
     }
 }
-
-
 
 function bookAppointmentSlot(int $salarie_id, int $slot_id, int $service_id_confirm): bool
 {
@@ -182,8 +181,11 @@ function bookAppointmentSlot(int $salarie_id, int $slot_id, int $service_id_conf
             'consultation_creneau_id' => $slot_id
         ];
 
+
         if (!insertRow(TABLE_APPOINTMENTS, $rdvData)) {
             flashMessage("Une erreur est survenue lors de la finalisation de la réservation.", "danger");
+
+
             $pdo->rollBack();
             return false;
         }
@@ -213,7 +215,10 @@ function bookAppointmentSlot(int $salarie_id, int $slot_id, int $service_id_conf
 
 function cancelEmployeeAppointment(int $salarie_id, int $rdv_id): bool
 {
-    if ($salarie_id <= 0 || $rdv_id <= 0) return false;
+    if ($salarie_id <= 0 || $rdv_id <= 0) {
+        error_log("Cancel failed at: invalid IDs");
+        return false;
+    }
 
     $pdo = getDbConnection();
 
@@ -228,6 +233,7 @@ function cancelEmployeeAppointment(int $salarie_id, int $rdv_id): bool
         );
 
         if (!$rdv) {
+            error_log("Cancel failed at: rdv not found or no permission for rdv_id: " . $rdv_id . " salarie_id: " . $salarie_id);
             flashMessage("Rendez-vous non trouvé ou vous n'avez pas la permission de l'annuler.", "warning");
             $pdo->rollBack();
             return false;
@@ -235,12 +241,15 @@ function cancelEmployeeAppointment(int $salarie_id, int $rdv_id): bool
 
 
         if (!in_array($rdv['statut'], ['planifie', 'confirme'])) {
+            error_log("Cancel failed at: bad status ('" . $rdv['statut'] . "') for rdv_id: " . $rdv_id);
             flashMessage("Ce rendez-vous ne peut plus être annulé (statut: " . htmlspecialchars($rdv['statut']) . ").", "warning");
             $pdo->rollBack();
             return false;
         }
 
+
         if (strtotime($rdv['date_rdv']) <= time()) {
+            error_log("Cancel failed at: date past ('" . $rdv['date_rdv'] . "') for rdv_id: " . $rdv_id);
             flashMessage("Impossible d'annuler un rendez-vous déjà passé.", "warning");
             $pdo->rollBack();
             return false;
@@ -248,6 +257,7 @@ function cancelEmployeeAppointment(int $salarie_id, int $rdv_id): bool
 
 
         if (updateRow(TABLE_APPOINTMENTS, ['statut' => 'annule'], 'id = :rdv_id', [':rdv_id' => $rdv_id]) === 0) {
+            error_log("Cancel failed at: updateRow for appointment status returned 0 for rdv_id: " . $rdv_id);
             flashMessage("Erreur lors de la mise à jour du statut du rendez-vous.", "danger");
             $pdo->rollBack();
             return false;
@@ -255,34 +265,47 @@ function cancelEmployeeAppointment(int $salarie_id, int $rdv_id): bool
 
 
         if (!empty($rdv['consultation_creneau_id'])) {
-            updateRow(
+            error_log("Attempting to free consultation slot ID: " . $rdv['consultation_creneau_id'] . " for cancelled RDV ID: " . $rdv_id);
+            $slotUpdateResult = updateRow(
                 'consultation_creneaux',
                 ['is_booked' => 0],
                 'id = :creneau_id',
                 [':creneau_id' => $rdv['consultation_creneau_id']]
             );
+
+            if ($slotUpdateResult === 0) {
+                error_log("Warning: updateRow for consultation_creneaux returned 0 for creneau_id: " . $rdv['consultation_creneau_id']);
+            }
         }
 
+        error_log("Attempting to commit transaction for cancelling RDV ID: " . $rdv_id);
         $pdo->commit();
+        error_log("Transaction committed for cancelling RDV ID: " . $rdv_id);
 
 
         try {
             $prestation = getPrestationDetails($rdv['prestation_id']);
             $prestationNom = $prestation ? $prestation['nom'] : 'inconnue';
+            error_log("Attempting to create notification for cancelled RDV ID: " . $rdv_id);
             createNotification(
                 $salarie_id,
                 "Annulation de rendez-vous",
                 "Votre RDV pour '" . htmlspecialchars($prestationNom) . "' le " . htmlspecialchars(formatDate($rdv['date_rdv'], 'd/m/Y H:i')) . " a été annulé.",
                 "info"
             );
+            error_log("Notification created successfully for cancelled RDV ID: " . $rdv_id);
         } catch (Exception $e) {
-            error_log("[Notification Error] " . $e->getMessage());
+
+            error_log("[Notification Error after successful cancel] for RDV ID: " . $rdv_id . " - " . $e->getMessage());
         }
 
         return true;
     } catch (Exception $e) {
-        error_log("[FATAL Error in cancelEmployeeAppointment] " . $e->getMessage());
-        if ($pdo->inTransaction()) $pdo->rollBack();
+        error_log("[FATAL Error in cancelEmployeeAppointment] Exception caught for RDV ID: " . $rdv_id . " - " . $e->getMessage());
+        if ($pdo->inTransaction()) {
+            error_log("Rolling back transaction due to exception for RDV ID: " . $rdv_id);
+            $pdo->rollBack();
+        }
         return false;
     }
 }
@@ -296,7 +319,11 @@ function handleAppointmentPostAndGetActions(int $salarie_id): void
         $current_filter = filter_input(INPUT_GET, 'filter', FILTER_SANITIZE_SPECIAL_CHARS);
 
         if ($rdv_id_to_cancel && $csrf_token_cancel && validateToken($csrf_token_cancel)) {
-            cancelEmployeeAppointment($salarie_id, $rdv_id_to_cancel);
+            $cancelSuccess = cancelEmployeeAppointment($salarie_id, $rdv_id_to_cancel);
+            if (!$cancelSuccess && empty($_SESSION['flash_messages'])) {
+                flashMessage("L'annulation du rendez-vous a échoué pour une raison inconnue.", "danger");
+                error_log("cancelEmployeeAppointment returned false without setting a flash message for RDV ID: " . $rdv_id_to_cancel);
+            }
         } else {
             flashMessage(
                 !validateToken($csrf_token_cancel) ?
@@ -360,7 +387,13 @@ function prepareAppointmentViewData(int $salarie_id): array
         'appointmentDetails' => null,
         'bookingStep' => 'show_services',
         'availableServices' => [],
-        'servicePagination' => null,
+        'servicePagination' => [
+            'items' => [],
+            'currentPage' => 1,
+            'totalPages' => 0,
+            'totalItems' => 0,
+            'perPage' => 3
+        ],
         'selectedService' => null,
         'availableSlots' => [],
         'service_id' => null,
@@ -383,9 +416,10 @@ function prepareAppointmentViewData(int $salarie_id): array
     $allAppointments = getSalarieAppointments($salarie_id);
     foreach ($allAppointments as $rdv) {
         $isUpcoming = strtotime($rdv['date_rdv']) > time();
-        $isCancellableStatus = in_array($rdv['statut'], ['planifie', 'confirme']);
 
-        if ($isUpcoming && $isCancellableStatus) {
+
+
+        if ($isUpcoming && $rdv['statut'] !== 'annule') {
             $viewData['upcomingAppointments'][] = $rdv;
         } else {
             $viewData['pastOrCancelledAppointments'][] = $rdv;
@@ -418,7 +452,9 @@ function prepareAppointmentViewData(int $salarie_id): array
     if ($viewData['bookingStep'] === 'show_services') {
         $viewData['pageTitle'] = "Prendre un rendez-vous";
         $viewData['servicePagination'] = getAvailableServicesForBooking($currentPage_book, 3);
-        $viewData['availableServices'] = $viewData['servicePagination']['items'];
+        $viewData['availableServices'] = is_array($viewData['servicePagination']) && isset($viewData['servicePagination']['items']) && is_array($viewData['servicePagination']['items'])
+            ? $viewData['servicePagination']['items']
+            : [];
     }
 
     return $viewData;
@@ -431,8 +467,8 @@ function prepareAppointmentViewData(int $salarie_id): array
  */
 function setupAppointmentsPage(): array|false
 {
-    
-    
+
+
     $salarie_id = $_SESSION['user_id'] ?? 0;
     if ($salarie_id <= 0) {
         flashMessage("Erreur critique: ID Salarié non trouvé en session.", "danger");
@@ -440,12 +476,9 @@ function setupAppointmentsPage(): array|false
         exit;
     }
 
-    
-    handleAppointmentPostAndGetActions($salarie_id); 
+    handleAppointmentPostAndGetActions($salarie_id);
 
-    
     $viewData = prepareAppointmentViewData($salarie_id);
 
-    
     return $viewData;
 }

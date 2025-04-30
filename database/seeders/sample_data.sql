@@ -1,6 +1,5 @@
 -- source C:/MAMP/htdocs/Business-Care/database/seeders/sample_data.sql
 
-
 USE business_care;
 
 SET FOREIGN_KEY_CHECKS = 0;

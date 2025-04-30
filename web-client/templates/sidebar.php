@@ -46,30 +46,37 @@
             <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-uppercase fw-semibold">
                 <span>Mon Espace Bien-être</span>
             </h6>
-            <ul class="nav flex-column nav-fill mb-3">
-                <li class="nav-item border-bottom">
-                    <a class="nav-link d-inline-flex align-items-center" href="#"> 
+            <ul class="nav flex-column mb-3">
+                <li class="nav-item">
+                    <a class="nav-link <?= isActivePage('/modules/employees/dashboard.php') ?>"
+                        href="<?= WEBCLIENT_URL ?>/modules/employees/dashboard.php">
                         <i class="fas fa-tachometer-alt fa-fw me-2"></i>Tableau de bord
                     </a>
                 </li>
-                <li class="nav-item border-bottom">
-                    <a class="nav-link d-inline-flex align-items-center" href="#"> 
+                <li class="nav-item">
+                    <a class="nav-link <?= isActivePage('/modules/employees/services.php') ?>"
+                        href="<?= WEBCLIENT_URL ?>/modules/employees/services.php">
                         <i class="fas fa-concierge-bell fa-fw me-2"></i>Catalogue Services
                     </a>
                 </li>
-                <li class="nav-item border-bottom">
-                    <a class="nav-link d-inline-flex align-items-center" href="#"> 
-                        <i class="fas fa-calendar-check fa-fw me-2"></i>Mes Rendez-vous
+                <li class="nav-item">
+                    <a class="nav-link <?= isActivePage('/modules/employees/appointments.php') ?>"
+                        href="<?= WEBCLIENT_URL ?>/modules/employees/appointments.php">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        Rendez-vous
                     </a>
                 </li>
-                <li class="nav-item border-bottom">
-                    <a class="nav-link d-inline-flex align-items-center" href="#"> 
+                <li class="nav-item">
+                    <a class="nav-link <?= isActivePage('/modules/employees/communities.php') ?>"
+                        href="<?= WEBCLIENT_URL ?>/modules/employees/communities.php">
+                        <i class="fas fa-users me-2"></i>
+                        Communautés
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <?= isActivePage('/modules/employees/events.php') ?>"
+                        href="<?= WEBCLIENT_URL ?>/modules/employees/events.php">
                         <i class="fas fa-calendar-alt fa-fw me-2"></i>Événements & Ateliers
-                    </a>
-                </li>
-                <li class="nav-item border-bottom">
-                    <a class="nav-link d-inline-flex align-items-center" href="#"> 
-                        <i class="fas fa-users fa-fw me-2"></i>Communautés
                     </a>
                 </li>
             </ul>
@@ -78,23 +85,27 @@
                 <span>Ressources</span>
             </h6>
             <ul class="nav flex-column mb-3">
-                <li class="nav-item border-bottom">
-                    <a class="nav-link d-inline-flex align-items-center" href="#"> 
+                <li class="nav-item">
+                    <a class="nav-link <?= isActivePage('/modules/employees/advice.php') ?>"
+                        href="<?= WEBCLIENT_URL ?>/modules/employees/advice.php">
                         <i class="fas fa-heartbeat fa-fw me-2"></i>Conseils Bien-être
                     </a>
                 </li>
-                <li class="nav-item border-bottom">
-                    <a class="nav-link d-inline-flex align-items-center" href="#"> 
+                <li class="nav-item">
+                    <a class="nav-link <?= isActivePage('/modules/employees/donations.php') ?>"
+                        href="<?= WEBCLIENT_URL ?>/modules/employees/donations.php">
                         <i class="fas fa-hand-holding-heart fa-fw me-2"></i>Faire un don
                     </a>
                 </li>
-                <li class="nav-item border-bottom">
-                    <a class="nav-link d-inline-flex align-items-center" href="#"> 
+                <li class="nav-item">
+                    <a class="nav-link <?= isActivePage('/modules/employees/chatbot.php') ?>"
+                        href="<?= WEBCLIENT_URL ?>/modules/employees/chatbot.php">
                         <i class="fas fa-robot fa-fw me-2"></i>Assistance IA
                     </a>
                 </li>
-                <li class="nav-item border-bottom">
-                    <a class="nav-link d-inline-flex align-items-center" href="#"> 
+                <li class="nav-item">
+                    <a class="nav-link <?= isActivePage('/modules/employees/reports.php') ?>"
+                        href="<?= WEBCLIENT_URL ?>/modules/employees/reports.php">
                         <i class="fas fa-exclamation-triangle fa-fw me-2"></i>Signalement
                     </a>
                 </li>
@@ -104,12 +115,11 @@
                 <span>Mon Compte</span>
             </h6>
             <ul class="nav flex-column mb-3">
-                <li class="nav-item border-bottom">
-                    <a class="nav-link d-inline-flex align-items-center" href="#"> 
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
                         <i class="fas fa-user-cog fa-fw me-2"></i>Mon Profil
                     </a>
                 </li>
-
             </ul>
 
 

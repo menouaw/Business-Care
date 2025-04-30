@@ -186,10 +186,11 @@ include __DIR__ . '/../../templates/header.php';
                     <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                         <h6 class="m-0 font-weight-bold text-secondary">Mes Rendez-vous</h6>
                         <div class="btn-group btn-group-sm" role="group" aria-label="Filtres Rendez-vous">
-                            <?php $baseFilterParams = ['up_page' => $upcomingPage, 'pa_page' => $pastPage]; ?>
-                            <a href="?filter=upcoming&<?= http_build_query(array_merge($baseFilterParams, ['pa_page' => $pastPage])) ?>#appointments-section" class="btn btn-outline-primary <?= $filter === 'upcoming' ? 'active' : '' ?>">À venir</a>
-                            <a href="?filter=past&<?= http_build_query(array_merge($baseFilterParams, ['up_page' => $upcomingPage])) ?>#appointments-section" class="btn btn-outline-secondary <?= $filter === 'past' ? 'active' : '' ?>">Historique</a>
-                            <a href="?filter=all&<?= http_build_query($baseFilterParams) ?>#appointments-section" class="btn btn-outline-dark <?= $filter === 'all' ? 'active' : '' ?>">Tous</a>
+                            <?php //$baseFilterParams = ['up_page' => $upcomingPage, 'pa_page' => $pastPage]; // Keep commented or remove if not used elsewhere 
+                            ?>
+                            <a href="?filter=upcoming#appointments-section" class="btn btn-outline-primary <?= $filter === 'upcoming' ? 'active' : '' ?>">À venir</a>
+                            <a href="?filter=past#appointments-section" class="btn btn-outline-secondary <?= $filter === 'past' ? 'active' : '' ?>">Historique</a>
+                            <a href="?filter=all#appointments-section" class="btn btn-outline-dark <?= $filter === 'all' ? 'active' : '' ?>">Tous</a>
                         </div>
                     </div>
                     <div class="card-body">
@@ -222,7 +223,7 @@ include __DIR__ . '/../../templates/header.php';
                                                     <td><span class="badge bg-<?= getStatusBadgeClass($rdv['statut']) ?>"><?= htmlspecialchars(ucfirst($rdv['statut'])) ?></span></td>
                                                     <td>
                                                         <a href="?action=view&id=<?= $rdv['id'] ?>#appointments-section" class="btn btn-sm btn-outline-info me-1" title="Voir Détails"> <i class="fas fa-eye"></i> </a>
-                                                        <a href="?action=cancel&id=<?= $rdv['id'] ?>&csrf=<?= generateToken() ?>&filter=<?= $filter ?>&up_page=<?= $upcomingPage ?>&pa_page=<?= $pastPage ?>#appointments-section"
+                                                        <a href="?action=cancel&id=<?= $rdv['id'] ?>&csrf=<?= generateToken() ?>&filter=<?= $filter ?>#appointments-section"
                                                             class="btn btn-sm btn-outline-danger" title="Annuler ce rendez-vous"
                                                             onclick="return confirm('Êtes-vous sûr de vouloir annuler ce rendez-vous ?');"> <i class="fas fa-times"></i> </a>
                                                     </td>
@@ -231,9 +232,12 @@ include __DIR__ . '/../../templates/header.php';
                                         <?php endif; ?>
                                     </tbody>
                                 </table>
-                                <?php $upcomingUrlParams = ['filter' => $filter, 'pa_page' => $pastPage, 'up_page' => '{page}'];
-                                $upcomingUrlPattern = '?' . http_build_query($upcomingUrlParams) . '#appointments-section';
-                                echo renderPagination($upcomingPagination, $upcomingUrlPattern); ?>
+                                <?php
+                                // Removed pagination rendering as it depends on undefined variables
+                                // $upcomingUrlParams = ['filter' => $filter, 'pa_page' => $pastPage, 'up_page' => '{page}'];
+                                // $upcomingUrlPattern = '?' . http_build_query($upcomingUrlParams) . '#appointments-section';
+                                // echo renderPagination($upcomingPagination, $upcomingUrlPattern);
+                                ?>
                             </div>
                         <?php endif; ?>
 
@@ -287,9 +291,12 @@ include __DIR__ . '/../../templates/header.php';
                                         <?php endif; ?>
                                     </tbody>
                                 </table>
-                                <?php $pastUrlParams = ['filter' => $filter, 'up_page' => $upcomingPage, 'pa_page' => '{page}'];
-                                $pastUrlPattern = '?' . http_build_query($pastUrlParams) . '#appointments-section';
-                                echo renderPagination($pastPagination, $pastUrlPattern); ?>
+                                <?php
+                                // Removed pagination rendering as it depends on undefined variables
+                                // $pastUrlParams = ['filter' => $filter, 'up_page' => $upcomingPage, 'pa_page' => '{page}'];
+                                // $pastUrlPattern = '?' . http_build_query($pastUrlParams) . '#appointments-section';
+                                // echo renderPagination($pastPagination, $pastUrlPattern);
+                                ?>
                             </div>
                         <?php endif; ?>
                     </div>

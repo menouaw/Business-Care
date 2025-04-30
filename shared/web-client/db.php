@@ -130,10 +130,21 @@ function insertRow($table, $data)
 
     try {
         $stmt = executeQuery($sql, $data);
-
+        // Si on arrive ici sans exception (ou si executeQuery ne relance plus les warnings), c'est ok.
         return true;
-    } catch (Exception $e) {
-        error_log("Exception caught within insertRow: " . $e->getMessage() . " | SQL: $sql | Params: " . json_encode($data));
+    } catch (PDOException $e) { // Attrape spécifiquement PDOException
+        // Vérifie si c'est juste un avertissement (code commence par '01')
+        if (strpos((string)$e->getCode(), '01') === 0) {
+            error_log("PDO Warning caught within insertRow (considered success): " . $e->getMessage() . " | SQL: $sql | Params: " . json_encode($data));
+            // On considère que l'insertion a réussi malgré l'avertissement
+            return true;
+        } else {
+            // C'est une vraie erreur, on la loggue et on retourne false
+            error_log("PDO Error caught within insertRow: " . $e->getMessage() . " | SQL: $sql | Params: " . json_encode($data));
+            return false;
+        }
+    } catch (Exception $e) { // Attrape les autres exceptions (ex: nom de table invalide)
+        error_log("General Exception caught within insertRow: " . $e->getMessage() . " | SQL: $sql | Params: " . json_encode($data));
         return false;
     }
 }

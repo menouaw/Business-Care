@@ -415,3 +415,90 @@ CREATE TABLE support_tickets (
     INDEX idx_personne_id (personne_id)
 );
 
+CREATE TABLE communaute_membres (
+    communaute_id INT NOT NULL,          
+    personne_id INT NOT NULL,            
+    joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
+    PRIMARY KEY (communaute_id, personne_id), 
+    FOREIGN KEY (communaute_id) REFERENCES communautes(id) ON DELETE CASCADE, -- Lien vers la table communautes
+    FOREIGN KEY (personne_id) REFERENCES personnes(id) ON DELETE CASCADE    -- Lien vers la table personnes
+);
+
+CREATE TABLE factures_prestataires (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    prestataire_id INT NOT NULL,
+    numero_facture VARCHAR(50) UNIQUE,
+    date_facture DATE NOT NULL,
+    periode_debut DATE,
+    periode_fin DATE,
+    montant_total DECIMAL(10,2) NOT NULL,
+    statut ENUM('generation_attendue', 'impayee', 'payee') DEFAULT 'generation_attendue',
+    date_paiement DATETIME NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (prestataire_id) REFERENCES personnes(id) ON DELETE CASCADE,
+    INDEX idx_numero (numero_facture),
+    INDEX idx_periode (periode_debut, periode_fin),
+    INDEX idx_statut (statut),
+    INDEX idx_prestataire (prestataire_id)
+);
+
+CREATE TABLE facture_prestataire_lignes (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    facture_prestataire_id INT NOT NULL,
+    rendez_vous_id INT UNIQUE,
+    description TEXT NOT NULL,
+    montant DECIMAL(10,2) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (facture_prestataire_id) REFERENCES factures_prestataires(id) ON DELETE CASCADE,
+    FOREIGN KEY (rendez_vous_id) REFERENCES rendez_vous(id) ON DELETE SET NULL,
+    INDEX idx_facture_id (facture_prestataire_id)
+);
+
+CREATE TABLE habilitations (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    prestataire_id INT NOT NULL,
+    type ENUM('diplome', 'certification', 'agrement', 'autre') NOT NULL,
+    nom_document VARCHAR(255),
+    document_url VARCHAR(255),
+    organisme_emission VARCHAR(150),
+    date_obtention DATE,
+    date_expiration DATE,
+    statut ENUM('en_attente_validation', 'verifiee', 'rejetee', 'expiree') DEFAULT 'en_attente_validation',
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (prestataire_id) REFERENCES personnes(id) ON DELETE CASCADE,
+    INDEX idx_prestataire_id (prestataire_id),
+    INDEX idx_statut (statut),
+    INDEX idx_date_expiration (date_expiration)
+);
+
+CREATE TABLE prestataires_prestations (
+    prestataire_id INT NOT NULL,
+    prestation_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (prestataire_id, prestation_id),
+    FOREIGN KEY (prestataire_id) REFERENCES personnes(id) ON DELETE CASCADE,
+    FOREIGN KEY (prestation_id) REFERENCES prestations(id) ON DELETE CASCADE
+);
+
+CREATE TABLE prestataires_disponibilites (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    prestataire_id INT NOT NULL,
+    type ENUM('recurrente', 'specifique', 'indisponible') NOT NULL,
+    date_debut DATETIME,
+    date_fin DATETIME,
+    heure_debut TIME,
+    heure_fin TIME,
+    jour_semaine TINYINT,
+    recurrence_fin DATE NULL,
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (prestataire_id) REFERENCES personnes(id) ON DELETE CASCADE,
+    INDEX idx_prestataire_id (prestataire_id),
+    INDEX idx_type (type),
+    INDEX idx_date_debut (date_debut),
+    INDEX idx_jour_semaine (jour_semaine)
+);
