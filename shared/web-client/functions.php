@@ -439,7 +439,6 @@ function getStatusBadgeClass(?string $status): string
         'actif' => 'success',
         'expire' => 'secondary',
         'resilie' => 'danger',
-        'en_attente' => 'warning',
 
 
         'payee' => 'success',
