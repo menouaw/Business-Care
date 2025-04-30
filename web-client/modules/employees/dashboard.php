@@ -35,7 +35,7 @@ include __DIR__ . '/../../templates/header.php';
 
             <?php echo displayFlashMessages(); ?>
 
-            <!-- Cartes de statistiques -->
+            
             <div class="row mb-4">
                 <div class="col-md-6 mb-4">
                     <a href="<?= WEBCLIENT_URL ?>/modules/employees/appointments.php" class="text-decoration-none">
@@ -76,7 +76,6 @@ include __DIR__ . '/../../templates/header.php';
                 </div>
             </div>
 
-            <!-- Section pour la liste des prochains rendez-vous (affichée seulement si non vide) -->
             <?php if (!empty($upcomingAppointments)): ?>
                 <div class="row">
                     <div class="col-lg-12 mb-4">
@@ -92,7 +91,7 @@ include __DIR__ . '/../../templates/header.php';
                                                     <small> avec <?= htmlspecialchars($rdv['praticien_nom']) ?></small>
                                                 <?php endif; ?>
                                             </div>
-                                            <a href="<?= WEBCLIENT_URL ?>/modules/employees/appointments/view.php?id=<?= $rdv['id'] ?>" class="btn btn-sm btn-outline-info" title="Voir détails">
+                                            <a href="<?= WEBCLIENT_URL ?>/modules/employees/appointments.php" class="btn btn-sm btn-outline-info" title="Voir la liste des rendez-vous">
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                         </li>
@@ -100,7 +99,7 @@ include __DIR__ . '/../../templates/header.php';
                                 </ul>
                                 <?php if (count($upcomingAppointments) >= 5): ?>
                                     <div class="text-center mt-3">
-                                        <a href="<?= WEBCLIENT_URL ?>/modules/employees/appointments/index.php">Voir tous mes rendez-vous</a>
+                                        <a href="<?= WEBCLIENT_URL ?>/modules/employees/appointments.php">Voir tous mes rendez-vous</a>
                                     </div>
                                 <?php endif; ?>
                             </div>

@@ -186,8 +186,7 @@ include __DIR__ . '/../../templates/header.php';
                     <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                         <h6 class="m-0 font-weight-bold text-secondary">Mes Rendez-vous</h6>
                         <div class="btn-group btn-group-sm" role="group" aria-label="Filtres Rendez-vous">
-                            <?php //$baseFilterParams = ['up_page' => $upcomingPage, 'pa_page' => $pastPage]; // Keep commented or remove if not used elsewhere 
-                            ?>
+
                             <a href="?filter=upcoming#appointments-section" class="btn btn-outline-primary <?= $filter === 'upcoming' ? 'active' : '' ?>">À venir</a>
                             <a href="?filter=past#appointments-section" class="btn btn-outline-secondary <?= $filter === 'past' ? 'active' : '' ?>">Historique</a>
                             <a href="?filter=all#appointments-section" class="btn btn-outline-dark <?= $filter === 'all' ? 'active' : '' ?>">Tous</a>

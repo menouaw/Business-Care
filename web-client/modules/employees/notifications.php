@@ -1,24 +1,14 @@
 <?php
 require_once __DIR__ . '/../../includes/init.php';
-// Peut-être require_once d'un fichier de fonctions spécifique pour les notifications si besoin
 
-// ---- DEBUGGING START ----
-echo "<pre>DEBUG INFO (Notifications Page):\n";
-echo "ROLE_SALARIE Constant: " . (defined('ROLE_SALARIE') ? ROLE_SALARIE : 'NOT DEFINED') . "\n";
-if (isset($_SESSION['user_role_id'])) { // Assurez-vous que 'user_role_id' est la bonne clé de session
-    echo "Session Role ID ('user_role_id'): " . $_SESSION['user_role_id'] . "\n";
-    echo "Session User ID ('user_id'): " . ($_SESSION['user_id'] ?? 'Not Set') . "\n";
-    echo "Session User Name ('user_name'): " . ($_SESSION['user_name'] ?? 'Not Set') . "\n";
-} else {
-    echo "SESSION['user_role_id'] NOT SET!\n";
-}
-echo "</pre>";
-// die("Debugging - Arrêt avant requireRole"); // Décommentez pour arrêter ici
-// ---- DEBUGGING END ----
 
-// --- C'EST CETTE LIGNE QUI EST IMPORTANTE ---
+require_once __DIR__ . '/../../includes/page_functions/modules/employees/notifications.php';
+
+
+$viewData = setupEmployeeNotificationsPage();
+extract($viewData);
+
 requireRole(ROLE_SALARIE);
-// -----------------------------------------
 
 $salarie_id = $_SESSION['user_id'] ?? 0;
 if ($salarie_id <= 0) {
@@ -26,13 +16,6 @@ if ($salarie_id <= 0) {
     redirectTo(WEBCLIENT_URL . '/auth/login.php');
     exit;
 }
-
-$pageTitle = "Mes Notifications";
-
-// TODO: Récupérer les notifications pour $salarie_id (probablement avec pagination)
-// $notificationsData = getAllNotificationsForUser($salarie_id, $currentPage);
-// $notifications = $notificationsData['items'];
-// $pagination = $notificationsData; // Adapter selon le retour de la fonction
 
 include __DIR__ . '/../../templates/header.php';
 ?>
@@ -51,11 +34,46 @@ include __DIR__ . '/../../templates/header.php';
 
             <?php echo displayFlashMessages(); ?>
 
-            <?php // TODO: Afficher la liste des notifications ici 
+            <?php if (empty($notifications)):
+
             ?>
-            <p>Affichage de la liste complète des notifications...</p>
-            <?php // TODO: Afficher la pagination ici 
+                <div class="alert alert-info">Vous n'avez aucune notification pour le moment.</div>
+            <?php else:
+
             ?>
+                <div class="list-group">
+                    <?php foreach ($notifications as $notif):
+                        $itemClass = $notif['lu'] == 0 ? 'list-group-item-warning' : '';
+                        $link = !empty($notif['lien']) ? htmlspecialchars($notif['lien']) : '#';
+                        $isClickable = $link !== '#';
+                        $tag = $isClickable ? 'a' : 'div';
+                    ?>
+                        <<?= $tag ?> <?= $isClickable ? 'href="' . $link . '"' : '' ?>
+                            class="list-group-item list-group-item-action flex-column align-items-start mb-2 border rounded <?= $itemClass ?>">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1"><?= htmlspecialchars($notif['titre'] ?? 'Notification') ?></h5>
+                                <small class="text-muted">
+                                    <?php
+                                    echo htmlspecialchars(formatDate($notif['created_at']));
+                                    ?>
+                                </small>
+                            </div>
+                            <p class="mb-1 mt-2"><?= nl2br(htmlspecialchars($notif['message'] ?? '')) ?></p>
+                            <small class="text-muted"><?= $notif['lu'] == 0 ? 'Non lue' : 'Lue' ?></small>
+                        </<?= $tag ?>>
+                    <?php endforeach; ?>
+                </div>
+            <?php
+
+                if (!empty($pagination) && $pagination['totalPages'] > 1) {
+
+                    if (function_exists('renderPagination')) {
+                        echo renderPagination($pagination, WEBCLIENT_URL . '/modules/employees/notifications.php?page={page}');
+                    } else {
+                        echo "<p class='text-danger'>Erreur: Fonction renderPagination non trouvée.</p>";
+                    }
+                }
+            endif; ?>
 
         </main>
     </div>
