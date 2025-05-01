@@ -107,7 +107,7 @@ Application autonome générant des rapports d'activité périodiques au format 
 
 3. **Lancer les conteneurs Docker**
    ```bash
-   docker-compose up -d
+   docker compose up --build -d
    ```
 
 4. **Accéder à l'application**
@@ -151,7 +151,7 @@ Application autonome générant des rapports d'activité périodiques au format 
 5. **Compilation de l'application Java**
    ```bash
    cd java-app
-   mvn clean package
+   mvnd clean package
    ```
 
 ## Fonctionnalités Principales
