@@ -504,3 +504,19 @@ CREATE TABLE prestataires_disponibilites (
     INDEX idx_date_debut (date_debut),
     INDEX idx_jour_semaine (jour_semaine)
 );
+
+CREATE TABLE interets_utilisateurs (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nom VARCHAR(100) NOT NULL UNIQUE,
+    description TEXT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE personne_interets (
+    personne_id INT NOT NULL,
+    interet_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (personne_id, interet_id),
+    FOREIGN KEY (personne_id) REFERENCES personnes(id) ON DELETE CASCADE,
+    FOREIGN KEY (interet_id) REFERENCES interets_utilisateurs(id) ON DELETE CASCADE
+);

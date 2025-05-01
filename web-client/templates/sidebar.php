@@ -116,8 +116,8 @@
             </h6>
             <ul class="nav flex-column mb-3">
                 <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <i class="fas fa-user-cog fa-fw me-2"></i>Mon Profil
+                    <a class="nav-link <?= isActivePage('/modules/employees/settings.php') ? 'active' : '' ?>" href="<?= WEBCLIENT_URL ?>/modules/employees/settings.php">
+                        <i class="fas fa-user-cog fa-fw me-2"></i>Mon Profil & Paramètres
                     </a>
                 </li>
             </ul>
@@ -185,12 +185,6 @@
                 <span>Support & Compte</span>
             </h6>
             <ul class="nav flex-column mb-3">
-
-                <li class="nav-item border-bottom">
-                    <a class="nav-link d-inline-flex align-items-center" href="<?php echo WEBCLIENT_URL; ?>/modules/companies/settings.php">
-                        <i class="fas fa-cog fa-fw me-2"></i>Paramètres
-                    </a>
-                </li>
 
                 <li class="nav-item border-bottom">
                     <a class="nav-link d-inline-flex align-items-center" href="<?php echo WEBCLIENT_URL; ?>/logout.php">

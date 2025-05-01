@@ -180,11 +180,9 @@ function cancelEmployeeAppointment(int $salarie_id, int $rdv_id): bool
 
     $pdo->beginTransaction();
 
-    $rdv = fetchOne(
-        TABLE_APPOINTMENTS,
-        'id = :rdv_id AND personne_id = :salarie_id FOR UPDATE',
-        [':rdv_id' => $rdv_id, ':salarie_id' => $salarie_id]
-    );
+    $sqlGetRdv = "SELECT * FROM " . TABLE_APPOINTMENTS . " WHERE id = :rdv_id AND personne_id = :salarie_id FOR UPDATE";
+    $stmt = executeQuery($sqlGetRdv, [':rdv_id' => $rdv_id, ':salarie_id' => $salarie_id]);
+    $rdv = $stmt->fetch();
 
     if (!$rdv) {
         error_log("Cancel failed at: rdv not found or no permission for rdv_id: " . $rdv_id . " salarie_id: " . $salarie_id);
@@ -255,7 +253,9 @@ function handleAppointmentPostAndGetActions(int $salarie_id): void
 
         if ($rdv_id_to_cancel && $csrf_token_cancel && validateToken($csrf_token_cancel)) {
             $cancelSuccess = cancelEmployeeAppointment($salarie_id, $rdv_id_to_cancel);
-            if (!$cancelSuccess && empty($_SESSION['flash_messages'])) {
+            if ($cancelSuccess) {
+                flashMessage("Votre prestation a bien été annulée.", "success");
+            } elseif (empty($_SESSION['flash_messages'])) {
                 flashMessage("L'annulation du rendez-vous a échoué pour une raison inconnue.", "danger");
                 error_log("cancelEmployeeAppointment returned false without setting a flash message for RDV ID: " . $rdv_id_to_cancel);
             }
@@ -468,33 +468,34 @@ function setupAppointmentsPage(): array|false
 
     $filter = $_GET['filter'] ?? 'upcoming';
     $orderBy = 'rdv.date_rdv ASC';
-    if ($filter === 'past') {
+    if (in_array($filter, ['past', 'cancelled'])) {
         $orderBy = 'rdv.date_rdv DESC';
     }
     $allAppointments = getSalarieAppointments($salarie_id, $orderBy);
 
-    $upcomingAppointments = array_filter($allAppointments, function ($rdv) {
-        return strtotime($rdv['date_rdv']) >= time() && $rdv['statut'] !== 'annule';
-    });
-    $pastAppointments = array_filter($allAppointments, function ($rdv) {
-        return strtotime($rdv['date_rdv']) < time() || $rdv['statut'] === 'annule';
-    });
+    $upcomingAppointments = [];
+    $cancelledAppointments = [];
+    $pastCompletedAppointments = [];
 
-
-    if ($filter !== 'past') {
-        usort($pastAppointments, function ($a, $b) {
-            return strtotime($b['date_rdv']) <=> strtotime($a['date_rdv']);
-        });
+    foreach ($allAppointments as $rdv) {
+        if ($rdv['statut'] === 'annule') {
+            $cancelledAppointments[] = $rdv;
+        } elseif (strtotime($rdv['date_rdv']) >= time()) {
+            $upcomingAppointments[] = $rdv;
+        } else {
+            $pastCompletedAppointments[] = $rdv;
+        }
     }
-
 
     $appointmentsToShow = [];
     if ($filter === 'upcoming') {
         $appointmentsToShow = $upcomingAppointments;
+    } elseif ($filter === 'cancelled') {
+        $appointmentsToShow = $cancelledAppointments;
     } elseif ($filter === 'past') {
-        $appointmentsToShow = $pastAppointments;
+        $appointmentsToShow = $pastCompletedAppointments;
     } else {
-        $appointmentsToShow = $allAppointments;
+        $appointmentsToShow = null;
     }
 
 
@@ -510,7 +511,8 @@ function setupAppointmentsPage(): array|false
         'appointmentDetails' => $appointmentDetails,
         'filter' => $filter,
         'upcomingAppointments' => $upcomingAppointments,
-        'pastAppointments' => $pastAppointments,
+        'cancelledAppointments' => $cancelledAppointments,
+        'pastCompletedAppointments' => $pastCompletedAppointments,
         'appointmentsToShow' => $appointmentsToShow
     ];
 }

@@ -188,31 +188,35 @@ include __DIR__ . '/../../templates/header.php';
                         <div class="btn-group btn-group-sm" role="group" aria-label="Filtres Rendez-vous">
 
                             <a href="?filter=upcoming#appointments-section" class="btn btn-outline-primary <?= $filter === 'upcoming' ? 'active' : '' ?>">À venir</a>
+                            <a href="?filter=cancelled#appointments-section" class="btn btn-outline-warning <?= $filter === 'cancelled' ? 'active' : '' ?>">Annulés</a>
                             <a href="?filter=past#appointments-section" class="btn btn-outline-secondary <?= $filter === 'past' ? 'active' : '' ?>">Historique</a>
                             <a href="?filter=all#appointments-section" class="btn btn-outline-dark <?= $filter === 'all' ? 'active' : '' ?>">Tous</a>
                         </div>
                     </div>
                     <div class="card-body">
+                        <?php 
+                        ?>
+
+                        <?php 
+                        ?>
                         <?php if ($filter === 'all' || $filter === 'upcoming'): ?>
                             <h5 class="text-primary mb-3 mt-2">Rendez-vous à venir</h5>
-                            <div class="table-responsive mb-4">
-                                <table class="table table-striped table-sm">
-                                    <thead>
-                                        <tr>
-                                            <th>Date & Heure</th>
-                                            <th>Prestation</th>
-                                            <th>Praticien</th>
-                                            <th>Type</th>
-                                            <th>Statut</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php if (empty($upcomingAppointments)): ?>
+                            <?php if (empty($upcomingAppointments)): ?>
+                                <p class="text-muted">Aucun rendez-vous à venir.</p>
+                            <?php else: ?>
+                                <div class="table-responsive mb-4">
+                                    <table class="table table-striped table-sm">
+                                        <thead>
                                             <tr>
-                                                <td colspan="6" class="text-center text-muted">Aucun rendez-vous à venir.</td>
+                                                <th>Date & Heure</th>
+                                                <th>Prestation</th>
+                                                <th>Praticien</th>
+                                                <th>Type</th>
+                                                <th>Statut</th>
+                                                <th>Actions</th>
                                             </tr>
-                                        <?php else: ?>
+                                        </thead>
+                                        <tbody>
                                             <?php foreach ($upcomingAppointments as $rdv): ?>
                                                 <tr>
                                                     <td><?= htmlspecialchars(formatDate($rdv['date_rdv'], 'd/m/Y H:i')) ?></td>
@@ -228,76 +232,96 @@ include __DIR__ . '/../../templates/header.php';
                                                     </td>
                                                 </tr>
                                             <?php endforeach; ?>
-                                        <?php endif; ?>
-                                    </tbody>
-                                </table>
-                                <?php
-                                // Removed pagination rendering as it depends on undefined variables
-                                // $upcomingUrlParams = ['filter' => $filter, 'pa_page' => $pastPage, 'up_page' => '{page}'];
-                                // $upcomingUrlPattern = '?' . http_build_query($upcomingUrlParams) . '#appointments-section';
-                                // echo renderPagination($upcomingPagination, $upcomingUrlPattern);
-                                ?>
-                            </div>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            <?php endif; ?>
+                            <?php if ($filter === 'all') echo '<hr class="my-4">'; ?>
                         <?php endif; ?>
 
-                        <?php if ($filter === 'all' || $filter === 'past'): ?>
-                            <h5 class="text-secondary mb-3 mt-2">Historique des rendez-vous</h5>
-                            <div class="table-responsive">
-                                <table class="table table-striped table-sm table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>Date & Heure</th>
-                                            <th>Prestation</th>
-                                            <th>Praticien</th>
-                                            <th>Type</th>
-                                            <th>Statut</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php if (empty($pastOrCancelledAppointments)): ?>
+                        <?php 
+                        ?>
+                        <?php if ($filter === 'all' || $filter === 'cancelled'): ?>
+                            <h5 class="text-warning mb-3 mt-2">Rendez-vous Annulés</h5>
+                            <?php if (empty($cancelledAppointments)): ?>
+                                <p class="text-muted">Aucun rendez-vous annulé.</p>
+                            <?php else: ?>
+                                <div class="table-responsive mb-4">
+                                    <table class="table table-striped table-sm table-hover">
+                                        <thead>
                                             <tr>
-                                                <td colspan="6" class="text-center text-muted">Aucun historique de rendez-vous.</td>
+                                                <th>Date & Heure (Prévue)</th>
+                                                <th>Prestation</th>
+                                                <th>Praticien</th>
+                                                <th>Type</th>
+                                                <th>Statut</th>
+                                                <th>Actions</th>
                                             </tr>
-                                        <?php else: ?>
-                                            <?php foreach ($pastOrCancelledAppointments as $rdv): ?>
+                                        </thead>
+                                        <tbody>
+                                            <?php foreach ($cancelledAppointments as $rdv): ?>
                                                 <tr>
                                                     <td><?= htmlspecialchars(formatDate($rdv['date_rdv'], 'd/m/Y H:i')) ?></td>
                                                     <td><?= htmlspecialchars($rdv['prestation_nom'] ?? 'N/D') ?></td>
                                                     <td><?= htmlspecialchars($rdv['praticien_nom'] ?? '-') ?></td>
                                                     <td><?= htmlspecialchars(ucfirst($rdv['type_rdv'] ?? 'N/D')) ?></td>
-                                                    <td>
-                                                        <?php
-
-                                                        $displayStatusHist = $rdv['statut'];
-                                                        $displayBadgeClassHist = getStatusBadgeClass($rdv['statut']);
-                                                        if (in_array($rdv['statut'], ['planifie', 'confirme']) && strtotime($rdv['date_rdv']) <= time()) {
-                                                            $displayStatusHist = 'terminé';
-                                                            $displayBadgeClassHist = 'info';
-                                                        } elseif ($rdv['statut'] === 'annule' && strtotime($rdv['date_rdv']) <= time()) {
-                                                            $displayBadgeClassHist = 'secondary';
-                                                        }
-                                                        ?>
-                                                        <span class="badge bg-<?= $displayBadgeClassHist ?>">
-                                                            <?= htmlspecialchars(ucfirst($displayStatusHist)) ?>
-                                                        </span>
-                                                    </td>
+                                                    <td><span class="badge bg-secondary">Annulé</span></td>
                                                     <td>
                                                         <a href="?action=view&id=<?= $rdv['id'] ?>#appointments-section" class="btn btn-sm btn-outline-info me-1" title="Voir Détails"> <i class="fas fa-eye"></i> </a>
                                                     </td>
                                                 </tr>
                                             <?php endforeach; ?>
-                                        <?php endif; ?>
-                                    </tbody>
-                                </table>
-                                <?php
-                                // Removed pagination rendering as it depends on undefined variables
-                                // $pastUrlParams = ['filter' => $filter, 'up_page' => $upcomingPage, 'pa_page' => '{page}'];
-                                // $pastUrlPattern = '?' . http_build_query($pastUrlParams) . '#appointments-section';
-                                // echo renderPagination($pastPagination, $pastUrlPattern);
-                                ?>
-                            </div>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            <?php endif; ?>
+                            <?php if ($filter === 'all') echo '<hr class="my-4">'; ?>
                         <?php endif; ?>
+
+                        <?php 
+                        ?>
+                        <?php if ($filter === 'all' || $filter === 'past'): ?>
+                            <h5 class="text-secondary mb-3 mt-2">Historique (Terminés)</h5>
+                            <?php if (empty($pastCompletedAppointments)): ?>
+                                <p class="text-muted">Aucun historique de rendez-vous terminés.</p>
+                            <?php else: ?>
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-sm table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Date & Heure</th>
+                                                <th>Prestation</th>
+                                                <th>Praticien</th>
+                                                <th>Type</th>
+                                                <th>Statut</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php foreach ($pastCompletedAppointments as $rdv):
+                                                
+                                                $displayStatusHist = (in_array($rdv['statut'], ['planifie', 'confirme']) && strtotime($rdv['date_rdv']) <= time()) ? 'terminé' : $rdv['statut'];
+                                                $displayBadgeClassHist = getStatusBadgeClass($displayStatusHist);
+                                            ?>
+                                                <tr>
+                                                    <td><?= htmlspecialchars(formatDate($rdv['date_rdv'], 'd/m/Y H:i')) ?></td>
+                                                    <td><?= htmlspecialchars($rdv['prestation_nom'] ?? 'N/D') ?></td>
+                                                    <td><?= htmlspecialchars($rdv['praticien_nom'] ?? '-') ?></td>
+                                                    <td><?= htmlspecialchars(ucfirst($rdv['type_rdv'] ?? 'N/D')) ?></td>
+                                                    <td><span class="badge bg-<?= $displayBadgeClassHist ?>"><?= htmlspecialchars(ucfirst($displayStatusHist)) ?></span></td>
+                                                    <td>
+                                                        <a href="?action=view&id=<?= $rdv['id'] ?>#appointments-section" class="btn btn-sm btn-outline-info me-1" title="Voir Détails"> <i class="fas fa-eye"></i> </a>
+                                                        <?php 
+                                                        ?>
+                                                    </td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            <?php endif; ?>
+                        <?php endif; ?>
+
                     </div>
                 </div>
 

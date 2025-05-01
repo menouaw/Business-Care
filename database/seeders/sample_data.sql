@@ -32,6 +32,8 @@ TRUNCATE TABLE signalements;
 TRUNCATE TABLE services;
 TRUNCATE TABLE roles;
 TRUNCATE TABLE support_tickets;
+TRUNCATE TABLE interets_utilisateurs;
+TRUNCATE TABLE personne_interets;
 SET FOREIGN_KEY_CHECKS = 1;
 
 INSERT INTO roles (nom, description) VALUES
@@ -150,7 +152,7 @@ INSERT INTO conseils (titre, icone, resume, categorie, contenu) VALUES
 ('Hydratation : pourquoi et comment ?', '', 'L\'importance vitale de boire de l\'eau et des astuces simples pour y parvenir.', 'Nutrition',
 'Notre corps est compose majoritairement d\'eau (environ 60 %). Une bonne hydratation est vitale pour le fonctionnement de nos organes, notre niveau d\'energie, notre clarte mentale et la sante de notre peau.\n\nPourquoi est-ce si important ?\n- Transporte les nutriments essentiels aux cellules.\n- Elimine les toxines et les dechets metaboliques.\n- Regule la temperature corporelle (transpiration).\n- Lubrifie les articulations.\n- Aide a la concentration et previent les maux de tete.\n\nComment boire suffisamment ?\n- Gourde a portee de main : Gardez une bouteille ou une gourde d\'eau sur votre bureau et remplissez-la regulierement.\n- Boire avant la soif : N\'attendez pas d\'avoir soif, c\'est deja un signe de deshydratation legere.\n- Varier les plaisirs : Alternez avec des tisanes non sucrees, de l\'eau infusee (citron, menthe, concombre) pour changer.\n- Aliments riches en eau : Consommez des fruits et legumes comme le concombre, la pasteque, l\'orange, la salade.\n- Adapter selon les besoins : Augmentez votre apport en cas d\'activite physique, de forte chaleur ou de fievre.\nObjectif moyen : environ 1,5 a 2 L d\'eau pure par jour, a adapter individuellement.'),
 ('Communication non violente (CNV) : introduction', '', 'Les bases pour communiquer avec plus d\'empathie, de clarte et d\'efficacite.', 'Communication',
-'La Communication Non Violente (CNV) est une approche developpee par Marshall Rosenberg qui aide a creer des relations basees sur le respect mutuel et la cooperation.\n\nElle repose sur 4 etapes cles pour exprimer ce qui se passe en nous et entendre l\'autre avec empathie :\n1. Observation (O) : Decrire les faits concrets et specifiques que nous observons, sans jugement ni interpretation. (Ex. : "Quand je vois des dossiers non classes sur le bureau commun...")\n2. Sentiment (S) : Exprimer l\'emotion ressenti face a cette observation. Utiliser "Je me sens..." (Ex. : "...je me sens un peu frustre(e)...")\n3. Besoin (B) : Identifier le besoin fondamental (autonomie, respect, clarte, ordre, soutien...) qui est satisfait ou insatisfait et qui est a l\'origine du sentiment. (Ex. : "...car j\'ai besoin d\'ordre et de clarte dans notre espace de travail partage.")\n4. Demande (D) : Formuler une demande concrete, positive, realisable et negociable, visant a satisfaire le besoin identifie. Preferer une demande a une exigence. (Ex. : "Serais-tu d\'accord pour que nous prenions 5 minutes ensemble pour decider comment organiser cet espace ?")\n\nEcoute empathique : La CNV s\'applique aussi a l\'ecoute. Tentez de deviner les sentiments et besoins de l\'autre derriere ses mots, meme s\'ils sont exprimes maladroitement.\n\nPratiquer la CNV demande de l\'entrainement mais ameliore significativement la qualite des relations professionnelles et personnelles.');
+'La Communication Non Violente (CNV) est une approche developpee par Marshall Rosenberg qui aide a creer des relations basees sur le respect mutuel et la cooperation.\n\nElle repose sur 4 etapes cles pour exprimer ce qui se passe en nous et entendre l\'autre avec empathie :\n1. Observation (O) : Decrire les faits concrets et specifiques que nous observons, sans jugement ni interpretation. (Ex. : "Quand je vois des dossiers non classes sur le bureau commun...")\n2. Sentiment (S) : Exprimer l\'emotion ressenti face a cette observation. Utiliser "Je me sens..." (Ex. : "...je me sens un peu frustre(e)...")\n3. Besoin (B) : Identifier le besoin fondamental (autonomie, respect, clarte, ordre, soutien...) qui est satisfait ou insatisfait et qui est a l\'origine du sentiment. (Ex. : "...car j\'ai besoin d\'ordre et de clarte dans notre espace de travail partage.")\n4. Demande (D) : Formuler une demande concrete, positive, realisable et negociable, visant a satisfaire le besoin identifie. Preferer une demande a une exigence. (Ex. : "Serais-tu d\'accord pour que nous prenions 5 minutes ensemble pour decider comment organiser cet espace ?")\n\nEcoute empathique : La CNV s\'applique a l\'ecoute. Tentez de deviner les sentiments et besoins de l\'autre derriere ses mots, meme s\'ils sont exprimes maladroitement.\n\nPratiquer la CNV demande de l\'entrainement mais ameliore significativement la qualite des relations professionnelles et personnelles.');
 
 INSERT INTO utilisateur_interets_conseils (personne_id, categorie_conseil) VALUES
 (7, 'Stress'),            
@@ -175,3 +177,12 @@ INSERT INTO consultation_creneaux (prestation_id, praticien_id, start_time, end_
 (7, 3, NOW() + INTERVAL 2 DAY + INTERVAL '11:00' HOUR_MINUTE, NOW() + INTERVAL 2 DAY + INTERVAL '12:00' HOUR_MINUTE, FALSE, 1), 
 (7, 11, NOW() + INTERVAL 2 DAY + INTERVAL '12:15' HOUR_MINUTE, NOW() + INTERVAL 2 DAY + INTERVAL '13:15' HOUR_MINUTE, FALSE, 2), 
 (7, 3, NOW() + INTERVAL 4 DAY + INTERVAL '16:00' HOUR_MINUTE, NOW() + INTERVAL 4 DAY + INTERVAL '17:00' HOUR_MINUTE, FALSE, NULL); 
+
+INSERT INTO interets_utilisateurs (nom, description) VALUES
+('Santé Mentale', 'Conseils et ressources pour le bien-être psychologique'),
+('Nutrition', 'Informations et astuces pour une alimentation saine'),
+('Activité Physique', 'Motivation et idées pour rester actif'),
+('Gestion du Stress', 'Techniques pour gérer la pression et l\'anxiété'),
+('Sommeil', 'Améliorer la qualité et la quantité de sommeil'),
+('Communication', 'Développer des compétences relationnelles efficaces'),
+('Développement Personnel', 'Ressources pour la croissance et l\'épanouissement personnel');
