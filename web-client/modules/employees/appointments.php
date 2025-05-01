@@ -155,6 +155,11 @@ include __DIR__ . '/../../templates/header.php';
                             </a>
                             <?php if (empty($availableSlots)): ?>
                                 <div class="alert alert-info mt-2">Aucun créneau disponible pour cette prestation dans les prochaines semaines. Veuillez réessayer plus tard ou choisir une autre prestation.</div>
+                                <?php 
+                                ?>
+                                <a href="<?= WEBCLIENT_URL ?>/modules/employees/services.php" class="btn btn-primary mt-2">
+                                    <i class="fas fa-th-list me-1"></i> Retour au Catalogue des Services
+                                </a>
                             <?php else: ?>
                                 <form method="POST" action="<?= WEBCLIENT_URL ?>/modules/employees/appointments.php">
                                     <input type="hidden" name="service_id" value="<?= $service_id ?>">
@@ -194,10 +199,10 @@ include __DIR__ . '/../../templates/header.php';
                         </div>
                     </div>
                     <div class="card-body">
-                        <?php 
+                        <?php
                         ?>
 
-                        <?php 
+                        <?php
                         ?>
                         <?php if ($filter === 'all' || $filter === 'upcoming'): ?>
                             <h5 class="text-primary mb-3 mt-2">Rendez-vous à venir</h5>
@@ -239,7 +244,7 @@ include __DIR__ . '/../../templates/header.php';
                             <?php if ($filter === 'all') echo '<hr class="my-4">'; ?>
                         <?php endif; ?>
 
-                        <?php 
+                        <?php
                         ?>
                         <?php if ($filter === 'all' || $filter === 'cancelled'): ?>
                             <h5 class="text-warning mb-3 mt-2">Rendez-vous Annulés</h5>
@@ -278,7 +283,7 @@ include __DIR__ . '/../../templates/header.php';
                             <?php if ($filter === 'all') echo '<hr class="my-4">'; ?>
                         <?php endif; ?>
 
-                        <?php 
+                        <?php
                         ?>
                         <?php if ($filter === 'all' || $filter === 'past'): ?>
                             <h5 class="text-secondary mb-3 mt-2">Historique (Terminés)</h5>
@@ -299,7 +304,7 @@ include __DIR__ . '/../../templates/header.php';
                                         </thead>
                                         <tbody>
                                             <?php foreach ($pastCompletedAppointments as $rdv):
-                                                
+
                                                 $displayStatusHist = (in_array($rdv['statut'], ['planifie', 'confirme']) && strtotime($rdv['date_rdv']) <= time()) ? 'terminé' : $rdv['statut'];
                                                 $displayBadgeClassHist = getStatusBadgeClass($displayStatusHist);
                                             ?>
@@ -311,7 +316,7 @@ include __DIR__ . '/../../templates/header.php';
                                                     <td><span class="badge bg-<?= $displayBadgeClassHist ?>"><?= htmlspecialchars(ucfirst($displayStatusHist)) ?></span></td>
                                                     <td>
                                                         <a href="?action=view&id=<?= $rdv['id'] ?>#appointments-section" class="btn btn-sm btn-outline-info me-1" title="Voir Détails"> <i class="fas fa-eye"></i> </a>
-                                                        <?php 
+                                                        <?php
                                                         ?>
                                                     </td>
                                                 </tr>

@@ -500,39 +500,39 @@ function getStatusBadgeClass(?string $status): string
 function createNotification(int $user_id, string $title, string $message, string $type = 'info', ?string $link = null): int|false
 {
     if ($user_id <= 0 || empty($title) || empty($message)) {
-        // error_log("createNotification: Invalid parameters..."); // Log commenté
+        
         return false;
     }
 
     $data = [
-        'personne_id' => $user_id, // Assurez-vous que le nom de colonne est correct
+        'personne_id' => $user_id, 
         'titre' => $title,
         'message' => $message,
         'type' => in_array($type, ['info', 'success', 'warning', 'error', 'danger']) ? $type : 'info',
         'lien' => $link
-        // 'date_creation' => date('Y-m-d H:i:s') // SUPPRIMÉ
+        
     ];
 
-    // error_log("DEBUG createNotification: Attempting insert..."); // Log commenté
+    
 
     $success = insertRow('notifications', $data);
 
     if (!$success) {
-        error_log("Erreur lors de l'insertion de la notification pour user_id: $user_id"); // Log d'erreur gardé
+        error_log("Erreur lors de l'insertion de la notification pour user_id: $user_id"); 
         return false;
     } else {
         try {
             $pdo = getDbConnection();
             $lastId = $pdo->lastInsertId();
             if ($lastId) {
-                // error_log("DEBUG createNotification: Insert successful..."); // Log commenté
+                
                 return (int)$lastId;
             } else {
-                error_log("Erreur createNotification: insertRow succeeded but lastInsertId returned invalid value for user_id: $user_id."); // Log d'erreur gardé
+                error_log("Erreur createNotification: insertRow succeeded but lastInsertId returned invalid value for user_id: $user_id."); 
                 return false;
             }
         } catch (PDOException $e) {
-            error_log("Erreur PDO lors de la récupération de lastInsertId pour notification user_id: $user_id - " . $e->getMessage()); // Log d'erreur gardé
+            error_log("Erreur PDO lors de la récupération de lastInsertId pour notification user_id: $user_id - " . $e->getMessage()); 
             return false;
         }
     }

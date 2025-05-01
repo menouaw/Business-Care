@@ -18,7 +18,7 @@ require_once __DIR__ . '/../../../../includes/init.php';
  */
 function setupCommunitiesPage(): array
 {
-   
+
     requireRole(ROLE_SALARIE);
 
     $salarie_id = $_SESSION['user_id'] ?? 0;
@@ -28,12 +28,12 @@ function setupCommunitiesPage(): array
         exit;
     }
 
-   
+
     $view_id = filter_input(INPUT_GET, 'view_id', FILTER_VALIDATE_INT);
     $viewData = [];
 
     if ($view_id && $view_id > 0) {
-       
+
         $viewData['viewMode'] = 'detail';
         $viewData['pageTitle'] = "Détails de la Communauté";
 
@@ -45,76 +45,54 @@ function setupCommunitiesPage(): array
             exit;
         }
 
-       
+
         $viewData['pageTitle'] = htmlspecialchars($communityDetails['nom']);
 
-       
+
         $communityMessages = getCommunityMessages($view_id);
 
-       
+
         $isMember = isUserMemberOfCommunity($salarie_id, $view_id);
 
-       
+
         $memberCount = getCommunityMemberCount($view_id);
         $members = getCommunityMembers($view_id);
 
-       
+
         $viewData['community'] = $communityDetails;
         $viewData['messages'] = $communityMessages;
         $viewData['isMember'] = $isMember;
         $viewData['memberCount'] = $memberCount;
         $viewData['members'] = $members;
-       
+
         $viewData['csrf_token'] = generateToken();
     } else {
-       
+
         $viewData['viewMode'] = 'list';
         $viewData['pageTitle'] = "Communautés";
 
-       
-       
-
-       
         $currentPage = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT, ['options' => ['default' => 1, 'min_range' => 1]]);
-        $itemsPerPage = 10;
+        $itemsPerPage = 9;
 
-       
-        $communityData = getAllCommunities($currentPage, $itemsPerPage);
+        $communityData = paginateResults(
+            'communautes',
+            $currentPage,
+            $itemsPerPage,
+            '1=1',
+            'nom ASC'
+        );
 
-       
         $userMemberCommunityIds = getUserCommunityIds($salarie_id);
 
-       
         handleCommunityActions($salarie_id);
 
-       
         $viewData['communities'] = $communityData['items'] ?? [];
         $viewData['pagination'] = $communityData;
         $viewData['userMemberCommunityIds'] = $userMemberCommunityIds;
-       
         $viewData['csrf_token'] = generateToken();
     }
 
     return $viewData;
-}
-
-/**
- * Récupère toutes les communautés avec pagination.
- *
- * @param int $page Numéro de la page actuelle.
- * @param int $perPage Éléments par page.
- * @return array Résultats de la pagination incluant 'items', 'currentPage', 'totalPages', etc.
- */
-function getAllCommunities(int $page = 1, int $perPage = 10): array
-{
-   
-    return paginateResults(
-        'communautes',
-        $page,
-        $perPage,
-        '1=1',
-        'nom ASC'
-    );
 }
 
 /**
@@ -129,7 +107,7 @@ function getUserCommunityIds(int $salarie_id): array
 
     $sql = "SELECT communaute_id FROM communaute_membres WHERE personne_id = :salarie_id";
     $stmt = executeQuery($sql, [':salarie_id' => $salarie_id]);
-   
+
     return $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
 }
 
@@ -140,7 +118,7 @@ function getUserCommunityIds(int $salarie_id): array
  */
 function handleCommunityActions(int $salarie_id): void
 {
-   
+
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['action'] === 'post_message') {
         $community_id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
         $csrf_token = filter_input(INPUT_POST, 'csrf_token', FILTER_SANITIZE_SPECIAL_CHARS);
@@ -153,22 +131,22 @@ function handleCommunityActions(int $salarie_id): void
         } else {
             postCommunityMessage($salarie_id, $community_id, trim($message_content));
         }
-       
+
         redirectTo(WEBCLIENT_URL . '/modules/employees/communities.php?view_id=' . $community_id);
         exit;
     }
 
-   
+
     if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action'])) {
         $action = filter_input(INPUT_GET, 'action', FILTER_SANITIZE_SPECIAL_CHARS);
         $community_id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
         $message_id = filter_input(INPUT_GET, 'message_id', FILTER_VALIDATE_INT);
         $csrf_token = filter_input(INPUT_GET, 'csrf', FILTER_SANITIZE_SPECIAL_CHARS);
 
-       
+
         if (!$community_id || !$csrf_token || !validateToken($csrf_token)) {
             flashMessage("Action invalide ou jeton de sécurité expiré.", "danger");
-           
+
             $redirectUrl = $community_id
                 ? WEBCLIENT_URL . '/modules/employees/communities.php?view_id=' . $community_id
                 : WEBCLIENT_URL . '/modules/employees/communities.php';
@@ -180,11 +158,11 @@ function handleCommunityActions(int $salarie_id): void
 
         if ($action === 'join') {
             joinCommunity($salarie_id, $community_id);
-           
+
             $redirectUrl = WEBCLIENT_URL . '/modules/employees/communities.php?view_id=' . $community_id;
         } elseif ($action === 'leave') {
             leaveCommunity($salarie_id, $community_id);
-           
+
             $redirectUrl = WEBCLIENT_URL . '/modules/employees/communities.php';
         } elseif ($action === 'delete_message') {
             if (!$message_id) {
@@ -192,18 +170,18 @@ function handleCommunityActions(int $salarie_id): void
                 $redirectUrl = WEBCLIENT_URL . '/modules/employees/communities.php?view_id=' . $community_id;
             } else {
                 deleteCommunityMessage($salarie_id, $message_id);
-               
+
                 $redirectUrl = WEBCLIENT_URL . '/modules/employees/communities.php?view_id=' . $community_id;
             }
         } else {
             flashMessage("Action non reconnue.", "warning");
-           
+
             $redirectUrl = $community_id
                 ? WEBCLIENT_URL . '/modules/employees/communities.php?view_id=' . $community_id
                 : WEBCLIENT_URL . '/modules/employees/communities.php';
         }
 
-       
+
         redirectTo($redirectUrl);
         exit;
     }
@@ -220,14 +198,14 @@ function joinCommunity(int $salarie_id, int $community_id): bool
 {
     if ($salarie_id <= 0 || $community_id <= 0) return false;
 
-   
+
     $community = fetchOne('communautes', 'id = :id', [':id' => $community_id]);
     if (!$community) {
         flashMessage("La communauté que vous essayez de rejoindre n'existe pas.", "warning");
         return false;
     }
 
-   
+
     $existingMembership = fetchOne(
         'communaute_membres',
         'communaute_id = :comm_id AND personne_id = :pers_id',
@@ -239,17 +217,17 @@ function joinCommunity(int $salarie_id, int $community_id): bool
         return true;
     }
 
-   
+
     $data = [
         'communaute_id' => $community_id,
         'personne_id' => $salarie_id
-       
+
     ];
 
     if (insertRow('communaute_membres', $data)) {
         flashMessage("Vous avez rejoint la communauté \"" . htmlspecialchars($community['nom']) . "\" avec succès !", "success");
-       
-       
+
+
         return true;
     } else {
         flashMessage("Une erreur est survenue en essayant de rejoindre la communauté.", "danger");
@@ -286,8 +264,8 @@ function getCommunityMessages(int $community_id, int $page = 1, int $perPage = 2
         return [];
     }
 
-   
-   
+
+
     $sql = "SELECT
                 cm.id, cm.message, cm.created_at,
                 cm.personne_id,
@@ -296,7 +274,7 @@ function getCommunityMessages(int $community_id, int $page = 1, int $perPage = 2
             JOIN personnes p ON cm.personne_id = p.id
             WHERE cm.communaute_id = :community_id
             ORDER BY cm.created_at DESC";
-   
+
 
     return executeQuery($sql, [':community_id' => $community_id])->fetchAll();
 }
@@ -333,11 +311,11 @@ function leaveCommunity(int $salarie_id, int $community_id): bool
 {
     if ($salarie_id <= 0 || $community_id <= 0) return false;
 
-   
+
     $community = fetchOne('communautes', 'id = :id', [':id' => $community_id]);
     $communityName = $community ? $community['nom'] : 'inconnue';
 
-   
+
     $whereClause = 'communaute_id = :comm_id AND personne_id = :pers_id';
     $params = [':comm_id' => $community_id, ':pers_id' => $salarie_id];
 
@@ -347,7 +325,7 @@ function leaveCommunity(int $salarie_id, int $community_id): bool
         flashMessage("Vous avez quitté la communauté \"" . htmlspecialchars($communityName) . "\".", "info");
         return true;
     } else {
-       
+
         flashMessage("Impossible de quitter la communauté (peut-être n'étiez-vous plus membre ?).", "warning");
         return false;
     }
@@ -368,27 +346,27 @@ function postCommunityMessage(int $salarie_id, int $community_id, string $conten
         return false;
     }
 
-   
+
     if (!isUserMemberOfCommunity($salarie_id, $community_id)) {
         flashMessage("Vous devez être membre pour poster dans cette communauté.", "danger");
         return false;
     }
 
-   
+
     $data = [
         'communaute_id' => $community_id,
         'personne_id' => $salarie_id,
         'message' => $content
-       
+
     ];
 
-   
+
     $success = insertRow('communaute_messages', $data);
     if ($success) {
-       
+
         return true;
     } else {
-       
+
         flashMessage("Erreur lors de l'envoi du message (insertion échouée).", "danger");
         return false;
     }
@@ -408,7 +386,7 @@ function deleteCommunityMessage(int $salarie_id, int $message_id): bool
         return false;
     }
 
-   
+
     $message = fetchOne('communaute_messages', 'id = :id', [':id' => $message_id]);
 
     if (!$message) {
@@ -417,20 +395,20 @@ function deleteCommunityMessage(int $salarie_id, int $message_id): bool
     }
 
     if ($message['personne_id'] != $salarie_id) {
-       
-       
+
+
         flashMessage("Vous n'avez pas la permission de supprimer ce message.", "danger");
         return false;
     }
 
-   
+
     $deletedRows = deleteRow('communaute_messages', 'id = :id', [':id' => $message_id]);
 
     if ($deletedRows > 0) {
         flashMessage("Message supprimé avec succès.", "success");
         return true;
     } else {
-       
+
         flashMessage("Erreur lors de la suppression du message (aucune ligne affectée).", "warning");
         return false;
     }
@@ -447,7 +425,7 @@ function getCommunityMemberCount(int $community_id): int
     if ($community_id <= 0) {
         return 0;
     }
-   
+
     return countTableRows('communaute_membres', 'communaute_id = :id', [':id' => $community_id]);
 }
 

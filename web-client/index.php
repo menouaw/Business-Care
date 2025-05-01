@@ -12,6 +12,8 @@ if ($isLoggedIn) {
         $userRole = 'entreprise';
     } elseif (isSalarieUser()) {
         $userRole = 'salarie';
+        redirectTo(WEBCLIENT_URL . '/modules/employees/dashboard.php');
+        exit;
     } elseif (isPrestataireUser()) {
         $userRole = 'prestataire';
     }

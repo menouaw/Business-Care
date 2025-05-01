@@ -27,81 +27,33 @@ include __DIR__ . '/../../templates/header.php';
             <?php echo displayFlashMessages(); ?>
 
             <?php if ($viewMode === 'list'): ?>
-                <?php
-                ?>
-                <div class="card shadow mb-4">
-                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                        <h6 class="m-0 font-weight-bold text-primary">Liste des Communautés</h6>
-                        <a href="<?= WEBCLIENT_URL ?>/modules/employees/dashboard.php" class="btn btn-sm btn-outline-secondary">
-                            <i class="fas fa-arrow-left me-1"></i> Retour
-                        </a>
-                    </div>
-                    <div class="card-body">
-                        <?php if (empty($communities)): ?>
-                            <div class="alert alert-info">Aucune communauté n'a été créée pour le moment.</div>
-                        <?php else: ?>
-                            <div class="row">
-                                <?php
-
-                                foreach ($communities as $community):
-
-
-
-                                ?>
-                                    <div class="col-md-6 col-lg-4 mb-4">
-                                        <div class="card h-100 shadow-sm"> <?php
-                                                                            ?>
-                                            <?php
-
-                                            $viewUrl = WEBCLIENT_URL . "/modules/employees/communities.php?view_id=" . $community['id'];
-                                            ?>
-                                            <a href="<?= $viewUrl ?>" class="text-decoration-none text-dark stretched-link-pseudo">
-                                                <div class="card-body d-flex flex-column">
-                                                    <h5 class="card-title"><?= htmlspecialchars($community['nom']) ?></h5>
-                                                    <h6 class="card-subtitle mb-2 text-muted small">Type: <?= htmlspecialchars(ucfirst($community['type'] ?? 'N/D')) ?></h6>
-                                                    <p class="card-text flex-grow-1 small">
-                                                        <?= nl2br(htmlspecialchars($community['description'] ?? 'Pas de description.')) ?>
-                                                    </p>
-
-                                                </div>
-                                            </a>
-                                            <div class="card-footer bg-transparent border-top-0" style="z-index: 1; position: relative;">
-                                                <?php
-                                                $isMember = in_array($community['id'], $userMemberCommunityIds ?? []);
-                                                $csrfToken = $csrf_token ?? generateToken();
-
-                                                if ($isMember):
-                                                    $leaveUrl = WEBCLIENT_URL . "/modules/employees/communities.php?action=leave&id=" . $community['id'] . "&csrf=" . $csrfToken;
-                                                ?>
-                                                    <a href="<?= $leaveUrl ?>" class="btn btn-danger">Quitter la communauté</a>
-                                                <?php else:
-                                                    $joinUrl = WEBCLIENT_URL . "/modules/employees/communities.php?action=join&id=" . $community['id'] . "&csrf=" . $csrfToken;
-                                                ?>
-                                                    <a href="<?= $joinUrl ?>" class="btn btn-sm btn-outline-primary"
-                                                        onclick="return confirm('Voulez-vous vraiment rejoindre la communauté \'<?= htmlspecialchars(addslashes($community['nom'])) ?>\' ?');">
-                                                        <i class="fas fa-plus me-1"></i> Rejoindre
-                                                    </a>
-                                                <?php endif; ?>
-                                            </div>
-
-                                        </div>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                            <?php
-
-                            if (!empty($pagination) && $pagination['totalPages'] > 1) {
-
-                                echo renderPagination($pagination, WEBCLIENT_URL . '/modules/employees/communities.php?page={page}');
-                            }
-                            ?>
-                        <?php endif; ?>
-                    </div>
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+                    <h1 class="h2"><?= htmlspecialchars($pageTitle) ?></h1>
                 </div>
 
-            <?php elseif ($viewMode === 'detail' && isset($community)): ?>
-                <?php
+                <?php 
                 ?>
+                <?php if (empty($communities)): ?>
+                    <div class="alert alert-info mt-4">Aucune communauté n'est disponible pour le moment.</div>
+                <?php else: ?>
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4">
+                        <?php foreach ($communities as $community): ?>
+                            <div class="col">
+                                <?php renderCommunityCard($community, $userMemberCommunityIds, $csrf_token); ?>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+
+                    <?php 
+                    ?>
+                    <?php
+                    if (!empty($pagination) && $pagination['totalPages'] > 1) {
+                        echo renderPagination($pagination, WEBCLIENT_URL . '/modules/employees/communities.php?page={page}');
+                    }
+                    ?>
+                <?php endif; ?>
+
+            <?php elseif ($viewMode === 'detail' && isset($community)): ?>
                 <div class="card shadow mb-4">
                     <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                         <h6 class="m-0 font-weight-bold text-primary">
@@ -231,4 +183,59 @@ include __DIR__ . '/../../templates/header.php';
     </div>
 </div>
 
-<?php include __DIR__ . '/../../templates/footer.php'; ?>
+<?php
+
+function renderCommunityCard($community, $userMemberCommunityIds, $csrf_token, $colorTheme = 'secondary')
+{
+    $isMember = in_array($community['id'], $userMemberCommunityIds);
+    $communityUrl = WEBCLIENT_URL . '/modules/employees/communities.php?view_id=' . $community['id'];
+    $icon = getIconForCommunityType($community['type'] ?? 'default');
+?>
+    <div class="card h-100 shadow-sm community-card border-start border-4 border-<?= $colorTheme ?>">
+        <div class="card-body d-flex flex-column">
+            <h5 class="card-title"><i class="<?= $icon ?> me-2 text-<?= $colorTheme ?>"></i><?= htmlspecialchars($community['nom']) ?></h5>
+            <p class="card-text small text-muted flex-grow-1"><?= htmlspecialchars(truncateText($community['description'] ?? 'Pas de description.', 100)) ?></p>
+            <div class="d-flex justify-content-between align-items-center mt-auto">
+                <a href="<?= $communityUrl ?>" class="btn btn-sm btn-outline-primary">Voir</a>
+                <?php if ($isMember): ?>
+                    <a href="<?= WEBCLIENT_URL ?>/modules/employees/communities.php?action=leave&id=<?= $community['id'] ?>&csrf=<?= $csrf_token ?>" class="btn btn-sm btn-outline-danger">Quitter</a>
+                <?php else: ?>
+                    <a href="<?= WEBCLIENT_URL ?>/modules/employees/communities.php?action=join&id=<?= $community['id'] ?>&csrf=<?= $csrf_token ?>" class="btn btn-sm btn-success">Rejoindre</a>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+<?php
+}
+
+
+function getIconForCommunityType(string $type): string
+{
+    $typeLower = strtolower($type);
+    switch ($typeLower) {
+        case 'sport':
+            return 'fas fa-futbol';
+        case 'bien_etre':
+            return 'fas fa-spa';
+        case 'loisirs':
+            return 'fas fa-puzzle-piece';
+        case 'professionnel':
+            return 'fas fa-briefcase';
+        case 'culture':
+            return 'fas fa-landmark';
+        default:
+            return 'fas fa-users';
+    }
+}
+
+
+function truncateText(string $text, int $maxLength): string
+{
+    if (strlen($text) > $maxLength) {
+        return substr($text, 0, $maxLength) . '...';
+    }
+    return $text;
+}
+
+include __DIR__ . '/../../templates/footer.php';
+?>

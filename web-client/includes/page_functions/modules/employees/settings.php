@@ -265,40 +265,40 @@ function handleUpdateEmployeeInterests(int $user_id, array $formData): array
         return ['success' => false, 'message' => 'Utilisateur invalide.'];
     }
 
-    // Récupérer les IDs des intérêts cochés. S'il n'y en a pas, $selectedInterestIds sera un tableau vide.
+    
     $selectedInterestIds = $formData['interests'] ?? [];
 
-    // S'assurer que ce sont bien des entiers pour la sécurité
+    
     $selectedInterestIds = array_map('intval', $selectedInterestIds);
     $selectedInterestIds = array_filter($selectedInterestIds, function ($id) {
         return $id > 0;
-    }); // Garder seulement les IDs > 0
+    }); 
 
-    $pdo = getDbConnection(); // Obtenir la connexion PDO
+    $pdo = getDbConnection(); 
 
     try {
-        $pdo->beginTransaction(); // Commencer une transaction pour assurer la cohérence
+        $pdo->beginTransaction(); 
 
-        // 1. Supprimer les anciens intérêts de l'utilisateur
+        
         deleteRow('personne_interets', 'personne_id = :user_id', [':user_id' => $user_id], $pdo);
 
-        // 2. Insérer les nouveaux intérêts sélectionnés (s'il y en a)
+        
         if (!empty($selectedInterestIds)) {
             $insertSql = "INSERT INTO personne_interets (personne_id, interet_id) VALUES (:user_id, :interet_id)";
             $stmt = $pdo->prepare($insertSql);
 
             foreach ($selectedInterestIds as $interet_id) {
-                // Utiliser execute() à l'intérieur de la boucle est moins optimal que execute() avec un tableau
-                // mais plus simple à écrire ici et suffisant pour un nombre limité d'intérêts.
-                // On pourrait optimiser avec une seule requête INSERT ... VALUES (...), (...), ... si nécessaire.
+                
+                
+                
                 $stmt->execute([':user_id' => $user_id, ':interet_id' => $interet_id]);
             }
         }
 
-        $pdo->commit(); // Valider la transaction
+        $pdo->commit(); 
         return ['success' => true, 'message' => 'Vos intérêts ont été mis à jour.'];
     } catch (Exception $e) {
-        $pdo->rollBack(); // Annuler la transaction en cas d'erreur
+        $pdo->rollBack(); 
         error_log("Erreur MAJ intérêts employé ID {$user_id}: " . $e->getMessage());
         return ['success' => false, 'message' => 'Une erreur technique est survenue lors de la mise à jour de vos intérêts.'];
     }

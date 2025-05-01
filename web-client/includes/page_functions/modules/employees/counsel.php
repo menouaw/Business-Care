@@ -12,78 +12,107 @@ require_once __DIR__ . '/../../../init.php';
 function setupCounselPage()
 {
     requireRole(ROLE_SALARIE);
+    $userId = $_SESSION['user_id'] ?? 0;
 
     $pageTitle = "Conseils Bien-être";
     $categoriesPerPage = 2;
-    $conseilsGroupedForPage = [];
+    $preferredCounselsGroupedForPage = [];
+    $otherCounselsGroupedForPage = [];
     $pagination = [
         'currentPage' => 1,
         'totalPages' => 1,
-        'itemsPerPage' => $categoriesPerPage // Ici, items = catégories
+        'itemsPerPage' => $categoriesPerPage
     ];
 
     try {
-        // 1. Récupérer TOUS les conseils et les grouper par catégorie
-        $allConseilsGrouped = [];
+        
+        $userInterests = [];
+        if ($userId > 0) {
+            $userInterestsRaw = fetchAll('personne_interets', 'personne_id = :user_id', '', null, null, [':user_id' => $userId]);
+            $userInterestIds = array_column($userInterestsRaw, 'interet_id');
+            if (!empty($userInterestIds)) {
+                $placeholders = implode(',', array_fill(0, count($userInterestIds), '?'));
+                $sqlInterests = "SELECT nom FROM interets_utilisateurs WHERE id IN ($placeholders)";
+                $userInterestsData = executeQuery($sqlInterests, $userInterestIds)->fetchAll(PDO::FETCH_COLUMN);
+                $userInterests = $userInterestsData ?: [];
+            }
+        }
+        
+
+        
         $allConseils = fetchAll(
             'conseils',
             '',
-            'categorie ASC, titre ASC' // Trier d'abord par catégorie
+            'categorie ASC, titre ASC'
         );
 
+        
+        $allPreferredCounselsGrouped = [];
+        $allOtherCounselsGrouped = [];
         foreach ($allConseils as $conseil) {
             $category = $conseil['categorie'] ?? 'Autres';
-            if (!isset($allConseilsGrouped[$category])) {
-                $allConseilsGrouped[$category] = [];
-            }
-            $allConseilsGrouped[$category][] = $conseil;
-        }
+            $isPreferred = in_array($category, $userInterests);
 
-        // 2. Pagination basée sur les catégories
-        $categoryNames = array_keys($allConseilsGrouped);
-        $totalCategories = count($categoryNames);
+            if ($isPreferred) {
+                if (!isset($allPreferredCounselsGrouped[$category])) {
+                    $allPreferredCounselsGrouped[$category] = [];
+                }
+                $allPreferredCounselsGrouped[$category][] = $conseil;
+            } else {
+                if (!isset($allOtherCounselsGrouped[$category])) {
+                    $allOtherCounselsGrouped[$category] = [];
+                }
+                $allOtherCounselsGrouped[$category][] = $conseil;
+            }
+        }
+        
+
+        
+        
+        $allCategories = array_unique(array_merge(array_keys($allPreferredCounselsGrouped), array_keys($allOtherCounselsGrouped)));
+        sort($allCategories); 
+        $totalCategories = count($allCategories);
 
         if ($totalCategories > 0) {
             $totalPages = ceil($totalCategories / $categoriesPerPage);
             $pagination['totalPages'] = $totalPages;
 
-            // Récupérer la page actuelle
             $currentPage = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT, [
                 'options' => ['default' => 1, 'min_range' => 1]
             ]);
-            $currentPage = min($currentPage, $totalPages); // S'assurer qu'on ne dépasse pas
+            $currentPage = min($currentPage, $totalPages);
             $pagination['currentPage'] = $currentPage;
 
-            // Calculer l'offset pour les catégories
             $categoryOffset = ($currentPage - 1) * $categoriesPerPage;
+            $categoriesToShow = array_slice($allCategories, $categoryOffset, $categoriesPerPage);
 
-            // Sélectionner les noms de catégories pour la page actuelle
-            $categoriesToShow = array_slice($categoryNames, $categoryOffset, $categoriesPerPage);
-
-            // 3. Filtrer les conseils groupés pour ne garder que ceux des catégories sélectionnées
+            
             foreach ($categoriesToShow as $catName) {
-                if (isset($allConseilsGrouped[$catName])) {
-                    $conseilsGroupedForPage[$catName] = $allConseilsGrouped[$catName];
+                if (isset($allPreferredCounselsGrouped[$catName])) {
+                    $preferredCounselsGroupedForPage[$catName] = $allPreferredCounselsGrouped[$catName];
+                }
+                if (isset($allOtherCounselsGrouped[$catName])) {
+                    $otherCounselsGroupedForPage[$catName] = $allOtherCounselsGrouped[$catName];
                 }
             }
 
-            // Gérer le cas où on arrive sur une page vide (si des cat. ont été supprimées)
-            if (empty($conseilsGroupedForPage) && $currentPage > 1) {
+            if (empty($preferredCounselsGroupedForPage) && empty($otherCounselsGroupedForPage) && $currentPage > 1) {
                 redirectTo(WEBCLIENT_URL . '/modules/employees/counsel.php?page=1');
             }
-        } else {
-            flashMessage("Aucun conseil bien-être disponible pour le moment.", "info");
         }
+        
+
     } catch (Exception $e) {
         error_log("Erreur lors de la récupération ou pagination des conseils par catégorie: " . $e->getMessage());
         flashMessage("Impossible de charger les conseils bien-être.", "danger");
-        $conseilsGroupedForPage = [];
-        // Garder pagination par défaut
+        $preferredCounselsGroupedForPage = [];
+        $otherCounselsGroupedForPage = [];
     }
 
     return [
         'pageTitle' => $pageTitle,
-        'conseilsGrouped' => $conseilsGroupedForPage, // Conseils groupés POUR la page actuelle
+        'preferredCounselsGrouped' => $preferredCounselsGroupedForPage, 
+        'otherCounselsGrouped' => $otherCounselsGroupedForPage,       
         'pagination' => $pagination
     ];
 }

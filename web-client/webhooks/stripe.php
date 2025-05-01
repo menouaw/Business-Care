@@ -98,14 +98,14 @@ switch ($event->type) {
         $processing_success = false;
 
 
-        // Check if it's a donation (metadata check)
+        
         if (isset($session->metadata->donation_user_id)) {
-            // >>> ERROR HERE: This function was commented out as per previous request <<<
-            // $processing_success = handleDonationCheckoutCompleted($session);
+            
+            
             error_log("[WARNING] Webhook: checkout.session.completed pour un don reçu, mais la logique webhook est désactivée (utilisation de la méthode par session). Événement ignoré.");
-            $processing_success = true; // Consider it "handled" by ignoring it, as intended by the session method.
+            $processing_success = true; 
 
-            // Check if it's an invoice payment
+            
         } elseif (isset($session->metadata->invoice_id)) {
 
             $processing_success = handleCheckoutSessionCompleted($session);

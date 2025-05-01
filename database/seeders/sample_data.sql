@@ -179,7 +179,7 @@ INSERT INTO consultation_creneaux (prestation_id, praticien_id, start_time, end_
 (7, 3, NOW() + INTERVAL 4 DAY + INTERVAL '16:00' HOUR_MINUTE, NOW() + INTERVAL 4 DAY + INTERVAL '17:00' HOUR_MINUTE, FALSE, NULL); 
 
 INSERT INTO interets_utilisateurs (nom, description) VALUES
-('Santé Mentale', 'Conseils et ressources pour le bien-être psychologique'),
+('Sante Mentale', 'Conseils et ressources pour le bien-être psychologique'),
 ('Nutrition', 'Informations et astuces pour une alimentation saine'),
 ('Activité Physique', 'Motivation et idées pour rester actif'),
 ('Gestion du Stress', 'Techniques pour gérer la pression et l\'anxiété'),

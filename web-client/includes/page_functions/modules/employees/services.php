@@ -2,11 +2,20 @@
 
 require_once __DIR__ . '/../../../init.php';
 
+    function truncateText(string $text, int $maxLength): string
+    {
+        if (strlen($text) > $maxLength) {
+            return substr($text, 0, $maxLength) . '...';
+        }
+        return $text;
+    }
+
+
 /**
  * Prépare les données nécessaires pour la page du catalogue des services pour les employés.
  * Récupère la liste de toutes les prestations avec pagination.
  *
- * @return array Données pour la vue (titre, prestations, pagination).
+ * @return array Données pour la vue (titre, prestations préférées, autres prestations).
  */
 function setupEmployeeServicesPage()
 {
@@ -15,44 +24,64 @@ function setupEmployeeServicesPage()
     $salarie_id = $_SESSION['user_id'] ?? 0;
 
     $pageTitle = "Catalogue des Services";
+    $preferredPrestations = [];
+    $otherPrestations = [];
+    $userInterests = [];
 
-    $itemsPerPage = 6;
-    $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-    if ($currentPage < 1) {
-        $currentPage = 1;
+
+
+    if ($salarie_id > 0) {
+        $userInterestsRaw = fetchAll('personne_interets', 'personne_id = :user_id', '', null, null, [':user_id' => $salarie_id]);
+        $userInterestIds = array_column($userInterestsRaw, 'interet_id');
+        if (!empty($userInterestIds)) {
+            $placeholders = implode(',', array_fill(0, count($userInterestIds), '?'));
+            $sqlInterests = "SELECT nom FROM interets_utilisateurs WHERE id IN ($placeholders)";
+            $userInterestsData = executeQuery($sqlInterests, $userInterestIds)->fetchAll(PDO::FETCH_COLUMN);
+            $userInterests = $userInterestsData ?: [];
+        }
     }
-    $offset = ($currentPage - 1) * $itemsPerPage;
+    $userInterestsLower = array_map('strtolower', $userInterests);
 
-    $prestations = [];
-    $pagination = [];
-    $totalItems = 0;
 
-    $totalItems = countTableRows('prestations');
 
-    if ($totalItems > 0) {
-        $prestations = fetchAll(
-            'prestations',
-            '',
-            'categorie ASC, nom ASC',
-            $itemsPerPage,
-            $offset,
-            []
-        );
-    } else {
-        $prestations = [];
+    $allPrestations = fetchAll('prestations', '', 'categorie ASC, nom ASC');
+
+
+    if (!empty($allPrestations)) {
+        foreach ($allPrestations as $prestation) {
+            $categoryLower = strtolower($prestation['categorie'] ?? 'autres');
+            $isPreferred = false;
+
+            if (in_array($categoryLower, $userInterestsLower)) {
+                $isPreferred = true;
+            } else {
+
+                if ((in_array('sante mentale', $userInterestsLower) || in_array('bien-etre mental', $userInterestsLower)) &&
+                    (str_contains($categoryLower, 'mentale') || str_contains($categoryLower, 'stress') || str_contains($categoryLower, 'sophrologie') || str_contains($categoryLower, 'meditation'))
+                ) {
+                    $isPreferred = true;
+                }
+
+                if ((in_array('activité physique', $userInterestsLower) || in_array('bien-etre physique', $userInterestsLower)) &&
+                    (str_contains($categoryLower, 'physique') || str_contains($categoryLower, 'sport') || str_contains($categoryLower, 'yoga') || str_contains($categoryLower, 'massage'))
+                ) {
+                    $isPreferred = true;
+                }
+            }
+
+            if ($isPreferred) {
+                $preferredPrestations[] = $prestation;
+            } else {
+                $otherPrestations[] = $prestation;
+            }
+        }
     }
 
-    $totalPages = $itemsPerPage > 0 ? ceil($totalItems / $itemsPerPage) : 0;
-    $pagination = [
-        'currentPage' => $currentPage,
-        'totalPages' => $totalPages,
-        'totalItems' => $totalItems,
-        'itemsPerPage' => $itemsPerPage
-    ];
+
 
     return [
         'pageTitle' => $pageTitle,
-        'prestations' => $prestations,
-        'pagination' => $pagination
+        'preferredPrestations' => $preferredPrestations,
+        'otherPrestations' => $otherPrestations
     ];
 }

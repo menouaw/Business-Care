@@ -3,8 +3,6 @@ require_once __DIR__ . '/../../includes/init.php';
 require_once __DIR__ . '/../../includes/page_functions/modules/companies/contact.php';
 
 
-requireRole(ROLE_ENTREPRISE);
-
 $entreprise_id = $_SESSION['user_entreprise'] ?? null;
 $personne_id = $_SESSION['user_id'] ?? null;
 $user_name = $_SESSION['user_name'] ?? 'Utilisateur';
