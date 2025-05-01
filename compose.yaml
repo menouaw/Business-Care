@@ -44,6 +44,7 @@ services:
       MYSQL_BACKUP_PASSWORD: ${MYSQL_BACKUP_PASSWORD}
     volumes:
       - db_data:/var/lib/mysql
+      
       - ./database/schemas/business_care.sql:/docker-entrypoint-initdb.d/1_schema.sql:ro
       - ./database/schemas/views.sql:/docker-entrypoint-initdb.d/2_views.sql:ro
       - ./database/schemas/triggers.sql:/docker-entrypoint-initdb.d/3_triggers.sql:ro
@@ -75,9 +76,7 @@ services:
       db:
         condition: service_healthy
     environment:
-      # URL de l'API pour récupérer les données (pointe vers le service Nginx)
       API_BASE_URL: http://nginx/api/admin
-      # Identifiants pour l'authentification à l'API
       API_USER: ${API_USER:-admin@businesscare.fr}
       API_PASSWORD: ${API_PASSWORD:-admin123}
 
