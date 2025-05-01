@@ -31,4 +31,10 @@ RUN chmod +rx /app/app.jar
 COPY --chmod=0755 ./docker-entrypoint.sh /docker-entrypoint.sh
 
 
+RUN sed -i 's/\r$//' /docker-entrypoint.sh
+
+
+COPY crontab /etc/crontabs/root
+
+
 ENTRYPOINT ["/docker-entrypoint.sh"] 
