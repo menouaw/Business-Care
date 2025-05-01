@@ -3,7 +3,6 @@
 USE business_care;
 
 SET FOREIGN_KEY_CHECKS = 0;
-TRUNCATE TABLE utilisateur_interets_conseils;
 TRUNCATE TABLE consultation_creneaux;
 TRUNCATE TABLE evenement_inscriptions;
 TRUNCATE TABLE communaute_messages;
@@ -154,16 +153,6 @@ INSERT INTO conseils (titre, icone, resume, categorie, contenu) VALUES
 ('Communication non violente (CNV) : introduction', '', 'Les bases pour communiquer avec plus d\'empathie, de clarte et d\'efficacite.', 'Communication',
 'La Communication Non Violente (CNV) est une approche developpee par Marshall Rosenberg qui aide a creer des relations basees sur le respect mutuel et la cooperation.\n\nElle repose sur 4 etapes cles pour exprimer ce qui se passe en nous et entendre l\'autre avec empathie :\n1. Observation (O) : Decrire les faits concrets et specifiques que nous observons, sans jugement ni interpretation. (Ex. : "Quand je vois des dossiers non classes sur le bureau commun...")\n2. Sentiment (S) : Exprimer l\'emotion ressenti face a cette observation. Utiliser "Je me sens..." (Ex. : "...je me sens un peu frustre(e)...")\n3. Besoin (B) : Identifier le besoin fondamental (autonomie, respect, clarte, ordre, soutien...) qui est satisfait ou insatisfait et qui est a l\'origine du sentiment. (Ex. : "...car j\'ai besoin d\'ordre et de clarte dans notre espace de travail partage.")\n4. Demande (D) : Formuler une demande concrete, positive, realisable et negociable, visant a satisfaire le besoin identifie. Preferer une demande a une exigence. (Ex. : "Serais-tu d\'accord pour que nous prenions 5 minutes ensemble pour decider comment organiser cet espace ?")\n\nEcoute empathique : La CNV s\'applique a l\'ecoute. Tentez de deviner les sentiments et besoins de l\'autre derriere ses mots, meme s\'ils sont exprimes maladroitement.\n\nPratiquer la CNV demande de l\'entrainement mais ameliore significativement la qualite des relations professionnelles et personnelles.');
 
-INSERT INTO utilisateur_interets_conseils (personne_id, categorie_conseil) VALUES
-(7, 'Stress'),            
-(7, 'Activité Physique'),  
-(7, 'Nutrition'),         
-(5, 'Stress'),            
-(5, 'Sommeil'),           
-(5, 'Nutrition'),         
-(6, 'Activité Physique'),  
-(6, 'Stress');            
-
 INSERT INTO consultation_creneaux (prestation_id, praticien_id, start_time, end_time, is_booked, site_id) VALUES
 (1, 3, NOW() + INTERVAL 2 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 2 DAY + INTERVAL '09:45' HOUR_MINUTE, FALSE, 1), 
 (1, 3, NOW() + INTERVAL 2 DAY + INTERVAL '10:00' HOUR_MINUTE, NOW() + INTERVAL 2 DAY + INTERVAL '10:45' HOUR_MINUTE, FALSE, 1), 
@@ -186,3 +175,10 @@ INSERT INTO interets_utilisateurs (nom, description) VALUES
 ('Sommeil', 'Améliorer la qualité et la quantité de sommeil'),
 ('Communication', 'Développer des compétences relationnelles efficaces'),
 ('Développement Personnel', 'Ressources pour la croissance et l\'épanouissement personnel');
+
+
+INSERT INTO associations (nom) VALUES
+('Coeurs Solidaires'),
+('Planète Verte'),
+('Santé Pour Tous');
+
