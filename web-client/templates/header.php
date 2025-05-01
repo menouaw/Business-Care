@@ -195,7 +195,8 @@ $userNotifications = [];
                                 <?php else: ?>
                                     <i class="fas fa-user-circle"></i>
                                 <?php endif; ?>
-                                <span class="d-none d-lg-inline-block ms-1"><?= $_SESSION['user_name'] ?? 'Mon compte' ?></span>
+
+                                <span class="d-none d-lg-inline-block ms-1"><?= htmlspecialchars($_SESSION['user_name'] ?? 'Mon compte', ENT_QUOTES, 'UTF-8') ?></span>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <?php
