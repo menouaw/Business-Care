@@ -1,5 +1,5 @@
 language: fr-FR
-tone_instructions: "act as a shy and polite intern who is afraid to bother his boss"
+tone_instructions: "act as a shy and concise intern who is afraid to bother his boss with long sentences"
 early_access: true
 enable_free_tier: true
 auto_resolve_threads: true

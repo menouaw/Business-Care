@@ -2,6 +2,7 @@ package com.businesscare.reporting.client;
 
 import com.businesscare.reporting.exception.ApiException;
 import com.businesscare.reporting.model.*;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
@@ -9,8 +10,13 @@ import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
@@ -18,27 +24,60 @@ import java.util.Map;
 
 /**
  * Client pour interagir avec l'API Admin de Business Care.
+ * Implémente AutoCloseable pour gérer la fermeture du client HTTP.
  */
-public class ApiClient {
+public class ApiClient implements AutoCloseable {
+
+    private static final Logger logger = LoggerFactory.getLogger(ApiClient.class);
+
+    
+    private static final String AUTH_ENDPOINT = "auth.php";
+    private static final String COMPANIES_ENDPOINT = "companies.php";
+    private static final String CONTRACTS_ENDPOINT = "contracts.php";
+    private static final String QUOTES_ENDPOINT = "quotes.php";
+    private static final String INVOICES_ENDPOINT = "invoices.php";
+    private static final String EVENTS_ENDPOINT = "events.php";
+    private static final String PRESTATIONS_ENDPOINT = "services.php"; 
+
+    private static final String AUTH_HEADER = "Authorization";
+    private static final String BEARER_PREFIX = "Bearer ";
+
+    private static final String ERR_NOT_AUTHENTICATED = "Non authentifié. Appeler login() d'abord.";
+    private static final String ERR_AUTH_FAILED = "Échec de l'authentification API : ";
+    private static final String ERR_INVALID_RESPONSE = "Format de réponse invalide";
+    private static final String ERR_HTTP_ERROR = "Erreur HTTP : ";
+    private static final String ERR_FETCH_FAILED = "Échec de la récupération des ";
 
     private final String baseUrl;
     private final ObjectMapper objectMapper;
-    private String authToken = null;
     private final CloseableHttpClient httpClient;
+    private String authToken = null;
 
+    /**
+     * Constructeur principal.
+     * @param baseUrl URL de base de l'API Admin.
+     */
     public ApiClient(String baseUrl) {
-        this.baseUrl = baseUrl.endsWith("/") ? baseUrl : baseUrl + "/";
-        this.objectMapper = new ObjectMapper();
-        this.objectMapper.registerModule(new JavaTimeModule());
-        this.httpClient = HttpClients.createDefault();
+        this(baseUrl, HttpClients.createDefault(), createDefaultObjectMapper());
     }
 
-    
+    /**
+     * Constructeur pour les tests, permettant l'injection de dépendances.
+     * @param baseUrl URL de base.
+     * @param httpClient Client HTTP à utiliser.
+     * @param objectMapper Mapper JSON à utiliser.
+     */
     public ApiClient(String baseUrl, CloseableHttpClient httpClient, ObjectMapper objectMapper) {
-        this.baseUrl = baseUrl.endsWith("/") ? baseUrl : baseUrl + "/";
+        this.baseUrl = baseUrl.endsWith("/") ? baseUrl : baseUrl + "/"; 
         this.httpClient = httpClient;
         this.objectMapper = objectMapper;
-        this.objectMapper.registerModule(new JavaTimeModule());
+    }
+
+    private static ObjectMapper createDefaultObjectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        
+        return mapper;
     }
 
     /**
@@ -46,273 +85,140 @@ public class ApiClient {
      *
      * @param email    Email de l'administrateur.
      * @param password Mot de passe de l'administrateur.
-     * @return AuthResponse contenant le token et les informations utilisateur, ou null en cas d'échec.
-     * @throws IOException          Si la communication échoue.
-     * @throws ApiException Si l'API retourne une erreur.
+     * @return AuthResponse contenant le token et les informations utilisateur.
+     * @throws ApiException Si l'authentification échoue ou en cas d'erreur de communication.
      */
-    public AuthResponse login(String email, String password) throws IOException, ApiException {
-        HttpPost post = new HttpPost(baseUrl + "auth.php");
+    public AuthResponse login(String email, String password) throws ApiException {
+        HttpPost post = new HttpPost(baseUrl + AUTH_ENDPOINT);
         Map<String, String> credentials = Map.of("email", email, "password", password);
-        String jsonBody = objectMapper.writeValueAsString(credentials);
-        post.setEntity(new StringEntity(jsonBody, ContentType.APPLICATION_JSON));
+        try {
+            String jsonBody = objectMapper.writeValueAsString(credentials);
+            post.setEntity(new StringEntity(jsonBody, ContentType.APPLICATION_JSON));
 
-        return httpClient.execute(post, response -> {
-            int statusCode = response.getCode();
-            String responseBody = EntityUtils.toString(response.getEntity());
+            return httpClient.execute(post, (HttpClientResponseHandler<AuthResponse>) response -> {
+                int statusCode = response.getCode();
+                HttpEntity entity = response.getEntity();
+                String responseBody = (entity != null) ? EntityUtils.toString(entity) : null;
 
-            if (statusCode >= 200 && statusCode < 300) {
-                AuthResponse authResponse = objectMapper.readValue(responseBody, AuthResponse.class);
-                if (authResponse != null && !authResponse.isError() && authResponse.getToken() != null) {
-                    this.authToken = authResponse.getToken();
-                    return authResponse;
+                if (statusCode >= HttpStatus.SC_OK && statusCode < HttpStatus.SC_MULTIPLE_CHOICES) {
+                    if (responseBody == null) {
+                        throw new ApiException(ERR_AUTH_FAILED + ERR_INVALID_RESPONSE + " (corps vide)");
+                    }
+                    AuthResponse authResponse = objectMapper.readValue(responseBody, AuthResponse.class);
+                    if (authResponse != null && !authResponse.isError() && authResponse.getToken() != null) {
+                        this.authToken = authResponse.getToken();
+                        logger.info("Authentification réussie pour l'utilisateur: {}", authResponse.getUser() != null ? authResponse.getUser().getEmail() : "N/A");
+                        return authResponse;
+                    } else {
+                        String apiMessage = (authResponse != null && authResponse.getMessage() != null) ? authResponse.getMessage() : ERR_INVALID_RESPONSE;
+                        throw new ApiException(ERR_AUTH_FAILED + apiMessage);
+                    }
                 } else {
-                    
-                    throw new ApiException("API authentication failed: " + (authResponse != null ? authResponse.getMessage() : "Invalid response format"));
+                    handleApiError(statusCode, responseBody, ERR_AUTH_FAILED);
+                    return null; 
                 }
-            } else {
-                
-                ErrorResponse errorResponse = null;
-                try {
-                     errorResponse = objectMapper.readValue(responseBody, ErrorResponse.class);
-                } catch (Exception ignored) { }
-                String errorMessage = (errorResponse != null && errorResponse.getMessage() != null) ? errorResponse.getMessage() : "HTTP Error: " + statusCode;
-                throw new ApiException("API authentication failed: " + errorMessage);
-            }
-        });
+            });
+        } catch (IOException e) {
+            throw new ApiException("Erreur de communication lors de la tentative de login", e);
+        }
     }
 
-    /**
-     * Récupère la liste des entreprises depuis l'API.
-     *
-     * @return Une liste d'objets Company.
-     * @throws IOException          Si la communication échoue.
-     * @throws ApiException Si non authentifié ou si l'API retourne une erreur.
-     */
-    public List<Company> getCompanies() throws IOException, ApiException {
+    
+
+    public List<Company> getCompanies() throws ApiException {
+        return executeGetRequest(COMPANIES_ENDPOINT, "entreprises", new TypeReference<ApiResponse<List<Company>>>() {});
+    }
+
+    public List<Contract> getContracts() throws ApiException {
+        return executeGetRequest(CONTRACTS_ENDPOINT, "contrats", new TypeReference<ApiResponse<List<Contract>>>() {});
+    }
+
+    public List<Quote> getQuotes() throws ApiException {
+        return executeGetRequest(QUOTES_ENDPOINT, "devis", new TypeReference<ApiResponse<List<Quote>>>() {});
+    }
+
+    public List<Invoice> getInvoices() throws ApiException {
+        return executeGetRequest(INVOICES_ENDPOINT, "factures", new TypeReference<ApiResponse<List<Invoice>>>() {});
+    }
+
+    public List<Event> getEvents() throws ApiException {
+        return executeGetRequest(EVENTS_ENDPOINT, "évènements", new TypeReference<ApiResponse<List<Event>>>() {});
+    }
+
+    public List<Prestation> getPrestations() throws ApiException {
+        return executeGetRequest(PRESTATIONS_ENDPOINT, "prestations", new TypeReference<ApiResponse<List<Prestation>>>() {});
+    }
+
+    
+
+    private <T> T executeGetRequest(String endpoint, String entityName, TypeReference<ApiResponse<T>> typeReference) throws ApiException {
         if (this.authToken == null) {
-            throw new ApiException("Non authentifié. Appeler login() d'abord.");
+            throw new ApiException(ERR_NOT_AUTHENTICATED);
         }
 
-        HttpGet get = new HttpGet(baseUrl + "companies.php");
-        get.setHeader("Authorization", "Bearer " + this.authToken);
+        HttpGet get = new HttpGet(baseUrl + endpoint);
+        get.setHeader(AUTH_HEADER, BEARER_PREFIX + this.authToken);
 
-        return httpClient.execute(get, response -> {
-            int statusCode = response.getCode();
-            String responseBody = EntityUtils.toString(response.getEntity());
+        try {
+            logger.debug("Exécution de la requête GET sur l'endpoint : {}", endpoint);
+            return httpClient.execute(get, (HttpClientResponseHandler<T>) response -> {
+                int statusCode = response.getCode();
+                HttpEntity entity = response.getEntity();
+                String responseBody = (entity != null) ? EntityUtils.toString(entity) : null;
 
-            if (statusCode >= 200 && statusCode < 300) {
-                 
-                 ApiResponse<List<Company>> apiResponse = objectMapper.readValue(responseBody,
-                         objectMapper.getTypeFactory().constructParametricType(ApiResponse.class, objectMapper.getTypeFactory().constructCollectionType(List.class, Company.class)));
+                if (statusCode >= HttpStatus.SC_OK && statusCode < HttpStatus.SC_MULTIPLE_CHOICES) {
+                    if (responseBody == null) {
+                        throw new ApiException(ERR_FETCH_FAILED + entityName + " : " + ERR_INVALID_RESPONSE + " (corps vide)");
+                    }
+                    
+                    ApiResponse<T> apiResponse = objectMapper.readValue(responseBody, typeReference);
 
-                 if (apiResponse != null && !apiResponse.isError()) {
-                    return apiResponse.getData();
-                 } else {
-                     throw new ApiException("Échec de la récupération des entreprises: " + (apiResponse != null ? apiResponse.getMessage() : "Format de réponse invalide"));
-                 }
-            } else {
-                 ErrorResponse errorResponse = null;
-                try {
-                     errorResponse = objectMapper.readValue(responseBody, ErrorResponse.class);
-                } catch (Exception ignored) { }
-                 String errorMessage = (errorResponse != null && errorResponse.getMessage() != null) ? errorResponse.getMessage() : "HTTP Error: " + statusCode;
-                throw new ApiException("Échec de la récupération des entreprises: " + errorMessage);
-            }
-        });
-    }
-
-    /**
-     * Récupère la liste des contrats depuis l'API.
-     *
-     * @return Une liste d'objets Contract.
-     * @throws IOException  Si la communication échoue.
-     * @throws ApiException Si non authentifié ou si l'API retourne une erreur.
-     */
-    public List<Contract> getContracts() throws IOException, ApiException {
-        if (this.authToken == null) {
-            throw new ApiException("Non authentifié. Appeler login() d'abord.");
+                    if (apiResponse != null && !apiResponse.isError()) {
+                        logger.debug("Récupération réussie des {}", entityName);
+                        return apiResponse.getData();
+                    } else {
+                        String apiMessage = (apiResponse != null && apiResponse.getMessage() != null) ? apiResponse.getMessage() : ERR_INVALID_RESPONSE;
+                        throw new ApiException(ERR_FETCH_FAILED + entityName + " : " + apiMessage);
+                    }
+                } else {
+                    handleApiError(statusCode, responseBody, ERR_FETCH_FAILED + entityName);
+                    return null; 
+                }
+            });
+        } catch (IOException e) {
+            throw new ApiException("Erreur de communication lors de la récupération des " + entityName, e);
         }
-
-        HttpGet get = new HttpGet(baseUrl + "contracts.php");
-        get.setHeader("Authorization", "Bearer " + this.authToken);
-
-        return httpClient.execute(get, response -> {
-            int statusCode = response.getCode();
-            String responseBody = EntityUtils.toString(response.getEntity());
-
-            if (statusCode >= 200 && statusCode < 300) {
-                 ApiResponse<List<Contract>> apiResponse = objectMapper.readValue(responseBody,
-                         objectMapper.getTypeFactory().constructParametricType(ApiResponse.class, objectMapper.getTypeFactory().constructCollectionType(List.class, Contract.class)));
-
-                 if (apiResponse != null && !apiResponse.isError()) {
-                    return apiResponse.getData();
-                 } else {
-                     throw new ApiException("Échec de la récupération des contrats: " + (apiResponse != null ? apiResponse.getMessage() : "Format de réponse invalide"));
-                 }
-            } else {
-                 ErrorResponse errorResponse = parseErrorResponse(responseBody);
-                 String errorMessage = (errorResponse != null && errorResponse.getMessage() != null) ? errorResponse.getMessage() : "HTTP Error: " + statusCode;
-                throw new ApiException("Échec de la récupération des contrats: " + errorMessage);
-            }
-        });
     }
 
-     /**
-     * Récupère la liste des devis depuis l'API.
-     *
-     * @return Une liste d'objets Quote.
-     * @throws IOException  Si la communication échoue.
-     * @throws ApiException Si non authentifié ou si l'API retourne une erreur.
-     */
-    public List<Quote> getQuotes() throws IOException, ApiException {
-        if (this.authToken == null) {
-            throw new ApiException("Non authentifié. Appeler login() d'abord.");
-        }
+    
 
-        HttpGet get = new HttpGet(baseUrl + "quotes.php");
-        get.setHeader("Authorization", "Bearer " + this.authToken);
-
-        return httpClient.execute(get, response -> {
-            int statusCode = response.getCode();
-            String responseBody = EntityUtils.toString(response.getEntity());
-
-            if (statusCode >= 200 && statusCode < 300) {
-                 ApiResponse<List<Quote>> apiResponse = objectMapper.readValue(responseBody,
-                         objectMapper.getTypeFactory().constructParametricType(ApiResponse.class, objectMapper.getTypeFactory().constructCollectionType(List.class, Quote.class)));
-
-                 if (apiResponse != null && !apiResponse.isError()) {
-                    return apiResponse.getData();
-                 } else {
-                     throw new ApiException("Échec de la récupération des devis: " + (apiResponse != null ? apiResponse.getMessage() : "Format de réponse invalide"));
-                 }
-            } else {
-                 ErrorResponse errorResponse = parseErrorResponse(responseBody);
-                 String errorMessage = (errorResponse != null && errorResponse.getMessage() != null) ? errorResponse.getMessage() : "HTTP Error: " + statusCode;
-                throw new ApiException("Échec de la récupération des devis: " + errorMessage);
-            }
-        });
+    private void handleApiError(int statusCode, String responseBody, String errorPrefix) throws ApiException {
+        ErrorResponse errorResponse = parseErrorResponse(responseBody);
+        String errorMessage = (errorResponse != null && errorResponse.getMessage() != null)
+                ? errorResponse.getMessage()
+                : ERR_HTTP_ERROR + statusCode + (responseBody != null ? " - " + responseBody.substring(0, Math.min(responseBody.length(), 100)) : "");
+        logger.error("{} : Code {} - {}", errorPrefix, statusCode, errorMessage);
+        throw new ApiException(errorPrefix + " : " + errorMessage);
     }
 
-     /**
-     * Récupère la liste des factures depuis l'API.
-     *
-     * @return Une liste d'objets Invoice.
-     * @throws IOException  Si la communication échoue.
-     * @throws ApiException Si non authentifié ou si l'API retourne une erreur.
-     */
-    public List<Invoice> getInvoices() throws IOException, ApiException {
-        if (this.authToken == null) {
-            throw new ApiException("Non authentifié. Appeler login() d'abord.");
-        }
-
-        HttpGet get = new HttpGet(baseUrl + "invoices.php");
-        get.setHeader("Authorization", "Bearer " + this.authToken);
-
-        return httpClient.execute(get, response -> {
-            int statusCode = response.getCode();
-            String responseBody = EntityUtils.toString(response.getEntity());
-
-            if (statusCode >= 200 && statusCode < 300) {
-                 ApiResponse<List<Invoice>> apiResponse = objectMapper.readValue(responseBody,
-                         objectMapper.getTypeFactory().constructParametricType(ApiResponse.class, objectMapper.getTypeFactory().constructCollectionType(List.class, Invoice.class)));
-
-                 if (apiResponse != null && !apiResponse.isError()) {
-                    return apiResponse.getData();
-                 } else {
-                     throw new ApiException("Échec de la récupération des factures: " + (apiResponse != null ? apiResponse.getMessage() : "Format de réponse invalide"));
-                 }
-            } else {
-                 ErrorResponse errorResponse = parseErrorResponse(responseBody);
-                 String errorMessage = (errorResponse != null && errorResponse.getMessage() != null) ? errorResponse.getMessage() : "HTTP Error: " + statusCode;
-                throw new ApiException("Échec de la récupération des factures: " + errorMessage);
-            }
-        });
-    }
-
-    /**
-     * Récupère la liste des événements depuis l'API.
-     *
-     * @return Une liste d'objets Event.
-     * @throws IOException  Si la communication échoue.
-     * @throws ApiException Si non authentifié ou si l'API retourne une erreur.
-     */
-    public List<Event> getEvents() throws IOException, ApiException {
-        if (this.authToken == null) {
-            throw new ApiException("Non authentifié. Appeler login() d'abord.");
-        }
-
-        HttpGet get = new HttpGet(baseUrl + "events.php");
-        get.setHeader("Authorization", "Bearer " + this.authToken);
-
-        return httpClient.execute(get, response -> {
-            int statusCode = response.getCode();
-            String responseBody = EntityUtils.toString(response.getEntity());
-
-            if (statusCode >= 200 && statusCode < 300) {
-                 ApiResponse<List<Event>> apiResponse = objectMapper.readValue(responseBody,
-                         objectMapper.getTypeFactory().constructParametricType(ApiResponse.class, objectMapper.getTypeFactory().constructCollectionType(List.class, Event.class)));
-
-                 if (apiResponse != null && !apiResponse.isError()) {
-                    return apiResponse.getData();
-                 } else {
-                     throw new ApiException("Échec de la récupération des événements: " + (apiResponse != null ? apiResponse.getMessage() : "Format de réponse invalide"));
-                 }
-            } else {
-                 ErrorResponse errorResponse = parseErrorResponse(responseBody);
-                 String errorMessage = (errorResponse != null && errorResponse.getMessage() != null) ? errorResponse.getMessage() : "HTTP Error: " + statusCode;
-                throw new ApiException("Échec de la récupération des événements: " + errorMessage);
-            }
-        });
-    }
-
-    /**
-     * Récupère la liste des prestations (services) depuis l'API.
-     *
-     * @return Une liste d'objets Prestation.
-     * @throws IOException  Si la communication échoue.
-     * @throws ApiException Si non authentifié ou si l'API retourne une erreur.
-     */
-    public List<Prestation> getPrestations() throws IOException, ApiException {
-        if (this.authToken == null) {
-            throw new ApiException("Non authentifié. Appeler login() d'abord.");
-        }
-
-        HttpGet get = new HttpGet(baseUrl + "services.php");
-        get.setHeader("Authorization", "Bearer " + this.authToken);
-
-        return httpClient.execute(get, response -> {
-            int statusCode = response.getCode();
-            String responseBody = EntityUtils.toString(response.getEntity());
-
-            if (statusCode >= 200 && statusCode < 300) {
-                 
-                 ApiResponse<List<Prestation>> apiResponse = objectMapper.readValue(responseBody,
-                         objectMapper.getTypeFactory().constructParametricType(ApiResponse.class, objectMapper.getTypeFactory().constructCollectionType(List.class, Prestation.class)));
-
-                 if (apiResponse != null && !apiResponse.isError()) {
-                    return apiResponse.getData();
-                 } else {
-                     throw new ApiException("Échec de la récupération des prestations: " + (apiResponse != null ? apiResponse.getMessage() : "Format de réponse invalide"));
-                 }
-            } else {
-                 ErrorResponse errorResponse = parseErrorResponse(responseBody);
-                 String errorMessage = (errorResponse != null && errorResponse.getMessage() != null) ? errorResponse.getMessage() : "HTTP Error: " + statusCode;
-                throw new ApiException("Échec de la récupération des prestations: " + errorMessage);
-            }
-        });
-    }
-
-    /**
-     * Méthode utilitaire pour analyser les réponses d'erreur.
-     * @param responseBody Le corps de la réponse JSON.
-     * @return Objet ErrorResponse ou null si l'analyse échoue.
-     */
     private ErrorResponse parseErrorResponse(String responseBody) {
-         try {
-             return objectMapper.readValue(responseBody, ErrorResponse.class);
-         } catch (Exception ignored) {
-             return null;
-         }
+        if (responseBody == null || responseBody.isEmpty()) {
+            return null;
+        }
+        try {
+            return objectMapper.readValue(responseBody, ErrorResponse.class);
+        } catch (IOException ignored) {
+            
+            logger.warn("Impossible de parser la réponse d'erreur JSON: {}", responseBody.substring(0, Math.min(responseBody.length(), 100)));
+            return null;
+        }
     }
 
+    @Override
+    public void close() throws IOException {
+        if (httpClient != null) {
+            httpClient.close();
+            logger.info("Client HTTP fermé.");
+        }
+    }
 }

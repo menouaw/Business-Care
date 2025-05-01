@@ -126,6 +126,16 @@ function servicesGetDistinctValues($field) {
 }
 
 /**
+ * Récupère la liste des principaux packs de services (table `services`).
+ * 
+ * @return array Liste des packs de services (id, type).
+ */
+function getMainServicePacks() {
+    $sql = "SELECT id, type FROM " . TABLE_SERVICES . " ORDER BY ordre ASC, type ASC";
+    return executeQuery($sql)->fetchAll();
+}
+
+/**
  * Crée ou met à jour un service dans la base de données.
  *
  * Cette fonction vérifie que les données obligatoires (nom, prix et type) sont présentes et valides.

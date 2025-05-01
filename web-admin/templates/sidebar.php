@@ -97,7 +97,7 @@
             <li class="nav-item">
                 <a class="nav-link <?php echo strpos($_SERVER['SCRIPT_NAME'], '/modules/events/') !== false ? 'active' : ''; ?>" href="<?php echo WEBADMIN_URL; ?>/modules/events/">
                     <i class="fas fa-calendar-alt me-2"></i>
-                    Evénements
+                    Evènements
                 </a>
             </li>
             <li class="nav-item">

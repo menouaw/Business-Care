@@ -9,19 +9,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class User {
 
-    public int id;
-    public String nom;
-    public String prenom;
-    public String email;
-    public int role_id;
+    private int id;
+    private String nom;
+    private String prenom;
+    private String email;
 
     @JsonProperty("role_id")
     private int roleId;
 
     public User() {
+        
     }
 
-    
     public int getId() {
         return id;
     }
@@ -69,6 +68,7 @@ public class User {
                ", nom='" + nom + '\'' +
                ", prenom='" + prenom + '\'' +
                ", email='" + email + '\'' +
+               ", roleId=" + roleId +
                '}';
     }
 }

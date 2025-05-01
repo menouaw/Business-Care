@@ -14,8 +14,7 @@ public enum PrestationDifficultyLevel {
     INTERMEDIAIRE("intermediaire"), 
     AVANCE("avance");           
     
-    
-    
+    private static final String UNKNOWN_VALUE_MSG = "Niveau de difficulté inconnu : ";
 
     private final String value;
 
@@ -30,12 +29,19 @@ public enum PrestationDifficultyLevel {
 
     @JsonCreator
     public static PrestationDifficultyLevel fromValue(String value) {
-        
+        if (value == null) {
+            
+            
+            return DEBUTANT; 
+        }
         return Arrays.stream(PrestationDifficultyLevel.values())
                 .filter(level -> level.value.equalsIgnoreCase(value))
                 .findFirst()
-                
-                .orElse(DEBUTANT);
-                
+                .orElseThrow(() -> new IllegalArgumentException(UNKNOWN_VALUE_MSG + value)); 
+    }
+
+    @Override
+    public String toString() {
+        return this.value;
     }
 } 

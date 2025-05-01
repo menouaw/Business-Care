@@ -71,6 +71,7 @@
                         href="<?= WEBCLIENT_URL ?>/modules/employees/communities.php">
                         <i class="fas fa-users me-2"></i>
                         Communautés
+
                     </a>
                 </li>
                 <li class="nav-item">

@@ -62,7 +62,7 @@ Permet aux entreprises et à leurs employés d'accéder aux services de bien-êt
 - Espace dédié aux employés avec tutoriel interactif à la première connexion
 - Recherche et réservation de services
 - Consultation des contrats et factures
-- Participation à des événements et communautés
+- Participation à des évènements et communautés
 
 ### Interface Admin (web-admin)
 Permet aux administrateurs de Business Care de gérer la plateforme.
@@ -75,9 +75,10 @@ Permet aux administrateurs de Business Care de gérer la plateforme.
 ### Application Java de Reporting
 Application autonome générant des rapports d'activité périodiques au format PDF.
 - Statistiques sur les comptes clients
-- Analyse des événements
+- Analyse des évènements
 - Performance des services
 - Graphiques et tableaux de synthèse
+- Génération automatique quotidienne à 2h00 du matin
 
 ## Installation
 
@@ -164,7 +165,7 @@ Application autonome générant des rapports d'activité périodiques au format 
 ### Portail des Employés
 - Accès aux services disponibles
 - Réservation de prestations
-- Participation aux événements
+- Participation aux évènements
 - Interaction au sein des communautés
 - Réception de notifications push
 

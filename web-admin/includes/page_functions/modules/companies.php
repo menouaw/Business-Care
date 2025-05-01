@@ -80,13 +80,13 @@ function companiesGetDetails($id) {
 }
 
 /**
- * Crée ou met à jour une entreprise.
+ * Crée une nouvelle entreprise ou met à jour une entreprise existante avec les données fournies.
  *
- * Utilise insertRow ou updateRow de db.php.
+ * Valide les champs obligatoires et la taille d'entreprise, puis effectue l'opération en base de données dans une transaction. Retourne le statut de l'opération, un message de succès ou d'erreur, et l'identifiant créé en cas de création.
  *
- * @param array $data Tableau associatif des informations de l'entreprise.
- * @param int $id Identifiant de l'entreprise (0 pour création).
- * @return array Résultat ['success' => bool, 'message' => string|null, 'errors' => array|null]
+ * @param array $data Données de l'entreprise à enregistrer.
+ * @param int $id Identifiant de l'entreprise à mettre à jour (0 pour une création).
+ * @return array Résultat de l'opération : ['success' => bool, 'message' => string|null, 'errors' => array|null, 'newId' => int|null]
  */
 function companiesSave($data, $id = 0) {
     $errors = [];
@@ -163,58 +163,83 @@ function companiesSave($data, $id = 0) {
     }
 }
 
-/**
- * Supprime une entreprise en vérifiant l'absence d'associations.
+/****
+ * Supprime une entreprise ainsi que toutes ses données associées (contrats, devis, factures, sites) de manière atomique.
  *
- * Utilise executeQuery pour les vérifications et deleteRow pour la suppression.
+ * Effectue la suppression dans une transaction pour garantir la cohérence des données. Les utilisateurs liés à l'entreprise voient leur champ `entreprise_id` mis à NULL via la contrainte de clé étrangère. Retourne un tableau indiquant le succès ou l'échec de l'opération ainsi qu'un message explicatif.
  *
- * @param int $id L'identifiant de l'entreprise.
- * @return array Résultat ['success' => bool, 'message' => string]
+ * @param int $id Identifiant de l'entreprise à supprimer.
+ * @return array Résultat de la suppression avec les clés 'success' (booléen) et 'message' (string).
  */
 function companiesDelete($id) {
     
+    $companyToDelete = fetchOne(TABLE_COMPANIES, 'id = ?', '', [$id]);
+    if (!$companyToDelete) {
+        return ['success' => false, 'message' => "Entreprise non trouvée."]; 
+    }
+    $companyName = $companyToDelete['nom']; 
+
     try {
         beginTransaction();
 
-        $personCount = executeQuery("SELECT COUNT(id) FROM " . TABLE_USERS . " WHERE entreprise_id = ?", [$id])->fetchColumn();
-        if ($personCount > 0) {
-            rollbackTransaction();
-            logBusinessOperation($_SESSION['user_id'], 'company_delete_attempt', "[ERROR] ID: $id - Utilisateurs associés existent");
-            return ['success' => false, 'message' => "Impossible de supprimer car des utilisateurs sont associés"];
-        }
-
-        $contractCount = executeQuery("SELECT COUNT(id) FROM " . TABLE_CONTRACTS . " WHERE entreprise_id = ?", [$id])->fetchColumn();
-        if ($contractCount > 0) {
-            rollbackTransaction();
-            logBusinessOperation($_SESSION['user_id'], 'company_delete_attempt', "[ERROR] ID: $id - Contrats associés existent");
-            return ['success' => false, 'message' => "Impossible de supprimer car des contrats sont associés"];
-        }
-
-        $deletedRows = deleteRow(TABLE_COMPANIES, "id = ?", [$id]);
         
+        
+        deleteRow(TABLE_INVOICES, "entreprise_id = ?", [$id]);
+
+        
+        
+        
+        deleteRow(TABLE_QUOTES, "entreprise_id = ?", [$id]);
+
+        
+        
+        
+        deleteRow(TABLE_CONTRACTS, "entreprise_id = ?", [$id]);
+
+        
+        
+        
+        deleteRow('sites', "entreprise_id = ?", [$id]);
+
+        
+        
+        
+
+        
+        
+        $deletedRows = deleteRow(TABLE_COMPANIES, "id = ?", [$id]);
+
         if ($deletedRows > 0) {
             commitTransaction();
-            logBusinessOperation($_SESSION['user_id'], 'company_delete', 
-                "[SUCCESS] Suppression entreprise ID: $id");
+            logBusinessOperation($_SESSION['user_id'] ?? 0, 'company_delete',
+                "[SUCCESS] Suppression entreprise ID: $id (Nom: $companyName)");
             return [
                 'success' => true,
-                'message' => "L'entreprise a ete supprimee avec succes"
+                'message' => "L'entreprise et ses données associées ont été supprimées avec succès"
             ];
         } else {
+            
             rollbackTransaction();
-            logBusinessOperation($_SESSION['user_id'], 'company_delete_attempt', 
-                "[ERROR] Tentative échouée de suppression entreprise ID: $id - Entreprise non trouvée?");
+            logBusinessOperation($_SESSION['user_id'] ?? 0, 'company_delete_attempt',
+                "[ERROR] Tentative échouée de suppression entreprise ID: $id - Entreprise non trouvée lors de la suppression finale.");
             return [
                 'success' => false,
-                'message' => "Impossible de supprimer l'entreprise (non trouvée ou déjà supprimée)"
+                'message' => "Impossible de supprimer l'entreprise (non trouvée ou déjà supprimée lors de l'étape finale)"
             ];
         }
-    } catch (Exception $e) {
+    } catch (PDOException $e) { 
         rollbackTransaction();
-        logSystemActivity('error', "[ERROR] Erreur BDD dans companiesDelete: " . $e->getMessage());
+        logSystemActivity('error', "[ERROR] Erreur SQL dans companiesDelete (ID: $id, Transaction annulée): " . $e->getMessage() . " | SQL State: " . $e->getCode());
         return [
             'success' => false,
-            'message' => "Erreur de base de données lors de la suppression."
+            'message' => "Erreur de base de données lors de la suppression (Transaction annulée): " . $e->getMessage()
+        ];
+    } catch (Exception $e) { 
+        rollbackTransaction();
+        logSystemActivity('error', "[ERROR] Erreur générale dans companiesDelete (ID: $id, Transaction annulée): " . $e->getMessage());
+        return [
+            'success' => false,
+            'message' => "Erreur inattendue lors de la suppression (Transaction annulée)."
         ];
     }
 }
