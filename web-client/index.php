@@ -62,8 +62,7 @@ include_once __DIR__ . '/templates/header.php';
                         <div class="mt-4">
                             <a href="<?= WEBCLIENT_URL ?>/login.php" class="btn btn-light btn-lg me-2">Connexion</a>
                             <a href="<?= WEBCLIENT_URL ?>/inscription.php" class="btn btn-outline-light btn-lg">Inscription</a>
-                            <a href="login.php" class="btn btn-light btn-lg me-2">Connexion</a>
-                            <a href="inscription.php" class="btn btn-outline-light btn-lg">Inscription</a>
+
                         </div>
                     <?php endif; ?>
                 </div>
