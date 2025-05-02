@@ -116,11 +116,11 @@ include_once '../../templates/header.php';
                         ?>
                             <div class="col-md-4 text-center">
                                 <h6>Tarif Annuel / Salarié</h6>
-                                <p class="h4"><?php echo formatCurrency($tarifAnnuelSalarie); ?></p>
+                                <p class="h4"><?php echo formatMoney($tarifAnnuelSalarie); ?></p>
                             </div>
                             <div class="col-md-4 text-center">
                                 <h6>Coût Annuel Estimé (base)</h6>
-                                <p class="h4"><?php echo $coutAnnuelEstime > 0 ? formatCurrency($coutAnnuelEstime) : 'N/A'; ?></p>
+                                <p class="h4"><?php echo $coutAnnuelEstime > 0 ? formatMoney($coutAnnuelEstime) : 'N/A'; ?></p>
                             </div>
                         <?php endif; ?>
                     </div>
