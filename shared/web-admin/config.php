@@ -1,9 +1,9 @@
 <?php
 // base de données
 define('DB_HOST', getenv('DB_HOST') ?: 'db');
-define('DB_NAME', getenv('MYSQL_DATABASE') ?: 'business_care');
-define('DB_USER', getenv('MYSQL_USER') ?: 'business_care_user');
-define('DB_PASS', getenv('MYSQL_PASSWORD') ?: '');
+define('DB_NAME', getenv('DB_DATABASE') ?: 'business_care');
+define('DB_USER', getenv('DB_USERNAME') ?: 'business_care_user');
+define('DB_PASS', getenv('DB_PASSWORD') ?: '');
 define('DB_CHARSET', 'utf8mb4');
 
 // application
