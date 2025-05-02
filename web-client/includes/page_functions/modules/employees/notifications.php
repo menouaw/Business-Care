@@ -13,20 +13,20 @@ require_once __DIR__ . '/../../../../../shared/web-client/db.php';
  */
 function setupEmployeeNotificationsPage()
 {
-    
+
     requireRole(ROLE_SALARIE);
 
     $salarie_id = $_SESSION['user_id'] ?? 0;
     if ($salarie_id <= 0) {
-        flashMessage("Utilisateur non identifié.", "danger");
-        redirectTo(WEBCLIENT_URL . '/login.php');
+        flashMessage("Impossible d'identifier votre compte.", "danger");
+        redirectTo(WEBCLIENT_URL . '/auth/login.php');
         exit;
     }
 
     $pageTitle = "Mes Notifications";
 
-    
-    
+
+
     try {
         updateRow(
             'notifications',
@@ -38,7 +38,7 @@ function setupEmployeeNotificationsPage()
         error_log("Erreur lors du marquage des notifications comme lues pour user $salarie_id: " . $e->getMessage());
     }
 
-    
+
     $itemsPerPage = 10;
     $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
     if ($currentPage < 1) {
@@ -51,10 +51,10 @@ function setupEmployeeNotificationsPage()
     $totalItems = 0;
 
     try {
-        
+
         $totalItems = countTableRows('notifications', "personne_id = :user_id", [':user_id' => $salarie_id]);
 
-        
+
         if ($totalItems > 0) {
             $notifications = fetchAll(
                 'notifications',
@@ -66,7 +66,7 @@ function setupEmployeeNotificationsPage()
             );
         }
 
-        
+
         $totalPages = ceil($totalItems / $itemsPerPage);
         $pagination = [
             'currentPage' => $currentPage,
@@ -81,7 +81,7 @@ function setupEmployeeNotificationsPage()
         $pagination = [];
     }
 
-    
+
 
     return [
         'pageTitle' => $pageTitle,

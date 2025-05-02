@@ -9,6 +9,7 @@
 require_once __DIR__ . '/includes/init.php';
 
 
+
 logSecurityEvent($_SESSION['user_id'] ?? null, 'logout', '[INFO] Déconnexion utilisateur ID: ' . ($_SESSION['user_id'] ?? 'Inconnu'));
 
 
@@ -33,6 +34,7 @@ if (ini_get("session.use_cookies")) {
 
 session_destroy();
 
+logout();
 
-redirectTo(WEBCLIENT_URL . '/login.php');
-exit; 
+redirectTo(WEBCLIENT_URL . '/auth/login.php');
+exit;

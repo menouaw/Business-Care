@@ -265,40 +265,40 @@ function handleUpdateEmployeeInterests(int $user_id, array $formData): array
         return ['success' => false, 'message' => 'Utilisateur invalide.'];
     }
 
-    
+
     $selectedInterestIds = $formData['interests'] ?? [];
 
-    
+
     $selectedInterestIds = array_map('intval', $selectedInterestIds);
     $selectedInterestIds = array_filter($selectedInterestIds, function ($id) {
         return $id > 0;
-    }); 
+    });
 
-    $pdo = getDbConnection(); 
+    $pdo = getDbConnection();
 
     try {
-        $pdo->beginTransaction(); 
+        $pdo->beginTransaction();
 
-        
+
         deleteRow('personne_interets', 'personne_id = :user_id', [':user_id' => $user_id], $pdo);
 
-        
+
         if (!empty($selectedInterestIds)) {
             $insertSql = "INSERT INTO personne_interets (personne_id, interet_id) VALUES (:user_id, :interet_id)";
             $stmt = $pdo->prepare($insertSql);
 
             foreach ($selectedInterestIds as $interet_id) {
-                
-                
-                
+
+
+
                 $stmt->execute([':user_id' => $user_id, ':interet_id' => $interet_id]);
             }
         }
 
-        $pdo->commit(); 
+        $pdo->commit();
         return ['success' => true, 'message' => 'Vos intérêts ont été mis à jour.'];
     } catch (Exception $e) {
-        $pdo->rollBack(); 
+        $pdo->rollBack();
         error_log("Erreur MAJ intérêts employé ID {$user_id}: " . $e->getMessage());
         return ['success' => false, 'message' => 'Une erreur technique est survenue lors de la mise à jour de vos intérêts.'];
     }
@@ -315,7 +315,7 @@ function setupEmployeeSettingsPage(): array
     $user_id = $_SESSION['user_id'] ?? 0;
     if ($user_id <= 0) {
         flashMessage("Session invalide.", "danger");
-        redirectTo(WEBCLIENT_URL . '/login.php');
+        redirectTo(WEBCLIENT_URL . '/auth/login.php');
         exit;
     }
 
@@ -384,7 +384,7 @@ function setupEmployeeSettingsPage(): array
         session_unset();
         session_destroy();
 
-        redirectTo(WEBCLIENT_URL . '/login.php');
+        redirectTo(WEBCLIENT_URL . '/auth/login.php');
         exit;
     }
 
