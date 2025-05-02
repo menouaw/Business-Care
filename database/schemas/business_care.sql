@@ -1,4 +1,3 @@
-
 CREATE TABLE roles (
     id INT PRIMARY KEY AUTO_INCREMENT,
     nom VARCHAR(50) NOT NULL UNIQUE,
@@ -178,7 +177,7 @@ CREATE TABLE factures (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (entreprise_id) REFERENCES entreprises(id),
-    FOREIGN KEY (devis_id) REFERENCES devis(id),
+    FOREIGN KEY (devis_id) REFERENCES devis(id) ON DELETE SET NULL,
     INDEX idx_numero (numero_facture),
     INDEX idx_dates (date_emission, date_echeance),
     INDEX idx_statut (statut)
