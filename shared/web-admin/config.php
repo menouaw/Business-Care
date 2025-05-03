@@ -151,3 +151,17 @@ define('INVOICE_PREFIX', 'F');
 define('DEFAULT_ITEMS_PER_PAGE', 10);
 define('DEFAULT_DATE_FORMAT', 'd/m/Y H:i');
 define('DEFAULT_CURRENCY', '€');
+
+// tutoriels
+define('TUTORIAL_VIDEO_BASE_URL', 'https://embed.app.guidde.com/playbooks/');
+define('MAIN_TUTORIAL_VIDEO_ID', 'aJazXtUz6wGC9MCWvTGDUw');
+define('DEFAULT_TUTORIAL_VIDEO_ID', 'aJazXtUz6wGC9MCWvTGDUw');
+
+define('MAIN_TUTORIAL_MODULES', [
+    '/index.php',
+    '/modules/users/',
+    '/modules/services/',
+    '/modules/quotes/',
+    '/modules/contracts/',
+    '/modules/companies/'
+]);

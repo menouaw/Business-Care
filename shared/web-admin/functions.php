@@ -494,3 +494,40 @@ function validateApiAdminToken($token) {
         return [false, null];
     }
 }
+
+/**
+ * Détermine l'URL de la vidéo tutoriel à afficher en fonction de la page courante.
+ * Utilise les constantes définies dans config.php.
+ *
+ * @return string L'URL complète de l'iframe pour la vidéo tutoriel appropriée.
+ */
+function getTutorialVideoUrl() {
+    $scriptPath = $_SERVER['PHP_SELF'] ?? ''; 
+    $adminBase = str_replace(ROOT_URL, '', WEBADMIN_URL); 
+
+    $relativeScriptPath = '';
+    
+    if (!empty($adminBase) && strpos($scriptPath, $adminBase) === 0) {
+        $relativeScriptPath = substr($scriptPath, strlen($adminBase)); 
+    }
+
+    $videoId = DEFAULT_TUTORIAL_VIDEO_ID; 
+
+    
+    if ($relativeScriptPath === '/index.php') {
+         $videoId = MAIN_TUTORIAL_VIDEO_ID;
+    } else {
+        foreach (MAIN_TUTORIAL_MODULES as $modulePath) {
+            
+            if ($modulePath === '/index.php') continue;
+
+            
+            if (!empty($relativeScriptPath) && strpos($relativeScriptPath, $modulePath) === 0) {
+                $videoId = MAIN_TUTORIAL_VIDEO_ID;
+                break; 
+            }
+        }
+    }
+
+    return TUTORIAL_VIDEO_BASE_URL . $videoId;
+}
