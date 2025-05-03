@@ -115,109 +115,135 @@ function handleEventActions()
 
 /**
  * Prépare les données nécessaires pour la page listant les événements disponibles
- * pour les salariés, avec pagination.
+ * pour les salariés, séparés en "préférés" (basés sur les intérêts) et "autres".
  *
- * @return array Données pour la vue (titre, événements, pagination).
+ * @return array Données pour la vue (titre, preferredEvents, otherEvents).
  */
 function setupEventsPage()
 {
-
     handleEventActions();
-
-
     requireRole(ROLE_SALARIE);
 
     $pageTitle = "Événements & Activités";
-    $itemsPerPage = 10;
+    $userId = $_SESSION['user_id'] ?? 0;
 
-    try {
-
-        $currentPage = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT, [
-            'options' => ['default' => 1, 'min_range' => 1]
-        ]);
-
-
-        $whereClause = "date_debut >= NOW()";
-
-
-        $paginationData = paginateResults(
-            'evenements',
-            $currentPage,
-            $itemsPerPage,
-            $whereClause,
-            'date_debut ASC',
-            []
-        );
-
-
-        if (empty($paginationData['items']) && $paginationData['currentPage'] > 1) {
-
-
-
-
-            if (!headers_sent()) {
-                redirectTo(WEBCLIENT_URL . '/modules/employees/events.php?page=1');
-            }
-        } elseif (empty($paginationData['items']) && $paginationData['currentPage'] == 1) {
-        }
-    } catch (Exception $e) {
-        error_log("Erreur lors de la récupération des événements paginés: " . $e->getMessage());
-        flashMessage("Impossible de charger la liste des événements.", "danger");
-
-        $paginationData = [
-            'items' => [],
-            'currentPage' => 1,
-            'totalPages' => 1,
-            'totalItems' => 0,
-            'perPage' => $itemsPerPage
-        ];
+    if ($userId <= 0) {
+        flashMessage("Session invalide.", "danger");
+        redirectTo(WEBCLIENT_URL . '/auth/login.php');
+        exit;
     }
 
+    $preferredEvents = [];
+    $otherEvents = [];
 
-    $userId = $_SESSION['user_id'] ?? 0;
-    if ($userId > 0 && !empty($paginationData['items'])) {
-        $eventIds = array_column($paginationData['items'], 'id');
-        if (!empty($eventIds)) {
-            $placeholders = implode(',', array_fill(0, count($eventIds), '?'));
+    try {
+        // 1. Récupérer les ID des intérêts de l'utilisateur
+        $userInterestLinks = fetchAll(
+            'personne_interets',
+            'personne_id = :user_id',
+            '',
+            0,
+            0,
+            [':user_id' => $userId]
+        );
+        $userInterestIds = !empty($userInterestLinks) ? array_column($userInterestLinks, 'interet_id') : [];
+
+        // Récupérer les noms des intérêts correspondants
+        $userInterestNames = [];
+        if (!empty($userInterestIds)) {
+            $placeholders = implode(',', array_fill(0, count($userInterestIds), '?'));
+            $interestsData = fetchAll(
+                'interets_utilisateurs',
+                "id IN ($placeholders)",
+                '',
+                0,
+                0,
+                $userInterestIds
+            );
+            $userInterestNames = !empty($interestsData) ? array_column($interestsData, 'nom') : [];
+        }
+        $userInterestNamesLower = array_map('strtolower', $userInterestNames);
+
+        // 2. Récupérer tous les événements à venir
+        $allUpcomingEvents = fetchAll(
+            'evenements',
+            "date_debut >= NOW()",
+            'date_debut ASC'
+        );
+
+        // 3. Catégoriser les événements selon les intérêts
+        foreach ($allUpcomingEvents as $event) {
+            $isPreferred = false;
+            if (!empty($userInterestNamesLower)) {
+                $eventTextLower = strtolower(($event['titre'] ?? '') . ' ' . ($event['description'] ?? ''));
+                foreach ($userInterestNamesLower as $interestName) {
+                    if (!empty($interestName) && str_contains($eventTextLower, $interestName)) {
+                        $isPreferred = true;
+                        break;
+                    }
+                }
+            }
+            if ($isPreferred) {
+                $preferredEvents[] = $event;
+            } else {
+                $otherEvents[] = $event;
+            }
+        }
+
+        // 4. Enrichir les deux listes d'événements (préférés et autres)
+        $eventIdsToEnrich = array_column(array_merge($preferredEvents, $otherEvents), 'id');
+
+        if (!empty($eventIdsToEnrich)) {
+            $placeholders = implode(',', array_fill(0, count($eventIdsToEnrich), '?'));
+
+            // Récupérer les inscriptions pour tous les événements concernés
             $userRegistrations = fetchAll(
                 'evenement_inscriptions',
                 "personne_id = ? AND evenement_id IN ($placeholders)",
                 '',
                 0,
                 0,
-                array_merge([$userId], $eventIds)
+                array_merge([$userId], $eventIdsToEnrich)
             );
-
             $registeredEventIds = array_column($userRegistrations, 'evenement_id');
             $registeredEventIds = array_flip($registeredEventIds);
 
+            // Récupérer le nombre d'inscrits pour tous les événements concernés
+            $registrationCounts = [];
+            $sqlCounts = "SELECT evenement_id, COUNT(*) as count FROM evenement_inscriptions WHERE evenement_id IN ($placeholders) GROUP BY evenement_id";
+            $stmtCounts = executeQuery($sqlCounts, $eventIdsToEnrich);
+            while ($row = $stmtCounts->fetch(PDO::FETCH_ASSOC)) {
+                $registrationCounts[$row['evenement_id']] = (int)$row['count'];
+            }
 
-            foreach ($paginationData['items'] as &$event) {
-                $event['is_registered'] = isset($registeredEventIds[$event['id']]);
-
-                
-                $event['remaining_spots'] = null; 
-                $event['current_registrations'] = 0;
+            // Fonction pour enrichir un événement individuel
+            $enrichEvent = function ($event) use ($registeredEventIds, $registrationCounts) {
+                $eventId = $event['id'];
+                $event['is_registered'] = isset($registeredEventIds[$eventId]);
+                $event['remaining_spots'] = null;
+                $currentRegCount = $registrationCounts[$eventId] ?? 0;
+                $event['current_registrations'] = $currentRegCount;
 
                 if (isset($event['capacite_max']) && $event['capacite_max'] !== null && $event['capacite_max'] > 0) {
-                    try {
-                        $currentRegistrations = countTableRows('evenement_inscriptions', 'evenement_id = ?', [$event['id']]);
-                        $event['current_registrations'] = $currentRegistrations;
-                        $event['remaining_spots'] = max(0, $event['capacite_max'] - $currentRegistrations);
-                    } catch (Exception $e) {
-                        error_log("Erreur comptage inscriptions pour event ID " . $event['id'] . ": " . $e->getMessage());
-                        
-                    }
+                    $event['remaining_spots'] = max(0, $event['capacite_max'] - $currentRegCount);
                 }
-            }
-            unset($event);
-        }
-    }
+                return $event;
+            };
 
+            // Appliquer l'enrichissement aux deux listes
+            $preferredEvents = array_map($enrichEvent, $preferredEvents);
+            $otherEvents = array_map($enrichEvent, $otherEvents);
+        }
+    } catch (Exception $e) {
+        error_log("ERREUR dans setupEventsPage pour user $userId: " . $e->getMessage());
+        flashMessage("Impossible de charger la liste des événements.", "danger");
+        // Les listes resteront vides en cas d'erreur
+    }
 
     return [
         'pageTitle' => $pageTitle,
-        'events' => $paginationData['items'],
-        'pagination' => $paginationData
+        'preferredEvents' => $preferredEvents,
+        'otherEvents' => $otherEvents
+        // Note: Pagination removed for this structure
     ];
 }

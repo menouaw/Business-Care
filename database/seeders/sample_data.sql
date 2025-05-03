@@ -394,11 +394,11 @@ INSERT INTO consultation_creneaux (prestation_id, praticien_id, start_time, end_
 INSERT INTO interets_utilisateurs (nom, description) VALUES
 ('Sante Mentale', 'Conseils et ressources pour le bien-être psychologique'),
 ('Nutrition', 'Informations et astuces pour une alimentation saine'),
-('Activité Physique', 'Motivation et idées pour rester actif'),
-('Gestion du Stress', 'Techniques pour gérer la pression et l\'anxiété'),
+('Activite Physique', 'Motivation et idées pour rester actif'),
+('Gestion du Stress', 'Techniques pour gérer la pression et l\'anxiete'),
 ('Sommeil', 'Améliorer la qualité et la quantité de sommeil'),
 ('Communication', 'Développer des compétences relationnelles efficaces'),
-('Développement Personnel', 'Ressources pour la croissance et l\'épanouissement personnel');
+('Developpement Personnel', 'Ressources pour la croissance et l\'epanouissement personnel');
 
 INSERT INTO prestataires_prestations (prestataire_id, prestation_id) VALUES
 (3, 1), (3, 9), (3, 7), 
