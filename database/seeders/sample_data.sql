@@ -42,8 +42,8 @@ SET FOREIGN_KEY_CHECKS = 1;
 INSERT INTO roles (nom, description) VALUES
 ('admin', 'Administrateur systeme'),
 ('salarie', 'Salarie d''une entreprise'),
-('prestataire', 'Prestataire de services / Praticien'), 
-('entreprise', 'Representant Entreprise cliente'); 
+('prestataire', 'Prestataire de services / Praticien'),
+('entreprise', 'Representant Entreprise cliente');
 
 INSERT INTO entreprises (id, nom, siret, adresse, code_postal, ville, telephone, email, site_web, logo_url, taille_entreprise, secteur_activite, date_creation) VALUES
 (1, 'Tech Solutions SA', '12345678901234', '123 Rue de l''Innovation', '75001', 'Paris', '01 23 45 67 89', 'contact@techsolutions.fr', 'www.techsolutions.fr', '/logos/techsolutions.png', '51-200', 'Technologie', '2020-01-15'),
@@ -379,17 +379,19 @@ INSERT INTO conseils (titre, icone, resume, categorie, contenu) VALUES
 'La Communication Non Violente (CNV) est une approche developpee par Marshall Rosenberg qui aide a creer des relations basees sur le respect mutuel et la cooperation.\n\nElle repose sur 4 etapes cles pour exprimer ce qui se passe en nous et entendre l\'autre avec empathie :\n1. Observation (O) : Decrire les faits concrets et specifiques que nous observons, sans jugement ni interpretation. (Ex. : "Quand je vois des dossiers non classes sur le bureau commun...")\n2. Sentiment (S) : Exprimer l\'emotion ressenti face a cette observation. Utiliser "Je me sens..." (Ex. : "...je me sens un peu frustre(e)...")\n3. Besoin (B) : Identifier le besoin fondamental (autonomie, respect, clarte, ordre, soutien...) qui est satisfait ou insatisfait et qui est a l\'origine du sentiment. (Ex. : "...car j\'ai besoin d\'ordre et de clarte dans notre espace de travail partage.")\n4. Demande (D) : Formuler une demande concrete, positive, realisable et negociable, visant a satisfaire le besoin identifie. Preferer une demande a une exigence. (Ex. : "Serais-tu d\'accord pour que nous prenions 5 minutes ensemble pour decider comment organiser cet espace ?")\n\nEcoute empathique : La CNV s\'applique a l\'ecoute. Tentez de deviner les sentiments et besoins de l\'autre derriere ses mots, meme s\'ils sont exprimes maladroitement.\n\nPratiquer la CNV demande de l\'entrainement mais ameliore significativement la qualite des relations professionnelles et personnelles.');
 
 INSERT INTO consultation_creneaux (prestation_id, praticien_id, start_time, end_time, is_booked, site_id) VALUES
-(1, 3, NOW() + INTERVAL 2 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 2 DAY + INTERVAL '09:45' HOUR_MINUTE, FALSE, 1), 
+(1, 3, NOW() + INTERVAL 2 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 2 DAY + INTERVAL '09:45' HOUR_MINUTE, TRUE, 1), 
 (1, 3, NOW() + INTERVAL 2 DAY + INTERVAL '10:00' HOUR_MINUTE, NOW() + INTERVAL 2 DAY + INTERVAL '10:45' HOUR_MINUTE, FALSE, 1), 
 (1, 11, NOW() + INTERVAL 3 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 3 DAY + INTERVAL '14:45' HOUR_MINUTE, TRUE, 2), 
 (1, 11, NOW() + INTERVAL 3 DAY + INTERVAL '15:00' HOUR_MINUTE, NOW() + INTERVAL 3 DAY + INTERVAL '15:45' HOUR_MINUTE, FALSE, 2), 
-(4, 11, NOW() + INTERVAL 4 DAY + INTERVAL '10:00' HOUR_MINUTE, NOW() + INTERVAL 4 DAY + INTERVAL '11:00' HOUR_MINUTE, FALSE, 2), 
+(4, 11, NOW() + INTERVAL 4 DAY + INTERVAL '10:00' HOUR_MINUTE, NOW() + INTERVAL 4 DAY + INTERVAL '11:00' HOUR_MINUTE, TRUE, 2), 
 (4, 11, NOW() + INTERVAL 4 DAY + INTERVAL '11:15' HOUR_MINUTE, NOW() + INTERVAL 4 DAY + INTERVAL '12:15' HOUR_MINUTE, FALSE, 2), 
 (4, 3, NOW() + INTERVAL 5 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 5 DAY + INTERVAL '10:00' HOUR_MINUTE, FALSE, 1), 
-(9, 3, NOW() + INTERVAL 6 DAY + INTERVAL '16:00' HOUR_MINUTE, NOW() + INTERVAL 6 DAY + INTERVAL '16:50' HOUR_MINUTE, FALSE, 1), 
+(9, 3, NOW() + INTERVAL 6 DAY + INTERVAL '16:00' HOUR_MINUTE, NOW() + INTERVAL 6 DAY + INTERVAL '16:50' HOUR_MINUTE, TRUE, 1), 
 (9, 3, NOW() + INTERVAL 6 DAY + INTERVAL '17:00' HOUR_MINUTE, NOW() + INTERVAL 6 DAY + INTERVAL '17:50' HOUR_MINUTE, FALSE, NULL), 
 (7, 3, NOW() + INTERVAL 2 DAY + INTERVAL '11:00' HOUR_MINUTE, NOW() + INTERVAL 2 DAY + INTERVAL '12:00' HOUR_MINUTE, FALSE, 1), 
-(7, 11, NOW() + INTERVAL 2 DAY + INTERVAL '12:15' HOUR_MINUTE, NOW() + INTERVAL 2 DAY + INTERVAL '13:15' HOUR_MINUTE, FALSE, 2), 
+(7, 11, NOW() + INTERVAL 2 DAY + INTERVAL '12:15' HOUR_MINUTE, NOW() + INTERVAL 2 DAY + INTERVAL '13:15' HOUR_MINUTE, FALSE, 2),
+(7, 3, NOW() + INTERVAL 5 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 5 DAY + INTERVAL '15:00' HOUR_MINUTE, TRUE, NULL), 
+(11, 28, NOW() + INTERVAL 8 DAY + INTERVAL '13:00' HOUR_MINUTE, NOW() + INTERVAL 8 DAY + INTERVAL '13:20' HOUR_MINUTE, TRUE, NULL);
 
 INSERT INTO interets_utilisateurs (nom, description) VALUES
 ('Sante Mentale', 'Conseils et ressources pour le bien-être psychologique'),
@@ -433,7 +435,7 @@ INSERT INTO rendez_vous (personne_id, prestation_id, praticien_id, date_rdv, dur
 (5, 1, 3, NOW() + INTERVAL 2 DAY + INTERVAL '09:00' HOUR_MINUTE, 45, 'Bureau Presta Test / Visio', 'visio', 'confirme', 'Premier RDV'), 
 (6, 4, 11, NOW() + INTERVAL 4 DAY + INTERVAL '10:00' HOUR_MINUTE, 60, 'Cabinet Sante+ / Tel', 'telephone', 'planifie', 'Bilan nutritionnel'), 
 (8, 7, 3, NOW() + INTERVAL 5 DAY + INTERVAL '14:00' HOUR_MINUTE, 60, 'Visio', 'visio', 'termine', 'Seance coaching OK'), 
-(10, 9, 30, NOW() + INTERVAL 6 DAY + INTERVAL '16:00' HOUR_MINUTE, 50, 'Bureau Presta Leo', 'presentiel', 'planifie', ''), 
+(10, 9, 3, NOW() + INTERVAL 6 DAY + INTERVAL '16:00' HOUR_MINUTE, 50, 'Bureau Presta Leo / Site ID 1', 'presentiel', 'planifie', 'Correction praticien_id 30 -> 3'), 
 (12, 11, 28, NOW() + INTERVAL 8 DAY + INTERVAL '13:00' HOUR_MINUTE, 20, 'Entreprise Tech Solutions', 'presentiel', 'confirme', 'Massage Amma sur site'), 
 (17, 1, 11, NOW() + INTERVAL 3 DAY + INTERVAL '14:00' HOUR_MINUTE, 45, 'Bureau Sante Plus', 'presentiel', 'annule', 'Annule par le salarie'); 
 
@@ -510,7 +512,7 @@ INSERT INTO communaute_messages (communaute_id, personne_id, message) VALUES
 (2, 12, 'Nouveau record perso sur 10km ! :-)');
 
 
-support_tickets (entreprise_id, personne_id, sujet, message, statut) VALUES
+INSERT INTO support_tickets (entreprise_id, personne_id, sujet, message, statut) VALUES
 (1, 5, 'Probleme connexion espace salarie', 'Bonjour, je n''arrive pas a me connecter depuis ce matin.', 'en_cours'),
 (NULL, 7, 'Question sur une prestation', 'Est-ce que l''atelier Yoga est adapte aux grands debutants ?', 'nouveau'),
 (3, NULL, 'Demande information contrat', 'Pouvez-vous nous renvoyer les details de notre contrat Bien-etre Corp ?', 'resolu'),

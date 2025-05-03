@@ -31,7 +31,7 @@ include __DIR__ . '/../../templates/header.php';
                     <h1 class="h2"><?= htmlspecialchars($pageTitle) ?></h1>
                 </div>
 
-                <?php 
+                <?php
                 ?>
                 <?php if (empty($communities)): ?>
                     <div class="alert alert-info mt-4">Aucune communauté n'est disponible pour le moment.</div>
@@ -44,7 +44,7 @@ include __DIR__ . '/../../templates/header.php';
                         <?php endforeach; ?>
                     </div>
 
-                    <?php 
+                    <?php
                     ?>
                     <?php
                     if (!empty($pagination) && $pagination['totalPages'] > 1) {
@@ -211,18 +211,15 @@ function renderCommunityCard($community, $userMemberCommunityIds, $csrf_token, $
 
 function getIconForCommunityType(string $type): string
 {
-    $typeLower = strtolower($type);
-    switch ($typeLower) {
+    switch ($type) {
         case 'sport':
-            return 'fas fa-futbol';
+            return 'fas fa-running';
         case 'bien_etre':
             return 'fas fa-spa';
-        case 'loisirs':
-            return 'fas fa-puzzle-piece';
         case 'professionnel':
             return 'fas fa-briefcase';
-        case 'culture':
-            return 'fas fa-landmark';
+        case 'loisir':
+            return 'fas fa-gamepad';
         default:
             return 'fas fa-users';
     }

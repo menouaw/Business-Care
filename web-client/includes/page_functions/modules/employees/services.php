@@ -2,13 +2,6 @@
 
 require_once __DIR__ . '/../../../init.php';
 
-    function truncateText(string $text, int $maxLength): string
-    {
-        if (strlen($text) > $maxLength) {
-            return substr($text, 0, $maxLength) . '...';
-        }
-        return $text;
-    }
 
 
 /**

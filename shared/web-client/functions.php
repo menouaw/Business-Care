@@ -499,39 +499,39 @@ function getStatusBadgeClass(?string $status): string
 function createNotification(int $user_id, string $title, string $message, string $type = 'info', ?string $link = null): int|false
 {
     if ($user_id <= 0 || empty($title) || empty($message)) {
-        
+
         return false;
     }
 
     $data = [
-        'personne_id' => $user_id, 
+        'personne_id' => $user_id,
         'titre' => $title,
         'message' => $message,
         'type' => in_array($type, ['info', 'success', 'warning', 'error', 'danger']) ? $type : 'info',
         'lien' => $link
-        
+
     ];
 
-    
+
 
     $success = insertRow('notifications', $data);
 
     if (!$success) {
-        error_log("Erreur lors de l'insertion de la notification pour user_id: $user_id"); 
+        error_log("Erreur lors de l'insertion de la notification pour user_id: $user_id");
         return false;
     } else {
         try {
             $pdo = getDbConnection();
             $lastId = $pdo->lastInsertId();
             if ($lastId) {
-                
+
                 return (int)$lastId;
             } else {
-                error_log("Erreur createNotification: insertRow succeeded but lastInsertId returned invalid value for user_id: $user_id."); 
+                error_log("Erreur createNotification: insertRow succeeded but lastInsertId returned invalid value for user_id: $user_id.");
                 return false;
             }
         } catch (PDOException $e) {
-            error_log("Erreur PDO lors de la récupération de lastInsertId pour notification user_id: $user_id - " . $e->getMessage()); 
+            error_log("Erreur PDO lors de la récupération de lastInsertId pour notification user_id: $user_id - " . $e->getMessage());
             return false;
         }
     }
@@ -566,4 +566,21 @@ function markNotificationsAsRead(int $userId): int
     ];
 
     return updateRow('notifications', $updateData, 'personne_id = :user_id AND lu = 0', [':user_id' => $userId]);
+}
+
+/**
+ * Tronque une chaîne de caractères si elle dépasse une longueur maximale.
+ * Ajoute '...' à la fin si la chaîne est tronquée.
+ *
+ * @param string $text Le texte à tronquer.
+ * @param int $maxLength La longueur maximale autorisée.
+ * @return string Le texte tronqué ou original.
+ */
+function truncateText(string $text, int $maxLength): string
+{
+    if (mb_strlen($text) > $maxLength) {
+        // Utilise mb_substr pour la compatibilité multi-octets
+        return mb_substr($text, 0, $maxLength) . '...';
+    }
+    return $text;
 }

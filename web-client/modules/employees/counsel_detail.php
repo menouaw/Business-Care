@@ -30,7 +30,7 @@ include __DIR__ . '/../../templates/header.php';
             <?php if (!$conseil): ?>
                 <div class="alert alert-warning">Le conseil demandé n'a pas pu être chargé ou n'existe pas.</div>
             <?php else:
-                $contenu_display = !empty($conseil['contenu']) ? nl2br(htmlspecialchars(html_entity_decode($conseil['contenu'], ENT_QUOTES, 'UTF-8'), ENT_QUOTES, 'UTF-8')) : 'Pas de contenu disponible.';
+                $contenu_display = !empty($conseil['contenu']) ? nl2br(htmlspecialchars($conseil['contenu'], ENT_QUOTES, 'UTF-8')) : 'Pas de contenu disponible.';
                 $categorie = htmlspecialchars($conseil['categorie'] ?? 'Non classé');
                 $resume = !empty($conseil['resume']) ? htmlspecialchars($conseil['resume']) : '';
             ?>
