@@ -227,7 +227,7 @@ include_once '../../templates/header.php';
                                     <option value="">-- Aucun (utiliser prestations spécifiques) --</option>
                                      <?php foreach ($services as $service): ?>
                                         <option value="<?php echo $service['id']; ?>" <?php echo (isset($formData['service_id']) && $formData['service_id'] == $service['id']) ? 'selected' : ''; ?> data-rate="<?php echo $service['tarif_annuel_par_salarie']; ?>">
-                                            <?php echo htmlspecialchars($service['nom']); ?> (<?php echo formatMoney($service['tarif_annuel_par_salarie']); ?>/salarie/an HT)
+                                            <?php echo htmlspecialchars($service['type']); ?> (<?php echo formatMoney($service['tarif_annuel_par_salarie']); ?>/salarie/an HT)
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
