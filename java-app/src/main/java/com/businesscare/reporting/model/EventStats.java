@@ -4,6 +4,7 @@ import com.businesscare.reporting.model.enums.EventType;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Contient les statistiques agrégées sur les évènements pour le rapport.
@@ -56,14 +57,16 @@ public class EventStats {
     }
 
     /**
-     * Classe interne simple pour lier un évènement à sa popularité (ex: nombre d'inscriptions).
+     * Classe interne pour lier un évènement à sa popularité (ex: nombre d'inscriptions).
+     * Implémente Comparable pour trier par popularité (décroissant).
      */
     public static class EventPopularity implements Comparable<EventPopularity> {
-        private Event event;
-        private long popularityMetric; 
+        private static final String NULL_EVENT_TITLE = "Sans titre";
+        private final Event event;
+        private final long popularityMetric; 
 
         public EventPopularity(Event event, long popularityMetric) {
-            this.event = event;
+            this.event = Objects.requireNonNull(event, "L\'évènement ne peut pas être null");
             this.popularityMetric = popularityMetric;
         }
 
@@ -75,6 +78,10 @@ public class EventStats {
             return popularityMetric;
         }
 
+        public String getEventTitle() {
+            return event.getTitre() != null ? event.getTitre() : NULL_EVENT_TITLE;
+        }
+
         @Override
         public int compareTo(EventPopularity other) {
             
@@ -84,8 +91,8 @@ public class EventStats {
         @Override
         public String toString() {
             return "EventPopularity{" +
-                   "eventName=" + (event != null ? event.getTitre() : "null") +
-                   ", popularityMetric=" + popularityMetric +
+                   "titreEvenement='" + getEventTitle() + '\'' +
+                   ", metriquePopularite=" + popularityMetric +
                    '}';
         }
     }

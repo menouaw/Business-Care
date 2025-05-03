@@ -1,9 +1,9 @@
 <?php
 require_once __DIR__ . '/../../includes/init.php';
-require_once __DIR__ . '/../../includes/page_functions/modules/employees/events.php'; 
+require_once __DIR__ . '/../../includes/page_functions/modules/employees/events.php';
 
 $viewData = setupEventsPage();
-extract($viewData); 
+extract($viewData);
 
 include __DIR__ . '/../../templates/header.php';
 ?>
@@ -15,7 +15,7 @@ include __DIR__ . '/../../templates/header.php';
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 pt-3">
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
                 <h1 class="h2"><?= htmlspecialchars($pageTitle) ?></h1>
-                
+
                 <a href="<?= WEBCLIENT_URL ?>/modules/employees/dashboard.php" class="btn btn-sm btn-outline-secondary">
                     <i class="fas fa-arrow-left me-1"></i> Retour Tableau de Bord
                 </a>
@@ -39,11 +39,9 @@ include __DIR__ . '/../../templates/header.php';
                         $isRegistered = $event['is_registered'] ?? false;
                         $isFull = false;
                         if (isset($event['capacite_max']) && $event['capacite_max'] !== null && $event['capacite_max'] > 0) {
-                            
-                            
                         }
 
-                        
+
                         $detailUrl = WEBCLIENT_URL . '/modules/employees/event_detail.php?id=' . $event['id'];
                     ?>
                         <div class="col">
@@ -55,31 +53,50 @@ include __DIR__ . '/../../templates/header.php';
                                 <div class="card-body d-flex flex-column">
                                     <h5 class="card-title"><?= $titre ?></h5>
                                     <p class="card-text flex-grow-1"><small><?= $descriptionCourte ?></small></p>
-                                    <p class="card-text mb-2"><small><strong>Lieu :</strong> <?= $lieu ?></small></p>
+                                    <p class="card-text mb-1"><small><strong>Lieu :</strong> <?= $lieu ?></small></p>
 
-                                    <?php if ($isRegistered): ?>
+                                    
+                                    <p class="card-text mb-2">
+                                        <small>
+                                            <strong>Capacité :</strong>
+                                            <?php if (isset($event['capacite_max']) && $event['capacite_max'] > 0): ?>
+                                                <?php if ($event['remaining_spots'] !== null): ?>
+                                                    Places restantes: <?= $event['remaining_spots'] ?> / <?= $event['capacite_max'] ?>
+                                                <?php else: ?>
+                                                    <?= $event['capacite_max'] ?> (Info indisponible)
+                                                <?php endif; ?>
+                                            <?php else: ?>
+                                                Illimitée
+                                            <?php endif; ?>
+                                        </small>
+                                    </p>
+
+                                    <?php
+                                    $isFull = (isset($event['remaining_spots']) && $event['remaining_spots'] === 0);
+                                    if ($isRegistered):
+                                    ?>
                                         <a href="?action=unregister&id=<?= $event['id'] ?>&page=<?= $pagination['currentPage'] ?>" class="btn btn-sm btn-danger mt-auto align-self-start">
                                             <i class="fas fa-times-circle me-1"></i> Se désinscrire
                                         </a>
                                     <?php else: ?>
-                                        <a href="?action=register&id=<?= $event['id'] ?>&page=<?= $pagination['currentPage'] ?>" class="btn btn-sm btn-success mt-auto align-self-start">
-                                            <i class="fas fa-check-circle me-1"></i> S'inscrire
+                                        <a href="?action=register&id=<?= $event['id'] ?>&page=<?= $pagination['currentPage'] ?>" class="btn btn-sm btn-success mt-auto align-self-start<?= $isFull ? ' disabled' : '' ?>" <?= $isFull ? 'aria-disabled="true"' : '' ?>>
+                                            <i class="fas fa-<?= $isFull ? 'exclamation-circle' : 'check-circle' ?> me-1"></i> <?= $isFull ? 'Complet' : 'S\'inscrire' ?>
                                         </a>
                                     <?php endif; ?>
 
                                 </div>
                             </div>
                         </div>
-                    <?php endforeach; 
+                    <?php endforeach;
                     ?>
                 </div>
 
-                <?php 
+                <?php
                 $paginationUrlPattern = WEBCLIENT_URL . '/modules/employees/events.php?page={page}';
                 echo renderPagination($pagination, $paginationUrlPattern);
                 ?>
 
-            <?php endif; 
+            <?php endif;
             ?>
         </main>
     </div>

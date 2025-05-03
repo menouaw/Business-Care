@@ -7,5 +7,5 @@ public enum QuoteStatus {
     en_attente,
     accepte,
     refuse,
-    expire
+    expire,
 }

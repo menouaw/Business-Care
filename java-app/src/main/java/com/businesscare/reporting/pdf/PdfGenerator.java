@@ -2,329 +2,203 @@ package com.businesscare.reporting.pdf;
 
 import com.businesscare.reporting.model.ClientStats;
 import com.businesscare.reporting.model.EventStats;
-import com.businesscare.reporting.model.PrestationStats;
+import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.io.image.ImageData;
 import com.itextpdf.io.image.ImageDataFactory;
-import com.itextpdf.kernel.colors.ColorConstants;
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.kernel.geom.PageSize;
-import com.itextpdf.kernel.geom.Rectangle;
-import com.itextpdf.kernel.pdf.PdfDocument;
-import com.itextpdf.kernel.pdf.PdfWriter;
-import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
 import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.AreaBreak;
 import com.itextpdf.layout.element.Image;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Text;
+import com.itextpdf.layout.properties.AreaBreakType;
 import com.itextpdf.layout.properties.TextAlignment;
-import com.itextpdf.layout.properties.UnitValue;
 import org.jfree.chart.JFreeChart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Graphics2D;
-import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Classe responsable de la génération du rapport PDF.
+ */
 public class PdfGenerator {
 
     private static final Logger logger = LoggerFactory.getLogger(PdfGenerator.class);
 
     
-    private static final float MARGIN = 50;
-    private static final float CHART_WIDTH = 250;
-    private static final float CHART_HEIGHT = 200;
+    private static final float FONT_SIZE_REPORT_TITLE = 24;
     private static final float FONT_SIZE_TITLE = 18;
     private static final float FONT_SIZE_SUBTITLE = 14;
     private static final float FONT_SIZE_NORMAL = 10;
     private static final float LEADING_NORMAL = 14f;
+    private static final float MARGIN_BOTTOM_TITLE = 15f;
+    private static final float MARGIN_BOTTOM_LIST_TITLE = 20f;
+    private static final float CHART_VERTICAL_SPACE = 30f; 
 
-    /**
-     * Génère la première page du rapport PDF (Statistiques Clients) en utilisant iText 7.
-     *
-     * @param pdfDoc     Le document PDF iText auquel ajouter la page.
-     * @param stats      Les statistiques client agrégées.
-     * @param clientCharts La liste des graphiques JFreeChart à inclure (devrait en contenir 4).
-     * @throws IOException Si une erreur I/O se produit pendant la création du PDF.
-     */
-    public void generateClientFinancialPage(PdfDocument pdfDoc, ClientStats stats, List<JFreeChart> clientCharts) throws IOException {
-        logger.info("Génération de la page des statistiques financières des clients (Page 1)");
-        if (clientCharts == null || clientCharts.size() != 4) {
-            logger.warn("Attendu 4 graphiques clients pour la génération du PDF, mais reçu {}. La page pourrait être incomplète.",
-                        clientCharts == null ? 0 : clientCharts.size());
+    
+    private static final String REPORT_TITLE_PREFIX = "Business Care\nRapport du ";
+    private static final String CLIENT_TOP5_TITLE = "Top 5 des clients (par revenu total des factures payées)";
+    private static final String EVENT_TOP5_TITLE = "Top 5 des évènements (par popularité/inscriptions)";
+    private static final String UNKNOWN_ENTITY_NAME = "(Inconnu)";
+    private static final String CLIENT_TOP5_FORMAT = "%d. %s - Revenu: %.2f €";
+    private static final String EVENT_TOP5_FORMAT = "%d. %s - Popularité: %d";
+    private static final String PRESTATION_TOP5_FORMAT = "%d. %s - Fréquence: %d";
+    private static final String NO_DATA_CLIENTS = "Aucune donnée de revenu disponible pour classer les clients.";
+    private static final String NO_DATA_EVENTS = "Aucune donnée de popularité disponible pour classer les évènements.";
+    private static final String NO_DATA_PRESTATIONS = "Aucune donnée de fréquence disponible pour classer les prestations.";
+    private static final String ERR_ADDING_CHART = "Erreur lors de l'ajout du graphique '{}' au PDF";
+    private static final String ERR_CONVERTING_CHART = "Erreur lors de la conversion ou de l'ajout du graphique: ";
+
+    
+    private PdfFont fontHelveticaBold;
+    private PdfFont fontHelvetica;
+
+    public PdfGenerator() {
+        try {
+            fontHelveticaBold = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
+            fontHelvetica = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+        } catch (IOException e) {
             
-             if (clientCharts == null) return; 
+            logger.error("Impossible de créer les polices PDF standard", e);
+            throw new RuntimeException("Erreur critique lors de l'initialisation des polices PDF", e);
         }
-
-        
-        PageSize pageSize = PageSize.A4;
-        Document document = new Document(pdfDoc, pageSize);
-        document.setMargins(MARGIN, MARGIN, MARGIN, MARGIN);
-
-        PdfFont fontRegular = PdfFontFactory.createFont(com.itextpdf.io.font.constants.StandardFonts.HELVETICA);
-        PdfFont fontBold = PdfFontFactory.createFont(com.itextpdf.io.font.constants.StandardFonts.HELVETICA_BOLD);
-
-        
-        Paragraph title = new Paragraph(new Text("Page 1: Statistiques des comptes clients"))
-                .setFont(fontBold)
-                .setFontSize(FONT_SIZE_TITLE)
-                .setTextAlignment(TextAlignment.CENTER)
-                .setMarginBottom(20f);
-        document.add(title);
-
-        
-        
-        float availableWidth = pageSize.getWidth() - 2 * MARGIN;
-        float availableHeight = pageSize.getHeight() - 2 * MARGIN - 50; 
-        float colWidth = availableWidth / 2f;
-        float x1 = MARGIN;
-        float x2 = MARGIN + colWidth;
-        float y1 = pageSize.getHeight() - MARGIN - FONT_SIZE_TITLE - 30; 
-        float y2 = y1 - CHART_HEIGHT - 30; 
-
-        
-        PdfCanvas canvas = new PdfCanvas(pdfDoc.addNewPage());
-
-        
-        if (clientCharts.size() > 0) addChartToCanvas(canvas, clientCharts.get(0), x1, y1 - CHART_HEIGHT, CHART_WIDTH, CHART_HEIGHT);
-        if (clientCharts.size() > 1) addChartToCanvas(canvas, clientCharts.get(1), x2, y1 - CHART_HEIGHT, CHART_WIDTH, CHART_HEIGHT);
-        if (clientCharts.size() > 2) addChartToCanvas(canvas, clientCharts.get(2), x1, y2 - CHART_HEIGHT, CHART_WIDTH, CHART_HEIGHT);
-        if (clientCharts.size() > 3) addChartToCanvas(canvas, clientCharts.get(3), x2, y2 - CHART_HEIGHT, CHART_WIDTH, CHART_HEIGHT);
-
-
-        
-        
-        float top5YPos = y2 - CHART_HEIGHT - 30; 
-
-        Paragraph top5Title = new Paragraph(new Text("Top 5 des clients (par revenu total des factures payées):"))
-                .setFont(fontBold)
-                .setFontSize(FONT_SIZE_SUBTITLE)
-                .setFixedPosition(pdfDoc.getNumberOfPages(), MARGIN, top5YPos, availableWidth) 
-                .setMarginBottom(10f);
-         document.add(top5Title);
-
-        float currentListY = top5YPos - LEADING_NORMAL; 
-
-        Paragraph top5List = new Paragraph()
-                .setFont(fontRegular)
-                .setFontSize(FONT_SIZE_NORMAL)
-                .setFixedLeading(LEADING_NORMAL); 
-                
-                
-                
-                
-
-        if (stats.getTop5ClientsByRevenue() != null && !stats.getTop5ClientsByRevenue().isEmpty()) {
-            int rank = 1;
-            for (ClientStats.CompanyRevenue cr : stats.getTop5ClientsByRevenue()) {
-                String line = String.format("%d. %s - Revenu: %.2f €",
-                        rank++,
-                        cr.getCompany() != null ? cr.getCompany().getNom() : "(Inconnu)", 
-                        cr.getRevenue() 
-                );
-                top5List.add(new Text(line)).add("\n");
-            }
-        } else {
-            top5List.add(new Text("Aucune donnée de revenu disponible pour classer les clients.")).add("\n");
-        }
-        
-        document.add(top5List);
-
-        
-        
-
-        
-        
-         
-          logger.info("Page 1: Statistiques des comptes clients générée.");
     }
 
     /**
-     * Méthode utilitaire pour ajouter un graphique JFreeChart au canvas PDF en utilisant iText 7.
+     * Génère la page de titre du rapport.
+     *
+     * @param document      Le document iText principal.
+     * @param formattedDate La date formatée (JJ-MM-AAAA) à inclure dans le titre.
      */
-    private void addChartToCanvas(PdfCanvas canvas, JFreeChart chart, float x, float y, float width, float height) throws IOException {
-        try {
-            // Convert JFreeChart to AWT BufferedImage
-            BufferedImage bufferedImage = chart.createBufferedImage((int)width, (int)height);
-            
-            // Create iText ImageData from BufferedImage
-            ImageData imageData = ImageDataFactory.create(bufferedImage, null);
+    public void generateTitlePage(Document document, String formattedDate) {
+        logger.info("Génération de la page de titre...");
+        PageSize pageSize = document.getPdfDocument().getDefaultPageSize();
+        float pageHeight = pageSize.getHeight();
 
-            // Add the ImageData directly to the canvas
-            canvas.addImageFittedIntoRectangle(imageData, new Rectangle(x, y, width, height), false);
-            logger.debug("Chart added to PDF canvas at x={}, y={}", x, y);
+        Paragraph title = new Paragraph(REPORT_TITLE_PREFIX + formattedDate)
+                .setFont(fontHelveticaBold)
+                .setFontSize(FONT_SIZE_REPORT_TITLE)
+                .setTextAlignment(TextAlignment.CENTER)
+                .setMarginTop(pageHeight / 2 - FONT_SIZE_REPORT_TITLE * 2); 
+
+        document.add(title);
+        logger.info("Page de titre générée.");
+    }
+
+    /**
+     * Ajoute un seul graphique JFreeChart à une nouvelle page du document PDF.
+     *
+     * @param document  Le document iText principal.
+     * @param chart     Le graphique JFreeChart à ajouter.
+     * @param titleText Le titre à afficher au-dessus du graphique.
+     * @throws IOException Si une erreur I/O se produit lors de la conversion/écriture de l'image.
+     */
+    public void addChartToNewPage(Document document, JFreeChart chart, String titleText) throws IOException {
+        logger.info("Ajout du graphique '{}' sur une nouvelle page...", titleText);
+        PageSize pageSize = document.getPdfDocument().getDefaultPageSize();
+
+        document.add(new AreaBreak(AreaBreakType.NEXT_PAGE));
+
+        Paragraph title = new Paragraph(new Text(titleText))
+                .setFont(fontHelveticaBold)
+                .setFontSize(FONT_SIZE_SUBTITLE)
+                .setTextAlignment(TextAlignment.CENTER)
+                .setMarginBottom(MARGIN_BOTTOM_TITLE);
+        document.add(title);
+
+        
+        float availableWidth = pageSize.getWidth() - document.getLeftMargin() - document.getRightMargin();
+        float availableHeight = pageSize.getHeight() - document.getTopMargin() - document.getBottomMargin() - FONT_SIZE_SUBTITLE - CHART_VERTICAL_SPACE;
+
+        try {
+            
+            BufferedImage bufferedImage = chart.createBufferedImage((int) availableWidth, (int) availableHeight, BufferedImage.TYPE_INT_ARGB, null);
+            ImageData imageData = ImageDataFactory.create(bufferedImage, null); 
+            Image pdfImage = new Image(imageData);
+
+            pdfImage.setAutoScale(true); 
+            document.add(pdfImage);
+            logger.debug("Graphique '{}' ajouté avec succès à la page {}.", titleText, document.getPdfDocument().getNumberOfPages());
 
         } catch (Exception e) {
-            logger.error("Erreur lors de l'ajout du graphique au canvas PDF", e);
-            if (e instanceof IOException) throw (IOException)e;
-            throw new IOException("Erreur lors de la conversion du graphique en image PDF", e);
+            
+            logger.error(ERR_ADDING_CHART, titleText, e);
+            
+            if (e instanceof IOException) throw (IOException) e;
+            
+            throw new IOException(ERR_CONVERTING_CHART + titleText, e);
         }
     }
 
     /**
-     * Génère la deuxième page du rapport PDF (Statistiques Évènements) en utilisant iText 7.
+     * Génère une page dédiée à la liste Top 5 des clients.
      *
-     * @param pdfDoc     Le document PDF iText auquel ajouter la page.
-     * @param stats      Les statistiques évènement agrégées.
-     * @param eventCharts La liste des graphiques JFreeChart à inclure (devrait en contenir 4).
-     * @throws IOException Si une erreur I/O se produit pendant la création du PDF.
+     * @param document Le document iText principal.
+     * @param stats    Les statistiques client contenant le Top 5.
      */
-    public void generateEventStatsPage(PdfDocument pdfDoc, EventStats stats, List<JFreeChart> eventCharts) throws IOException {
-        logger.info("Génération de la page des statistiques d'évènements (Page 2)");
-        if (eventCharts == null || eventCharts.size() != 4) {
-            logger.warn("Attendu 4 graphiques évènements pour la génération du PDF, mais reçu {}. La page pourrait être incomplète.",
-                        eventCharts == null ? 0 : eventCharts.size());
-            if (eventCharts == null) return;
-        }
+    public void generateClientTop5Page(Document document, ClientStats stats) {
+        logger.info("Génération de la page Top 5 clients...");
+        List<ClientStats.CompanyRevenue> topList = stats.getTop5ClientsByRevenue();
 
-        
-        pdfDoc.addNewPage();
-        PageSize pageSize = pdfDoc.getDefaultPageSize();
-        Document document = new Document(pdfDoc, pageSize);
-        document.setMargins(MARGIN, MARGIN, MARGIN, MARGIN);
-
-        PdfFont fontRegular = PdfFontFactory.createFont(com.itextpdf.io.font.constants.StandardFonts.HELVETICA);
-        PdfFont fontBold = PdfFontFactory.createFont(com.itextpdf.io.font.constants.StandardFonts.HELVETICA_BOLD);
-
-        
-        Paragraph title = new Paragraph(new Text("Page 2: Statistiques des Évènements"))
-                .setFont(fontBold)
-                .setFontSize(FONT_SIZE_TITLE)
-                .setTextAlignment(TextAlignment.CENTER)
-                .setMarginBottom(20f);
-        document.add(title);
-
-        
-        float availableWidth = pageSize.getWidth() - 2 * MARGIN;
-        float x1 = MARGIN;
-        float x2 = MARGIN + (availableWidth / 2f);
-        float y1 = pageSize.getHeight() - MARGIN - FONT_SIZE_TITLE - 30; 
-        float y2 = y1 - CHART_HEIGHT - 30; 
-
-        
-        PdfCanvas canvas = new PdfCanvas(pdfDoc.getLastPage());
-
-        if (eventCharts.size() > 0) addChartToCanvas(canvas, eventCharts.get(0), x1, y1 - CHART_HEIGHT, CHART_WIDTH, CHART_HEIGHT);
-        if (eventCharts.size() > 1) addChartToCanvas(canvas, eventCharts.get(1), x2, y1 - CHART_HEIGHT, CHART_WIDTH, CHART_HEIGHT);
-        if (eventCharts.size() > 2) addChartToCanvas(canvas, eventCharts.get(2), x1, y2 - CHART_HEIGHT, CHART_WIDTH, CHART_HEIGHT);
-        if (eventCharts.size() > 3) addChartToCanvas(canvas, eventCharts.get(3), x2, y2 - CHART_HEIGHT, CHART_WIDTH, CHART_HEIGHT);
-
-        
-        float top5YPos = y2 - CHART_HEIGHT - 30; 
-
-        Paragraph top5Title = new Paragraph(new Text("Top 5 des Évènements (par popularité/inscriptions):"))
-                .setFont(fontBold)
-                .setFontSize(FONT_SIZE_SUBTITLE)
-                .setFixedPosition(pdfDoc.getNumberOfPages(), MARGIN, top5YPos, availableWidth) 
-                .setMarginBottom(10f);
-        document.add(top5Title);
-
-        Paragraph top5List = new Paragraph()
-                .setFont(fontRegular)
-                .setFontSize(FONT_SIZE_NORMAL)
-                .setFixedLeading(LEADING_NORMAL);
-
-        if (stats.getTop5EventsByPopularity() != null && !stats.getTop5EventsByPopularity().isEmpty()) {
-            int rank = 1;
-            for (EventStats.EventPopularity ep : stats.getTop5EventsByPopularity()) {
-                String line = String.format("%d. %s - Popularité: %d",
-                        rank++,
-                        ep.getEvent() != null ? ep.getEvent().getTitre() : "(Inconnu)",
-                        ep.getPopularityMetric()
-                );
-                top5List.add(new Text(line)).add("\n");
-            }
-        } else {
-            top5List.add(new Text("Aucune donnée de popularité disponible pour classer les évènements.")).add("\n");
-        }
-        document.add(top5List); 
-
-        logger.info("Page 2: Statistiques des Évènements générée.");
+        generateTopListPage(document, CLIENT_TOP5_TITLE, topList, (item, rank) ->
+                String.format(CLIENT_TOP5_FORMAT,
+                        rank,
+                        item.getCompanyName(), 
+                        item.getRevenue()),
+                NO_DATA_CLIENTS);
+        logger.info("Contenu Top 5 clients ajouté (Page {}).", document.getPdfDocument().getNumberOfPages());
     }
 
     /**
-     * Génère la troisième page du rapport PDF (Statistiques Prestations) en utilisant iText 7.
+     * Génère une page standardisée pour afficher une liste Top 5.
      *
-     * @param pdfDoc             Le document PDF iText auquel ajouter la page.
-     * @param stats              Les statistiques prestation agrégées.
-     * @param prestationCharts   La liste des graphiques JFreeChart à inclure (devrait en contenir 4).
-     * @throws IOException Si une erreur I/O se produit pendant la création du PDF.
+     * @param document      Le document PDF.
+     * @param titleText     Le titre de la page.
+     * @param topList       La liste des éléments à afficher (doit avoir au plus 5 éléments).
+     * @param itemFormatter Fonction pour formater chaque élément de la liste en String.
+     * @param noDataMessage Message à afficher si la liste est vide.
+     * @param <T>           Le type des éléments dans la liste.
      */
-    public void generatePrestationStatsPage(PdfDocument pdfDoc, PrestationStats stats, List<JFreeChart> prestationCharts) throws IOException {
-        logger.info("Génération de la page des statistiques de prestations (Page 3)");
-        if (prestationCharts == null || prestationCharts.size() != 4) {
-            logger.warn("Attendu 4 graphiques prestations pour la génération du PDF, mais reçu {}. La page pourrait être incomplète.",
-                        prestationCharts == null ? 0 : prestationCharts.size());
-            if (prestationCharts == null) return;
-        }
+    private <T> void generateTopListPage(Document document, String titleText, List<T> topList,
+                                         ListItemFormatter<T> itemFormatter, String noDataMessage) {
 
-        
-        pdfDoc.addNewPage();
-        PageSize pageSize = pdfDoc.getDefaultPageSize();
-        Document document = new Document(pdfDoc, pageSize);
-        document.setMargins(MARGIN, MARGIN, MARGIN, MARGIN);
+        document.add(new AreaBreak(AreaBreakType.NEXT_PAGE));
 
-        PdfFont fontRegular = PdfFontFactory.createFont(com.itextpdf.io.font.constants.StandardFonts.HELVETICA);
-        PdfFont fontBold = PdfFontFactory.createFont(com.itextpdf.io.font.constants.StandardFonts.HELVETICA_BOLD);
-
-        
-        Paragraph title = new Paragraph(new Text("Page 3: Statistiques des Prestations"))
-                .setFont(fontBold)
-                .setFontSize(FONT_SIZE_TITLE)
+        Paragraph title = new Paragraph(new Text(titleText))
+                .setFont(fontHelveticaBold)
+                .setFontSize(FONT_SIZE_SUBTITLE)
                 .setTextAlignment(TextAlignment.CENTER)
-                .setMarginBottom(20f);
+                .setMarginBottom(MARGIN_BOTTOM_LIST_TITLE);
         document.add(title);
 
-        
-        float availableWidth = pageSize.getWidth() - 2 * MARGIN;
-        float x1 = MARGIN;
-        float x2 = MARGIN + (availableWidth / 2f);
-        float y1 = pageSize.getHeight() - MARGIN - FONT_SIZE_TITLE - 30; 
-        float y2 = y1 - CHART_HEIGHT - 30; 
-
-        
-        PdfCanvas canvas = new PdfCanvas(pdfDoc.getLastPage());
-
-        if (prestationCharts.size() > 0) addChartToCanvas(canvas, prestationCharts.get(0), x1, y1 - CHART_HEIGHT, CHART_WIDTH, CHART_HEIGHT);
-        if (prestationCharts.size() > 1) addChartToCanvas(canvas, prestationCharts.get(1), x2, y1 - CHART_HEIGHT, CHART_WIDTH, CHART_HEIGHT);
-        if (prestationCharts.size() > 2) addChartToCanvas(canvas, prestationCharts.get(2), x1, y2 - CHART_HEIGHT, CHART_WIDTH, CHART_HEIGHT);
-        if (prestationCharts.size() > 3) addChartToCanvas(canvas, prestationCharts.get(3), x2, y2 - CHART_HEIGHT, CHART_WIDTH, CHART_HEIGHT);
-
-        
-        float top5YPos = y2 - CHART_HEIGHT - 30; 
-
-        Paragraph top5Title = new Paragraph(new Text("Top 5 des Prestations (par fréquence):"))
-                .setFont(fontBold)
-                .setFontSize(FONT_SIZE_SUBTITLE)
-                .setFixedPosition(pdfDoc.getNumberOfPages(), MARGIN, top5YPos, availableWidth) 
-                .setMarginBottom(10f);
-        document.add(top5Title);
-
-        Paragraph top5List = new Paragraph()
-                .setFont(fontRegular)
+        Paragraph listParagraph = new Paragraph()
+                .setFont(fontHelvetica)
                 .setFontSize(FONT_SIZE_NORMAL)
                 .setFixedLeading(LEADING_NORMAL);
 
-        if (stats.getTop5PrestationsByFrequency() != null && !stats.getTop5PrestationsByFrequency().isEmpty()) {
+        if (topList != null && !topList.isEmpty()) {
             int rank = 1;
-            for (PrestationStats.PrestationFrequency pf : stats.getTop5PrestationsByFrequency()) {
-                String line = String.format("%d. %s - Fréquence: %d",
-                        rank++,
-                        pf.getPrestationName() != null ? pf.getPrestationName() : "(Inconnu)",
-                        pf.getFrequency()
-                );
-                top5List.add(new Text(line)).add("\n");
+            
+            for (T item : topList.subList(0, Math.min(topList.size(), 5))) {
+                String line = itemFormatter.format(item, rank++);
+                listParagraph.add(new Text(line)).add("\n");
             }
         } else {
-            top5List.add(new Text("Aucune donnée de fréquence disponible pour classer les prestations.")).add("\n");
+            listParagraph.add(new Text(noDataMessage)).add("\n");
         }
-        document.add(top5List); 
-
-        logger.info("Page 3: Statistiques des Prestations générée.");
+        document.add(listParagraph);
     }
 
+    /**
+     * Interface fonctionnelle pour le formatage d'éléments de liste.
+     */
+    @FunctionalInterface
+    private interface ListItemFormatter<T> {
+        String format(T item, int rank);
+    }
 }

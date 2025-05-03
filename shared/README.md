@@ -22,13 +22,13 @@ Les fichiers partagés pour l'interface d'administration sont localisés dans le
 * **db.php** - Fonctions de connexion et d'interaction avec la base de données (requêtes SQL, transactions, etc.)
 * **functions.php** - Fonctions utilitaires communes (formatage de dates, de montants, gestion des messages flash, etc.)
 * **auth.php** - Fonctions d'authentification et de gestion des utilisateurs (connexion, déconnexion, vérification des rôles)
-* **logging.php** - Fonctions pour la journalisation des événements et activités système
+* **logging.php** - Fonctions pour la journalisation des évènements et activités système
 
 ### Fonctionnalités clés
 
 * **Gestion de base de données** - Interface PDO sécurisée avec prévention des injections SQL
 * **Authentification** - Système complet avec sessions, connexion persistante ("remember me") et permissions par rôle
-* **Journalisation** - Enregistrement centralisé des activités utilisateurs, opérations métier et événements de sécurité
+* **Journalisation** - Enregistrement centralisé des activités utilisateurs, opérations métier et évènements de sécurité
 * **Fonctions utilitaires** - Formatage des données, messages flash, pagination, validation CSRF
 * **Gestion des erreurs** - Centralisation et normalisation du traitement des erreurs
 
@@ -83,4 +83,4 @@ Les mécanismes de sécurité implémentés comprennent :
 * Protection CSRF pour les formulaires et actions sensibles
 * Hachage des mots de passe avec `password_hash()`
 * Validation des entrées utilisateur
-* Journalisation des événements de sécurité
+* Journalisation des évènements de sécurité

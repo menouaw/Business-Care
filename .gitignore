@@ -29,6 +29,7 @@ npm-debug.log*
 composer.phar
 
 # fichiers de configuration avec des informations sensibles
+documentation/
 .cursor/
 docs/
 

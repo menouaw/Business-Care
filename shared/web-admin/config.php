@@ -19,6 +19,7 @@ define('ASSETS_URL', ROOT_URL . '/assets');
 define('API_URL', ROOT_URL . '/api');
 define('UPLOAD_URL', ROOT_URL . '/uploads/');
 define('JAVA_URL', ROOT_URL . '/java-app');
+define('JAVA_REPORTS_URL', ROOT_URL . '/java-app/output');
 
 // Constantes pour les rôles utilisateurs
 define('ROLE_ADMIN', 1);
@@ -48,6 +49,7 @@ define('TABLE_PROVIDER_SERVICES', 'prestataires_prestations');
 define('TABLE_PROVIDER_AVAILABILITY', 'prestataires_disponibilites');
 define('TABLE_EVENEMENTS', 'evenements');
 define('TABLE_EVENEMENT_INSCRIPTIONS', 'evenement_inscriptions');
+define('TABLE_NOTIFICATIONS', 'notifications');
 
 // Constantes pour les devis (quotes)
 define('QUOTE_STATUS_PENDING', 'en_attente');
