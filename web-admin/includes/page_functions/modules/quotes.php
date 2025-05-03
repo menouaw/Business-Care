@@ -155,20 +155,12 @@ function quotesGetServices() {
 }
 
 /**
- * Crée ou met à jour un devis et ses lignes dans la base de données.
- *
- * @param array $data Données du devis (entreprise_id, service_id, nombre_salaries_estimes, date_creation, date_validite, statut, conditions_paiement, delai_paiement, est_personnalise, notes_negociation)
- * @param array $lines Lignes de prestation additionnelles (optionnel) [['prestation_id' => int, 'quantite' => int, 'description_specifique' => string], ...]
- * @param int $id L'identifiant du devis à mettre à jour, ou 0 pour créer.
- * @return array Résultat ['success' => bool, 'message' => string|null, 'errors' => array|null, 'quoteId' => int|null]
+ * Valide les données principales d'un devis.
+ * @param array $data Données du devis.
+ * @return array Liste des erreurs de validation.
  */
-function quotesSave($data, $lines, $id = 0) {
+function _validateQuoteMainData(array $data): array {
     $errors = [];
-    $totalHT = 0;
-    $totalTTC = 0;
-    $tvaAmount = 0;
-    $selectedService = null;
-
     if (empty($data['entreprise_id'])) {
         $errors[] = "L'entreprise cliente est obligatoire.";
     }
@@ -181,26 +173,32 @@ function quotesSave($data, $lines, $id = 0) {
     if (!empty($data['statut']) && !in_array($data['statut'], QUOTE_STATUSES)) {
         $errors[] = "Le statut sélectionné n'est pas valide.";
     }
-    
-    
+
     if (!empty($data['service_id'])) {
         if (empty($data['nombre_salaries_estimes']) || !is_numeric($data['nombre_salaries_estimes']) || $data['nombre_salaries_estimes'] <= 0) {
-            $errors[] = "Le nombre de salariés estimés est obligatoire et doit être positif.";
+            $errors[] = "Le nombre de salariés estimés est obligatoire et doit être positif lorsque le service est sélectionné.";
         } else {
             $selectedService = fetchOne(TABLE_SERVICES, "id = ? AND actif = 1", '', [(int)$data['service_id']]);
             if (!$selectedService) {
                  $errors[] = "Le service sélectionné est invalide ou inactif.";
-            } else {
-                 $totalHT = $selectedService['tarif_annuel_par_salarie'] * (int)$data['nombre_salaries_estimes'];
             }
         }
     }
+    return $errors;
+}
 
-     
+/**
+ * Valide les lignes de prestation d'un devis.
+ * @param array $lines Lignes de prestation soumises.
+ * @return array ['errors' => array, 'validLines' => array, 'linesTotalHT' => float]
+ */
+function _validateQuoteLines(array $lines): array {
+    $errors = [];
     $validLines = [];
-    $linesTotalHT = 0;  
+    $linesTotalHT = 0;
+
     if (!empty($lines)) {
-        $prestationIds = array_column($lines, 'prestation_id');
+        $prestationIds = array_filter(array_column($lines, 'prestation_id')); 
         $availablePrestations = [];
         if (!empty($prestationIds)) {
             $placeholders = implode(',', array_fill(0, count($prestationIds), '?'));
@@ -208,22 +206,28 @@ function quotesSave($data, $lines, $id = 0) {
         }
 
         foreach ($lines as $index => $line) {
-            if (empty($line['prestation_id']) || !isset($availablePrestations[$line['prestation_id']])) {
-                $errors[] = "Ligne de prestation " . ($index + 1) . ": Prestation invalide ou non trouvée.";
-                continue;
-            }
-            if (!isset($line['quantite']) || !is_numeric($line['quantite']) || $line['quantite'] <= 0) {
-                $errors[] = "Ligne de prestation " . ($index + 1) . ": Quantité invalide.";
+            
+            if (empty($line['prestation_id'])) {
+                 
                 continue;
             }
 
+            if (!isset($availablePrestations[$line['prestation_id']])) {
+                $errors[] = "Ligne de prestation " . ($index + 1) . ": Prestation invalide ou non trouvée.";
+                continue; 
+            }
+            if (!isset($line['quantite']) || !is_numeric($line['quantite']) || $line['quantite'] <= 0) {
+                $errors[] = "Ligne de prestation " . ($index + 1) . ": Quantité invalide (doit être un nombre positif).";
+                 
+                 continue;
+            }
+
             $prixUnitaire = $availablePrestations[$line['prestation_id']];
-            $lineTotal = $prixUnitaire * $line['quantite'];
-            
-            $linesTotalHT += $lineTotal;  
-            
-            $validLines[] = [  
-                'prestation_id' => $line['prestation_id'],
+            $lineTotal = $prixUnitaire * (int)$line['quantite'];
+            $linesTotalHT += $lineTotal;
+
+            $validLines[] = [
+                'prestation_id' => (int)$line['prestation_id'],
                 'quantite' => (int)$line['quantite'],
                 'prix_unitaire_devis' => $prixUnitaire,
                 'description_specifique' => $line['description_specifique'] ?? null
@@ -231,33 +235,69 @@ function quotesSave($data, $lines, $id = 0) {
         }
     }
 
+    return [
+        'errors' => $errors,
+        'validLines' => $validLines,
+        'linesTotalHT' => $linesTotalHT
+    ];
+}
+
+/**
+ * Calcule le montant HT basé sur le service sélectionné et le nombre de salariés.
+ * @param array $data Données du devis (service_id, nombre_salaries_estimes).
+ * @return float Montant HT du service, ou 0 si non applicable/invalide.
+ */
+function _calculateServiceTotal(array $data): float {
+    if (!empty($data['service_id']) && !empty($data['nombre_salaries_estimes']) && $data['nombre_salaries_estimes'] > 0) {
+        $selectedService = fetchOne(TABLE_SERVICES, "id = ? AND actif = 1", '', [(int)$data['service_id']]);
+        if ($selectedService) {
+            return (float)$selectedService['tarif_annuel_par_salarie'] * (int)$data['nombre_salaries_estimes'];
+        }
+    }
+    return 0.0;
+}
+
+/**
+ * Crée ou met à jour un devis et ses lignes dans la base de données.
+ *
+ * @param array $data Données du devis (entreprise_id, service_id, nombre_salaries_estimes, date_creation, date_validite, statut, conditions_paiement, delai_paiement, est_personnalise, notes_negociation)
+ * @param array $lines Lignes de prestation additionnelles (optionnel) [['prestation_id' => int, 'quantite' => int, 'description_specifique' => string], ...]
+ * @param int $id L'identifiant du devis à mettre à jour, ou 0 pour créer.
+ * @return array Résultat ['success' => bool, 'message' => string|null, 'errors' => array|null, 'quoteId' => int|null]
+ */
+function quotesSave($data, $lines, $id = 0) {
      
-    $totalHT += $linesTotalHT;
+    $mainErrors = _validateQuoteMainData($data);
+    $linesValidationResult = _validateQuoteLines($lines);
+    $lineErrors = $linesValidationResult['errors'];
+    $validLines = $linesValidationResult['validLines'];
+    $linesTotalHT = $linesValidationResult['linesTotalHT'];
+
+    $errors = array_merge($mainErrors, $lineErrors);
+
+     
+    $serviceTotalHT = _calculateServiceTotal($data);
+    $totalHT = $serviceTotalHT + $linesTotalHT;
 
      
     if (empty($data['service_id']) && empty($validLines)) {
-         
-        if (empty($data['service_id']) && empty($lines)) {
-            $errors[] = "Le devis doit contenir au moins un service standard ou une prestation spécifique.";
-        }  
+         $errors[] = "Le devis doit contenir au moins un service standard ou une prestation spécifique valide.";
     }
 
+     
     if (!empty($errors)) {
         return ['success' => false, 'errors' => $errors];
     }
 
     
-    if ($totalHT >= 0) { 
-        $tvaAmount = $totalHT * TVA_RATE;
-        $totalTTC = $totalHT + $tvaAmount;
-    } else {
-         
-         $totalHT = 0;
-         $totalTTC = 0;
-         $tvaAmount = 0;
-         $errors[] = "Impossible de calculer le montant du devis.";
+    if ($totalHT < 0) {  
+         $errors[] = "Impossible de calculer le montant total du devis (résultat négatif).";
          return ['success' => false, 'errors' => $errors];
     }
+
+     
+    $tvaAmount = $totalHT * TVA_RATE;
+    $totalTTC = $totalHT + $tvaAmount;
 
 
     $dbData = [
@@ -284,11 +324,11 @@ function quotesSave($data, $lines, $id = 0) {
         if ($id > 0) { 
             updateRow(TABLE_QUOTES, $dbData, "id = :where_id", [':where_id' => $id]);
             
-            deleteRow(TABLE_QUOTE_PRESTATIONS, "devis_id = ?", [$id]); 
+            deleteRow(TABLE_QUOTE_PRESTATIONS, "devis_id = ?", [$id]);
             $logAction = 'quote_update';
             $logMessage = "Mise à jour devis ID: $id pour entreprise ID: {$dbData['entreprise_id']}, {$logServiceInfo}, Statut: {$dbData['statut']}, Montant HT: {$totalHT}€";
             $successMessage = "Le devis a été mis à jour avec succès";
-        } else {
+        } else { 
             $quoteId = insertRow(TABLE_QUOTES, $dbData);
             if (!$quoteId) {
                 throw new Exception("Échec de la création de l'enregistrement principal du devis.");
@@ -311,8 +351,10 @@ function quotesSave($data, $lines, $id = 0) {
     } catch (Exception $e) {
         rollbackTransaction();
         $errorMessage = "Erreur de base de données : " . $e->getMessage();
+         
         $errors[] = $errorMessage;
         logSystemActivity('error', "Erreur BDD dans quotesSave: " . $e->getMessage());
+        
         return ['success' => false, 'errors' => $errors];
     }
 }

@@ -97,7 +97,7 @@ include_once '../../templates/header.php';
                                         <tr>
                                             <td><?php echo htmlspecialchars($service['nom']); ?></td>
                                             <td><?php echo htmlspecialchars($service['type']); ?></td>
-                                            <td><?php echo formatCurrency($service['prix']); ?></td>
+                                            <td><?php echo formatMoney($service['prix']); ?></td>
                                             <td><?php echo $service['duree'] ? htmlspecialchars($service['duree']) . ' min' : '-'; ?></td>
                                             <td><?php echo htmlspecialchars($service['categorie'] ?: '-'); ?></td>
                                             <td class="table-actions">

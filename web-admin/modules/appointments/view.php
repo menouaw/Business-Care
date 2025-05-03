@@ -104,7 +104,7 @@ include_once '../../templates/header.php';
                                 <div class="row">
                                      <div class="col-md-6">
                                         <small class="text-muted d-block">Prix indicatif</small>
-                                        <strong><?php echo $appointment['prestation_prix'] ? formatCurrency($appointment['prestation_prix']) : 'N/A'; ?></strong>
+                                        <strong><?php echo $appointment['prestation_prix'] ? formatMoney($appointment['prestation_prix']) : 'N/A'; ?></strong>
                                     </div>
                                      <div class="col-md-6">
                                         <small class="text-muted d-block">Duree par defaut</small>

@@ -56,7 +56,7 @@ include_once '../../templates/header.php';
                         <div class="col-md-6">
                             <p><strong>Nom:</strong> <?php echo htmlspecialchars($service['nom']); ?></p>
                             <p><strong>Type:</strong> <?php echo htmlspecialchars(ucfirst($service['type'])); ?></p>
-                            <p><strong>Prix:</strong> <?php echo formatCurrency($service['prix']); ?></p>
+                            <p><strong>Prix:</strong> <?php echo formatMoney($service['prix']); ?></p>
                             <p><strong>Duree:</strong> <?php echo $service['duree'] ? htmlspecialchars($service['duree']) . ' minutes' : 'Non specifiee'; ?></p>
                             <p><strong>Capacite maximale:</strong> <?php echo $service['capacite_max'] ? htmlspecialchars($service['capacite_max']) . ' personnes' : 'Non specifiee'; ?></p>
                         </div>

@@ -112,61 +112,6 @@ function billingGetNextInvoiceNumber($prefix) {
 }
 
 /**
- * Génère une facture client à partir d'un devis accepté
- * 
- * @param int $quoteId ID du devis
- * @return array Résultat ['success' => bool, 'invoiceId' => int|null, 'message' => string]
- */
-function billingGenerateClientInvoiceFromQuote($quoteId) {
-    $quote = fetchOne(TABLE_QUOTES, 'id = ? AND statut = ?', '', [$quoteId, QUOTE_STATUS_ACCEPTED]);
-
-    if (!$quote) {
-        return ['success' => false, 'message' => "Devis non trouvé ou non accepté."];
-    }
-
-    
-    $existingInvoice = fetchOne(TABLE_INVOICES, 'devis_id = ?', '', [$quoteId]);
-    if ($existingInvoice) {
-         return ['success' => false, 'message' => "Une facture existe déjà pour ce devis (ID: {$existingInvoice['id']})."];
-    }
-
-    $invoiceNumber = billingGetNextInvoiceNumber(INVOICE_PREFIX);
-    $emissionDate = date('Y-m-d');
-    $echeanceDate = date('Y-m-d', strtotime("+" . ($quote['delai_paiement'] ?? 30) . " days")); 
-
-    $invoiceData = [
-        'entreprise_id' => $quote['entreprise_id'],
-        'devis_id' => $quote['id'],
-        'numero_facture' => $invoiceNumber,
-        'date_emission' => $emissionDate,
-        'date_echeance' => $echeanceDate,
-        'montant_total' => $quote['montant_total'],
-        'montant_ht' => $quote['montant_ht'],
-        'tva' => $quote['tva'],
-        'statut' => INVOICE_STATUS_PENDING, 
-        'mode_paiement' => null 
-    ];
-
-    try {
-        beginTransaction();
-        $invoiceId = insertRow(TABLE_INVOICES, $invoiceData);
-
-        if ($invoiceId) {
-            commitTransaction();
-            logBusinessOperation($_SESSION['user_id'], 'client_invoice_generated', "[SUCCESS] Facture client ID: $invoiceId générée depuis devis ID: $quoteId");
-            
-            return ['success' => true, 'invoiceId' => $invoiceId, 'message' => "Facture générée avec succès."];
-        } else {
-            throw new Exception("Échec de l'insertion de la facture.");
-        }
-    } catch (Exception $e) {
-        rollbackTransaction();
-        logSystemActivity('error', "[ERROR] Échec génération facture client depuis devis ID: $quoteId - " . $e->getMessage());
-        return ['success' => false, 'message' => "Erreur lors de la génération de la facture: " . $e->getMessage()];
-    }
-}
-
-/**
  * Met à jour le statut d'une facture client
  * 
  * @param int $invoiceId ID de la facture
@@ -368,13 +313,13 @@ function billingFindUnbilledAppointments($startDate, $endDate) {
                 rdv.praticien_id, 
                 rdv.date_rdv, 
                 prest.nom as prestation_nom,
-                prest.prix as prestation_prix -- Assumons que le prix est sur la prestation
+                prest.prix as prestation_prix 
             FROM " . TABLE_APPOINTMENTS . " rdv
             JOIN " . TABLE_PRESTATIONS . " prest ON rdv.prestation_id = prest.id
             LEFT JOIN " . TABLE_PRACTITIONER_INVOICE_LINES . " fpl ON rdv.id = fpl.rendez_vous_id
             WHERE rdv.statut = 'termine' 
               AND rdv.praticien_id IS NOT NULL
-              AND fpl.id IS NULL -- N'existe pas dans les lignes de facture
+              AND fpl.id IS NULL 
               AND DATE(rdv.date_rdv) BETWEEN ? AND ? 
             ORDER BY rdv.praticien_id, rdv.date_rdv";
             
@@ -390,85 +335,6 @@ function billingFindUnbilledAppointments($startDate, $endDate) {
     }
     
     return $groupedAppointments;
-}
-
-/**
- * Génère les factures prestataires pour une période donnée
- * 
- * @param string $startDate Date de début (Y-m-d)
- * @param string $endDate Date de fin (Y-m-d)
- * @return array Résultat ['success' => bool, 'message' => string, 'invoices' => array]
- */
-function billingGenerateProviderInvoicesForPeriod($startDate, $endDate) {
-    $unbilledAppointments = billingFindUnbilledAppointments($startDate, $endDate);
-    $generatedCount = 0;
-    $errors = [];
-
-    if (empty($unbilledAppointments)) {
-        return ['success' => true, 'message' => "Aucun rendez-vous terminé non facturé trouvé pour cette période.", 'generated_count' => 0];
-    }
-
-    foreach ($unbilledAppointments as $providerId => $appointments) {
-        try {
-            beginTransaction();
-            
-            $totalAmount = 0;
-            foreach ($appointments as $appt) {
-                $totalAmount += (float)$appt['prestation_prix']; 
-            }
-            
-            $invoiceNumber = billingGetNextInvoiceNumber(PRACTITIONER_INVOICE_PREFIX);
-            $invoiceDate = date('Y-m-d'); 
-
-            $providerInvoiceData = [
-                'prestataire_id' => $providerId,
-                'numero_facture' => $invoiceNumber,
-                'date_facture' => $invoiceDate,
-                'periode_debut' => $startDate,
-                'periode_fin' => $endDate,
-                'montant_total' => $totalAmount,
-                'statut' => PRACTITIONER_INVOICE_STATUS_UNPAID 
-            ];
-
-            $invoiceId = insertRow(TABLE_PRACTITIONER_INVOICES, $providerInvoiceData);
-
-            if (!$invoiceId) {
-                throw new Exception("Échec de création de l'en-tête de facture pour le prestataire ID: $providerId.");
-            }
-
-            
-            foreach ($appointments as $appt) {
-                $lineData = [
-                    'facture_prestataire_id' => $invoiceId,
-                    'rendez_vous_id' => $appt['rdv_id'],
-                    'description' => "Prestation: " . $appt['prestation_nom'] . " le " . formatDate($appt['date_rdv'], 'd/m/Y'),
-                    'montant' => (float)$appt['prestation_prix']
-                ];
-                $lineId = insertRow(TABLE_PRACTITIONER_INVOICE_LINES, $lineData);
-                if (!$lineId) {
-                     throw new Exception("Échec de création de la ligne de facture pour le RDV ID: {$appt['rdv_id']}.");
-                }
-            }
-            
-            commitTransaction();
-            $generatedCount++;
-            logBusinessOperation($_SESSION['user_id'] ?? null, 'provider_invoice_generated', "[SUCCESS] Facture prestataire ID: $invoiceId générée pour prestataire ID: $providerId pour période $startDate - $endDate");
-            
-
-        } catch (Exception $e) {
-            rollbackTransaction();
-            $errorMessage = "Erreur génération facture pour Prestataire ID $providerId: " . $e->getMessage();
-            $errors[] = $errorMessage;
-            logSystemActivity('error', "[ERROR] " . $errorMessage);
-        }
-    }
-
-    if (empty($errors)) {
-        return ['success' => true, 'message' => "$generatedCount facture(s) prestataire générée(s) avec succès.", 'generated_count' => $generatedCount];
-    } else {
-        $combinedErrors = implode('; ', $errors);
-        return ['success' => false, 'message' => "Erreurs lors de la génération: " . $combinedErrors, 'generated_count' => $generatedCount];
-    }
 }
 
 /**
@@ -520,34 +386,6 @@ function billingGetProviderInvoiceStatuses() {
 }
 
 /**
- * Récupère la liste des entreprises pour le filtre
- * 
- * @return array Liste des entreprises [id => nom]
- */
-function billingGetCompaniesForFilter() {
-    $companies = fetchAll(TABLE_COMPANIES, '', 'nom ASC');
-    $options = [];
-    foreach ($companies as $company) {
-        $options[$company['id']] = $company['nom'];
-    }
-    return $options;
-}
-
-/**
- * Récupère la liste des prestataires pour le filtre
- * 
- * @return array Liste des prestataires [id => nom]
- */
-function billingGetProvidersForFilter() {
-    $providers = fetchAll(TABLE_USERS, 'role_id = ? AND statut = ?', 'nom ASC, prenom ASC', 0, 0, [ROLE_PRESTATAIRE, STATUS_ACTIVE]);
-    $options = [];
-    foreach ($providers as $provider) {
-        $options[$provider['id']] = $provider['prenom'] . ' ' . $provider['nom'];
-    }
-    return $options;
-}
-
-/**
  * Génère un badge HTML pour le statut d'une facture
  * 
  * @param string $status Statut de la facture
@@ -556,8 +394,8 @@ function billingGetProvidersForFilter() {
  */
 function billingGetInvoiceStatusBadge($status, $type = 'client') 
 {
-    $badgeClass = 'bg-secondary'; // Default
-    $statusText = ucfirst(str_replace('_', ' ', $status)); // Default text formatting
+    $badgeClass = 'bg-secondary'; 
+    $statusText = ucfirst(str_replace('_', ' ', $status)); 
 
     if ($type === 'client') {
         switch ($status) {

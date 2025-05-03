@@ -2,10 +2,6 @@
 require_once 'config.php';
 require_once 'db.php';
 
-define('DEFAULT_ITEMS_PER_PAGE', 10);
-define('DEFAULT_DATE_FORMAT', 'd/m/Y H:i');
-define('DEFAULT_CURRENCY', '€');
-
 /**
  * Formate une date selon un format spécifié.
  *
@@ -286,16 +282,11 @@ function paginateResults($table, $page, $perPage = DEFAULT_ITEMS_PER_PAGE, $wher
     $page = max(1, min($page, $totalPages));
     $offset = ($page - 1) * $perPage;
 
-    if ($orderBy) {
-        if (is_string($orderBy) && !empty(trim($orderBy))) {
-            if (!preg_match('/^[a-zA-Z0-9_\.,\s\(\)]+(?:\s+(?:ASC|DESC)(?:\s+NULLS\s+(?:FIRST|LAST))?)?(?:,\s*[a-zA-Z0-9_\.,\s\(\)]+(?:\s+(?:ASC|DESC)(?:\s+NULLS\s+(?:FIRST|LAST))?)?)*$/', $orderBy)) {
-                error_log("[WARNING] Caractères invalides détectés dans la clause orderBy pour la table '$table': " . $orderBy);
-                $orderBy = ''; 
-            }
-        } else {
-            error_log("[WARNING] Type invalide ou paramètre orderBy vide passé à paginateResults pour la table '$table'. Attendu: string, reçu: " . gettype($orderBy));
-            $orderBy = ''; 
+    if (!is_string($orderBy) || empty(trim($orderBy))) {
+        if ($orderBy) {
+             error_log("[WARNING] Type invalide ou paramètre orderBy vide passé à paginateResults");
         }
+        $orderBy = '';
     }
 
     $items = fetchAll($table, $where, $orderBy, $perPage, $offset);
@@ -396,20 +387,6 @@ function handleCsrfFailureRedirect($entityId, $module, $actionDescription = 'act
         "[SECURITY FAILURE] Tentative de {$actionDescription} ID: {$entityId} avec jeton invalide via {$requestMethod}"
     );
     redirectBasedOnReferer($entityId, $module);
-}
-
-/**
- * Formate un nombre en devise (euros).
- *
- * @param float|null $amount Le montant.
- * @param string $currencySymbol Le symbole de la devise.
- * @return string Le montant formaté ou 'N/A' si null.
- */
-function formatCurrency($amount, $currencySymbol = '€') {
-    if ($amount === null || !is_numeric($amount)) {
-        return 'N/A';
-    }
-    return number_format($amount, 2, ',', ' ') . ' ' . $currencySymbol;
 }
 
 /**

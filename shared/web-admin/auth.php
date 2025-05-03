@@ -19,7 +19,7 @@ require_once 'db.php';
  */
 function login($email, $password, $rememberMe = false)
 {
-    $user = fetchOne('personnes', "email = '$email' AND statut = 'actif'");
+    $user = fetchOne(TABLE_USERS, "email = :email AND statut = 'actif'", '', [':email' => $email]);
 
     if ($user && password_verify($password, $user['mot_de_passe'])) {
         $_SESSION['user_id'] = $user['id'];
@@ -41,7 +41,7 @@ function login($email, $password, $rememberMe = false)
         if ($user) {
             logSecurityEvent($user['id'], 'login', '[FAILURE] Mot de passe incorrect', true);
         } else {
-            logSecurityEvent(null, 'login', '[FAILURE] Email inexistant: $email', true);
+            logSecurityEvent(null, 'login', "[FAILURE] Email inexistant: $email", true);
         }
         return false;
     }
@@ -196,7 +196,7 @@ function getUserInfo($userId = null)
         $userId = $_SESSION['user_id'];
     }
 
-    $userInfo = fetchOne('personnes', "id = $userId");
+    $userInfo = fetchOne(TABLE_USERS, "id = :id", '', [':id' => $userId]);
 
     if ($userInfo) {
         logActivity($userId, 'user_info', "[SUCCESS] Récupération des informations utilisateur ID: $userId");
@@ -207,40 +207,7 @@ function getUserInfo($userId = null)
     return $userInfo;
 }
 
-/**
- * Initialise la procédure de réinitialisation de mot de passe pour un utilisateur.
- *
- * Cette fonction vérifie si l'email fourni correspond à un utilisateur existant. Si ce n'est pas le cas,
- * elle consigne un évènement de sécurité et retourne false. Sinon, elle génère un token unique et définit
- * une date d'expiration d'une heure pour le lien de réinitialisation, met à jour l'enregistrement de l'utilisateur,
- * et consigne l'initiation de la demande de réinitialisation.
- *
- * @param string $email Email de l'utilisateur concerné.
- * @return bool Retourne true si la procédure de réinitialisation a été initiée avec succès, false sinon.
- */
-function resetPassword($email)
-{
-    $user = fetchOne('personnes', "email = '$email'");
-
-    if (!$user) {
-        logSecurityEvent(null, 'password_reset', "[FAILURE] Tentative de réinitialisation pour email inexistant: $email", true);
-        return false;
-    }
-
-    $token = bin2hex(random_bytes(32));
-    $expires = date('Y-m-d H:i:s', strtotime('+1 hour'));
-
-    updateRow('personnes', [
-        'token' => $token,
-        'expires' => $expires
-    ], "id = {$user['id']}");
-
-    logSecurityEvent($user['id'], 'password_reset', '[SUCCESS] Demande de réinitialisation de mot de passe initiée');
-
-    
-
-    return true;
-}
+// TODO: réinitialisation de mot de passe
 
 /**
  * Génère et stocke un token de connexion automatique "Se souvenir de moi" pour un utilisateur.
@@ -257,7 +224,7 @@ function createRememberMeToken($userId)
     $token = bin2hex(random_bytes(32));
     $expires = date('Y-m-d H:i:s', strtotime('+30 days'));
 
-    insertRow('remember_me_tokens', [
+    insertRow(TABLE_REMEMBER_ME, [
         'user_id' => $userId,
         'token' => $token,
         'expires_at' => $expires
@@ -281,7 +248,7 @@ function createRememberMeToken($userId)
  */
 function validateRememberMeToken($token)
 {
-    $result = fetchOne('remember_me_tokens', "token = '$token' AND expires_at > NOW()");
+    $result = fetchOne(TABLE_REMEMBER_ME, "token = :token AND expires_at > NOW()", '', [':token' => $token]);
 
     if ($result) {
         $user = getUserInfo($result['user_id']);
@@ -315,10 +282,10 @@ function validateRememberMeToken($token)
  */
 function deleteRememberMeToken($token)
 {
-    $tokenInfo = fetchOne('remember_me_tokens', "token = '$token'");
+    $tokenInfo = fetchOne(TABLE_REMEMBER_ME, "token = :token", '', [':token' => $token]);
     $userId = $tokenInfo ? $tokenInfo['user_id'] : null;
 
-    $rowsAffected = deleteRow('remember_me_tokens', "token = '$token'");
+    $rowsAffected = deleteRow(TABLE_REMEMBER_ME, "token = :token", [':token' => $token]);
 
     if ($rowsAffected > 0) {
         logSecurityEvent($userId, 'remember_token', '[SUCCESS] Suppression du token "Se souvenir de moi"');
