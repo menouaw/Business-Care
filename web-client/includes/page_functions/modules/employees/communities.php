@@ -359,7 +359,7 @@ function postCommunityMessage(int $salarie_id, int $community_id, string $conten
     $data = [
         'communaute_id' => $community_id,
         'personne_id' => $salarie_id,
-        'message' => $content
+        'message' => strip_tags($content)
     ];
 
     $success = insertRow('communaute_messages', $data);
