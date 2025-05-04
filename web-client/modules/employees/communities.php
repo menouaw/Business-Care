@@ -27,31 +27,38 @@ include __DIR__ . '/../../templates/header.php';
             <?php echo displayFlashMessages(); ?>
 
             <?php if ($viewMode === 'list'): ?>
-                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-                    <h1 class="h2"><?= htmlspecialchars($pageTitle) ?></h1>
-                </div>
 
-                <?php
-                ?>
-                <?php if (empty($communities)): ?>
-                    <div class="alert alert-info mt-4">Aucune communauté n'est disponible pour le moment.</div>
+                <h3 class="mt-4 mb-3"><i class="fas fa-star text-warning me-2"></i>Pour vous</h3>
+                <?php if (empty($preferredCommunities)): ?>
+                    <div class="alert alert-light text-muted">Aucune communauté correspondant à vos intérêts ou préférences n'a été trouvée pour le moment.</div>
                 <?php else: ?>
                     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4">
-                        <?php foreach ($communities as $community): ?>
+                        <?php foreach ($preferredCommunities as $community): ?>
                             <div class="col">
-                                <?php renderCommunityCard($community, $userMemberCommunityIds, $csrf_token); ?>
+                                <?php renderCommunityCard($community, $userMemberCommunityIds, $csrf_token, 'primary'); // Use primary color for preferred 
+                                ?>
                             </div>
                         <?php endforeach; ?>
                     </div>
-
-                    <?php
-                    ?>
-                    <?php
-                    if (!empty($pagination) && $pagination['totalPages'] > 1) {
-                        echo renderPagination($pagination, WEBCLIENT_URL . '/modules/employees/communities.php?page={page}');
-                    }
-                    ?>
                 <?php endif; ?>
+
+                <hr class="my-5">
+
+                <h3 class="mt-4 mb-3">Autres communautés</h3>
+                <?php if (empty($otherCommunities)): ?>
+                    <div class="alert alert-light text-muted">Aucune autre communauté disponible pour le moment.</div>
+                <?php else: ?>
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4">
+                        <?php foreach ($otherCommunities as $community): ?>
+                            <div class="col">
+                                <?php renderCommunityCard($community, $userMemberCommunityIds, $csrf_token, 'secondary'); // Use secondary color 
+                                ?>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+
+                <!-- Pagination enlevée pour l'instant -->
 
             <?php elseif ($viewMode === 'detail' && isset($community)): ?>
                 <div class="card shadow mb-4">
@@ -68,21 +75,25 @@ include __DIR__ . '/../../templates/header.php';
                             $csrfToken = $csrf_token ?? generateToken();
 
                             if ($isMember):
-
-                                $leaveUrl = WEBCLIENT_URL . "/modules/employees/communities.php?action=leave&id=" . $community['id'] . "&csrf=" . $csrfToken;
                             ?>
-                                <a href="<?= $leaveUrl ?>" class="btn btn-sm btn-danger"
-                                    onclick="return confirm('Voulez-vous vraiment quitter la communauté \'<?= htmlspecialchars(addslashes($community['nom'])) ?>\' ?');">
-                                    <i class="fas fa-sign-out-alt me-1"></i> Quitter la communauté
-                                </a>
+                                <form action="<?= WEBCLIENT_URL ?>/modules/employees/communities.php" method="POST" class="d-inline" onsubmit="return confirm('Voulez-vous vraiment quitter la communauté \'<?= htmlspecialchars(addslashes($community['nom'])) ?>\' ?');">
+                                    <input type="hidden" name="action" value="leave">
+                                    <input type="hidden" name="id" value="<?= $community['id'] ?>">
+                                    <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
+                                    <button type="submit" class="btn btn-sm btn-danger">
+                                        <i class="fas fa-sign-out-alt me-1"></i> Quitter la communauté
+                                    </button>
+                                </form>
                             <?php else:
-
-                                $joinUrl = WEBCLIENT_URL . "/modules/employees/communities.php?action=join&id=" . $community['id'] . "&csrf=" . $csrfToken;
                             ?>
-                                <a href="<?= $joinUrl ?>" class="btn btn-sm btn-success"
-                                    onclick="return confirm('Voulez-vous vraiment rejoindre la communauté \'<?= htmlspecialchars(addslashes($community['nom'])) ?>\' ?');">
-                                    <i class="fas fa-plus me-1"></i> Rejoindre la communauté
-                                </a>
+                                <form action="<?= WEBCLIENT_URL ?>/modules/employees/communities.php" method="POST" class="d-inline" onsubmit="return confirm('Voulez-vous vraiment rejoindre la communauté \'<?= htmlspecialchars(addslashes($community['nom'])) ?>\' ?');">
+                                    <input type="hidden" name="action" value="join">
+                                    <input type="hidden" name="id" value="<?= $community['id'] ?>">
+                                    <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
+                                    <button type="submit" class="btn btn-sm btn-success">
+                                        <i class="fas fa-plus me-1"></i> Rejoindre la communauté
+                                    </button>
+                                </form>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -127,12 +138,16 @@ include __DIR__ . '/../../templates/header.php';
 
                                                         $currentUserId = $_SESSION['user_id'] ?? 0;
                                                         if (isset($message['personne_id']) && $message['personne_id'] == $currentUserId):
-                                                            $deleteUrl = WEBCLIENT_URL . "/modules/employees/communities.php?action=delete_message&id=" . $community['id'] . "&message_id=" . $message['id'] . "&csrf=" . $csrfToken;
                                                         ?>
-                                                            <a href="<?= $deleteUrl ?>" class="btn btn-sm btn-outline-danger py-0 px-1"
-                                                                onclick="return confirm('Voulez-vous vraiment supprimer ce message ?');">
-                                                                <i class="fas fa-trash-alt fa-xs"></i>
-                                                            </a>
+                                                            <form action="<?= WEBCLIENT_URL ?>/modules/employees/communities.php" method="POST" class="d-inline" style="margin-left: 5px;" onsubmit="return confirm('Voulez-vous vraiment supprimer ce message ?');">
+                                                                <input type="hidden" name="action" value="delete_message">
+                                                                <input type="hidden" name="id" value="<?= $community['id'] ?? 0 ?>"> <!-- Include community_id for potential redirect -->
+                                                                <input type="hidden" name="message_id" value="<?= $message['id'] ?>">
+                                                                <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
+                                                                <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-1" title="Supprimer le message">
+                                                                    <i class="fas fa-trash-alt fa-xs"></i>
+                                                                </button>
+                                                            </form>
                                                         <?php endif; ?>
                                                     </div>
                                                 </div>
@@ -198,9 +213,19 @@ function renderCommunityCard($community, $userMemberCommunityIds, $csrf_token, $
             <div class="d-flex justify-content-between align-items-center mt-auto">
                 <a href="<?= $communityUrl ?>" class="btn btn-sm btn-outline-primary">Voir</a>
                 <?php if ($isMember): ?>
-                    <a href="<?= WEBCLIENT_URL ?>/modules/employees/communities.php?action=leave&id=<?= $community['id'] ?>&csrf=<?= $csrf_token ?>" class="btn btn-sm btn-outline-danger">Quitter</a>
+                    <form action="<?= WEBCLIENT_URL ?>/modules/employees/communities.php" method="POST" class="d-inline">
+                        <input type="hidden" name="action" value="leave">
+                        <input type="hidden" name="id" value="<?= $community['id'] ?>">
+                        <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Quitter</button>
+                    </form>
                 <?php else: ?>
-                    <a href="<?= WEBCLIENT_URL ?>/modules/employees/communities.php?action=join&id=<?= $community['id'] ?>&csrf=<?= $csrf_token ?>" class="btn btn-sm btn-success">Rejoindre</a>
+                    <form action="<?= WEBCLIENT_URL ?>/modules/employees/communities.php" method="POST" class="d-inline">
+                        <input type="hidden" name="action" value="join">
+                        <input type="hidden" name="id" value="<?= $community['id'] ?>">
+                        <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
+                        <button type="submit" class="btn btn-sm btn-success">Rejoindre</button>
+                    </form>
                 <?php endif; ?>
             </div>
         </div>
@@ -223,15 +248,6 @@ function getIconForCommunityType(string $type): string
         default:
             return 'fas fa-users';
     }
-}
-
-
-function truncateText(string $text, int $maxLength): string
-{
-    if (strlen($text) > $maxLength) {
-        return substr($text, 0, $maxLength) . '...';
-    }
-    return $text;
 }
 
 include __DIR__ . '/../../templates/footer.php';

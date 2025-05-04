@@ -508,6 +508,13 @@ INSERT INTO communaute_messages (communaute_id, personne_id, message) VALUES
 (1, 8, 'La seance de meditation de ce matin etait top !'),
 (2, 12, 'Nouveau record perso sur 10km ! :-)');
 
+INSERT INTO communaute_messages (communaute_id, personne_id, message) VALUES
+(1, 7, 'Des conseils pour tenir la posture de l\'arbre plus longtemps ?'),
+(2, 10, 'Quelqu\'un a une bonne appli pour suivre ses parcours de course ?'),
+(1, 9, 'La séance de méditation guidée d\'hier soir était vraiment apaisante.'),
+(2, 18, 'Entraînement fractionné ce soir, qui est partant ?'),
+(1, 17, 'Est-ce qu\'il y a un cours de Yoga prévu la semaine prochaine sur le site Sante+ ?'),
+(2, 20, 'Besoin de motivation pour sortir courir avec ce temps ! Des astuces ?');
 
 INSERT INTO support_tickets (entreprise_id, personne_id, sujet, message, statut) VALUES
 (1, 5, 'Probleme connexion espace salarie', 'Bonjour, je n''arrive pas a me connecter depuis ce matin.', 'en_cours'),
