@@ -16,14 +16,14 @@ function getCompanyContracts(int $entreprise_id, int $current_page = 1, int $ite
         return ['contracts' => [], 'total_count' => 0];
     }
 
-    
+
     $countSql = "SELECT COUNT(*) as total 
                  FROM contrats 
                  WHERE entreprise_id = :entreprise_id";
     $countStmt = executeQuery($countSql, [':entreprise_id' => $entreprise_id]);
     $total_count = $countStmt->fetchColumn() ?: 0;
 
-    
+
     $offset = max(0, ($current_page - 1) * $items_per_page);
     $limit = max(1, $items_per_page);
 
@@ -52,7 +52,7 @@ function getCompanyContracts(int $entreprise_id, int $current_page = 1, int $ite
 
     $contracts = $stmt->fetchAll();
 
-    
+
     return [
         'contracts' => $contracts,
         'total_count' => $total_count
@@ -100,51 +100,4 @@ function getContractDetails(int $contract_id, int $company_id): array|false
 function getContractServicesList(): array
 {
     return fetchAll('services', 'actif = 1', [], 'id, type');
-}
-
-/**
- * Ajoute un nouveau contrat (Placeholder - Fonctionnalité non active pour les clients).
- *
- * @param int $entreprise_id ID de l'entreprise.
- * @param array $contractData Données du contrat.
- * @return int|false Retourne toujours false pour les clients.
- */
-function addContract(int $entreprise_id, array $contractData): int|false
-{
-    logSecurityEvent($_SESSION['user_id'] ?? null, 'contract_add_attempt', "[INFO] Tentative non autorisée d'ajout de contrat par client entreprise ID: " . $entreprise_id);
-    flashMessage("L'ajout de contrat se fait via le processus de devis.", "info");
-    return false;
-}
-
-/**
- * Met à jour un contrat (Placeholder - Fonctionnalité non active pour les clients).
- *
- * @param int $contract_id L'ID du contrat.
- * @param int $company_id L'ID de l'entreprise (pour vérification).
- * @param array $data Les données à mettre à jour.
- * @return bool Retourne toujours false pour les clients.
- */
-function updateContract(int $contract_id, int $company_id, array $data): bool
-{
-    logSecurityEvent($_SESSION['user_id'] ?? null, 'contract_update_attempt', '[INFO] Tentative non autorisée de modification contrat ID: ' . $contract_id . ' par client entreprise ID: ' . $company_id);
-    flashMessage("La modification des contrats n'est pas permise depuis cet espace.", "info");
-    return false;
-}
-
-/**
- * Marque un contrat comme 'resilie' (Placeholder - Fonctionnalité non active pour les clients).
- *
- * @param int $contract_id L'ID du contrat à résilier.
- * @param int $company_id L'ID de l'entreprise (pour vérification).
- * @return bool Retourne toujours false pour les clients.
- */
-function cancelContract(int $contract_id, int $company_id): bool
-{
-    logSecurityEvent($_SESSION['user_id'] ?? null, 'contract_cancel_attempt', '[INFO] Tentative non autorisée de résiliation contrat ID: ' . $contract_id . ' par client entreprise ID: ' . $company_id);
-    flashMessage("La résiliation de contrat doit être demandée via le support.", "info");
-    return false;
-    /* Note : L'implémentation fonctionnelle pour la résiliation existe 
-       mais est désactivée ici car on a décidé de ne pas donner cette 
-       possibilité au client pour l'instant.
-    */
 }

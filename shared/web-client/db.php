@@ -130,10 +130,21 @@ function insertRow($table, $data)
 
     try {
         $stmt = executeQuery($sql, $data);
-
+        
         return true;
-    } catch (Exception $e) {
-        error_log("Exception caught within insertRow: " . $e->getMessage() . " | SQL: $sql | Params: " . json_encode($data));
+    } catch (PDOException $e) { 
+        
+        if (strpos((string)$e->getCode(), '01') === 0) {
+            error_log("PDO Warning caught within insertRow (considered success): " . $e->getMessage() . " | SQL: $sql | Params: " . json_encode($data));
+            
+            return true;
+        } else {
+            
+            error_log("PDO Error caught within insertRow: " . $e->getMessage() . " | SQL: $sql | Params: " . json_encode($data));
+            return false;
+        }
+    } catch (Exception $e) { 
+        error_log("General Exception caught within insertRow: " . $e->getMessage() . " | SQL: $sql | Params: " . json_encode($data));
         return false;
     }
 }

@@ -151,7 +151,7 @@ function getFlashMessages()
 {
     if (isset($_SESSION['flash_messages']) && is_array($_SESSION['flash_messages'])) {
         $messages = $_SESSION['flash_messages'];
-        unset($_SESSION['flash_messages']); 
+        unset($_SESSION['flash_messages']);
         return is_array($messages) ? $messages : [];
     }
     return [];
@@ -284,7 +284,7 @@ function paginateResults($table, $page, $perPage = DEFAULT_ITEMS_PER_PAGE, $wher
 
     if (!is_string($orderBy) || empty(trim($orderBy))) {
         if ($orderBy) {
-             error_log("[WARNING] Type invalide ou paramètre orderBy vide passé à paginateResults");
+            error_log("[WARNING] Type invalide ou paramètre orderBy vide passé à paginateResults");
         }
         $orderBy = '';
     }
@@ -320,12 +320,12 @@ function renderPagination($pagination, $urlPattern)
 
     $html = '<nav aria-label="Page navigation"><ul class="pagination">';
 
-    
+
     $prevDisabled = $pagination['currentPage'] <= 1 ? ' disabled' : '';
     $prevUrl = str_replace('{page}', $pagination['currentPage'] - 1, $urlPattern);
     $html .= '<li class="page-item' . $prevDisabled . '"><a class="page-link" href="' . $prevUrl . '">Précédent</a></li>';
 
-    
+
     $startPage = max(1, $pagination['currentPage'] - 2);
     $endPage = min($pagination['totalPages'], $pagination['currentPage'] + 2);
 
@@ -335,7 +335,7 @@ function renderPagination($pagination, $urlPattern)
         $html .= '<li class="page-item' . $active . '"><a class="page-link" href="' . $url . '">' . $i . '</a></li>';
     }
 
-    
+
     $nextDisabled = $pagination['currentPage'] >= $pagination['totalPages'] ? ' disabled' : '';
     $nextUrl = str_replace('{page}', $pagination['currentPage'] + 1, $urlPattern);
     $html .= '<li class="page-item' . $nextDisabled . '"><a class="page-link" href="' . $nextUrl . '">Suivant</a></li>';
@@ -382,8 +382,8 @@ function handleCsrfFailureRedirect($entityId, $module, $actionDescription = 'act
     flashMessage('Jeton de sécurité invalide ou expiré. Veuillez réessayer.', 'danger');
     $requestMethod = $_SERVER['REQUEST_METHOD'] ?? 'UNKNOWN';
     logSecurityEvent(
-        $_SESSION['user_id'] ?? 0, 
-        'csrf_failure', 
+        $_SESSION['user_id'] ?? 0,
+        'csrf_failure',
         "[SECURITY FAILURE] Tentative de {$actionDescription} ID: {$entityId} avec jeton invalide via {$requestMethod}"
     );
     redirectBasedOnReferer($entityId, $module);
@@ -395,7 +395,8 @@ function handleCsrfFailureRedirect($entityId, $module, $actionDescription = 'act
  * @param DateInterval|null $interval L'intervalle de temps.
  * @return string La durée formatée en mois (ex: "36 mois") ou "-" si null/invalide.
  */
-function formatDuration($interval) {
+function formatDuration($interval)
+{
     if (!$interval instanceof DateInterval) {
         return '-';
     }
@@ -412,7 +413,8 @@ function formatDuration($interval) {
  * @param array $allowedHosts Hôtes autorisés pour le referer.
  * @return string L'URL de redirection.
  */
-function generateSecureReferer($defaultUrl = null, $allowedHosts = []) {
+function generateSecureReferer($defaultUrl = null, $allowedHosts = [])
+{
     $referer = $_SERVER['HTTP_REFERER'] ?? null;
     if ($referer) {
         $parsedReferer = parse_url($referer);
@@ -430,7 +432,8 @@ function generateSecureReferer($defaultUrl = null, $allowedHosts = []) {
  * @param array $params Paramètres GET optionnels.
  * @return string L'URL complète.
  */
-function adminUrl($path = '/', $params = []) {
+function adminUrl($path = '/', $params = [])
+{
     $url = WEBADMIN_URL . $path;
     if (!empty($params)) {
         $url .= '?' . http_build_query($params);
@@ -447,47 +450,48 @@ function adminUrl($path = '/', $params = []) {
  * @param string $token Le token API extrait de l'en-tête Authorization.
  * @return array Tableau contenant [bool $isValid, int|null $userId].
  */
-function validateApiAdminToken($token) {
+function validateApiAdminToken($token)
+{
     if (empty($token)) {
         return [false, null];
     }
 
     try {
         $pdo = getDbConnection();
-        
-        
+
+
         $sqlToken = "SELECT user_id, expires_at FROM api_tokens WHERE token = :token AND expires_at > NOW() LIMIT 1";
         $stmtToken = $pdo->prepare($sqlToken);
         $stmtToken->execute([':token' => $token]);
         $tokenData = $stmtToken->fetch();
 
         if (!$tokenData) {
-            
-            return [false, null]; 
+
+            return [false, null];
         }
 
         $userId = (int)$tokenData['user_id'];
 
-        
+
         $sqlUser = "SELECT role_id FROM personnes WHERE id = :user_id LIMIT 1";
         $stmtUser = $pdo->prepare($sqlUser);
         $stmtUser->execute([':user_id' => $userId]);
         $userData = $stmtUser->fetch();
 
         if (!$userData || (int)$userData['role_id'] !== ROLE_ADMIN) {
+
             
             logSecurityEvent($userId, '[SECURITY]:api_token_validation', '[FAILURE] Tentative d\'accès API avec token valide mais rôle non admin', true);
             return [false, null];
         }
 
-        
-        
-        
-        
-        
-        
-        return [true, $userId];
 
+
+
+
+
+
+        return [true, $userId];
     } catch (PDOException $e) {
         
         logSystemActivity('[SECURITY]:api_token_validation', '[ERROR] PDOException lors de la validation du token API: ' . $e->getMessage());

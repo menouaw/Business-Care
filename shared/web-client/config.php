@@ -11,12 +11,12 @@ define('APP_NAME', 'Business Care');
 define('APP_VERSION', '0.4.0');
 
 
-define('ROOT_URL', 'http://localhost/Business-Care');
-define('WEBCLIENT_URL', ROOT_URL . '/web-client');
+define('ROOT_URL', 'http://localhost');
+define('WEBCLIENT_URL', ROOT_URL . '/client');
 
-define('SHARED_URL', ROOT_URL . '/shared');
+define('SHARED_URL', ROOT_URL . '/../shared');
 define('ASSETS_URL', ROOT_URL . '/assets');
-define('API_URL', ROOT_URL . '/api');
+define('API_URL', ROOT_URL . '/../api');
 define('UPLOAD_URL', ROOT_URL . '/uploads/');
 
 
@@ -69,9 +69,9 @@ date_default_timezone_set('Europe/Paris');
 
 
 
-define('STRIPE_SECRET_KEY', $_ENV['STRIPE_SECRET_KEY'] ?? getenv('STRIPE_SECRET_KEY') ?: null);
-define('STRIPE_PUBLIC_KEY', $_ENV['STRIPE_PUBLIC_KEY'] ?? getenv('STRIPE_PUBLIC_KEY') ?: null);
-define('STRIPE_WEBHOOK_SECRET', $_ENV['STRIPE_WEBHOOK_SECRET'] ?? getenv('STRIPE_WEBHOOK_SECRET') ?: null);
+define('STRIPE_SECRET_KEY', getenv('STRIPE_SECRET_KEY') ?: ($_ENV['STRIPE_SECRET_KEY'] ?? null));
+define('STRIPE_PUBLIC_KEY', getenv('STRIPE_PUBLIC_KEY') ?: ($_ENV['STRIPE_PUBLIC_KEY'] ?? null));
+define('STRIPE_WEBHOOK_SECRET', getenv('STRIPE_WEBHOOK_SECRET') ?: ($_ENV['STRIPE_WEBHOOK_SECRET'] ?? null));
 
 
 define('STRIPE_JS_URL', 'https://js.stripe.com/v3/');

@@ -167,7 +167,7 @@ include __DIR__ . '/../../templates/header.php';
 
                 ];
 
-                $urlPattern = '?page={page}';
+                $urlPattern = WEBCLIENT_URL . '/modules/companies/contracts.php?page={page}';
 
 
                 echo renderPagination($paginationData, $urlPattern);

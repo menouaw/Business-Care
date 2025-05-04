@@ -278,16 +278,28 @@ function paginateResults($table, $page, $perPage = DEFAULT_ITEMS_PER_PAGE, $wher
 
 function renderPagination($pagination, $urlPattern)
 {
+    if (!is_array($pagination) || !isset($pagination['totalPages'], $pagination['currentPage'])) {
+        error_log("renderPagination: Données de pagination invalides ou manquantes.");
+        return '';
+    }
+
     if ($pagination['totalPages'] <= 1) return '';
 
-    $html = '<nav aria-label="Page navigation"><ul class="pagination">';
+    $html = '<nav aria-label="Page navigation"><ul class="pagination pagination-sm justify-content-center">';
 
     $prevDisabled = $pagination['currentPage'] <= 1 ? ' disabled' : '';
-    $prevUrl = str_replace('{page}', $pagination['currentPage'] - 1, $urlPattern);
+    $prevUrl = $pagination['currentPage'] <= 1 ? '#' : str_replace('{page}', $pagination['currentPage'] - 1, $urlPattern);
     $html .= '<li class="page-item' . $prevDisabled . '"><a class="page-link" href="' . $prevUrl . '">Précédent</a></li>';
 
     $startPage = max(1, $pagination['currentPage'] - 2);
     $endPage = min($pagination['totalPages'], $pagination['currentPage'] + 2);
+
+    if ($startPage > 1) {
+        $html .= '<li class="page-item"><a class="page-link" href="' . str_replace('{page}', 1, $urlPattern) . '">1</a></li>';
+        if ($startPage > 2) {
+            $html .= '<li class="page-item disabled"><span class="page-link">...</span></li>';
+        }
+    }
 
     for ($i = $startPage; $i <= $endPage; $i++) {
         $active = $i == $pagination['currentPage'] ? ' active' : '';
@@ -295,8 +307,15 @@ function renderPagination($pagination, $urlPattern)
         $html .= '<li class="page-item' . $active . '"><a class="page-link" href="' . $url . '">' . $i . '</a></li>';
     }
 
+    if ($endPage < $pagination['totalPages']) {
+        if ($endPage < $pagination['totalPages'] - 1) {
+            $html .= '<li class="page-item disabled"><span class="page-link">...</span></li>';
+        }
+        $html .= '<li class="page-item"><a class="page-link" href="' . str_replace('{page}', $pagination['totalPages'], $urlPattern) . '">' . $pagination['totalPages'] . '</a></li>';
+    }
+
     $nextDisabled = $pagination['currentPage'] >= $pagination['totalPages'] ? ' disabled' : '';
-    $nextUrl = str_replace('{page}', $pagination['currentPage'] + 1, $urlPattern);
+    $nextUrl = $pagination['currentPage'] >= $pagination['totalPages'] ? '#' : str_replace('{page}', $pagination['currentPage'] + 1, $urlPattern);
     $html .= '<li class="page-item' . $nextDisabled . '"><a class="page-link" href="' . $nextUrl . '">Suivant</a></li>';
 
     $html .= '</ul></nav>';
@@ -471,39 +490,39 @@ function getStatusBadgeClass(?string $status): string
 function createNotification(int $user_id, string $title, string $message, string $type = 'info', ?string $link = null): int|false
 {
     if ($user_id <= 0 || empty($title) || empty($message)) {
-        // error_log("createNotification: Invalid parameters..."); // Log commenté
+
         return false;
     }
 
     $data = [
-        'personne_id' => $user_id, // Assurez-vous que le nom de colonne est correct
+        'personne_id' => $user_id,
         'titre' => $title,
         'message' => $message,
         'type' => in_array($type, ['info', 'success', 'warning', 'error', 'danger']) ? $type : 'info',
         'lien' => $link
-        // 'date_creation' => date('Y-m-d H:i:s') // SUPPRIMÉ
+
     ];
 
-    // error_log("DEBUG createNotification: Attempting insert..."); // Log commenté
+
 
     $success = insertRow('notifications', $data);
 
     if (!$success) {
-        error_log("Erreur lors de l'insertion de la notification pour user_id: $user_id"); // Log d'erreur gardé
+        error_log("Erreur lors de l'insertion de la notification pour user_id: $user_id");
         return false;
     } else {
         try {
             $pdo = getDbConnection();
             $lastId = $pdo->lastInsertId();
             if ($lastId) {
-                // error_log("DEBUG createNotification: Insert successful..."); // Log commenté
+
                 return (int)$lastId;
             } else {
-                error_log("Erreur createNotification: insertRow succeeded but lastInsertId returned invalid value for user_id: $user_id."); // Log d'erreur gardé
+                error_log("Erreur createNotification: insertRow succeeded but lastInsertId returned invalid value for user_id: $user_id.");
                 return false;
             }
         } catch (PDOException $e) {
-            error_log("Erreur PDO lors de la récupération de lastInsertId pour notification user_id: $user_id - " . $e->getMessage()); // Log d'erreur gardé
+            error_log("Erreur PDO lors de la récupération de lastInsertId pour notification user_id: $user_id - " . $e->getMessage());
             return false;
         }
     }
@@ -538,4 +557,52 @@ function markNotificationsAsRead(int $userId): int
     ];
 
     return updateRow('notifications', $updateData, 'personne_id = :user_id AND lu = 0', [':user_id' => $userId]);
+}
+
+/**
+ * Tronque une chaîne de caractères si elle dépasse une longueur maximale.
+ * Ajoute '...' à la fin si la chaîne est tronquée.
+ *
+ * @param string $text Le texte à tronquer.
+ * @param int $maxLength La longueur maximale autorisée.
+ * @return string Le texte tronqué ou original.
+ */
+function truncateText(string $text, int $maxLength): string
+{
+    if (mb_strlen($text) > $maxLength) {
+        // Utilise mb_substr pour la compatibilité multi-octets
+        return mb_substr($text, 0, $maxLength) . '...';
+    }
+    return $text;
+}
+
+/**
+ * Récupère les noms des intérêts d'un utilisateur donné.
+ *
+ * @param int $userId L'ID de l'utilisateur.
+ * @return array La liste des noms des intérêts de l'utilisateur, ou un tableau vide si aucun intérêt ou erreur.
+ */
+function getUserInterests(int $userId): array
+{
+    if ($userId <= 0) return [];
+
+    $userInterestsRaw = fetchAll('personne_interets', 'personne_id = :user_id', '', null, null, [':user_id' => $userId]);
+    $userInterestIds = array_column($userInterestsRaw, 'interet_id');
+    if (empty($userInterestIds)) return [];
+
+    // Utilisation de la liaison de paramètres pour plus de sécurité et de clarté
+    $placeholders = implode(',', array_fill(0, count($userInterestIds), '?'));
+    $sqlInterests = "SELECT nom FROM interets_utilisateurs WHERE id IN ($placeholders)";
+
+    try {
+        // Assurez-vous que executeQuery peut gérer correctement les tableaux de paramètres pour IN()
+        // ou ajustez la fonction executeQuery/fetchAll si nécessaire.
+        // La plupart des wrappers PDO le font, mais il est bon de vérifier.
+        $stmt = executeQuery($sqlInterests, $userInterestIds);
+        $userInterestsData = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        return $userInterestsData ?: [];
+    } catch (PDOException $e) {
+        error_log("Erreur lors de la récupération des intérêts pour l'utilisateur ID $userId: " . $e->getMessage());
+        return []; // Retourne un tableau vide en cas d'erreur
+    }
 }

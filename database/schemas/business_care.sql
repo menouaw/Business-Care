@@ -90,11 +90,9 @@ CREATE TABLE consultation_creneaux (
     end_time DATETIME NOT NULL,
     is_booked BOOLEAN DEFAULT FALSE,
     site_id INT NULL,
-
     FOREIGN KEY (prestation_id) REFERENCES prestations(id) ON DELETE CASCADE,
     FOREIGN KEY (praticien_id) REFERENCES personnes(id) ON DELETE SET NULL,
     FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE SET NULL ON UPDATE CASCADE,
-
     INDEX idx_prestation_time (prestation_id, start_time, is_booked),
     UNIQUE KEY unique_slot (prestation_id, praticien_id, start_time)
 );
@@ -141,9 +139,7 @@ CREATE TABLE devis (
     id INT PRIMARY KEY AUTO_INCREMENT,
     entreprise_id INT NOT NULL,
     service_id INT NULL,
-    nombre_salaries_estimes INT NULL,
     est_personnalise BOOLEAN DEFAULT FALSE,
-    notes_negociation TEXT NULL,
     date_creation DATE NOT NULL,
     date_validite DATE,
     montant_total DECIMAL(10,2) NOT NULL,
@@ -194,14 +190,17 @@ CREATE TABLE rendez_vous (
     type_rdv ENUM('presentiel', 'visio', 'telephone', 'consultation'),
     statut ENUM('planifie', 'confirme', 'annule', 'termine', 'no_show') DEFAULT 'planifie',
     notes TEXT,
+    consultation_creneau_id INT NULL DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (personne_id) REFERENCES personnes(id),
     FOREIGN KEY (prestation_id) REFERENCES prestations(id),
     FOREIGN KEY (praticien_id) REFERENCES personnes(id),
+    FOREIGN KEY (consultation_creneau_id) REFERENCES consultation_creneaux(id) ON DELETE SET NULL,
     INDEX idx_date (date_rdv),
     INDEX idx_statut (statut),
-    INDEX idx_praticien (praticien_id)
+    INDEX idx_praticien (praticien_id),
+    INDEX idx_consultation_creneau (consultation_creneau_id)
 );
 
 CREATE TABLE evenements (
@@ -246,11 +245,13 @@ CREATE TABLE dons (
     id INT PRIMARY KEY AUTO_INCREMENT,
     personne_id INT NOT NULL,
     association_id INT NULL DEFAULT NULL,
-    montant DECIMAL(10,2),
+    montant DECIMAL(10,2) NULL,
     type ENUM('financier', 'materiel') NOT NULL,
-    description TEXT,
+    description TEXT NULL,
     date_don DATE NOT NULL,
-    statut ENUM('en_attente', 'valide', 'refuse') DEFAULT 'en_attente',
+    statut VARCHAR(50) DEFAULT 'enregistré',
+    stripe_session_id VARCHAR(255) NULL DEFAULT NULL,
+    stripe_payment_intent_id VARCHAR(255) NULL DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (personne_id) REFERENCES personnes(id),
@@ -494,3 +495,27 @@ CREATE TABLE support_tickets (
     INDEX idx_personne_id (personne_id)
 );
 
+CREATE TABLE communaute_membres (
+    communaute_id INT NOT NULL,          
+    personne_id INT NOT NULL,            
+    joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
+    PRIMARY KEY (communaute_id, personne_id), 
+    FOREIGN KEY (communaute_id) REFERENCES communautes(id) ON DELETE CASCADE, -- Lien vers la table communautes
+    FOREIGN KEY (personne_id) REFERENCES personnes(id) ON DELETE CASCADE    -- Lien vers la table personnes
+);
+
+CREATE TABLE interets_utilisateurs (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nom VARCHAR(100) NOT NULL UNIQUE,
+    description TEXT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE personne_interets (
+    personne_id INT NOT NULL,
+    interet_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (personne_id, interet_id),
+    FOREIGN KEY (personne_id) REFERENCES personnes(id) ON DELETE CASCADE,
+    FOREIGN KEY (interet_id) REFERENCES interets_utilisateurs(id) ON DELETE CASCADE
+);
