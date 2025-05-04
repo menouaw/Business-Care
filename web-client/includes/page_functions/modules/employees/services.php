@@ -24,14 +24,7 @@ function setupEmployeeServicesPage()
 
 
     if ($salarie_id > 0) {
-        $userInterestsRaw = fetchAll('personne_interets', 'personne_id = :user_id', '', null, null, [':user_id' => $salarie_id]);
-        $userInterestIds = array_column($userInterestsRaw, 'interet_id');
-        if (!empty($userInterestIds)) {
-            $placeholders = implode(',', array_fill(0, count($userInterestIds), '?'));
-            $sqlInterests = "SELECT nom FROM interets_utilisateurs WHERE id IN ($placeholders)";
-            $userInterestsData = executeQuery($sqlInterests, $userInterestIds)->fetchAll(PDO::FETCH_COLUMN);
-            $userInterests = $userInterestsData ?: [];
-        }
+        $userInterests = getUserInterests($salarie_id);
     }
     $userInterestsLower = array_map('strtolower', $userInterests);
 

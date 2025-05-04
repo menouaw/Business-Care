@@ -127,17 +127,3 @@ switch ($event->type) {
 }
 
 
-if ($processing_success) {
-    http_response_code(200);
-    echo 'Événement traité avec succès';
-} else {
-
-
-
-    default:
-        error_log("[INFO] Webhook: Évènement non géré reçu: " . $event->type);
-}
-
-http_response_code(200);
-echo 'Évènement reçu';
-

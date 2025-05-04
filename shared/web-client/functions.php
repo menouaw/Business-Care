@@ -584,3 +584,34 @@ function truncateText(string $text, int $maxLength): string
     }
     return $text;
 }
+
+/**
+ * Récupère les noms des intérêts d'un utilisateur donné.
+ *
+ * @param int $userId L'ID de l'utilisateur.
+ * @return array La liste des noms des intérêts de l'utilisateur, ou un tableau vide si aucun intérêt ou erreur.
+ */
+function getUserInterests(int $userId): array
+{
+    if ($userId <= 0) return [];
+
+    $userInterestsRaw = fetchAll('personne_interets', 'personne_id = :user_id', '', null, null, [':user_id' => $userId]);
+    $userInterestIds = array_column($userInterestsRaw, 'interet_id');
+    if (empty($userInterestIds)) return [];
+
+    // Utilisation de la liaison de paramètres pour plus de sécurité et de clarté
+    $placeholders = implode(',', array_fill(0, count($userInterestIds), '?'));
+    $sqlInterests = "SELECT nom FROM interets_utilisateurs WHERE id IN ($placeholders)";
+
+    try {
+        // Assurez-vous que executeQuery peut gérer correctement les tableaux de paramètres pour IN()
+        // ou ajustez la fonction executeQuery/fetchAll si nécessaire.
+        // La plupart des wrappers PDO le font, mais il est bon de vérifier.
+        $stmt = executeQuery($sqlInterests, $userInterestIds);
+        $userInterestsData = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        return $userInterestsData ?: [];
+    } catch (PDOException $e) {
+        error_log("Erreur lors de la récupération des intérêts pour l'utilisateur ID $userId: " . $e->getMessage());
+        return []; // Retourne un tableau vide en cas d'erreur
+    }
+}

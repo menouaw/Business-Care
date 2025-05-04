@@ -34,7 +34,5 @@ if (ini_get("session.use_cookies")) {
 
 session_destroy();
 
-logout();
-
-redirectTo(WEBCLIENT_URL . '/auth/login.php');
+redirectTo(WEBCLIENT_URL . '/login.php');
 exit;
