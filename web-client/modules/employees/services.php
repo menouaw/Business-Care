@@ -41,10 +41,10 @@ function renderServicesList($prestations, $colorTheme)
                         <span class="text-primary fw-bold"><?= formatMoney($prestation['prix'] ?? 0) ?></span>
                         <div>
                             <?php if ($prestationType === 'consultation') : ?>
-                                <a href="<?= WEBCLIENT_URL . '/modules/employees/appointments.php?action=select_slot&service_id=' . $prestation['id'] ?>" class="btn btn-sm btn-success">Choisir Créneau</a>
+                                <a href="<?= WEBCLIENT_URL . '/modules/employees/appointments.php?action=select_slot&service_id=' . intval($prestation['id']) ?>" class="btn btn-sm btn-success">Choisir Créneau</a>
                             <?php elseif (in_array($prestationType, ['conference', 'webinar', 'atelier', 'defi_sportif'])) : ?>
                                 <a href="<?= WEBCLIENT_URL . '/modules/employees/events.php' ?>" class="btn btn-sm btn-info">Voir Détails / S'inscrire</a>
-                            <?php endif; 
+                            <?php endif;
                             ?>
                         </div>
                     </div>
@@ -52,8 +52,8 @@ function renderServicesList($prestations, $colorTheme)
             </div>
         </div>
 <?php
-    } 
-} 
+    }
+}
 
 $viewData = setupEmployeeServicesPage();
 extract($viewData);

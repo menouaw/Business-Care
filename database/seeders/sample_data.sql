@@ -348,12 +348,6 @@ INSERT INTO dons (personne_id, association_id, montant, type, description, date_
 (7, 3, 100.00, 'financier', 'Soutien au programme de sante mentale', '2024-03-20', 'valide'),
 (2, 1, 25.00, 'financier', 'Petit don pour Salarie Test', '2024-05-12', 'valide');
 
-INSERT INTO notifications (personne_id, titre, message, type, lien, lu, date_lecture) VALUES
-(5, 'Nouveau Rendez-vous', 'Votre rendez-vous a ete confirme', 'success', '/rendez-vous/1', false, NULL),
-(6, 'Paiement Reçu', 'Votre paiement a ete reçu avec succes', 'success', '/factures/1', true, NOW() - INTERVAL 5 DAY),
-(7, 'Nouvel evenement', 'Un nouvel evenement est disponible', 'info', '/evenements/2', false, NULL),
-(2, 'Bienvenue Salarie Test!', 'Votre compte est pret.', 'info', '/mon-profil.php', false, NULL);
-
 INSERT INTO logs (personne_id, action, details, ip_address, created_at) VALUES
 (5, 'login', 'Connexion reussie', '192.168.1.10', NOW() - INTERVAL 5 DAY),
 (6, 'rdv_creation', 'Creation RDV ID 2 (Yoga)', '192.168.1.11', NOW() - INTERVAL 4 DAY),
