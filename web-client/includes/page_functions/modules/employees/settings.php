@@ -74,20 +74,12 @@ function handleUpdateEmployeeProfile(int $user_id, array $formData): array
         'genre' => $genre
     ];
 
-    try {
-
-        $updated = updateRow(TABLE_USERS, $dataToUpdate, 'id = :id', [':id' => $user_id]);
-        if ($updated > 0) {
-
-            $_SESSION['user_name'] = $prenom . ' ' . $nom;
-            return ['success' => true, 'message' => 'Profil mis à jour avec succès.'];
-        } else {
-
-            return ['success' => true, 'message' => 'Aucune modification détectée.'];
-        }
-    } catch (Exception $e) {
-        error_log("Erreur MAJ profil employé ID {$user_id}: " . $e->getMessage());
-        return ['success' => false, 'message' => 'Erreur technique lors de la mise à jour.'];
+    $updated = updateRow(TABLE_USERS, $dataToUpdate, 'id = :id', [':id' => $user_id]);
+    if ($updated > 0) {
+        $_SESSION['user_name'] = $prenom . ' ' . $nom;
+        return ['success' => true, 'message' => 'Profil mis à jour avec succès.'];
+    } else {
+        return ['success' => true, 'message' => 'Aucune modification détectée.'];
     }
 }
 
@@ -116,27 +108,16 @@ function handleUpdateEmployeePreferences(int $user_id, array $formData): array
         'theme' => $theme
     ];
 
-    try {
+    $existingPrefs = fetchOne(TABLE_USER_PREFERENCES, 'personne_id = :id', [':id' => $user_id]);
 
-        $existingPrefs = fetchOne(TABLE_USER_PREFERENCES, 'personne_id = :id', [':id' => $user_id]);
-
-        if ($existingPrefs) {
-
-            $updated = updateRow(TABLE_USER_PREFERENCES, $dataToUpdate, 'personne_id = :id', [':id' => $user_id]);
-        } else {
-
-            $dataToUpdate['personne_id'] = $user_id;
-            $updated = insertRow(TABLE_USER_PREFERENCES, $dataToUpdate);
-        }
-
-
-        $_SESSION['user_language'] = $langue;
-
-        return ['success' => true, 'message' => 'Préférences mises à jour.'];
-    } catch (Exception $e) {
-        error_log("Erreur MAJ préférences employé ID {$user_id}: " . $e->getMessage());
-        return ['success' => false, 'message' => 'Erreur technique lors de la mise à jour des préférences.'];
+    if ($existingPrefs) {
+        $updated = updateRow(TABLE_USER_PREFERENCES, $dataToUpdate, 'personne_id = :id', [':id' => $user_id]);
+    } else {
+        $dataToUpdate['personne_id'] = $user_id;
+        $updated = insertRow(TABLE_USER_PREFERENCES, $dataToUpdate);
     }
+    $_SESSION['user_language'] = $langue;
+    return ['success' => true, 'message' => 'Préférences mises à jour.'];
 }
 
 /**
@@ -168,22 +149,18 @@ function updateEmployeePassword(int $user_id, string $current_password, string $
     $storedHash = $user['mot_de_passe'] ?? '';
 
     if (!password_verify($current_password, $storedHash)) {
-        logSecurityEvent($user_id, 'password_change', '[FAILURE] Tentative MAJ MDP (actuel incorrect)', true);
         return ['success' => false, 'message' => 'Le mot de passe actuel est incorrect.'];
     }
 
     $new_password_hash = password_hash($new_password, PASSWORD_DEFAULT);
     if ($new_password_hash === false) {
-        error_log("Echec hash MDP user ID {$user_id}");
         return ['success' => false, 'message' => 'Erreur technique lors de la sécurisation.'];
     }
 
     $updated = updateRow(TABLE_USERS, ['mot_de_passe' => $new_password_hash], 'id = :id', [":id" => $user_id]);
     if ($updated > 0) {
-        logSecurityEvent($user_id, 'password_change', '[SUCCESS] MAJ MDP réussie.');
         return ['success' => true, 'message' => 'Mot de passe mis à jour.'];
     } else {
-        error_log("Echec MAJ BDD MDP user ID {$user_id}");
         return ['success' => false, 'message' => 'Erreur technique lors de la mise à jour.'];
     }
 }
@@ -203,16 +180,33 @@ function updateEmployeeProfilePhoto(int $user_id, array $fileData): array
     }
 
     $imageInfo = getimagesize($fileData['tmp_name']);
-    if ($imageInfo === false || !in_array($imageInfo['mime'] ?? '', ['image/jpeg', 'image/png', 'image/gif'])) {
-        return ['success' => false, 'message' => "Fichier invalide (JPG, PNG, GIF uniquement).", 'new_photo_url' => null];
+    $validImage = false;
+
+
+    if ($imageInfo !== false && in_array($imageInfo['mime'] ?? '', ['image/jpeg', 'image/png', 'image/gif'])) {
+
+        if (function_exists('exif_imagetype')) {
+            $imageType = @exif_imagetype($fileData['tmp_name']);
+            if ($imageType !== false && in_array($imageType, [IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_GIF])) {
+                $validImage = true;
+            }
+        } else {
+
+
+            $validImage = true;
+        }
     }
+
+    if (!$validImage) {
+        return ['success' => false, 'message' => "Fichier invalide ou type d'image non supporté (JPG, PNG, GIF uniquement).", 'new_photo_url' => null];
+    }
+
     if ($fileData['size'] > (2 * 1024 * 1024)) {
         return ['success' => false, 'message' => 'Fichier trop volumineux (max 2 Mo).', 'new_photo_url' => null];
     }
 
     $uploadDir = realpath(__DIR__ . '/../../../../../uploads/photos');
     if (!$uploadDir || !is_dir($uploadDir)) {
-        error_log("Dossier upload photos absent ou invalide: " . (__DIR__ . '/../../../../../uploads/photos'));
         return ['success' => false, 'message' => "Erreur config serveur upload.", 'new_photo_url' => null];
     }
 
@@ -239,15 +233,12 @@ function updateEmployeeProfilePhoto(int $user_id, array $fileData): array
         $updated = updateRow(TABLE_USERS, ['photo_url' => $relativePath], 'id = :id', [':id' => $user_id]);
         if ($updated > 0) {
             $_SESSION['user_photo'] = $relativePath;
-            logSecurityEvent($user_id, 'profile_photo_update', '[SUCCESS] Photo profil mise à jour.');
             return ['success' => true, 'message' => 'Photo de profil mise à jour.', 'new_photo_url' => $relativePath];
         } else {
             @unlink($destinationPath);
-            error_log("Echec MAJ BDD photo user ID {$user_id}");
             return ['success' => false, 'message' => 'Erreur MAJ base de données.', 'new_photo_url' => null];
         }
     } else {
-        error_log("Echec déplacement fichier uploadé vers {$destinationPath}");
         return ['success' => false, 'message' => 'Impossible de sauvegarder le fichier.', 'new_photo_url' => null];
     }
 }
@@ -276,32 +267,24 @@ function handleUpdateEmployeeInterests(int $user_id, array $formData): array
 
     $pdo = getDbConnection();
 
-    try {
-        $pdo->beginTransaction();
+    $pdo->beginTransaction();
+    deleteRow('personne_interets', 'personne_id = :user_id', [':user_id' => $user_id], $pdo);
 
 
-        deleteRow('personne_interets', 'personne_id = :user_id', [':user_id' => $user_id], $pdo);
+    if (!empty($selectedInterestIds)) {
+        $insertSql = "INSERT INTO personne_interets (personne_id, interet_id) VALUES (:user_id, :interet_id)";
+        $stmt = $pdo->prepare($insertSql);
 
-
-        if (!empty($selectedInterestIds)) {
-            $insertSql = "INSERT INTO personne_interets (personne_id, interet_id) VALUES (:user_id, :interet_id)";
-            $stmt = $pdo->prepare($insertSql);
-
-            foreach ($selectedInterestIds as $interet_id) {
+        foreach ($selectedInterestIds as $interet_id) {
 
 
 
-                $stmt->execute([':user_id' => $user_id, ':interet_id' => $interet_id]);
-            }
+            $stmt->execute([':user_id' => $user_id, ':interet_id' => $interet_id]);
         }
-
-        $pdo->commit();
-        return ['success' => true, 'message' => 'Vos intérêts ont été mis à jour.'];
-    } catch (Exception $e) {
-        $pdo->rollBack();
-        error_log("Erreur MAJ intérêts employé ID {$user_id}: " . $e->getMessage());
-        return ['success' => false, 'message' => 'Une erreur technique est survenue lors de la mise à jour de vos intérêts.'];
     }
+
+    $pdo->commit();
+    return ['success' => true, 'message' => 'Vos intérêts ont été mis à jour.'];
 }
 
 /**
@@ -388,7 +371,7 @@ function setupEmployeeSettingsPage(): array
         exit;
     }
 
-    
+
     $csrfToken = generateToken();
 
     return [
