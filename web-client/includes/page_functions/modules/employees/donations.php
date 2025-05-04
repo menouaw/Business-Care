@@ -8,42 +8,16 @@ use Stripe\Checkout\Session as StripeCheckoutSession;
 use Stripe\Exception\ApiErrorException;
 
 /**
- * Gère la soumission du formulaire de nouveau don.
- * Redirige vers Stripe pour financiers (en stockant les détails en session),
- * insère directement pour les matériels.
+ * Valide les données du formulaire de don.
+ * @param array $formData Données du formulaire POST.
+ * @return array Tableau des messages d'erreur (vide si valide).
  */
-function handleNewDonation()
+function validateDonationData(array $formData): array
 {
-
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['submit_donation'])) {
-        return;
-    }
-
-
-    requireRole(ROLE_SALARIE);
-    $userId = $_SESSION['user_id'] ?? 0;
-    if ($userId <= 0) {
-        flashMessage("Action impossible : utilisateur non connecté.", "danger");
-        redirectTo(WEBCLIENT_URL . '/modules/employees/donations.php');
-        return;
-    }
-
-
-    if (!validateToken($_POST['csrf_token'] ?? '')) {
-        handleClientCsrfFailureRedirect('faire un don', WEBCLIENT_URL . '/modules/employees/donations.php');
-        return;
-    }
-
-
-    $formData = getFormData();
+    $errors = [];
     $type = $formData['donation_type'] ?? '';
     $associationId = filter_var($formData['association_id'] ?? '', FILTER_VALIDATE_INT);
-    $montant = null;
     $description = trim($formData['description'] ?? '');
-
-    $errors = [];
-    $assoExists = null;
-
 
     if (!in_array($type, ['financier', 'materiel'])) {
         $errors[] = "Type de don invalide.";
@@ -51,7 +25,7 @@ function handleNewDonation()
     if (!$associationId) {
         $errors[] = "Veuillez sélectionner une association.";
     } else {
-
+        
         $assoExists = fetchOne('associations', 'id = ?', [$associationId]);
         if (!$assoExists) {
             $errors[] = "L'association sélectionnée n'est pas valide.";
@@ -62,16 +36,122 @@ function handleNewDonation()
         $montantInput = str_replace(',', '.', $formData['montant'] ?? '');
         $montant = filter_var($montantInput, FILTER_VALIDATE_FLOAT);
         if ($montant === false || $montant <= 0) {
-            $errors[] = "Montant invalide (minimum 0.01€).";
+            $errors[] = "Montant invalide pour un don financier (minimum 0.01€).";
         }
-        $description = $description ?: "Don financier";
     } elseif ($type === 'materiel') {
         if (empty($description)) {
             $errors[] = "Veuillez fournir une description pour un don matériel.";
         }
-        $montant = null;
     }
 
+    return $errors;
+}
+
+/**
+ * Inserts a material donation into the database.
+ */
+function processMaterialDonation(int $userId, int $associationId, string $description): void
+{
+    try {
+        $success = insertRow('dons', [
+            'personne_id' => $userId,
+            'association_id' => $associationId,
+            'montant' => null,
+            'type' => 'materiel',
+            'description' => $description,
+            'date_don' => date('Y-m-d'),
+            'statut' => 'enregistre'
+        ]);
+
+        if ($success) {
+            flashMessage("Votre don matériel a été enregistré. Merci !", 'success');
+            
+            createNotification($userId, "Don matériel enregistré", "Votre don matériel a été soumis.", 'info', WEBCLIENT_URL . '/modules/employees/donations.php');
+        } else {
+            throw new Exception("Erreur lors de l'insertion du don matériel.");
+        }
+    } catch (Exception $e) {
+        error_log("Erreur enregistrement don matériel pour user ID $userId: " . $e->getMessage());
+        flashMessage("Erreur lors de l'enregistrement de votre don matériel.", 'danger');
+    }
+    redirectTo(WEBCLIENT_URL . '/modules/employees/donations.php');
+}
+
+/**
+ * Prepares data and redirects to Stripe checkout for a financial donation.
+ */
+function processFinancialDonation(int $userId, int $associationId, float $montant, string $description, array $assoExists): void
+{
+    try {
+        $_SESSION['pending_donation'] = [
+            'user_id' => $userId,
+            'association_id' => $associationId,
+            'montant' => $montant,
+            'description' => $description,
+            'type' => 'financier'
+        ];
+
+        Stripe::setApiKey(STRIPE_SECRET_KEY);
+        $checkout_session = StripeCheckoutSession::create([
+            'payment_method_types' => ['card', 'sepa_debit', 'bancontact'],
+            'line_items' => [[
+                'price_data' => [
+                    'currency' => 'eur',
+                    'product_data' => [
+                        'name' => 'Don à ' . htmlspecialchars($assoExists['nom']),
+                        'description' => $description ?: 'Don financier',
+                    ],
+                    'unit_amount' => intval($montant * 100),
+                ],
+                'quantity' => 1,
+            ]],
+            'mode' => 'payment',
+            'success_url' => WEBCLIENT_URL . '/modules/employees/donations.php?stripe_result=success&token=' . urlencode(generateToken('stripe_success')),
+            'cancel_url' => WEBCLIENT_URL . '/modules/employees/donations.php?stripe_result=cancel&token=' . urlencode(generateToken('stripe_cancel')),
+            'metadata' => [
+                'donation_user_id' => $userId,
+                'donation_association_id' => $associationId,
+                'donation_type' => 'financier',
+                'donation_description' => substr($description, 0, 500),
+                'donation_amount_decimal' => sprintf('%.2f', $montant)
+            ],
+            'customer_email' => $_SESSION['user_email'] ?? null,
+        ]);
+
+        header("Location: " . $checkout_session->url);
+        exit();
+    } catch (ApiErrorException $e) {
+        error_log("Erreur API Stripe don pour user ID $userId: " . $e->getMessage());
+        flashMessage("Impossible de procéder au paiement [API].", 'danger');
+        unset($_SESSION['pending_donation']);
+        redirectTo(WEBCLIENT_URL . '/modules/employees/donations.php');
+    } catch (Exception $e) {
+        error_log("Erreur préparation paiement don pour user ID $userId: " . $e->getMessage());
+        flashMessage("Impossible de procéder au paiement [Serveur].", 'danger');
+        unset($_SESSION['pending_donation']);
+        redirectTo(WEBCLIENT_URL . '/modules/employees/donations.php');
+    }
+}
+
+/**
+ * Gère la soumission du formulaire de nouveau don.
+ */
+function handleNewDonation()
+{
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['submit_donation'])) return;
+    requireRole(ROLE_SALARIE);
+    $userId = $_SESSION['user_id'] ?? 0;
+    if ($userId <= 0) { /* handle error */
+        redirectTo(WEBCLIENT_URL . '/modules/employees/donations.php');
+        return;
+    }
+    if (!validateToken($_POST['csrf_token'] ?? '')) { /* handle error */
+        redirectTo(WEBCLIENT_URL . '/modules/employees/donations.php');
+        return;
+    }
+
+    $formData = getFormData();
+    $errors = validateDonationData($formData);
 
     if (!empty($errors)) {
         foreach ($errors as $error) {
@@ -81,86 +161,38 @@ function handleNewDonation()
         return;
     }
 
+    
+    $type = $formData['donation_type'];
+    $associationId = (int)$formData['association_id'];
+    $description = trim($formData['description'] ?? '');
+    $montant = null;
 
-    if ($type === 'materiel') {
-
-        try {
-            $success = insertRow('dons', [
-                'personne_id' => $userId,
-                'association_id' => $associationId,
-                'montant' => null,
-                'type' => $type,
-                'description' => $description,
-                'date_don' => date('Y-m-d'),
-                'statut' => 'enregistre'
-            ]);
-
-            if ($success) {
-                flashMessage("Votre don matériel a été enregistré. Merci !", 'success');
-                createNotification($userId, "Don matériel enregistré", "...", 'info', WEBCLIENT_URL . '/modules/employees/donations.php');
-            } else {
-                throw new Exception("Erreur DB don matériel.");
-            }
-        } catch (Exception $e) {
-            error_log("Erreur enregistrement don matériel pour user ID $userId: " . $e->getMessage());
-            flashMessage("Erreur lors de l'enregistrement.", 'danger');
-        }
+    
+    $assoExists = fetchOne('associations', 'id = ?', [$associationId]);
+    
+    if (!$assoExists) {
+        flashMessage('Erreur interne: Association non trouvée après validation.', 'danger');
         redirectTo(WEBCLIENT_URL . '/modules/employees/donations.php');
-    } elseif ($type === 'financier') {
-
-        try {
-
-            $_SESSION['pending_donation'] = [
-                'user_id' => $userId,
-                'association_id' => $associationId,
-                'montant' => $montant,
-                'description' => $description,
-                'type' => 'financier'
-
-            ];
-
-            Stripe::setApiKey(STRIPE_SECRET_KEY);
-            $checkout_session = StripeCheckoutSession::create([
-                'payment_method_types' => ['card', 'sepa_debit', 'bancontact'],
-                'line_items' => [[
-                    'price_data' => [
-                        'currency' => 'eur',
-                        'product_data' => [
-                            'name' => 'Don à ' . htmlspecialchars($assoExists['nom']),
-                            'description' => $description ?: 'Don financier',
-                        ],
-                        'unit_amount' => intval($montant * 100),
-                    ],
-                    'quantity' => 1,
-                ]],
-                'mode' => 'payment',
-
-                'success_url' => WEBCLIENT_URL . '/modules/employees/donations.php?stripe_result=success&token=' . urlencode(generateToken('stripe_success')),
-                'cancel_url' => WEBCLIENT_URL . '/modules/employees/donations.php?stripe_result=cancel&token=' . urlencode(generateToken('stripe_cancel')),
-                'metadata' => [
-                    'donation_user_id' => $userId,
-                    'donation_association_id' => $associationId,
-                    'donation_type' => 'financier',
-                    'donation_description' => substr($description, 0, 500),
-                    'donation_amount_decimal' => sprintf('%.2f', $montant)
-                ],
-                'customer_email' => $_SESSION['user_email'] ?? null,
-            ]);
-
-            header("Location: " . $checkout_session->url);
-            exit();
-        } catch (ApiErrorException $e) {
-            error_log("Erreur API Stripe don pour user ID $userId: " . $e->getMessage());
-            flashMessage("Impossible de procéder au paiement [API].", 'danger');
-            unset($_SESSION['pending_donation']);
-            redirectTo(WEBCLIENT_URL . '/modules/employees/donations.php');
-        } catch (Exception $e) {
-            error_log("Erreur préparation paiement don pour user ID $userId: " . $e->getMessage());
-            flashMessage("Impossible de procéder au paiement [Serveur].", 'danger');
-            unset($_SESSION['pending_donation']);
-            redirectTo(WEBCLIENT_URL . '/modules/employees/donations.php');
-        }
+        return;
     }
+
+    if ($type === 'financier') {
+        $montantInput = str_replace(',', '.', $formData['montant']);
+        $montant = (float)$montantInput;
+        $description = $description ?: "Don financier";
+
+        
+        processFinancialDonation($userId, $associationId, $montant, $description, $assoExists);
+        
+
+    } elseif ($type === 'materiel') {
+        
+        processMaterialDonation($userId, $associationId, $description);
+        
+    }
+
+    
+    redirectTo(WEBCLIENT_URL . '/modules/employees/donations.php');
 }
 
 /**
@@ -171,15 +203,15 @@ function handleNewDonation()
  */
 function setupDonationsPage()
 {
-    // Validation du token de retour Stripe
+    
     if (isset($_GET['stripe_result'], $_GET['token'])) {
         $tokenType = $_GET['stripe_result'] === 'success' ? 'stripe_success' : 'stripe_cancel';
-        if (!validateToken($_GET['token'], $tokenType)) {
-            flashMessage("URL de retour invalide ou expirée.", "danger"); // Message plus précis
+        if (!validateToken($_GET['token'])) {
+            flashMessage("URL de retour invalide ou expirée.", "danger");
             redirectTo(WEBCLIENT_URL . '/modules/employees/donations.php');
-            exit; // Important d'ajouter exit ici
+            exit;
         }
-        // Si token valide, on continue le traitement ci-dessous
+        
     }
 
     if (isset($_GET['stripe_result'])) {
