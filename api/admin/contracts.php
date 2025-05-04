@@ -3,13 +3,13 @@
 require_once __DIR__ . '/init.php'; 
 
 if (!$isAuthenticated) {
-    logSecurityEvent(null, 'api_access_denied', '[FAILURE] Tentative d\'accès à /api/admin/contracts sans authentification');
+    logSecurityEvent(null, '[SECURITY]:api_access_denied', '[FAILURE] Tentative d\'accès à /api/admin/contracts sans authentification');
     sendJsonResponse(['error' => true, 'message' => 'Authentification requise'], 401);
 }
 
 
 if ($currentUserRole !== ROLE_ADMIN) { 
-    logSecurityEvent($currentUserId, 'api_access_denied', '[FAILURE] Utilisateur ID ' . $currentUserId . ' a tenté d\'accéder à /api/admin/contracts sans le rôle admin');
+    logSecurityEvent($currentUserId, '[SECURITY]:api_access_denied', '[FAILURE] Utilisateur ID ' . $currentUserId . ' a tenté d\'accéder à /api/admin/contracts sans le rôle admin');
     sendJsonResponse(['error' => true, 'message' => 'Accès interdit'], 403);
 }
 
@@ -29,12 +29,12 @@ if ($method === 'GET') {
         getContractList($companyIdFilter);
     } else {
         
-        logActivity($currentUserId, 'api_contract_request', '[FAILURE] Format d\'ID de contrat/entreprise invalide demandé : ' . ($_GET['id'] ?? $_GET['company_id'] ?? 'null'));
+        logActivity($currentUserId, '[SECURITY]:api_contract_request', '[FAILURE] Format d\'ID de contrat/entreprise invalide demandé : ' . ($_GET['id'] ?? $_GET['company_id'] ?? 'null'));
         sendJsonResponse(['error' => true, 'message' => 'ID de contrat ou d\'entreprise invalide ou non fourni correctement.'], 400);
     }
 } else {
     
-    logSecurityEvent($currentUserId, 'api_method_not_allowed', '[FAILURE] Méthode ' . $method . ' tentée sur /api/admin/contracts par l\'Utilisateur ID ' . $currentUserId);
+    logSecurityEvent($currentUserId, '[SECURITY]:api_method_not_allowed', '[FAILURE] Méthode ' . $method . ' tentée sur /api/admin/contracts par l\'Utilisateur ID ' . $currentUserId);
     sendJsonResponse(['error' => true, 'message' => 'Méthode non autorisée pour ce point de terminaison'], 405);
 }
 
@@ -67,11 +67,11 @@ function getContractList($companyId = null) {
         $stmt = executeQuery($sql, $params); 
         $contracts = $stmt->fetchAll(PDO::FETCH_ASSOC); 
 
-        logActivity($currentUserId, 'api_contract_list', '[SUCCESS] Liste des contrats récupérée avec succès (' . count($contracts) . ' contrats)' . ($companyId ? ' pour l\'entreprise ID ' . $companyId : ''));
+        logActivity($currentUserId, '[SECURITY]:api_contract_list', '[SUCCESS] Liste des contrats récupérée avec succès (' . count($contracts) . ' contrats)' . ($companyId ? ' pour l\'entreprise ID ' . $companyId : ''));
         sendJsonResponse(['error' => false, 'data' => $contracts], 200);
 
     } catch (Exception $e) {
-        logSystemActivity('api_contract_list', '[ERROR] Échec de la récupération de la liste des contrats : ' . $e->getMessage());
+        logSystemActivity('[SECURITY]:api_contract_list', '[ERROR] Échec de la récupération de la liste des contrats : ' . $e->getMessage());
         sendJsonResponse(['error' => true, 'message' => 'Erreur lors de la récupération de la liste des contrats.'], 500);
     }
 }
@@ -117,15 +117,15 @@ function getContractDetails($id) {
              
             unset($contract['service_all_details_id']); 
 
-            logActivity($currentUserId, 'api_contract_detail', '[SUCCESS] Détails récupérés avec succès pour le contrat ID : ' . $id);
+            logActivity($currentUserId, '[SECURITY]:api_contract_detail', '[SUCCESS] Détails récupérés avec succès pour le contrat ID : ' . $id);
             sendJsonResponse(['error' => false, 'data' => $contract], 200);
 
         } else {
-            logActivity($currentUserId, 'api_contract_detail', '[FAILURE] Contrat non trouvé pour l\'ID : ' . $id);
+            logActivity($currentUserId, '[SECURITY]:api_contract_detail', '[FAILURE] Contrat non trouvé pour l\'ID : ' . $id);
             sendJsonResponse(['error' => true, 'message' => 'Contrat non trouvé'], 404);
         }
     } catch (Exception $e) {
-        logSystemActivity('api_contract_detail', '[ERROR] Échec de la récupération des détails pour le contrat ID ' . $id . ' : ' . $e->getMessage());
+        logSystemActivity('[SECURITY]:api_contract_detail', '[ERROR] Échec de la récupération des détails pour le contrat ID ' . $id . ' : ' . $e->getMessage());
         sendJsonResponse(['error' => true, 'message' => 'Erreur lors de la récupération des détails du contrat.'], 500);
     }
 } 

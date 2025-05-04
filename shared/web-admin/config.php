@@ -43,7 +43,7 @@ define('TABLE_INVOICES', 'factures');
 define('TABLE_USER_PREFERENCES', 'preferences_utilisateurs');
 define('TABLE_LOGS', 'logs');
 define('TABLE_REMEMBER_ME', 'remember_me_tokens');
-define('TABLE_API_TOKENS', 'api_tokens');
+define('TABLE_API_TOKENS', '[SECURITY]:api_tokens');
 define('TABLE_HABILITATIONS', 'habilitations');
 define('TABLE_PROVIDER_SERVICES', 'prestataires_prestations');
 define('TABLE_PROVIDER_AVAILABILITY', 'prestataires_disponibilites');

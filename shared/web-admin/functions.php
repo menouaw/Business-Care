@@ -476,7 +476,7 @@ function validateApiAdminToken($token) {
 
         if (!$userData || (int)$userData['role_id'] !== ROLE_ADMIN) {
             
-            logSecurityEvent($userId, 'api_token_validation', '[FAILURE] Tentative d\'accès API avec token valide mais rôle non admin', true);
+            logSecurityEvent($userId, '[SECURITY]:api_token_validation', '[FAILURE] Tentative d\'accès API avec token valide mais rôle non admin', true);
             return [false, null];
         }
 
@@ -490,7 +490,7 @@ function validateApiAdminToken($token) {
 
     } catch (PDOException $e) {
         
-        logSystemActivity('api_token_validation', '[ERROR] PDOException lors de la validation du token API: ' . $e->getMessage());
+        logSystemActivity('[SECURITY]:api_token_validation', '[ERROR] PDOException lors de la validation du token API: ' . $e->getMessage());
         return [false, null];
     }
 }

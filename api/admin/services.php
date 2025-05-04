@@ -3,13 +3,13 @@ require_once __DIR__ . '/init.php';
 
 
 if (!$isAuthenticated) {
-    logSecurityEvent(null, 'api_access_denied', '[FAILURE] Tentative d\'accès à /api/admin/services sans authentification');
+    logSecurityEvent(null, '[SECURITY]:api_access_denied', '[FAILURE] Tentative d\'accès à /api/admin/services sans authentification');
     sendJsonResponse(['error' => true, 'message' => 'Authentification requise'], 401);
 }
 
 
 if ($currentUserRole !== ROLE_ADMIN) { 
-    logSecurityEvent($currentUserId, 'api_access_denied', '[FAILURE] Utilisateur ID ' . $currentUserId . ' a tenté d\'accéder à /api/admin/services sans le rôle admin');
+    logSecurityEvent($currentUserId, '[SECURITY]:api_access_denied', '[FAILURE] Utilisateur ID ' . $currentUserId . ' a tenté d\'accéder à /api/admin/services sans le rôle admin');
     sendJsonResponse(['error' => true, 'message' => 'Accès interdit'], 403);
 }
 
@@ -26,12 +26,12 @@ if ($method === 'GET') {
         getAllPrestations();
     } else {
         
-        logActivity($currentUserId, 'api_service_request', '[FAILURE] Format d\'ID de prestation invalide demandé : ' . ($_GET['id'] ?? 'null'));
+        logActivity($currentUserId, '[SECURITY]:api_service_request', '[FAILURE] Format d\'ID de prestation invalide demandé : ' . ($_GET['id'] ?? 'null'));
         sendJsonResponse(['error' => true, 'message' => 'ID de prestation invalide ou non fourni correctement.'], 400);
     }
 } else {
     
-    logSecurityEvent($currentUserId, 'api_method_not_allowed', '[FAILURE] Méthode ' . $method . ' tentée sur /api/admin/services par l\'Utilisateur ID ' . $currentUserId);
+    logSecurityEvent($currentUserId, '[SECURITY]:api_method_not_allowed', '[FAILURE] Méthode ' . $method . ' tentée sur /api/admin/services par l\'Utilisateur ID ' . $currentUserId);
     sendJsonResponse(['error' => true, 'message' => 'Méthode non autorisée pour ce point de terminaison'], 405);
 }
 
@@ -48,11 +48,11 @@ function getAllPrestations() {
         
         
 
-        logActivity($currentUserId, 'api_service_list', '[SUCCESS] Liste des prestations récupérée avec succès (' . count($prestations) . ' prestations)');
+        logActivity($currentUserId, '[SECURITY]:api_service_list', '[SUCCESS] Liste des prestations récupérée avec succès (' . count($prestations) . ' prestations)');
         sendJsonResponse(['error' => false, 'data' => $prestations], 200); 
 
     } catch (Exception $e) {
-        logSystemActivity('api_service_list', '[ERROR] Échec de la récupération de la liste des prestations : ' . $e->getMessage());
+        logSystemActivity('[SECURITY]:api_service_list', '[ERROR] Échec de la récupération de la liste des prestations : ' . $e->getMessage());
         sendJsonResponse(['error' => true, 'message' => 'Erreur lors de la récupération de la liste des prestations.'], 500);
     }
 }
@@ -92,15 +92,15 @@ function getPrestationDetails($id) {
             
             $prestation['associated_events'] = $associatedEventIds; 
 
-            logActivity($currentUserId, 'api_service_detail', '[SUCCESS] Détails récupérés avec succès pour la prestation ID : ' . $id);
+            logActivity($currentUserId, '[SECURITY]:api_service_detail', '[SUCCESS] Détails récupérés avec succès pour la prestation ID : ' . $id);
             sendJsonResponse(['error' => false, 'data' => $prestation], 200); 
 
         } else {
-            logActivity($currentUserId, 'api_service_detail', '[FAILURE] Prestation non trouvée pour l\'ID : ' . $id);
+            logActivity($currentUserId, '[SECURITY]:api_service_detail', '[FAILURE] Prestation non trouvée pour l\'ID : ' . $id);
             sendJsonResponse(['error' => true, 'message' => 'Prestation non trouvée'], 404);
         }
     } catch (Exception $e) {
-        logSystemActivity('api_service_detail', '[ERROR] Échec de la récupération des détails pour la prestation ID ' . $id . ' : ' . $e->getMessage());
+        logSystemActivity('[SECURITY]:api_service_detail', '[ERROR] Échec de la récupération des détails pour la prestation ID ' . $id . ' : ' . $e->getMessage());
         sendJsonResponse(['error' => true, 'message' => 'Erreur lors de la récupération des détails de la prestation.'], 500);
     }
 } 
