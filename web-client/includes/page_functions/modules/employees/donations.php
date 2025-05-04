@@ -14,12 +14,12 @@ use Stripe\Exception\ApiErrorException;
  */
 function handleNewDonation()
 {
-    
+
     if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['submit_donation'])) {
-        return; 
+        return;
     }
 
-    
+
     requireRole(ROLE_SALARIE);
     $userId = $_SESSION['user_id'] ?? 0;
     if ($userId <= 0) {
@@ -28,14 +28,14 @@ function handleNewDonation()
         return;
     }
 
-    
+
     if (!validateToken($_POST['csrf_token'] ?? '')) {
         handleClientCsrfFailureRedirect('faire un don', WEBCLIENT_URL . '/modules/employees/donations.php');
         return;
     }
 
-    
-    $formData = getFormData(); 
+
+    $formData = getFormData();
     $type = $formData['donation_type'] ?? '';
     $associationId = filter_var($formData['association_id'] ?? '', FILTER_VALIDATE_INT);
     $montant = null;
@@ -44,14 +44,14 @@ function handleNewDonation()
     $errors = [];
     $assoExists = null;
 
-    
+
     if (!in_array($type, ['financier', 'materiel'])) {
         $errors[] = "Type de don invalide.";
     }
     if (!$associationId) {
         $errors[] = "Veuillez sélectionner une association.";
     } else {
-        
+
         $assoExists = fetchOne('associations', 'id = ?', [$associationId]);
         if (!$assoExists) {
             $errors[] = "L'association sélectionnée n'est pas valide.";
@@ -64,26 +64,26 @@ function handleNewDonation()
         if ($montant === false || $montant <= 0) {
             $errors[] = "Montant invalide (minimum 0.01€).";
         }
-        $description = $description ?: "Don financier"; 
+        $description = $description ?: "Don financier";
     } elseif ($type === 'materiel') {
         if (empty($description)) {
             $errors[] = "Veuillez fournir une description pour un don matériel.";
         }
-        $montant = null; 
+        $montant = null;
     }
 
-    
+
     if (!empty($errors)) {
         foreach ($errors as $error) {
             flashMessage($error, 'danger');
         }
-        redirectTo(WEBCLIENT_URL . '/modules/employees/donations.php'); 
+        redirectTo(WEBCLIENT_URL . '/modules/employees/donations.php');
         return;
     }
 
-    
+
     if ($type === 'materiel') {
-        
+
         try {
             $success = insertRow('dons', [
                 'personne_id' => $userId,
@@ -92,11 +92,11 @@ function handleNewDonation()
                 'type' => $type,
                 'description' => $description,
                 'date_don' => date('Y-m-d'),
-                'statut' => 'enregistre' 
+                'statut' => 'enregistre'
             ]);
 
             if ($success) {
-                flashMessage("Votre don matériel a été enregistré. Merci !", 'success'); 
+                flashMessage("Votre don matériel a été enregistré. Merci !", 'success');
                 createNotification($userId, "Don matériel enregistré", "...", 'info', WEBCLIENT_URL . '/modules/employees/donations.php');
             } else {
                 throw new Exception("Erreur DB don matériel.");
@@ -107,16 +107,16 @@ function handleNewDonation()
         }
         redirectTo(WEBCLIENT_URL . '/modules/employees/donations.php');
     } elseif ($type === 'financier') {
-        
+
         try {
-            
+
             $_SESSION['pending_donation'] = [
                 'user_id' => $userId,
                 'association_id' => $associationId,
                 'montant' => $montant,
                 'description' => $description,
                 'type' => 'financier'
-                
+
             ];
 
             Stripe::setApiKey(STRIPE_SECRET_KEY);
@@ -134,9 +134,9 @@ function handleNewDonation()
                     'quantity' => 1,
                 ]],
                 'mode' => 'payment',
-                
-                'success_url' => WEBCLIENT_URL . '/modules/employees/donations.php?stripe_result=success', 
-                'cancel_url' => WEBCLIENT_URL . '/modules/employees/donations.php?stripe_result=cancel',
+
+                'success_url' => WEBCLIENT_URL . '/modules/employees/donations.php?stripe_result=success&token=' . urlencode(generateToken('stripe_success')),
+                'cancel_url' => WEBCLIENT_URL . '/modules/employees/donations.php?stripe_result=cancel&token=' . urlencode(generateToken('stripe_cancel')),
                 'metadata' => [
                     'donation_user_id' => $userId,
                     'donation_association_id' => $associationId,
@@ -152,12 +152,12 @@ function handleNewDonation()
         } catch (ApiErrorException $e) {
             error_log("Erreur API Stripe don pour user ID $userId: " . $e->getMessage());
             flashMessage("Impossible de procéder au paiement [API].", 'danger');
-            unset($_SESSION['pending_donation']); 
+            unset($_SESSION['pending_donation']);
             redirectTo(WEBCLIENT_URL . '/modules/employees/donations.php');
         } catch (Exception $e) {
             error_log("Erreur préparation paiement don pour user ID $userId: " . $e->getMessage());
             flashMessage("Impossible de procéder au paiement [Serveur].", 'danger');
-            unset($_SESSION['pending_donation']); 
+            unset($_SESSION['pending_donation']);
             redirectTo(WEBCLIENT_URL . '/modules/employees/donations.php');
         }
     }
@@ -171,7 +171,17 @@ function handleNewDonation()
  */
 function setupDonationsPage()
 {
-    
+    // Validation du token de retour Stripe
+    if (isset($_GET['stripe_result'], $_GET['token'])) {
+        $tokenType = $_GET['stripe_result'] === 'success' ? 'stripe_success' : 'stripe_cancel';
+        if (!validateToken($_GET['token'], $tokenType)) {
+            flashMessage("URL de retour invalide ou expirée.", "danger"); // Message plus précis
+            redirectTo(WEBCLIENT_URL . '/modules/employees/donations.php');
+            exit; // Important d'ajouter exit ici
+        }
+        // Si token valide, on continue le traitement ci-dessous
+    }
+
     if (isset($_GET['stripe_result'])) {
         $result = $_GET['stripe_result'];
         unset($_GET['stripe_result']);
@@ -181,7 +191,7 @@ function setupDonationsPage()
             unset($_SESSION['pending_donation']);
 
             try {
-                
+
                 $success = insertRow('dons', [
                     'personne_id' => $pendingDon['user_id'],
                     'association_id' => $pendingDon['association_id'],
@@ -189,14 +199,14 @@ function setupDonationsPage()
                     'type' => $pendingDon['type'],
                     'description' => $pendingDon['description'],
                     'date_don' => date('Y-m-d'),
-                    'statut' => 'enregistre' 
+                    'statut' => 'enregistre'
                 ]);
 
                 if ($success) {
                     flashMessage("Votre don financier a été enregistré avec succès. Merci !", 'success');
                     createNotification(
                         $pendingDon['user_id'],
-                        "Don enregistré", 
+                        "Don enregistré",
                         "Votre don financier de " . formatMoney($pendingDon['montant']) . " a bien été enregistré.",
                         'success',
                         WEBCLIENT_URL . '/modules/employees/donations.php'
@@ -216,11 +226,11 @@ function setupDonationsPage()
         redirectTo(WEBCLIENT_URL . '/modules/employees/donations.php');
         exit;
     }
-    
 
-    
+
+
     handleNewDonation();
-    
+
 
     requireRole(ROLE_SALARIE);
     $userId = $_SESSION['user_id'] ?? 0;
@@ -233,10 +243,10 @@ function setupDonationsPage()
 
     $pageTitle = "Faire un Don / Mon Historique";
     $donations = [];
-    $associations = []; 
+    $associations = [];
 
     try {
-        
+
         $sql = "SELECT d.*, a.nom as association_nom
                 FROM dons d
                 LEFT JOIN associations a ON d.association_id = a.id
@@ -246,10 +256,10 @@ function setupDonationsPage()
         $stmt = executeQuery($sql, [':user_id' => $userId]);
         $donations = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        
+
         $associations = fetchAll('associations', '', 'nom ASC');
         if (empty($associations)) {
-            
+
             flashMessage("Aucune association n'est disponible pour recevoir des dons actuellement.", "warning");
         }
     } catch (Exception $e) {
@@ -263,6 +273,6 @@ function setupDonationsPage()
         'pageTitle' => $pageTitle,
         'donations' => $donations,
         'associations' => $associations,
-        'csrf_token' => generateToken() 
+        'csrf_token' => generateToken()
     ];
 }
