@@ -233,40 +233,6 @@ function servicesSave($data, $id = 0) {
 }
 
 /**
- * Gère la soumission du formulaire d'ajout/modification de service.
- *
- * Valide le token CSRF, prépare les données, et appelle servicesSave.
- * Retourne un tableau avec le résultat de l'opération (succès, message/erreurs).
- *
- * @param array $postData Données du formulaire ($_POST)
- * @param int $id ID du service (0 pour ajout)
- * @return array Résultat de l'opération ['success' => bool, 'message' => string|null, 'errors' => array|null]
- */
-function servicesHandlePostRequest($postData, $id) {
-    if (!validateToken($postData['csrf_token'] ?? '')) {
-        return [
-            'success' => false,
-            'errors' => ["Erreur de sécurité, veuillez réessayer."]
-        ];
-    }
-    
-    $data = [
-        'nom' => $postData['nom'] ?? '',
-        'description' => $postData['description'] ?? '',
-        'prix' => $postData['prix'] ?? '',
-        'duree' => $postData['duree'] ?? null,
-        'type' => $postData['type'] ?? '',
-        'categorie' => $postData['categorie'] ?? null,
-        'niveau_difficulte' => $postData['niveau_difficulte'] ?? null,
-        'capacite_max' => $postData['capacite_max'] ?? null,
-        'materiel_necessaire' => $postData['materiel_necessaire'] ?? null,
-        'prerequis' => $postData['prerequis'] ?? null
-    ];
-
-    return servicesSave($data, $id);
-}
-
-/**
  * Supprime un service après vérification des dépendances associées.
  *
  * Utilise les fonctions de db.php pour vérifier les dépendances et supprimer.

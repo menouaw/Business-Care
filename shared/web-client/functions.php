@@ -374,15 +374,6 @@ function isTimeSlotAvailable($dateHeure, $duree, $prestationId)
     return $stmt->fetchColumn() == 0;
 }
 
-
-function formatCurrency($amount, $currencySymbol = '€')
-{
-    if ($amount === null || !is_numeric($amount)) {
-        return 'N/A';
-    }
-    return number_format($amount, 2, ',', ' ') . ' ' . $currencySymbol;
-}
-
 /**
  * Formate un objet DateInterval en une chaîne de caractères représentant le nombre total de mois.
  *

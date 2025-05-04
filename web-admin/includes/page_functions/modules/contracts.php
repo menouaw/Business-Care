@@ -263,35 +263,3 @@ function contractsGetActiveUserCountForCompany(int $entrepriseId): int {
         return 0; 
     }
 }
-
-/**
- * Met à jour le statut d'un contrat.
- *
- * Utilise updateRow de db.php.
- *
- * @param int $id Identifiant du contrat.
- * @param string $status Nouveau statut du contrat.
- * @return bool True si le statut a été mis à jour avec succès, false sinon.
- */
-function contractsUpdateStatus($id, $status) {
-    if (!in_array($status, CONTRACT_STATUSES)) {
-        logBusinessOperation($_SESSION['user_id'], 'contract_status_update_attempt', 
-            "[ERROR] Tentative échouée de mise à jour de statut contrat ID: $id avec valeur invalide: $status");
-        return false;
-    }
-    
-    $affectedRows = updateRow(TABLE_CONTRACTS, ['statut' => $status], "id = :where_id", [':where_id' => $id]);
-    
-    if ($affectedRows > 0) { 
-        logBusinessOperation($_SESSION['user_id'], 'contract_status_update', 
-            "[SUCCESS] Mise à jour statut contrat ID: $id - Nouveau statut: $status");
-        return true; 
-    } elseif ($affectedRows === 0) {
-         logBusinessOperation($_SESSION['user_id'], 'contract_status_update_noop', 
-            "[INFO] Mise à jour statut contrat ID: $id - Statut déjà {$status} ou contrat non trouvé?");
-        return false; 
-    } else { 
-        logSystemActivity('error', "[ERROR] Erreur lors de la mise à jour du statut du contrat ID: $id");
-        return false;
-    }
-} 
