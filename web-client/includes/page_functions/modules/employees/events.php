@@ -137,7 +137,7 @@ function setupEventsPage()
     $otherEvents = [];
 
     try {
-        // 1. Récupérer les ID des intérêts de l'utilisateur
+        
         $userInterestLinks = fetchAll(
             'personne_interets',
             'personne_id = :user_id',
@@ -148,7 +148,7 @@ function setupEventsPage()
         );
         $userInterestIds = !empty($userInterestLinks) ? array_column($userInterestLinks, 'interet_id') : [];
 
-        // Récupérer les noms des intérêts correspondants
+        
         $userInterestNames = [];
         if (!empty($userInterestIds)) {
             $placeholders = implode(',', array_fill(0, count($userInterestIds), '?'));
@@ -164,14 +164,14 @@ function setupEventsPage()
         }
         $userInterestNamesLower = array_map('strtolower', $userInterestNames);
 
-        // 2. Récupérer tous les événements à venir
+        
         $allUpcomingEvents = fetchAll(
             'evenements',
             "date_debut >= NOW()",
             'date_debut ASC'
         );
 
-        // 3. Catégoriser les événements selon les intérêts
+        
         foreach ($allUpcomingEvents as $event) {
             $isPreferred = false;
             if (!empty($userInterestNamesLower)) {
@@ -190,25 +190,25 @@ function setupEventsPage()
             }
         }
 
-        // 4. Enrichir les deux listes d'événements (préférés et autres)
+        
         $eventIdsToEnrich = array_column(array_merge($preferredEvents, $otherEvents), 'id');
 
         if (!empty($eventIdsToEnrich)) {
             $placeholders = implode(',', array_fill(0, count($eventIdsToEnrich), '?'));
 
-            // Récupérer les inscriptions pour tous les événements concernés
+            
             $userRegistrations = fetchAll(
                 'evenement_inscriptions',
                 "personne_id = ? AND evenement_id IN ($placeholders)",
-                '',
-                0,
-                0,
+                '',   
+                0,    
+                0,    
                 array_merge([$userId], $eventIdsToEnrich)
             );
             $registeredEventIds = array_column($userRegistrations, 'evenement_id');
             $registeredEventIds = array_flip($registeredEventIds);
 
-            // Récupérer le nombre d'inscrits pour tous les événements concernés
+            
             $registrationCounts = [];
             $sqlCounts = "SELECT evenement_id, COUNT(*) as count FROM evenement_inscriptions WHERE evenement_id IN ($placeholders) GROUP BY evenement_id";
             $stmtCounts = executeQuery($sqlCounts, $eventIdsToEnrich);
@@ -216,7 +216,7 @@ function setupEventsPage()
                 $registrationCounts[$row['evenement_id']] = (int)$row['count'];
             }
 
-            // Fonction pour enrichir un événement individuel
+            
             $enrichEvent = function ($event) use ($registeredEventIds, $registrationCounts) {
                 $eventId = $event['id'];
                 $event['is_registered'] = isset($registeredEventIds[$eventId]);
@@ -230,20 +230,20 @@ function setupEventsPage()
                 return $event;
             };
 
-            // Appliquer l'enrichissement aux deux listes
+            
             $preferredEvents = array_map($enrichEvent, $preferredEvents);
             $otherEvents = array_map($enrichEvent, $otherEvents);
         }
     } catch (Exception $e) {
         error_log("ERREUR dans setupEventsPage pour user $userId: " . $e->getMessage());
         flashMessage("Impossible de charger la liste des événements.", "danger");
-        // Les listes resteront vides en cas d'erreur
+        
     }
 
     return [
         'pageTitle' => $pageTitle,
         'preferredEvents' => $preferredEvents,
         'otherEvents' => $otherEvents
-        // Note: Pagination removed for this structure
+        
     ];
 }
