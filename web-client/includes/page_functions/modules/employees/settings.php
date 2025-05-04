@@ -388,6 +388,8 @@ function setupEmployeeSettingsPage(): array
         exit;
     }
 
+    
+    $csrfToken = generateToken();
 
     return [
         'pageTitle' => "Mes Paramètres",
@@ -395,11 +397,11 @@ function setupEmployeeSettingsPage(): array
         'preferences' => $employeePreferences,
         'allInterests' => $allInterests,
         'userInterestIds' => $userInterestIds,
-        'csrf_token_profile' => generateToken(),
-        'csrf_token_password' => generateToken(),
-        'csrf_token_photo' => generateToken(),
-        'csrf_token_preferences' => generateToken(),
-        'csrf_token_interests' => generateToken(),
+        'csrf_token_profile' => $csrfToken,
+        'csrf_token_password' => $csrfToken,
+        'csrf_token_photo' => $csrfToken,
+        'csrf_token_preferences' => $csrfToken,
+        'csrf_token_interests' => $csrfToken,
         'flash_new_photo_url' => $_SESSION['flash_new_photo_url'] ?? null
     ];
 }
