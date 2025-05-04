@@ -1,6 +1,5 @@
 <?php
-define('BASE_DIR', __DIR__ . '/../');
-require_once BASE_DIR . 'includes/init.php';
+require_once __DIR__ . '/../includes/init.php';
 ?>
 <!DOCTYPE html>
 <html lang="fr">
