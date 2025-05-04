@@ -26,7 +26,7 @@ function handleAdminLogin() {
     $input = json_decode(file_get_contents('php://input'), true);
 
     if (empty($input['email']) || empty($input['password'])) {
-        logSecurityEvent(null, 'api_admin_login', '[FAILURE] Email ou mot de passe manquant dans la requête de login API', true);
+        logSecurityEvent(null, '[SECURITY]:api_admin_login', '[FAILURE] Email ou mot de passe manquant dans la requête de login API', true);
         sendJsonResponse(['error' => true, 'message' => 'Email et mot de passe requis'], 400);
         return;
     }
@@ -59,7 +59,7 @@ function handleAdminLogin() {
                 ':expires_at' => $expiresAt
             ]);
 
-            logSecurityEvent($user['id'], 'api_admin_login', '[SUCCESS] Connexion API réussie');
+            logSecurityEvent($user['id'], '[SECURITY]:api_admin_login', '[SUCCESS] Connexion API réussie');
 
             
             $userDataResponse = [
@@ -84,12 +84,12 @@ function handleAdminLogin() {
             } elseif ((int)$user['role_id'] !== ROLE_ADMIN) {
                  $reason = 'Rôle non administrateur';
             }
-             logSecurityEvent(($user ? $user['id'] : null), 'api_admin_login', '[FAILURE] Échec de connexion API. Raison: ' . $reason, true);
+             logSecurityEvent(($user ? $user['id'] : null), '[SECURITY]:api_admin_login', '[FAILURE] Échec de connexion API. Raison: ' . $reason, true);
             sendJsonResponse(['error' => true, 'message' => 'Identifiants invalides ou accès non autorisé.'], 401);
         }
 
     } catch (PDOException $e) {
-        logSystemActivity('api_admin_login', '[ERROR] PDOException lors de la connexion API: ' . $e->getMessage());
+        logSystemActivity('[SECURITY]:api_admin_login', '[ERROR] PDOException lors de la connexion API: ' . $e->getMessage());
         sendJsonResponse(['error' => true, 'message' => 'Erreur serveur lors de la tentative de connexion.'], 500);
     }
 }
@@ -114,16 +114,16 @@ function handleAdminLogout($token) {
         $stmtDelete->execute([':token' => $token]);
 
         if ($stmtDelete->rowCount() > 0) {
-             logSecurityEvent($adminUserId, 'api_admin_logout', '[SUCCESS] Déconnexion API réussie (token invalidé)');
+             logSecurityEvent($adminUserId, '[SECURITY]:api_admin_logout', '[SUCCESS] Déconnexion API réussie (token invalidé)');
             sendJsonResponse(['error' => false, 'message' => 'Déconnexion réussie'], 200);
         } else {
             
-            logSecurityEvent($adminUserId, 'api_admin_logout', '[FAILURE] Tentative de déconnexion API avec un token déjà invalide ou inconnu');
+            logSecurityEvent($adminUserId, '[SECURITY]:api_admin_logout', '[FAILURE] Tentative de déconnexion API avec un token déjà invalide ou inconnu');
             sendJsonResponse(['error' => true, 'message' => 'Échec de la déconnexion, token invalide ou déjà supprimé.'], 400);
         }
 
     } catch (PDOException $e) {
-        logSystemActivity('api_admin_logout', '[ERROR] PDOException lors de la déconnexion API: ' . $e->getMessage());
+        logSystemActivity('[SECURITY]:api_admin_logout', '[ERROR] PDOException lors de la déconnexion API: ' . $e->getMessage());
         sendJsonResponse(['error' => true, 'message' => 'Erreur serveur lors de la tentative de déconnexion.'], 500);
     }
 }

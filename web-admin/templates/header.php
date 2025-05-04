@@ -24,9 +24,9 @@ require_once __DIR__ . '/../includes/init.php';
             <div class="d-flex justify-content-between align-items-center">
                 <div class="navbar-nav flex-row ms-auto">
                     <div class="nav-item text-nowrap">
-                        <a class="nav-link px-3" href="<?php echo WEBADMIN_URL; ?>/notifications.php" title="Notifications">
-                            <i class="fas fa-bell"></i>
-                        </a>
+                        <button type="button" class="nav-link px-3 btn btn-link" data-bs-toggle="modal" data-bs-target="#tutorialModal" title="Voir le tutoriel">
+                            <i class="fas fa-question-circle"></i>
+                        </button>
                     </div>
                     <div class="nav-item text-nowrap dropdown user-dropdown">
                         <a class="nav-link px-3 dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -44,6 +44,24 @@ require_once __DIR__ . '/../includes/init.php';
         </div>
     </header>
     <div style="padding-top: var(--navbar-height);"></div>
+
+    
+    <div class="modal fade" id="tutorialModal" tabindex="-1" aria-labelledby="tutorialModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body p-0">
+            <div style="position:relative;padding-bottom:56.25%;"> 
+              <iframe style="width:100%;height:100%;position:absolute;left:0px;top:0px;border-radius: 0 0 .375rem .375rem" src="<?php echo getTutorialVideoUrl(); ?>" title="Comment utiliser les pages principales?" frameborder="0" referrerpolicy="unsafe-url" allowfullscreen="true" allow="clipboard-write" sandbox="allow-popups allow-popups-to-escape-sandbox allow-scripts allow-forms allow-same-origin allow-presentation"></iframe> 
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+
 </body>
 </html>
 

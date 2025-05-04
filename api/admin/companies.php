@@ -2,12 +2,12 @@
 require_once __DIR__ . '/init.php'; 
 
 if (!$isAuthenticated) {
-    logSecurityEvent(null, 'api_access_denied', '[FAILURE] Tentative d\'accès à /api/admin/companies sans authentification');
+    logSecurityEvent(null, '[SECURITY]:api_access_denied', '[FAILURE] Tentative d\'accès à /api/admin/companies sans authentification');
     sendJsonResponse(['error' => true, 'message' => 'Authentification requise'], 401);
 }
 
 if ($currentUserRole !== ROLE_ADMIN) { 
-    logSecurityEvent($currentUserId, 'api_access_denied', '[FAILURE] Utilisateur ID ' . $currentUserId . ' a tenté d\'accéder à /api/admin/companies sans le rôle admin');
+    logSecurityEvent($currentUserId, '[SECURITY]:api_access_denied', '[FAILURE] Utilisateur ID ' . $currentUserId . ' a tenté d\'accéder à /api/admin/companies sans le rôle admin');
     sendJsonResponse(['error' => true, 'message' => 'Accès interdit'], 403);
 }
 
@@ -26,12 +26,12 @@ if ($method === 'GET') {
         getAllCompanies();
     } else {
         
-         logActivity($currentUserId, 'api_company_request', '[FAILURE] Format d\'ID d\'entreprise invalide demandé : ' . ($_GET['id'] ?? 'null'));
+         logActivity($currentUserId, '[SECURITY]:api_company_request', '[FAILURE] Format d\'ID d\'entreprise invalide demandé : ' . ($_GET['id'] ?? 'null'));
         sendJsonResponse(['error' => true, 'message' => 'ID d\'entreprise invalide ou non fourni correctement.'], 400);
     }
 } else {
     
-    logSecurityEvent($currentUserId, 'api_method_not_allowed', '[FAILURE] Méthode ' . $method . ' tentée sur /api/admin/companies par l\'Utilisateur ID ' . $currentUserId);
+    logSecurityEvent($currentUserId, '[SECURITY]:api_method_not_allowed', '[FAILURE] Méthode ' . $method . ' tentée sur /api/admin/companies par l\'Utilisateur ID ' . $currentUserId);
     sendJsonResponse(['error' => true, 'message' => 'Méthode non autorisée pour ce point de terminaison'], 405);
 }
 
@@ -43,12 +43,12 @@ function getAllCompanies() {
     try {
         $companies = fetchAll(TABLE_COMPANIES, '', 'nom ASC'); 
 
-        logActivity($currentUserId, 'api_company_list', '[SUCCESS] Liste des entreprises récupérée avec succès (' . count($companies) . ' entreprises)');
+        logActivity($currentUserId, '[SECURITY]:api_company_list', '[SUCCESS] Liste des entreprises récupérée avec succès (' . count($companies) . ' entreprises)');
         
         sendJsonResponse(['error' => false, 'data' => $companies], 200);
 
     } catch (Exception $e) {
-        logSystemActivity('api_company_list', '[ERROR] Échec de la récupération de la liste des entreprises : ' . $e->getMessage());
+        logSystemActivity('[SECURITY]:api_company_list', '[ERROR] Échec de la récupération de la liste des entreprises : ' . $e->getMessage());
         sendJsonResponse(['error' => true, 'message' => 'Erreur lors de la récupération de la liste des entreprises.'], 500);
     }
 }
@@ -74,16 +74,16 @@ function getCompanyDetails($id) {
             $company['quotes'] = $quoteIds;
             $company['invoices'] = $invoiceIds;
 
-            logActivity($currentUserId, 'api_company_detail', '[SUCCESS] Détails récupérés avec succès pour l\'entreprise ID : ' . $id);
+            logActivity($currentUserId, '[SECURITY]:api_company_detail', '[SUCCESS] Détails récupérés avec succès pour l\'entreprise ID : ' . $id);
             
             sendJsonResponse(['error' => false, 'data' => $company], 200);
 
         } else {
-            logActivity($currentUserId, 'api_company_detail', '[FAILURE] Entreprise non trouvée pour l\'ID : ' . $id);
+            logActivity($currentUserId, '[SECURITY]:api_company_detail', '[FAILURE] Entreprise non trouvée pour l\'ID : ' . $id);
             sendJsonResponse(['error' => true, 'message' => 'Entreprise non trouvée'], 404);
         }
     } catch (Exception $e) {
-        logSystemActivity('api_company_detail', '[ERROR] Échec de la récupération des détails pour l\'entreprise ID ' . $id . ' : ' . $e->getMessage());
+        logSystemActivity('[SECURITY]:api_company_detail', '[ERROR] Échec de la récupération des détails pour l\'entreprise ID ' . $id . ' : ' . $e->getMessage());
         sendJsonResponse(['error' => true, 'message' => 'Erreur lors de la récupération des détails de l\'entreprise.'], 500);
     }
 }

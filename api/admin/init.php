@@ -53,14 +53,14 @@ if ($authHeader && preg_match('/^Bearer\s+(.*)$/i', $authHeader, $matches)) {
                 
             } else {
                 
-                logSecurityEvent($tokenRecord['user_id'], 'api_token_validation', '[FAILURE] Jeton API valide mais utilisateur non trouvé ou inactif (ID: ' . $tokenRecord['user_id'] . ')', true);
+                logSecurityEvent($tokenRecord['user_id'], '[SECURITY]:api_token_validation', '[FAILURE] Jeton API valide mais utilisateur non trouvé ou inactif (ID: ' . $tokenRecord['user_id'] . ')', true);
             }
         } else {
             
-             logSecurityEvent(null, 'api_token_validation', '[FAILURE] Jeton API invalide ou expiré fourni : ' . substr($bearerToken, 0, 10) . '...', true);
+             logSecurityEvent(null, '[SECURITY]:api_token_validation', '[FAILURE] Jeton API invalide ou expiré fourni : ' . substr($bearerToken, 0, 10) . '...', true);
         }
     } catch (Exception $e) {
-        logSystemActivity('api_token_validation', '[ERROR] Erreur durant la validation du jeton : ' . $e->getMessage());
+        logSystemActivity('[SECURITY]:api_token_validation', '[ERROR] Erreur durant la validation du jeton : ' . $e->getMessage());
         
     }
 }
