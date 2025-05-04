@@ -102,7 +102,7 @@ include __DIR__ . '/../../templates/header.php';
                         </div>
                     </div>
 
-                    
+
                     <div class="card shadow-sm mb-4">
                         <div class="card-header">
                             <h5 class="mb-0">Mes Intérêts Bien-être</h5>
@@ -140,7 +140,7 @@ include __DIR__ . '/../../templates/header.php';
                             </form>
                         </div>
                     </div>
-                    
+
 
                 </div>
 
@@ -169,7 +169,9 @@ include __DIR__ . '/../../templates/header.php';
                                     <label for="profile_photo" class="form-label">Changer la photo (JPG, PNG, GIF - Max 2Mo)</label>
                                     <input class="form-control" type="file" id="profile_photo" name="profile_photo" accept="image/jpeg,image/png,image/gif">
                                 </div>
-                                <button type="submit" class="btn btn-secondary">Mettre à jour la photo</button>
+                                <button type="submit" name="action" value="update_photo" class="btn btn-outline-primary">
+                                    <i class="fas fa-upload me-1"></i> Mettre à jour la photo
+                                </button>
                             </form>
                         </div>
                     </div>
