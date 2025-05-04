@@ -25,14 +25,14 @@ include __DIR__ . '/../../templates/header.php';
 
             <?php echo displayFlashMessages(); ?>
 
-            
+
             <h3 class="mt-4 mb-3">Pour vous</h3>
             <?php if (empty($preferredEvents)): ?>
                 <div class="alert alert-light text-muted">Aucun événement correspondant à vos intérêts n'est programmé pour le moment.</div>
             <?php else: ?>
                 <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4">
                     <?php foreach ($preferredEvents as $event):
-                        
+
                         $titre = htmlspecialchars($event['titre'] ?? 'Événement sans titre');
                         $descriptionCourte = !empty($event['description']) ? htmlspecialchars(substr($event['description'], 0, 100)) . '...' : 'Pas de description.';
                         $dateDebut = !empty($event['date_debut']) ? formatDate($event['date_debut'], 'd/m/Y H:i') : 'Date inconnue';
@@ -42,7 +42,7 @@ include __DIR__ . '/../../templates/header.php';
                         $icon = getServiceIcon($event['type'] ?? 'autre');
                         $isRegistered = $event['is_registered'] ?? false;
                         $isFull = (isset($event['remaining_spots']) && $event['remaining_spots'] === 0);
-                        $currentPage = $pagination['currentPage'] ?? 1; 
+                        $currentPage = (isset($pagination) && isset($pagination['currentPage'])) ? $pagination['currentPage'] : 1;
                     ?>
                         <div class="col">
                             <div class="card h-100 shadow-sm">
@@ -86,14 +86,14 @@ include __DIR__ . '/../../templates/header.php';
 
             <hr>
 
-            
+
             <h3 class="mt-4 mb-3">Autres événements</h3>
             <?php if (empty($otherEvents)): ?>
                 <div class="alert alert-light text-muted">Aucun autre événement à venir n'est programmé pour le moment.</div>
             <?php else: ?>
                 <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4">
                     <?php foreach ($otherEvents as $event):
-                        
+
                         $titre = htmlspecialchars($event['titre'] ?? 'Événement sans titre');
                         $descriptionCourte = !empty($event['description']) ? htmlspecialchars(substr($event['description'], 0, 100)) . '...' : 'Pas de description.';
                         $dateDebut = !empty($event['date_debut']) ? formatDate($event['date_debut'], 'd/m/Y H:i') : 'Date inconnue';
@@ -103,7 +103,7 @@ include __DIR__ . '/../../templates/header.php';
                         $icon = getServiceIcon($event['type'] ?? 'autre');
                         $isRegistered = $event['is_registered'] ?? false;
                         $isFull = (isset($event['remaining_spots']) && $event['remaining_spots'] === 0);
-                        $currentPage = $pagination['currentPage'] ?? 1; 
+                        $currentPage = (isset($pagination) && isset($pagination['currentPage'])) ? $pagination['currentPage'] : 1;
                     ?>
                         <div class="col">
                             <div class="card h-100 shadow-sm">
@@ -143,7 +143,7 @@ include __DIR__ . '/../../templates/header.php';
                         </div>
                     <?php endforeach; ?>
                 </div>
-                
+
             <?php endif; ?>
 
         </main>

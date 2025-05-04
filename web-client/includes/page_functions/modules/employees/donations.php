@@ -25,7 +25,7 @@ function validateDonationData(array $formData): array
     if (!$associationId) {
         $errors[] = "Veuillez sélectionner une association.";
     } else {
-        
+
         $assoExists = fetchOne('associations', 'id = ?', [$associationId]);
         if (!$assoExists) {
             $errors[] = "L'association sélectionnée n'est pas valide.";
@@ -60,12 +60,12 @@ function processMaterialDonation(int $userId, int $associationId, string $descri
             'type' => 'materiel',
             'description' => $description,
             'date_don' => date('Y-m-d'),
-            'statut' => 'enregistre'
+            'statut' => 'enregistré'
         ]);
 
         if ($success) {
             flashMessage("Votre don matériel a été enregistré. Merci !", 'success');
-            
+
             createNotification($userId, "Don matériel enregistré", "Votre don matériel a été soumis.", 'info', WEBCLIENT_URL . '/modules/employees/donations.php');
         } else {
             throw new Exception("Erreur lors de l'insertion du don matériel.");
@@ -161,15 +161,15 @@ function handleNewDonation()
         return;
     }
 
-    
+
     $type = $formData['donation_type'];
     $associationId = (int)$formData['association_id'];
     $description = trim($formData['description'] ?? '');
     $montant = null;
 
-    
+
     $assoExists = fetchOne('associations', 'id = ?', [$associationId]);
-    
+
     if (!$assoExists) {
         flashMessage('Erreur interne: Association non trouvée après validation.', 'danger');
         redirectTo(WEBCLIENT_URL . '/modules/employees/donations.php');
@@ -181,17 +181,14 @@ function handleNewDonation()
         $montant = (float)$montantInput;
         $description = $description ?: "Don financier";
 
-        
-        processFinancialDonation($userId, $associationId, $montant, $description, $assoExists);
-        
 
+        processFinancialDonation($userId, $associationId, $montant, $description, $assoExists);
     } elseif ($type === 'materiel') {
-        
+
         processMaterialDonation($userId, $associationId, $description);
-        
     }
 
-    
+
     redirectTo(WEBCLIENT_URL . '/modules/employees/donations.php');
 }
 
@@ -203,7 +200,7 @@ function handleNewDonation()
  */
 function setupDonationsPage()
 {
-    
+
     if (isset($_GET['stripe_result'], $_GET['token'])) {
         $tokenType = $_GET['stripe_result'] === 'success' ? 'stripe_success' : 'stripe_cancel';
         if (!validateToken($_GET['token'])) {
@@ -211,7 +208,6 @@ function setupDonationsPage()
             redirectTo(WEBCLIENT_URL . '/modules/employees/donations.php');
             exit;
         }
-        
     }
 
     if (isset($_GET['stripe_result'])) {
