@@ -6,7 +6,7 @@
  * ce script déconnecte l'utilisateur et le redirige vers la page d'accueil
  */
 
-require_once __DIR__ . '/../includes/init.php';
+require_once __DIR__ . '/includes/init.php';
 
 logSecurityEvent($_SESSION['user_id'] ?? null, 'logout', '[INFO] Déconnexion utilisateur ID: ' . ($_SESSION['user_id'] ?? 'Inconnu'));
 
