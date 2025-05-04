@@ -248,9 +248,9 @@ function handleAppointmentPostAndGetActions(int $salarie_id): void
 {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-       
+
         if (isset($_POST['slot_id'])) {
-           
+
             $csrf_token_booking = $_POST['csrf_token'] ?? '';
             if (!validateToken($csrf_token_booking)) {
                 flashMessage("Jeton de sécurité invalide ou expiré pour la réservation. Veuillez réessayer.", "danger");
@@ -271,23 +271,16 @@ function handleAppointmentPostAndGetActions(int $salarie_id): void
             } else {
                 flashMessage("Données de réservation invalides.", "warning");
             }
-           
+
             redirectTo(WEBCLIENT_URL . '/modules/employees/appointments.php');
             exit;
-        }
-       
-        elseif (isset($_POST['action']) && $_POST['action'] === 'cancel') {
-           
+        } elseif (isset($_POST['action']) && $_POST['action'] === 'cancel') {
+
             $csrf_token_cancel = $_POST['csrf_token'] ?? '';
-           
-            error_log("[CSRF Debug] Annulation RDV - Jeton soumis (csrf_token): " . $csrf_token_cancel);
-            error_log("[CSRF Debug] Annulation RDV - Session ID: " . session_id());
-           
 
             if (!validateToken($csrf_token_cancel)) {
-                error_log("[CSRF Debug] Annulation RDV - ECHEC validateToken() pour jeton: " . $csrf_token_cancel);
                 flashMessage("Erreur de sécurité (jeton invalide). Veuillez réessayer.", "danger");
-               
+
                 $redirectUrl = WEBCLIENT_URL . '/modules/employees/appointments.php';
                 $current_filter_on_fail = $_POST['filter'] ?? $_GET['filter'] ?? null;
                 if ($current_filter_on_fail && in_array($current_filter_on_fail, ['all', 'upcoming', 'past', 'cancelled'])) {
@@ -296,7 +289,6 @@ function handleAppointmentPostAndGetActions(int $salarie_id): void
                 redirectTo($redirectUrl);
                 exit;
             }
-            error_log("[CSRF Debug] Annulation RDV - SUCCES validateToken() pour jeton: " . $csrf_token_cancel);
 
             $rdv_id_to_cancel = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
             $current_filter = filter_input(INPUT_POST, 'filter', FILTER_SANITIZE_SPECIAL_CHARS);
@@ -307,23 +299,20 @@ function handleAppointmentPostAndGetActions(int $salarie_id): void
                     flashMessage("Votre prestation a bien été annulée.", "success");
                 } elseif (empty($_SESSION['flash_messages'])) {
                     flashMessage("L'annulation du rendez-vous a échoué pour une raison inconnue.", "danger");
-                    error_log("cancelEmployeeAppointment returned false without setting a flash message for RDV ID: " . $rdv_id_to_cancel);
                 }
             } else {
                 flashMessage("ID de rendez-vous invalide pour l'annulation.", "warning");
             }
 
-           
+
             $redirectUrl = WEBCLIENT_URL . '/modules/employees/appointments.php';
             if (!empty($current_filter) && in_array($current_filter, ['all', 'upcoming', 'past', 'cancelled'])) {
                 $redirectUrl .= '?filter=' . urlencode($current_filter);
             }
             redirectTo($redirectUrl);
             exit;
-        }
-       
-        else {
-           
+        } else {
+
             flashMessage("Action non reconnue.", "warning");
             redirectTo(WEBCLIENT_URL . '/modules/employees/appointments.php');
             exit;
@@ -426,60 +415,64 @@ function setupAppointmentsPage(): array|false
 
     handleAppointmentPostAndGetActions($salarie_id);
 
-   
+    
     $getId = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
     $getAction = filter_input(INPUT_GET, 'action', FILTER_SANITIZE_SPECIAL_CHARS);
     $getBookingStep = filter_input(INPUT_GET, 'bookingStep', FILTER_SANITIZE_SPECIAL_CHARS);
     $getServiceId = filter_input(INPUT_GET, 'service_id', FILTER_VALIDATE_INT);
-    $getPrestationId = filter_input(INPUT_GET, 'prestation_id', FILTER_VALIDATE_INT);
+    $getPrestationId = filter_input(INPUT_GET, 'prestation_id', FILTER_VALIDATE_INT); 
     $getPage = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT, ['options' => ['default' => 1, 'min_range' => 1]]);
-    $getFilter = filter_input(INPUT_GET, 'filter', FILTER_SANITIZE_SPECIAL_CHARS) ?? 'upcoming';
 
-   
-   
-    $viewState = 'list_appointments';
-    $viewAction = 'list';            
-    $viewBookingStep = null;         
-    $service_id_context = null;      
+    
+    $requestedFilter = filter_input(INPUT_GET, 'filter', FILTER_SANITIZE_SPECIAL_CHARS);
+    $validFilters = ['upcoming', 'past', 'cancelled', 'all'];
+    
+    $filter = (in_array($requestedFilter, $validFilters, true)) ? $requestedFilter : 'upcoming';
+
+    
+    
+    $viewState = 'list_appointments'; 
+    $viewAction = 'list';             
+    $viewBookingStep = null;          
+    $service_id_context = null;       
 
     if ($getAction === 'view' && $getId > 0) {
         $viewState = 'view_details';
         $viewAction = 'view';
     } elseif ($getBookingStep === 'show_services') {
         $viewState = 'show_services';
-        $viewBookingStep = 'show_services';
-       
+        $viewBookingStep = 'show_services'; 
+        
     } elseif ($getAction === 'select_slot' && $getServiceId > 0) {
         $viewState = 'show_slots';
-        $viewBookingStep = 'show_slots';   
-        $viewAction = 'select_slot';       
+        $viewBookingStep = 'show_slots';    
+        $viewAction = 'select_slot';        
         $service_id_context = $getServiceId;
-    } elseif ($getPrestationId > 0) {
+    } elseif ($getPrestationId > 0) { 
         $viewState = 'show_slots';
-        $viewBookingStep = 'show_slots';   
-       
+        $viewBookingStep = 'show_slots';    
+        
         $service_id_context = $getPrestationId;
     }
-   
 
-   
-    $pageTitle = "Mes Rendez-vous";
+    
+    $pageTitle = "Mes Rendez-vous"; 
     $appointmentDetails = null;
     $availableServices = [];
     $servicePagination = [];
     $selectedService = null;
     $availableSlots = [];
 
-   
+    
     switch ($viewState) {
         case 'view_details':
             $appointmentDetails = getAppointmentDetailsForEmployee($salarie_id, $getId);
             if ($appointmentDetails) {
                 $pageTitle = "Détails RDV #" . $appointmentDetails['id'];
             } else {
-               
+                
                 flashMessage("Détails du rendez-vous non trouvés.", "warning");
-                $viewState = 'list_appointments';
+                $viewState = 'list_appointments'; 
                 $viewAction = 'list';
                 $viewBookingStep = null;
                 $pageTitle = "Mes Rendez-vous";
@@ -488,7 +481,7 @@ function setupAppointmentsPage(): array|false
 
         case 'show_services':
             $pageTitle = "Prendre un rendez-vous : Choisir une prestation";
-            $servicesData = getAvailableServicesForBooking($getPage, 6);
+            $servicesData = getAvailableServicesForBooking($getPage, 6); 
             $availableServices = $servicesData['items'] ?? [];
             $servicePagination = $servicesData;
             break;
@@ -502,21 +495,21 @@ function setupAppointmentsPage(): array|false
                     $endDate = date('Y-m-d', strtotime('+4 weeks'));
                     $availableSlots = getAvailableSlotsForService($service_id_context, $startDate, $endDate);
                 } else {
-                   
+                    
                     flashMessage("Prestation non trouvée pour la sélection de créneau.", "warning");
-                    $viewState = 'show_services';
+                    $viewState = 'show_services'; 
                     $viewBookingStep = 'show_services';
                     $viewAction = 'list';
                     $pageTitle = "Prendre un rendez-vous : Choisir une prestation";
                     $servicesData = getAvailableServicesForBooking($getPage, 6);
                     $availableServices = $servicesData['items'] ?? [];
                     $servicePagination = $servicesData;
-                    $service_id_context = null;
+                    $service_id_context = null; 
                 }
             } else {
-               
+                
                 flashMessage("Aucune prestation spécifiée pour afficher les créneaux.", "warning");
-                $viewState = 'show_services';
+                $viewState = 'show_services'; 
                 $viewBookingStep = 'show_services';
                 $viewAction = 'list';
                 $pageTitle = "Prendre un rendez-vous : Choisir une prestation";
@@ -525,18 +518,16 @@ function setupAppointmentsPage(): array|false
                 $servicePagination = $servicesData;
             }
             break;
-
-           
-           
     }
 
-   
-    $orderBy = 'rdv.date_rdv ASC';
-    if (in_array($getFilter, ['past', 'cancelled'])) {
-        $orderBy = 'rdv.date_rdv DESC';
+    
+    $orderBy = 'rdv.date_rdv ASC'; 
+    if (in_array($filter, ['past', 'cancelled'])) { 
+        $orderBy = 'rdv.date_rdv DESC'; 
     }
     $allAppointments = getSalarieAppointments($salarie_id, $orderBy);
 
+    
     $upcomingAppointments = [];
     $cancelledAppointments = [];
     $pastCompletedAppointments = [];
@@ -550,18 +541,18 @@ function setupAppointmentsPage(): array|false
         }
     }
 
-   
+    
     return [
         'pageTitle' => $pageTitle,
-        'bookingStep' => $viewBookingStep,  
+        'bookingStep' => $viewBookingStep,
         'availableServices' => $availableServices,
         'servicePagination' => $servicePagination,
         'selectedService' => $selectedService,
         'availableSlots' => $availableSlots,
         'service_id' => $service_id_context,
-        'action' => $viewAction,            
+        'action' => $viewAction,
         'appointmentDetails' => $appointmentDetails,
-        'filter' => $getFilter,
+        'filter' => $filter, 
         'upcomingAppointments' => $upcomingAppointments,
         'cancelledAppointments' => $cancelledAppointments,
         'pastCompletedAppointments' => $pastCompletedAppointments,

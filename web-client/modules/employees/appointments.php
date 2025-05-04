@@ -43,13 +43,13 @@ include __DIR__ . '/../../templates/header.php';
             <?php echo displayFlashMessages(); ?>
 
             <?php
-           
-           
-           
+
+
+
             $showSpecificContent = false;
             if ($viewData['action'] === 'view' && !empty($viewData['appointmentDetails'])) {
                 $showSpecificContent = true;
-               
+
             ?>
                 <div class="card shadow mb-4">
                     <div class="card-header">
@@ -120,7 +120,7 @@ include __DIR__ . '/../../templates/header.php';
             <?php
             } elseif ($viewData['bookingStep'] === 'show_slots' && !empty($viewData['selectedService'])) {
                 $showSpecificContent = true;
-               
+
             ?>
                 <div class="card shadow mb-4">
                     <div class="card-header py-3">
@@ -164,7 +164,7 @@ include __DIR__ . '/../../templates/header.php';
             <?php
             } elseif ($viewData['bookingStep'] === 'show_services') {
                 $showSpecificContent = true;
-               
+
             ?>
                 <div class="card shadow mb-4">
                     <div class="card-header py-3">
@@ -208,8 +208,8 @@ include __DIR__ . '/../../templates/header.php';
             <?php
             }
 
-           
-           
+
+
             if (!$showSpecificContent) {
                 $filter = $viewData['filter'] ?? 'upcoming';
             ?>
@@ -225,11 +225,18 @@ include __DIR__ . '/../../templates/header.php';
                     </div>
                     <div class="card-body">
 
+                        <?php
+                        
+                        $csrfToken = generateToken();
+                        ?>
+
                         <?php if ($filter === 'all' || $filter === 'upcoming'): ?>
                             <h5 class="text-primary mb-3 mt-2">Pour vous</h5>
-                            <?php if (empty($viewData['upcomingAppointments'])): ?>
+                            <?php if (empty($viewData['upcomingAppointments'])):
+                            ?>
                                 <p class="text-muted">Aucun rendez-vous à venir.</p>
-                            <?php else: ?>
+                            <?php else:
+                            ?>
                                 <div class="table-responsive mb-4">
                                     <table class="table table-striped table-sm">
                                         <thead>
@@ -243,7 +250,8 @@ include __DIR__ . '/../../templates/header.php';
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <?php foreach ($viewData['upcomingAppointments'] as $rdv): ?>
+                                            <?php foreach ($viewData['upcomingAppointments'] as $rdv):
+                                            ?>
                                                 <tr>
                                                     <td><?= htmlspecialchars(formatDate($rdv['date_rdv'], 'd/m/Y H:i')) ?></td>
                                                     <td><?= htmlspecialchars($rdv['prestation_nom'] ?? 'N/D') ?></td>
@@ -256,7 +264,8 @@ include __DIR__ . '/../../templates/header.php';
                                                             <input type="hidden" name="action" value="cancel">
                                                             <input type="hidden" name="id" value="<?= $rdv['id'] ?>">
                                                             <input type="hidden" name="filter" value="<?= $filter ?>">
-                                                            <input type="hidden" name="csrf_token" value="<?= generateToken() ?>">
+                                                            <!-- Use the single generated token -->
+                                                            <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
                                                             <button type="submit" class="btn btn-sm btn-outline-danger" title="Annuler ce rendez-vous">
                                                                 <i class="fas fa-times"></i>
                                                             </button>
