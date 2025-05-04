@@ -18,9 +18,14 @@ include __DIR__ . '/../../templates/header.php';
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 pt-3">
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
                 <h1 class="h2"><?= htmlspecialchars($pageTitle) ?></h1>
-                <a href="<?= WEBCLIENT_URL ?>/modules/employees/dashboard.php" class="btn btn-sm btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-1"></i> Retour Tableau de Bord
-                </a>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="<?= WEBCLIENT_URL ?>/modules/employees/services.php" class="btn btn-sm btn-outline-info me-2">
+                        <i class="fas fa-th-list me-1"></i> Retour Catalogue Services
+                    </a>
+                    <a href="<?= WEBCLIENT_URL ?>/modules/employees/dashboard.php" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Retour Tableau de Bord
+                    </a>
+                </div>
             </div>
 
             <?php echo displayFlashMessages(); ?>

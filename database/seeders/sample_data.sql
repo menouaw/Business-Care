@@ -240,39 +240,39 @@ INSERT INTO contrats_prestations (contrat_id, prestation_id) VALUES
 (18, 1), (18, 4), (18, 9), 
 (16, 1), (16, 5), (16, 7), (16, 10), (16, 14), (16, 25), (16, 30);
 
-INSERT INTO devis (entreprise_id, service_id, nombre_salaries_estimes, date_creation, date_validite, montant_total, montant_ht, tva, statut, conditions_paiement, delai_paiement) VALUES
-(1, NULL, NULL, '2024-01-15', '2024-02-15', 1500.00, 1250.00, 20.00, 'accepte', 'Paiement a 30 jours', 30), 
-(2, NULL, NULL, '2024-02-01', '2024-03-01', 2000.00, 1666.67, 20.00, 'accepte', 'Paiement a 45 jours', 45), 
-(3, NULL, NULL, '2024-02-15', '2024-03-15', 1800.00, 1500.00, 20.00, 'refuse', 'Paiement a 30 jours', 30), 
-(1, NULL, NULL, '2024-01-10', '2024-02-10', 3200.00, 2666.67, 20.00, 'accepte', 'Paiement a 15 jours', 15), 
-(2, NULL, NULL, '2024-02-20', '2024-03-20', 2500.00, 2083.33, 20.00, 'en_attente', 'Paiement a 30 jours', 30), 
-(3, NULL, NULL, '2024-01-25', '2024-02-25', 2800.00, 2333.33, 20.00, 'accepte', 'Paiement a 30 jours', 30),
-(4, 1, 10, '2024-03-05', '2024-04-05', 950.00, 791.67, 20.00, 'accepte', 'Paiement a 30 jours', 30),
-(5, 3, 550, '2024-03-10', '2024-04-10', 55000.00, 45833.33, 20.00, 'accepte', 'Paiement 50% commande, solde a 30j', 30),
-(6, 2, 150, '2024-03-15', '2024-04-15', 22500.00, 18750.00, 20.00, 'en_attente', 'Paiement a 45 jours', 45),
-(7, 2, 260, '2024-03-20', '2024-04-20', 39000.00, 32500.00, 20.00, 'accepte', 'Paiement a 60 jours', 60),
-(8, 2, 110, '2024-03-25', '2024-04-25', 16500.00, 13750.00, 20.00, 'refuse', 'Paiement a 30 jours', 30),
-(9, 1, 50, '2024-04-01', '2024-05-01', 4500.00, 3750.00, 20.00, 'accepte', 'Paiement a reception', 0),
-(10, 3, 420, '2024-04-05', '2024-05-05', 42000.00, 35000.00, 20.00, 'en_attente', 'Paiement a 30 jours', 30),
-(11, 1, 5, '2024-04-10', '2024-05-10', 650.00, 541.67, 20.00, 'accepte', 'Paiement a 30 jours', 30),
-(12, 1, 30, '2024-04-15', '2024-05-15', 2700.00, 2250.00, 20.00, 'accepte', 'Paiement a 30 jours', 30),
-(13, 2, 200, '2024-04-20', '2024-05-20', 30000.00, 25000.00, 20.00, 'accepte', 'Paiement a 45 jours', 45),
-(15, 2, 380, '2024-04-25', '2024-05-25', 57000.00, 47500.00, 20.00, 'en_attente', 'Paiement a 30 jours', 30),
-(16, 1, 28, '2024-05-01', '2024-06-01', 2520.00, 2100.00, 20.00, 'accepte', 'Paiement a 30 jours', 30),
-(17, 1, 7, '2024-05-05', '2024-06-05', 800.00, 666.67, 20.00, 'en_attente', 'Paiement a 30 jours', 30),
-(18, 2, 130, '2024-05-10', '2024-06-10', 19500.00, 16250.00, 20.00, 'accepte', 'Paiement a 30 jours', 30),
-(20, 1, 40, '2024-05-15', '2024-06-15', 3600.00, 3000.00, 20.00, 'en_attente', 'Paiement a 30 jours', 30),
-(21, 1, 9, '2024-05-20', '2024-06-20', 900.00, 750.00, 20.00, 'expire', 'Paiement a 30 jours', 30),
-(23, 1, 45, '2024-05-25', '2024-06-25', 4050.00, 3375.00, 20.00, 'accepte', 'Paiement a reception', 0),
-(24, 2, 180, '2024-06-01', '2024-07-01', 27000.00, 22500.00, 20.00, 'accepte', 'Paiement a 60 jours', 60),
-(27, 1, 35, '2024-06-05', '2024-07-05', 3150.00, 2625.00, 20.00, 'en_attente', 'Paiement a 30 jours', 30),
-(30, 2, 150, '2024-06-10', '2024-07-10', 22500.00, 18750.00, 20.00, 'en_attente', 'Paiement a 45 jours', 45),
-(19, 3, 480, '2024-03-10', '2024-04-09', 48000.00, 40000.00, 20.00, 'accepte', 'Paiement a 30 jours', 30), 
-(22, 3, 550, '2024-04-20', '2024-05-20', 60000.00, 50000.00, 20.00, 'accepte', 'Paiement a 30 jours', 30), 
-(25, 2, 300, '2024-06-05', '2024-07-05', 42000.00, 35000.00, 20.00, 'accepte', 'Paiement a 30 jours', 30), 
-(26, 1, 5, '2024-05-15', '2024-06-15', 550.00, 458.33, 20.00, 'accepte', 'Paiement a 30 jours', 30), 
-(28, 1, 8, '2024-02-20', '2024-03-20', 1800.00, 1500.00, 20.00, 'accepte', 'Paiement a 30 jours', 30), 
-(29, 1, 40, '2024-06-15', '2024-07-15', 4500.00, 3750.00, 20.00, 'accepte', 'Paiement a 30 jours', 30); 
+INSERT INTO devis (entreprise_id, service_id, date_creation, date_validite, montant_total, montant_ht, tva, statut, conditions_paiement, delai_paiement) VALUES
+(1, NULL, '2024-01-15', '2024-02-15', 1500.00, 1250.00, 20.00, 'accepte', 'Paiement a 30 jours', 30), 
+(2, NULL, '2024-02-01', '2024-03-01', 2000.00, 1666.67, 20.00, 'accepte', 'Paiement a 45 jours', 45), 
+(3, NULL, '2024-02-15', '2024-03-15', 1800.00, 1500.00, 20.00, 'refuse', 'Paiement a 30 jours', 30), 
+(1, NULL, '2024-01-10', '2024-02-10', 3200.00, 2666.67, 20.00, 'accepte', 'Paiement a 15 jours', 15), 
+(2, NULL, '2024-02-20', '2024-03-20', 2500.00, 2083.33, 20.00, 'en_attente', 'Paiement a 30 jours', 30), 
+(3, NULL, '2024-01-25', '2024-02-25', 2800.00, 2333.33, 20.00, 'accepte', 'Paiement a 30 jours', 30),
+(4, 1, '2024-03-05', '2024-04-05', 950.00, 791.67, 20.00, 'accepte', 'Paiement a 30 jours', 30),
+(5, 3, '2024-03-10', '2024-04-10', 55000.00, 45833.33, 20.00, 'accepte', 'Paiement 50% commande, solde a 30j', 30),
+(6, 2, '2024-03-15', '2024-04-15', 22500.00, 18750.00, 20.00, 'en_attente', 'Paiement a 45 jours', 45),
+(7, 2, '2024-03-20', '2024-04-20', 39000.00, 32500.00, 20.00, 'accepte', 'Paiement a 60 jours', 60),
+(8, 2, '2024-03-25', '2024-04-25', 16500.00, 13750.00, 20.00, 'refuse', 'Paiement a 30 jours', 30),
+(9, 1, '2024-04-01', '2024-05-01', 4500.00, 3750.00, 20.00, 'accepte', 'Paiement a reception', 0),
+(10, 3, '2024-04-05', '2024-05-05', 42000.00, 35000.00, 20.00, 'en_attente', 'Paiement a 30 jours', 30),
+(11, 1, '2024-04-10', '2024-05-10', 650.00, 541.67, 20.00, 'accepte', 'Paiement a 30 jours', 30),
+(12, 1, '2024-04-15', '2024-05-15', 2700.00, 2250.00, 20.00, 'accepte', 'Paiement a 30 jours', 30),
+(13, 2, '2024-04-20', '2024-05-20', 30000.00, 25000.00, 20.00, 'accepte', 'Paiement a 45 jours', 45),
+(15, 2, '2024-04-25', '2024-05-25', 57000.00, 47500.00, 20.00, 'en_attente', 'Paiement a 30 jours', 30),
+(16, 1, '2024-05-01', '2024-06-01', 2520.00, 2100.00, 20.00, 'accepte', 'Paiement a 30 jours', 30),
+(17, 1, '2024-05-05', '2024-06-05', 800.00, 666.67, 20.00, 'en_attente', 'Paiement a 30 jours', 30),
+(18, 2, '2024-05-10', '2024-06-10', 19500.00, 16250.00, 20.00, 'accepte', 'Paiement a 30 jours', 30),
+(20, 1, '2024-05-15', '2024-06-15', 3600.00, 3000.00, 20.00, 'en_attente', 'Paiement a 30 jours', 30),
+(21, 1, '2024-05-20', '2024-06-20', 900.00, 750.00, 20.00, 'expire', 'Paiement a 30 jours', 30),
+(23, 1, '2024-05-25', '2024-06-25', 4050.00, 3375.00, 20.00, 'accepte', 'Paiement a reception', 0),
+(24, 2, '2024-06-01', '2024-07-01', 27000.00, 22500.00, 20.00, 'accepte', 'Paiement a 60 jours', 60),
+(27, 1, '2024-06-05', '2024-07-05', 3150.00, 2625.00, 20.00, 'en_attente', 'Paiement a 30 jours', 30),
+(30, 2, '2024-06-10', '2024-07-10', 22500.00, 18750.00, 20.00, 'en_attente', 'Paiement a 45 jours', 45),
+(19, 3, '2024-03-10', '2024-04-09', 48000.00, 40000.00, 20.00, 'accepte', 'Paiement a 30 jours', 30), 
+(22, 3, '2024-04-20', '2024-05-20', 60000.00, 50000.00, 20.00, 'accepte', 'Paiement a 30 jours', 30), 
+(25, 2, '2024-06-05', '2024-07-05', 42000.00, 35000.00, 20.00, 'accepte', 'Paiement a 30 jours', 30), 
+(26, 1, '2024-05-15', '2024-06-15', 550.00, 458.33, 20.00, 'accepte', 'Paiement a 30 jours', 30), 
+(28, 1, '2024-02-20', '2024-03-20', 1800.00, 1500.00, 20.00, 'accepte', 'Paiement a 30 jours', 30), 
+(29, 1, '2024-06-15', '2024-07-15', 4500.00, 3750.00, 20.00, 'accepte', 'Paiement a 30 jours', 30); 
 
 INSERT INTO evaluations (personne_id, prestation_id, note, commentaire, date_evaluation) VALUES
 (5, 1, 5, 'Excellent service, tres professionnel', '2024-04-21'),
@@ -377,31 +377,40 @@ INSERT INTO conseils (titre, icone, resume, categorie, contenu) VALUES
 4. Demande (D) : Formuler une demande concrete, positive, realisable et negociable, visant a satisfaire le besoin identifie. Preferer une demande a une exigence. (Ex. : "Serais-tu d''accord pour que nous prenions 5 minutes ensemble pour decider comment organiser cet espace ?")\n\nEcoute empathique : La CNV s''applique a l''ecoute. Tentez de deviner les sentiments et besoins de l''autre derriere ses mots, meme s''ils sont exprimes maladroitement.\n\nPratiquer la CNV demande de l''entrainement mais ameliore significativement la qualite des relations professionnelles et personnelles.');
 
 INSERT INTO consultation_creneaux (prestation_id, praticien_id, start_time, end_time, is_booked, site_id) VALUES
-(1, 3, NOW() + INTERVAL 2 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 2 DAY + INTERVAL '09:45' HOUR_MINUTE, TRUE, 1), 
-(1, 3, NOW() + INTERVAL 2 DAY + INTERVAL '10:00' HOUR_MINUTE, NOW() + INTERVAL 2 DAY + INTERVAL '10:45' HOUR_MINUTE, FALSE, 1), 
-(1, 3, NOW() + INTERVAL 8 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 8 DAY + INTERVAL '09:45' HOUR_MINUTE, FALSE, 1),
-(1, 3, NOW() + INTERVAL 8 DAY + INTERVAL '10:00' HOUR_MINUTE, NOW() + INTERVAL 8 DAY + INTERVAL '10:45' HOUR_MINUTE, FALSE, 1),
-(1, 3, NOW() + INTERVAL 10 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 10 DAY + INTERVAL '14:45' HOUR_MINUTE, FALSE, NULL);
-(1, 11, NOW() + INTERVAL 3 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 3 DAY + INTERVAL '14:45' HOUR_MINUTE, TRUE, 2), 
-(1, 11, NOW() + INTERVAL 3 DAY + INTERVAL '15:00' HOUR_MINUTE, NOW() + INTERVAL 3 DAY + INTERVAL '15:45' HOUR_MINUTE, FALSE, 2), 
-(4, 11, NOW() + INTERVAL 4 DAY + INTERVAL '10:00' HOUR_MINUTE, NOW() + INTERVAL 4 DAY + INTERVAL '11:00' HOUR_MINUTE, TRUE, 2), 
-(4, 11, NOW() + INTERVAL 4 DAY + INTERVAL '11:15' HOUR_MINUTE, NOW() + INTERVAL 4 DAY + INTERVAL '12:15' HOUR_MINUTE, FALSE, 2), 
-(4, 11, NOW() + INTERVAL 9 DAY + INTERVAL '10:00' HOUR_MINUTE, NOW() + INTERVAL 9 DAY + INTERVAL '11:00' HOUR_MINUTE, FALSE, 2),
-(4, 11, NOW() + INTERVAL 9 DAY + INTERVAL '11:15' HOUR_MINUTE, NOW() + INTERVAL 9 DAY + INTERVAL '12:15' HOUR_MINUTE, FALSE, 2),
-(4, 11, NOW() + INTERVAL 11 DAY + INTERVAL '15:00' HOUR_MINUTE, NOW() + INTERVAL 11 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL);
-(4, 3, NOW() + INTERVAL 5 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 5 DAY + INTERVAL '10:00' HOUR_MINUTE, FALSE, 1), 
-(7, 3, NOW() + INTERVAL 2 DAY + INTERVAL '11:00' HOUR_MINUTE, NOW() + INTERVAL 2 DAY + INTERVAL '12:00' HOUR_MINUTE, FALSE, 1), 
-(7, 11, NOW() + INTERVAL 2 DAY + INTERVAL '12:15' HOUR_MINUTE, NOW() + INTERVAL 2 DAY + INTERVAL '13:15' HOUR_MINUTE, FALSE, 2), 
-(7, 3, NOW() + INTERVAL 5 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 5 DAY + INTERVAL '15:00' HOUR_MINUTE, TRUE, NULL), 
-(9, 3, NOW() + INTERVAL 6 DAY + INTERVAL '16:00' HOUR_MINUTE, NOW() + INTERVAL 6 DAY + INTERVAL '16:50' HOUR_MINUTE, TRUE, 1), 
-(9, 3, NOW() + INTERVAL 6 DAY + INTERVAL '17:00' HOUR_MINUTE, NOW() + INTERVAL 6 DAY + INTERVAL '17:50' HOUR_MINUTE, FALSE, NULL), 
-(9, 30, NOW() + INTERVAL 13 DAY + INTERVAL '11:00' HOUR_MINUTE, NOW() + INTERVAL 13 DAY + INTERVAL '11:50' HOUR_MINUTE, FALSE, NULL),
-(9, 30, NOW() + INTERVAL 13 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 13 DAY + INTERVAL '14:50' HOUR_MINUTE, FALSE, NULL);
-(11, 28, NOW() + INTERVAL 8 DAY + INTERVAL '13:00' HOUR_MINUTE, NOW() + INTERVAL 8 DAY + INTERVAL '13:20' HOUR_MINUTE, TRUE, NULL);
-(21, 31, NOW() + INTERVAL 14 DAY + INTERVAL '09:30' HOUR_MINUTE, NOW() + INTERVAL 14 DAY + INTERVAL '10:20' HOUR_MINUTE, FALSE, NULL),
-(21, 31, NOW() + INTERVAL 14 DAY + INTERVAL '10:30' HOUR_MINUTE, NOW() + INTERVAL 14 DAY + INTERVAL '11:20' HOUR_MINUTE, FALSE, NULL);
-(41, 28, NOW() + INTERVAL 15 DAY + INTERVAL '16:00' HOUR_MINUTE, NOW() + INTERVAL 15 DAY + INTERVAL '17:00' HOUR_MINUTE, FALSE, NULL),
-(41, 28, NOW() + INTERVAL 17 DAY + INTERVAL '11:00' HOUR_MINUTE, NOW() + INTERVAL 17 DAY + INTERVAL '12:00' HOUR_MINUTE, FALSE, NULL);
+(2, 3, NOW() + INTERVAL 20 DAY + INTERVAL '10:00' HOUR_MINUTE, NOW() + INTERVAL 20 DAY + INTERVAL '11:00' HOUR_MINUTE, FALSE, NULL), -- Yoga (60 min)
+(3, 3, NOW() + INTERVAL 20 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 20 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), -- Webinar Stress (90 min)
+(5, 3, NOW() + INTERVAL 20 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 20 DAY + INTERVAL '15:00' HOUR_MINUTE, FALSE, NULL), -- Meditation (60 min)
+(6, 3, NOW() + INTERVAL 21 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 21 DAY + INTERVAL '11:00' HOUR_MINUTE, FALSE, NULL), -- Ergonomie (120 min)
+(8, 3, NOW() + INTERVAL 21 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 21 DAY + INTERVAL '13:30' HOUR_MINUTE, FALSE, NULL), -- Com Assertive (120 min)
+(10, 3, NOW() + INTERVAL 21 DAY + INTERVAL '14:30' HOUR_MINUTE, NOW() + INTERVAL 21 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), -- Conf Sommeil (90 min)
+(12, 3, NOW() + INTERVAL 22 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 22 DAY + INTERVAL '11:00' HOUR_MINUTE, FALSE, NULL), -- Gest Temps (120 min)
+(13, 3, NOW() + INTERVAL 22 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 22 DAY + INTERVAL '12:30' HOUR_MINUTE, FALSE, NULL), -- Pilates (60 min)
+(14, 3, NOW() + INTERVAL 22 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 22 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), -- Webinar Cyber (90 min)
+(15, 3, NOW() + INTERVAL 23 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '09:50' HOUR_MINUTE, FALSE, NULL), -- Arret Tabac (50 min)
+(16, 3, NOW() + INTERVAL 23 DAY + INTERVAL '10:00' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '11:15' HOUR_MINUTE, FALSE, NULL), -- Conf Nutri Sport (75 min)
+(17, 3, NOW() + INTERVAL 23 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), -- Cuisine Saine (90 min)
+(18, 3, NOW() + INTERVAL 23 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '15:00' HOUR_MINUTE, FALSE, NULL), -- Coaching Pro (60 min)
+(19, 3, NOW() + INTERVAL 24 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 24 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), -- Secourisme (240 min)
+(20, 3, NOW() + INTERVAL 24 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 24 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), -- Webinar CNV (120 min)
+(22, 3, NOW() + INTERVAL 25 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 25 DAY + INTERVAL '09:50' HOUR_MINUTE, FALSE, NULL), -- Reflexologie (50 min)
+(23, 3, NOW() + INTERVAL 25 DAY + INTERVAL '10:00' HOUR_MINUTE, NOW() + INTERVAL 25 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), -- Gest Conflits (180 min)
+(24, 3, NOW() + INTERVAL 25 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 25 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), -- Conf Equilibre (90 min)
+(25, 3, NOW() + INTERVAL 26 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 26 DAY + INTERVAL '10:00' HOUR_MINUTE, FALSE, NULL), -- Dietetique (60 min)
+(26, 3, NOW() + INTERVAL 26 DAY + INTERVAL '10:30' HOUR_MINUTE, NOW() + INTERVAL 26 DAY + INTERVAL '12:30' HOUR_MINUTE, FALSE, NULL), -- Creativite (120 min)
+(27, 3, NOW() + INTERVAL 26 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 26 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), -- Webinar Burnout (90 min)
+(28, 3, NOW() + INTERVAL 27 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 27 DAY + INTERVAL '10:00' HOUR_MINUTE, FALSE, NULL), -- Hypnose Relax (60 min)
+(29, 3, NOW() + INTERVAL 27 DAY + INTERVAL '10:30' HOUR_MINUTE, NOW() + INTERVAL 27 DAY + INTERVAL '16:30' HOUR_MINUTE, FALSE, NULL), -- Management Bien (360 min)
+(30, 3, NOW() + INTERVAL 28 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 28 DAY + INTERVAL '10:15' HOUR_MINUTE, FALSE, NULL), -- Conf Numerique (75 min)
+(31, 3, NOW() + INTERVAL 28 DAY + INTERVAL '10:30' HOUR_MINUTE, NOW() + INTERVAL 28 DAY + INTERVAL '11:30' HOUR_MINUTE, FALSE, NULL), -- Auto-massage (60 min)
+(32, 3, NOW() + INTERVAL 28 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 28 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), -- Orientation (90 min)
+(33, 3, NOW() + INTERVAL 29 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 29 DAY + INTERVAL '10:30' HOUR_MINUTE, FALSE, NULL), -- Webinar Invest (90 min)
+(34, 3, NOW() + INTERVAL 29 DAY + INTERVAL '11:00' HOUR_MINUTE, NOW() + INTERVAL 29 DAY + INTERVAL '14:00' HOUR_MINUTE, FALSE, NULL), -- Prise Parole (180 min)
+(35, 3, NOW() + INTERVAL 29 DAY + INTERVAL '15:00' HOUR_MINUTE, NOW() + INTERVAL 29 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), -- Sexologie (60 min)
+(36, 3, NOW() + INTERVAL 30 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 30 DAY + INTERVAL '10:30' HOUR_MINUTE, FALSE, NULL), -- Conf Addictions (90 min)
+(37, 3, NOW() + INTERVAL 30 DAY + INTERVAL '11:00' HOUR_MINUTE, NOW() + INTERVAL 30 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), -- Jardinage (120 min)
+(38, 3, NOW() + INTERVAL 30 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 30 DAY + INTERVAL '14:45' HOUR_MINUTE, FALSE, NULL), -- Musicotherapie (45 min)
+(39, 3, NOW() + INTERVAL 31 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 31 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), -- Formation RPS (420 min)
+(40, 3, NOW() + INTERVAL 32 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 32 DAY + INTERVAL '10:30' HOUR_MINUTE, FALSE, NULL); -- Webinar Art (90 min)
 
 INSERT INTO interets_utilisateurs (nom, description) VALUES
 ('Sante Mentale', 'Conseils et ressources pour le bien-être psychologique'),

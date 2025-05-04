@@ -42,8 +42,8 @@ function setupEmployeeServicesPage()
                 $isPreferred = true;
             } else {
 
-                if ((in_array('sante mentale', $userInterestsLower) || in_array('bien-etre mental', $userInterestsLower)) &&
-                    (str_contains($categoryLower, 'mentale') || str_contains($categoryLower, 'stress') || str_contains($categoryLower, 'sophrologie') || str_contains($categoryLower, 'meditation'))
+                if ((in_array('sante mentale', $userInterestsLower) || in_array('bien-etre mental', $userInterestsLower) || in_array('sommeil', $userInterestsLower)) &&
+                    (str_contains($categoryLower, 'mentale') || str_contains($categoryLower, 'stress') || str_contains($categoryLower, 'sophrologie') || str_contains($categoryLower, 'meditation') || str_contains($categoryLower, 'sommeil'))
                 ) {
                     $isPreferred = true;
                 }
