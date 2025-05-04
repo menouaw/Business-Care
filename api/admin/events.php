@@ -5,12 +5,12 @@
 require_once __DIR__ . '/init.php'; 
 
 if (!$isAuthenticated) {
-    logSecurityEvent(null, 'api_access_denied', '[FAILURE] Tentative d\'accès à /api/admin/events sans authentification');
+    logSecurityEvent(null, '[SECURITY]:api_access_denied', '[FAILURE] Tentative d\'accès à /api/admin/events sans authentification');
     sendJsonResponse(['error' => true, 'message' => 'Authentification requise'], 401);
 }
 
 if ($currentUserRole !== ROLE_ADMIN) {
-    logSecurityEvent($currentUserId, 'api_access_denied', '[FAILURE] Utilisateur ID ' . $currentUserId . ' a tenté d\'accéder à /api/admin/events sans le rôle admin');
+    logSecurityEvent($currentUserId, '[SECURITY]:api_access_denied', '[FAILURE] Utilisateur ID ' . $currentUserId . ' a tenté d\'accéder à /api/admin/events sans le rôle admin');
     sendJsonResponse(['error' => true, 'message' => 'Accès interdit'], 403);
 }
 
@@ -28,12 +28,12 @@ if ($method === 'GET') {
         getAllEvents();
     } else {
         
-        logActivity($currentUserId, 'api_event_request', '[FAILURE] Format d\'ID d\'évènement invalide demandé : ' . ($_GET['id'] ?? 'null'));
+        logActivity($currentUserId, '[SECURITY]:api_event_request', '[FAILURE] Format d\'ID d\'évènement invalide demandé : ' . ($_GET['id'] ?? 'null'));
         sendJsonResponse(['error' => true, 'message' => 'ID d\'évènement invalide ou non fourni correctement.'], 400);
     }
 } else {
     
-    logSecurityEvent($currentUserId, 'api_method_not_allowed', '[FAILURE] Méthode ' . $method . ' tentée sur /api/admin/events par l\'Utilisateur ID ' . $currentUserId);
+    logSecurityEvent($currentUserId, '[SECURITY]:api_method_not_allowed', '[FAILURE] Méthode ' . $method . ' tentée sur /api/admin/events par l\'Utilisateur ID ' . $currentUserId);
     sendJsonResponse(['error' => true, 'message' => 'Méthode non autorisée pour ce point de terminaison'], 405);
 }
 
@@ -51,11 +51,11 @@ function getAllEvents() {
         
         
 
-        logActivity($currentUserId, 'api_event_list', '[SUCCESS] Liste des évènements récupérée avec succès (' . count($events) . ' évènements)');
+        logActivity($currentUserId, '[SECURITY]:api_event_list', '[SUCCESS] Liste des évènements récupérée avec succès (' . count($events) . ' évènements)');
         sendJsonResponse(['error' => false, 'data' => $events], 200); 
 
     } catch (Exception $e) {
-        logSystemActivity('api_event_list', '[ERROR] Échec de la récupération de la liste des évènements : ' . $e->getMessage());
+        logSystemActivity('[SECURITY]:api_event_list', '[ERROR] Échec de la récupération de la liste des évènements : ' . $e->getMessage());
         sendJsonResponse(['error' => true, 'message' => 'Erreur lors de la récupération de la liste des évènements.'], 500);
     }
 }
@@ -102,15 +102,15 @@ function getEventDetails($id) {
             $event['associated_services'] = $associatedServiceIds; 
             $event['inscriptions'] = $inscriptionDetails; 
 
-            logActivity($currentUserId, 'api_event_detail', '[SUCCESS] Détails récupérés avec succès pour l\'évènement ID : ' . $id);
+            logActivity($currentUserId, '[SECURITY]:api_event_detail', '[SUCCESS] Détails récupérés avec succès pour l\'évènement ID : ' . $id);
             sendJsonResponse(['error' => false, 'data' => $event], 200); 
 
         } else {
-            logActivity($currentUserId, 'api_event_detail', '[FAILURE] Évènement non trouvé pour l\'ID : ' . $id);
+            logActivity($currentUserId, '[SECURITY]:api_event_detail', '[FAILURE] Évènement non trouvé pour l\'ID : ' . $id);
             sendJsonResponse(['error' => true, 'message' => 'Évènement non trouvé'], 404);
         }
     } catch (Exception $e) {
-        logSystemActivity('api_event_detail', '[ERROR] Échec de la récupération des détails pour l\'évènement ID ' . $id . ' : ' . $e->getMessage());
+        logSystemActivity('[SECURITY]:api_event_detail', '[ERROR] Échec de la récupération des détails pour l\'évènement ID ' . $id . ' : ' . $e->getMessage());
         sendJsonResponse(['error' => true, 'message' => 'Erreur lors de la récupération des détails de l\'évènement.'], 500);
     }
 }
