@@ -155,4 +155,4 @@ window.firebaseAuth = {
 };
 
 
-console.log("Firebase initialized and auth state listener attached.");
+console.log("Firebase initialisé et écouteur d'état d'authentification attaché.");
