@@ -1,7 +1,8 @@
 :root {
-    --bc-accent: #66D4BC;      
-    --bc-accent-light: #A0E5D2; 
-    --bc-accent-dark: #40B8A0;  
+    /* === Palette Bleu Pâle & Gris === */
+    --bc-accent: #a8dadc;      
+    --bc-accent-light: #f1faee; 
+    --bc-accent-dark: #457b9d;  
 
     --bc-text-primary: #343a40;   
     --bc-text-secondary: #6c757d; 
@@ -52,17 +53,13 @@ h2 { font-size: 2.2rem; }
 h3 { font-size: 1.8rem; }
 
 a {
-    color: var(--bc-accent); /* Liens couleur accent */
+    color: var(--bc-accent); 
     text-decoration: none;
     transition: color var(--bc-transition-speed) ease;
 }
-a:hover {
-    color: var(--bc-accent-dark); /* Assombrir l'accent au survol */
-    text-decoration: underline;
-}
 
 .bg-primary { background-color: var(--bc-accent) !important; }
-.bg-secondary { background-color: var(--bc-text-secondary) !important; } /* Secondaire devient gris moyen */
+.bg-secondary { background-color: var(--bc-text-secondary) !important; } 
 .bg-light { background-color: var(--bc-bg-alt) !important; }
 .bg-dark { background-color: var(--bc-text-primary) !important; }
 .bg-white { background-color: var(--bc-bg-main) !important; }
@@ -73,7 +70,7 @@ a:hover {
 
 .text-primary { color: var(--bc-accent) !important; }
 .text-secondary { color: var(--bc-text-secondary) !important; }
-.text-light { color: var(--bc-bg-main) !important; } /* Texte blanc sur fond sombre */
+.text-light { color: var(--bc-bg-main) !important; } 
 .text-dark { color: var(--bc-text-primary) !important; }
 .text-muted { color: var(--bc-text-secondary) !important; }
 .text-white { color: var(--bc-bg-main) !important; }
@@ -95,12 +92,12 @@ a:hover {
 .btn-primary { 
     background-color: var(--bc-accent);
     border-color: var(--bc-accent);
-    color: var(--bc-white); 
+    color: var(--bc-text-primary); 
 }
 .btn-primary:hover {
     background-color: var(--bc-accent-dark);
     border-color: var(--bc-accent-dark);
-    color: var(--bc-white);
+    color: #ffffff; 
 }
 
 .btn-secondary { 
@@ -121,7 +118,7 @@ a:hover {
 .btn-outline-primary:hover {
     background-color: var(--bc-accent);
     border-color: var(--bc-accent);
-    color: var(--bc-white);
+    color: var(--bc-text-primary); 
 }
 .btn-outline-secondary {
     color: var(--bc-text-secondary);
@@ -182,6 +179,9 @@ a:hover {
 .navbar-nav .nav-link:hover,
 .navbar-nav .nav-link.active {
     color: var(--bc-accent) !important; 
+}
+.navbar-nav .nav-link:hover { 
+     color: var(--bc-text-secondary) !important; 
 }
 
 
@@ -290,7 +290,12 @@ a:hover {
 }
 .pricing-card-price .term { color: var(--bc-text-secondary); }
 .pricing-card .list-unstyled li { padding: 0.4rem 0; color: var(--bc-text-secondary); }
-.pricing-card .list-unstyled li i { color: var(--bc-accent); margin-right: 0.5rem; } /* Icône couleur accent */
+.pricing-card .list-unstyled li i { color: var(--bc-accent); margin-right: 0.5rem; } 
+
+.pricing-card.border-primary { 
+    border-width: 2px !important;
+    border-color: var(--bc-accent) !important;
+}
 
 .testimonials {
     background-color: var(--bc-bg-main); 
@@ -341,7 +346,7 @@ a:hover {
 .cta .btn-primary:hover {
      background-color: var(--bc-accent);
      border-color: var(--bc-accent);
-     color: var(--bc-text-primary);
+     color: var(--bc-text-primary); 
 }
 
 footer {
@@ -360,7 +365,6 @@ footer ul li a {
     transition: color var(--bc-transition-speed) ease;
 }
 footer ul li a:hover {
-    color: var(--bc-white); 
     text-decoration: none;
 }
 .footer-social a {
@@ -376,7 +380,7 @@ footer ul li a:hover {
     transition: background-color var(--bc-transition-speed) ease, color var(--bc-transition-speed) ease;
 }
 .footer-social a:hover {
-    background-color: var(--bc-accent); 
+    background-color: rgba(255, 255, 255, 0.1); 
     color: var(--bc-white); 
 }
 .footer-bottom {
@@ -389,9 +393,9 @@ footer ul li a:hover {
 
 /* === Styles Calendrier === */
 :root { 
-    --calendar-bg-today: #e0f8f2; 
+    --calendar-bg-today: #edf6f9; 
     --calendar-bg-empty: #f8f9fa;
-    --calendar-bg-available: #d4f4e8; 
+    --calendar-bg-available: #edf6f9; 
     --calendar-bg-unavailable: #ffebee; 
     --calendar-bg-mixed: #fff9c4; 
     --calendar-bg-mixed-unavailable: #ffecb3; 
@@ -462,7 +466,6 @@ footer ul li a:hover {
 
 .event-time { font-weight: 600; margin-right: 4px; }
 
-/* === Médias Queries === */
 @media (max-width: 992px) {
     .hero { padding: 2.5rem 0; }
     .hero-image { max-height: 70px; }
@@ -493,6 +496,12 @@ footer ul li a:hover {
   object-fit: cover;
   border-radius: 50%;
   vertical-align: middle;
+}
+
+#sidebarMenu .nav-link.active {
+    color: var(--bc-accent-dark);
+    background-color: transparent;
+    font-weight: 600;
 }
 
 
