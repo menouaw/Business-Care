@@ -10,6 +10,7 @@ services:
       DB_DATABASE: ${MYSQL_DATABASE:-business_care}
       DB_USERNAME: ${MYSQL_USER:-business_care_user}
       DB_PASSWORD: ${MYSQL_PASSWORD}
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID}
     volumes:
       - .:/var/www/html
     depends_on:
