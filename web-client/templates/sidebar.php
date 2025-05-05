@@ -127,39 +127,46 @@
         <?php
 
 
-        elseif ($userRoleId === ROLE_PRESTATAIRE): ?>
+        elseif ($userRoleId === ROLE_PRESTATAIRE):
+            // Définir l'URL de base pour les modules prestataire
+            $providerModuleUrl = defined('WEBCLIENT_URL') ? WEBCLIENT_URL . '/modules/providers' : '/modules/providers';
+        ?>
             <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-uppercase fw-semibold">
                 <span>Mon Activité</span>
             </h6>
             <ul class="nav flex-column nav-fill mb-3">
-                <li class="nav-item border-bottom">
-                    <a class="nav-link d-inline-flex align-items-center" href="#">
-                        <i class="fas fa-tachometer-alt fa-fw me-2"></i>Tableau de bord
+                <li class="nav-item">
+                    <a class="nav-link <?= isActivePage($providerModuleUrl . '/dashboard.php') ? 'active' : '' ?>" aria-current="page" href="<?= $providerModuleUrl ?>/dashboard.php">
+                        <i class="fas fa-tachometer-alt fa-fw me-2"></i> Tableau de bord
                     </a>
                 </li>
-                <li class="nav-item border-bottom">
-                    <a class="nav-link d-inline-flex align-items-center" href="#">
-                        <i class="fas fa-calendar-alt fa-fw me-2"></i>Planning & Dispos
+                <li class="nav-item">
+                    <a class="nav-link <?= isActivePage($providerModuleUrl . '/appointments.php') ? 'active' : '' ?>" href="<?= $providerModuleUrl ?>/appointments.php"> <?php // TODO: Créer la page appointments.php 
+                                                                                                                                                                            ?>
+                        <i class="fas fa-calendar-check fa-fw me-2"></i> Mes Rendez-vous
                     </a>
                 </li>
-                <li class="nav-item border-bottom">
-                    <a class="nav-link d-inline-flex align-items-center" href="#">
-                        <i class="fas fa-calendar-check fa-fw me-2"></i>Interventions
+                <li class="nav-item">
+                    <a class="nav-link <?= isActivePage($providerModuleUrl . '/availabilities.php') ? 'active' : '' ?>" href="<?= $providerModuleUrl ?>/availabilities.php"> <?php // TODO: Créer la page availabilities.php 
+                                                                                                                                                                                ?>
+                        <i class="fas fa-calendar-alt fa-fw me-2"></i> Mes Disponibilités
                     </a>
                 </li>
-                <li class="nav-item border-bottom">
-                    <a class="nav-link d-inline-flex align-items-center" href="#">
-                        <i class="fas fa-concierge-bell fa-fw me-2"></i>Mes Prestations
+                <li class="nav-item">
+                    <a class="nav-link <?= isActivePage($providerModuleUrl . '/habilitations.php') ? 'active' : '' ?>" href="<?= $providerModuleUrl ?>/habilitations.php">
+                        <i class="fas fa-stamp fa-fw me-2"></i> Mes Habilitations
                     </a>
                 </li>
-                <li class="nav-item border-bottom">
-                    <a class="nav-link d-inline-flex align-items-center" href="#">
-                        <i class="fas fa-star-half-alt fa-fw me-2"></i>Évaluations Reçues
+                <li class="nav-item">
+                    <a class="nav-link <?= isActivePage($providerModuleUrl . '/evaluations.php') ? 'active' : '' ?>" href="<?= $providerModuleUrl ?>/evaluations.php"> <?php // TODO: Créer la page evaluations.php 
+                                                                                                                                                                        ?>
+                        <i class="fas fa-star-half-alt fa-fw me-2"></i> Mes Évaluations
                     </a>
                 </li>
-                <li class="nav-item border-bottom">
-                    <a class="nav-link d-inline-flex align-items-center" href="#">
-                        <i class="fas fa-file-invoice-dollar fa-fw me-2"></i>Facturation
+                <li class="nav-item">
+                    <a class="nav-link <?= isActivePage($providerModuleUrl . '/invoices.php') ? 'active' : '' ?>" href="<?= $providerModuleUrl ?>/invoices.php"> <?php // TODO: Créer la page invoices.php 
+                                                                                                                                                                    ?>
+                        <i class="fas fa-file-invoice-dollar fa-fw me-2"></i> Mes Factures BC
                     </a>
                 </li>
             </ul>
@@ -167,12 +174,31 @@
                 <span>Mon Compte</span>
             </h6>
             <ul class="nav flex-column mb-3">
-                <li class="nav-item border-bottom">
-                    <a class="nav-link d-inline-flex align-items-center" href="#">
-                        <i class="fas fa-user-tie fa-fw me-2"></i>Mon Profil
+                <li class="nav-item">
+                    <a class="nav-link <?= isActivePage($providerModuleUrl . '/settings.php') ? 'active' : '' ?>" href="<?= $providerModuleUrl ?>/settings.php"> <?php // TODO: Créer la page settings.php 
+                                                                                                                                                                    ?>
+                        <i class="fas fa-cog fa-fw me-2"></i> Paramètres
                     </a>
                 </li>
-
+                <li class="nav-item">
+                    <a class="nav-link <?= isActivePage($providerModuleUrl . '/notifications.php') ? 'active' : '' ?>" href="<?= $providerModuleUrl ?>/notifications.php"> <?php // TODO: Créer la page notifications.php 
+                                                                                                                                                                            ?>
+                        <i class="fas fa-bell fa-fw me-2"></i> Notifications
+                        <?php
+                        // Optionnel: Afficher un badge pour les notifications non lues
+                        // $unreadCount = getUnreadNotificationCount($_SESSION['user_id'] ?? 0);
+                        // if ($unreadCount > 0) {
+                        //     echo '<span class="badge bg-danger rounded-pill ms-1">' . $unreadCount . '</span>';
+                        // }
+                        ?>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <?= isActivePage($providerModuleUrl . '/contact.php') ? 'active' : '' ?>" href="<?= $providerModuleUrl ?>/contact.php"> <?php // TODO: Créer la page contact.php 
+                                                                                                                                                                ?>
+                        <i class="fas fa-headset fa-fw me-2"></i> Support BC
+                    </a>
+                </li>
             </ul>
 
         <?php endif;

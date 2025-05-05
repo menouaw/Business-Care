@@ -39,6 +39,7 @@ define('TABLE_NOTIFICATIONS', 'notifications');
 define('TABLE_REMEMBER_ME', 'remember_me_tokens');
 define('TABLE_SIGNALEMENTS', 'signalements');
 define('TABLE_QUOTES', 'devis');
+define('TABLE_HABILITATIONS', 'habilitations');
 
 
 define('STATUS_ACTIVE', 'actif');

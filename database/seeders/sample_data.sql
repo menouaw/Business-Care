@@ -527,8 +527,6 @@ INSERT INTO communaute_messages (communaute_id, personne_id, message) VALUES
 INSERT INTO communaute_messages (communaute_id, personne_id, message) VALUES
 (1, 7, 'Des conseils pour tenir la posture de l\'arbre plus longtemps ?'),
 (2, 10, 'Quelqu\'un a une bonne appli pour suivre ses parcours de course ?'),
-(1, 9, 'La séance de méditation guidée d\'hier soir était vraiment apaisante.'),
-(2, 18, 'Entraînement fractionné ce soir, qui est partant ?'),
 (1, 17, 'Est-ce qu\'il y a un cours de Yoga prévu la semaine prochaine sur le site Sante+ ?'),
 (2, 20, 'Besoin de motivation pour sortir courir avec ce temps ! Des astuces ?');
 
@@ -542,4 +540,25 @@ INSERT INTO support_tickets (entreprise_id, personne_id, sujet, message, statut)
 INSERT INTO signalements (sujet, description, statut) VALUES
 ('Commentaire inaproprie communaute', 'Un utilisateur a poste un message deplace dans le Running Club.', 'en_cours'),
 ('Lien mort page Conseils', 'Le lien vers l''article sur le sommeil ne fonctionne pas.', 'clos');
+
+INSERT INTO communaute_membres (communaute_id, personne_id) VALUES
+(1, 5),
+(2, 6),
+(1, 8),
+(2, 12),
+(1, 7),
+(2, 10),
+(1, 17),
+(2, 20);
+
+INSERT INTO communaute_messages (communaute_id, personne_id, message) VALUES
+(1, 5, 'Quelqu''un a essaye le cours de Yoga Avance ?'),
+(2, 6, 'Motivation pour le semi-marathon ce week-end ! Qui court ?'),
+(2, 12, 'Nouveau record perso sur 10km ! :-)');
+
+INSERT INTO communaute_messages (communaute_id, personne_id, message) VALUES
+(1, 7, 'Des conseils pour tenir la posture de l\'arbre plus longtemps ?'),
+(2, 10, 'Quelqu\'un a une bonne appli pour suivre ses parcours de course ?'),
+(1, 17, 'Est-ce qu\'il y a un cours de Yoga prévu la semaine prochaine sur le site Sante+ ?'),
+(2, 20, 'Besoin de motivation pour sortir courir avec ce temps ! Des astuces ?');
 
