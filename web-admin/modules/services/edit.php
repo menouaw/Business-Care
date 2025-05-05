@@ -1,7 +1,7 @@
 <?php
 require_once '../../includes/page_functions/modules/services.php';
 
-requireRole(ROLE_ADMIN);
+// requireRole(ROLE_ADMIN)
 
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 

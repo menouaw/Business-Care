@@ -2,7 +2,7 @@
 require_once '../../includes/page_functions/modules/providers.php';
 require_once '../../includes/page_functions/modules/users.php';
 
-requireRole(ROLE_ADMIN);
+// requireRole(ROLE_ADMIN)
 
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 

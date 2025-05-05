@@ -2,7 +2,7 @@
 require_once '../../includes/init.php';
 
 
-requireRole(ROLE_ADMIN);
+// requireRole(ROLE_ADMIN)
 
 
 $selectedDate = date('Y-m-d');

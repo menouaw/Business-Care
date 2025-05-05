@@ -2,7 +2,7 @@
 require_once '../../includes/page_functions/modules/financial.php';
 
 
-requireRole(ROLE_ADMIN);
+// requireRole(ROLE_ADMIN)
 
 
 $summary = financialGetDashboardSummary();

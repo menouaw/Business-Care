@@ -1,7 +1,7 @@
 <?php
 require_once '../../includes/page_functions/modules/companies.php'; 
 
-requireRole(ROLE_ADMIN);
+// requireRole(ROLE_ADMIN)
 
 $pageTitle = "Ajouter une entreprise";
 $errors = [];

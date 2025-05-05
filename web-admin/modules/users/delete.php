@@ -1,7 +1,7 @@
 <?php
 require_once '../../includes/page_functions/modules/users.php';
 
-requireRole(ROLE_ADMIN);
+// requireRole(ROLE_ADMIN)
 
 $requestMethod = $_SERVER['REQUEST_METHOD'];
 $params = [];

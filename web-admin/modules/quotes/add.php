@@ -1,7 +1,7 @@
 <?php
 require_once '../../includes/page_functions/modules/quotes.php';
 
-requireRole(ROLE_ADMIN);
+// requireRole(ROLE_ADMIN)
 
  
 $id = 0;  

@@ -2,7 +2,7 @@
 require_once '../../includes/page_functions/modules/users.php';
 require_once '../../includes/page_functions/modules/providers.php';
 
-requireRole(ROLE_ADMIN);
+// requireRole(ROLE_ADMIN)
 
 
 $formData = [

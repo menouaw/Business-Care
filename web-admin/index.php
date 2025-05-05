@@ -1,7 +1,7 @@
 <?php
 require_once 'includes/page_functions/dashboard.php';
 
-// requireRole(ROLE_ADMIN);
+// requireRole\(ROLE_ADMIN\)
 
 $stats = getDashboardStats();
 $recentActivities = getDashboardRecentActivities();

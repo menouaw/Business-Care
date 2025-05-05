@@ -21,13 +21,14 @@ Les fichiers partagés pour l'interface d'administration sont localisés dans le
 * **config.php** - Définition des constantes et paramètres de configuration globaux (URLs, rôles, tables, statuts, etc.)
 * **db.php** - Fonctions de connexion et d'interaction avec la base de données (requêtes SQL, transactions, etc.)
 * **functions.php** - Fonctions utilitaires communes (formatage de dates, de montants, gestion des messages flash, etc.)
-* **auth.php** - Fonctions d'authentification et de gestion des utilisateurs (connexion, déconnexion, vérification des rôles)
+* **auth.php** - (Obsolète/Complémentaire) Fonctions liées à l'ancien système d'authentification par session PHP. Peut contenir des helpers pour récupérer les infos utilisateur local après vérification Firebase.
+* **auth_firebase.php** - **(Nouveau/Essentiel)** Fonctions pour la vérification backend des Firebase ID Tokens reçus via l'en-tête Authorization des requêtes API.
 * **logging.php** - Fonctions pour la journalisation des évènements et activités système
 
 ### Fonctionnalités clés
 
 * **Gestion de base de données** - Interface PDO sécurisée avec prévention des injections SQL
-* **Authentification** - Système complet avec sessions, connexion persistante ("remember me") et permissions par rôle
+* **Authentification (Firebase)** - La connexion/déconnexion est gérée côté client via le SDK Firebase. Ce répertoire contient la logique backend (`auth_firebase.php`) pour **vérifier** les Firebase ID Tokens et potentiellement (`auth.php`) lier l'UID Firebase à un utilisateur local.
 * **Journalisation** - Enregistrement centralisé des activités utilisateurs, opérations métier et évènements de sécurité
 * **Fonctions utilitaires** - Formatage des données, messages flash, pagination, validation CSRF
 * **Gestion des erreurs** - Centralisation et normalisation du traitement des erreurs
@@ -41,7 +42,8 @@ Les fichiers partagés pour l'interface client sont localisés dans le dossier `
 * **config.php** - Configuration spécifique à l'interface client (constantes, URLs, etc.)
 * **db.php** - Fonctions de base de données adaptées aux besoins du client
 * **functions.php** - Utilitaires pour l'interface client (formatage, pagination, etc.)
-* **auth.php** - Fonctions d'authentification avec gestion spécifique des rôles client
+* **auth.php** - (Obsolète/Complémentaire) Fonctions liées à l'ancien système d'authentification par session PHP. Peut contenir des helpers pour récupérer les infos utilisateur local après vérification Firebase.
+* **auth_firebase.php** - **(Nouveau/Essentiel)** Fonctions pour la vérification backend des Firebase ID Tokens pour l'API client.
 * **logging.php** - Journalisation des activités client avec fonctions spécialisées
 
 ### Différences clés avec la version Admin
@@ -61,11 +63,6 @@ require_once __DIR__ . '/../../shared/web-admin/config.php';
 require_once __DIR__ . '/../../shared/web-admin/auth.php';
 require_once __DIR__ . '/../../shared/web-admin/functions.php';
 
-// Vérifier l'authentification
-requireAuthentication();
-// Vérifier le rôle admin
-requireRole(ROLE_ADMIN);
-```
 
 ## Points d'attention
 
@@ -79,8 +76,10 @@ requireRole(ROLE_ADMIN);
 Les mécanismes de sécurité implémentés comprennent :
 
 * Protection contre les injections SQL via l'utilisation de requêtes préparées
-* Gestion des sessions avec rotation des tokens
-* Protection CSRF pour les formulaires et actions sensibles
-* Hachage des mots de passe avec `password_hash()`
+* **Authentification API via Firebase ID Tokens** (validés côté serveur)
+* **Authentification Frontend via Firebase SDK**
+* Autorisation basée sur les rôles (vérifiés après authentification Firebase)
+* Protection CSRF pour les formulaires (si encore applicable en dehors des appels API)
 * Validation des entrées utilisateur
 * Journalisation des évènements de sécurité
+* (Obsolète: Gestion des sessions avec rotation des tokens, Hachage des mots de passe avec `password_hash()` - Géré par Firebase)

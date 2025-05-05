@@ -1,7 +1,7 @@
 <?php
 require_once '../../includes/page_functions/modules/appointments.php';
 
-requireRole(ROLE_ADMIN);
+// requireRole\(ROLE_ADMIN\)
 
 $pageTitle = "Ajouter un rendez-vous";
 

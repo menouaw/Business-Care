@@ -147,6 +147,41 @@ function getMainServicePacks() {
  * @return array Résultat ['success' => bool, 'message' => string|null, 'errors' => array|null]
  */
 function servicesSave($data, $id = 0) {
+    // --- Authentication Check ---
+    require_once __DIR__ . '/../../../../shared/web-admin/auth_firebase.php'; 
+    require_once __DIR__ . '/../../../../shared/web-admin/db.php'; // Needed for fetchOne
+    require_once __DIR__ . '/../../../../shared/web-admin/logging.php'; // Needed for logSystemActivity
+    // require_once __DIR__ . '/../../../../shared/web-admin/config.php'; // Needed for TABLE_USERS constant
+
+    $firebaseUserPayload = getAuthenticatedFirebaseUser(); 
+    $localAdminUserId = null;
+    $localUser = null;
+
+    if ($firebaseUserPayload) {
+        try {
+            // Use fetchOne (defined in db.php) to find the local user by Firebase UID
+            // Assuming TABLE_USERS is defined, otherwise use 'personnes' directly
+             $userTable = defined('TABLE_USERS') ? TABLE_USERS : 'personnes';
+            $localUser = fetchOne($userTable, 'firebase_uid = :firebase_uid', '', [':firebase_uid' => $firebaseUserPayload->sub]);
+            if ($localUser) {
+                $localAdminUserId = $localUser['id'];
+                // Optional: Add role check if needed for saving services
+                // if ($localUser['role_id'] !== ROLE_ADMIN) { /* handle error */ }
+            }
+        } catch (PDOException $e) {
+            logSystemActivity('error', "Error fetching local user during servicesSave: " . $e->getMessage());
+            // Decide if this should prevent the operation or just log
+            return ['success' => false, 'errors' => ["Database error during user lookup."]];
+        }
+    }
+
+    // If no valid authenticated user found, prevent the operation
+    if (!$localAdminUserId) {
+         logSystemActivity('error', "Attempt to save service without valid authentication or local user.");
+         return ['success' => false, 'errors' => ["Authentication failed or user not found in local DB."]];
+    }
+    // --- End Authentication Check ---
+
     $errors = [];
     
     if (empty($data['nom'])) {
@@ -196,7 +231,7 @@ function servicesSave($data, $id = 0) {
             $affectedRows = updateRow(TABLE_PRESTATIONS, $dbData, "id = :where_id", [':where_id' => $id]);
             
             if ($affectedRows !== false) {
-                 logBusinessOperation($_SESSION['user_id'], 'service_update', 
+                 logBusinessOperation($localAdminUserId, 'service_update', // Use local user ID
                     "Mise à jour service: {$dbData['nom']} (ID: $id), type: {$dbData['type']}, prix: {$dbData['prix']}€");
                 $message = "Le service a ete mis a jour avec succes";
                  commitTransaction();
@@ -209,7 +244,7 @@ function servicesSave($data, $id = 0) {
             $newId = insertRow(TABLE_PRESTATIONS, $dbData);
             
             if ($newId) {
-                logBusinessOperation($_SESSION['user_id'], 'service_create', 
+                logBusinessOperation($localAdminUserId, 'service_create', // Use local user ID
                     "Création service: {$dbData['nom']} (ID: $newId), type: {$dbData['type']}, prix: {$dbData['prix']}€");
                 $message = "Le service a ete cree avec succes";
                  commitTransaction();
@@ -223,7 +258,7 @@ function servicesSave($data, $id = 0) {
         rollbackTransaction();
         $errorMessage = "Erreur de base de données : " . $e->getMessage();
         $errors[] = $errorMessage;
-        logSystemActivity('error', "Erreur BDD dans servicesSave: " . $e->getMessage());
+        logSystemActivity('error', "Erreur BDD dans servicesSave (User ID: " . ($localAdminUserId ?? 'N/A') . "): " . $e->getMessage());
         
         return [
             'success' => false,
@@ -241,20 +276,55 @@ function servicesSave($data, $id = 0) {
  * @return array Résultat ['success' => bool, 'message' => string]
  */
 function servicesDelete($id) {
+    // --- Authentication Check ---
+    require_once __DIR__ . '/../../../../shared/web-admin/auth_firebase.php';
+    require_once __DIR__ . '/../../../../shared/web-admin/db.php'; // Needed for fetchOne
+    require_once __DIR__ . '/../../../../shared/web-admin/logging.php'; // Needed for logSystemActivity
+    // require_once __DIR__ . '/../../../../shared/web-admin/config.php'; // Needed for TABLE_USERS constant
+
+    $firebaseUserPayload = getAuthenticatedFirebaseUser(); 
+    $localAdminUserId = null;
+    $localUser = null;
+
+    if ($firebaseUserPayload) {
+         try {
+            // Use fetchOne (defined in db.php) to find the local user by Firebase UID
+            // Assuming TABLE_USERS is defined, otherwise use 'personnes' directly
+            $userTable = defined('TABLE_USERS') ? TABLE_USERS : 'personnes';
+            $localUser = fetchOne($userTable, 'firebase_uid = :firebase_uid', '', [':firebase_uid' => $firebaseUserPayload->sub]);
+            if ($localUser) {
+                $localAdminUserId = $localUser['id'];
+                // Optional: Add role check if needed for deleting services
+                // if ($localUser['role_id'] !== ROLE_ADMIN) { /* handle error */ }
+            }
+        } catch (PDOException $e) {
+            logSystemActivity('error', "Error fetching local user during servicesDelete: " . $e->getMessage());
+            // Decide if this should prevent the operation or just log
+            return ['success' => false, 'message' => "Database error during user lookup."];
+        }
+    }
+
+    // If no valid authenticated user found, prevent the operation
+    if (!$localAdminUserId) {
+         logSystemActivity('error', "Attempt to delete service ID $id without valid authentication or local user.");
+         return ['success' => false, 'message' => "Authentication failed or user not found in local DB."];
+    }
+    // --- End Authentication Check ---
+
     try {
         beginTransaction();
 
         $appointmentCount = executeQuery("SELECT COUNT(id) FROM " . TABLE_APPOINTMENTS . " WHERE prestation_id = ?", [$id])->fetchColumn();
         if ($appointmentCount > 0) {
             rollbackTransaction();
-            logBusinessOperation($_SESSION['user_id'], 'service_delete_attempt', "[ERROR] ID: $id - Rendez-vous associés");
+            logBusinessOperation($localAdminUserId, 'service_delete_attempt', "[ERROR] ID: $id - Rendez-vous associés"); // Use local user ID
             return ['success' => false, 'message' => "Impossible de supprimer car des rendez-vous sont associés"];
         }
 
         $evaluationCount = executeQuery("SELECT COUNT(id) FROM " . TABLE_EVALUATIONS . " WHERE prestation_id = ?", [$id])->fetchColumn();
         if ($evaluationCount > 0) { 
             rollbackTransaction();
-            logBusinessOperation($_SESSION['user_id'], 'service_delete_attempt', "[ERROR] ID: $id - Évaluations associées");
+            logBusinessOperation($localAdminUserId, 'service_delete_attempt', "[ERROR] ID: $id - Évaluations associées"); // Use local user ID
             return ['success' => false, 'message' => "Impossible de supprimer car des évaluations sont associées"];
         }
 
@@ -262,7 +332,7 @@ function servicesDelete($id) {
         
         if ($deletedRows > 0) {
             commitTransaction();
-            logBusinessOperation($_SESSION['user_id'], 'service_delete', 
+            logBusinessOperation($localAdminUserId, 'service_delete', // Use local user ID
                 "Suppression service ID: $id");
             return [
                 'success' => true,
@@ -270,7 +340,7 @@ function servicesDelete($id) {
             ];
         } else {
             rollbackTransaction();
-             logBusinessOperation($_SESSION['user_id'], 'service_delete_attempt', 
+             logBusinessOperation($localAdminUserId, 'service_delete_attempt', // Use local user ID
                 "Tentative échouée de suppression service ID: $id - Service non trouvé ou déjà supprimé?");
             return [
                 'success' => false,
@@ -279,7 +349,7 @@ function servicesDelete($id) {
         }
     } catch (Exception $e) {
         rollbackTransaction();
-         logSystemActivity('error', "Erreur BDD dans servicesDelete: " . $e->getMessage());
+         logSystemActivity('error', "Erreur BDD dans servicesDelete (User ID: " . ($localAdminUserId ?? 'N/A') . "): " . $e->getMessage());
          return [
             'success' => false,
             'message' => "Erreur de base de données lors de la suppression."

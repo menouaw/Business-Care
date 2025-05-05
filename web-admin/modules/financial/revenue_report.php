@@ -3,7 +3,7 @@ require_once '../../includes/page_functions/modules/financial.php';
 require_once '../../includes/page_functions/modules/companies.php'; 
 require_once '../../includes/page_functions/modules/services.php';  
 
-requireRole(ROLE_ADMIN);
+// requireRole(ROLE_ADMIN)
 
 $pageTitle = "Revenus";
 

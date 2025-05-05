@@ -1,7 +1,7 @@
 <?php
 require_once '../../includes/page_functions/modules/providers.php';
 
-requireRole(ROLE_ADMIN);
+// requireRole(ROLE_ADMIN)
 
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {

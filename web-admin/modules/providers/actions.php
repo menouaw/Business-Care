@@ -1,7 +1,7 @@
 <?php
 require_once '../../includes/page_functions/modules/providers.php';
 
-requireRole(ROLE_ADMIN);
+// requireRole(ROLE_ADMIN)
 
 $action = $_POST['action'] ?? '';
 $provider_id = isset($_POST['provider_id']) ? (int)$_POST['provider_id'] : 0;
