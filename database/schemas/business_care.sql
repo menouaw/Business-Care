@@ -41,10 +41,10 @@ CREATE TABLE sites (
 
 CREATE TABLE personnes (
     id INT PRIMARY KEY AUTO_INCREMENT,
+    firebase_uid VARCHAR(128) UNIQUE NULL DEFAULT NULL COMMENT 'Firebase Authentication User ID',
     nom VARCHAR(100) NOT NULL,
     prenom VARCHAR(100) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
-    mot_de_passe VARCHAR(255) NOT NULL,
     telephone VARCHAR(20),
     date_naissance DATE,
     genre ENUM('M', 'F', 'Autre'),
@@ -61,7 +61,8 @@ CREATE TABLE personnes (
     FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE SET NULL ON UPDATE CASCADE,
     INDEX idx_email (email),
     INDEX idx_role (role_id),
-    INDEX idx_entreprise (entreprise_id)
+    INDEX idx_entreprise (entreprise_id),
+    INDEX idx_firebase_uid (firebase_uid)
 );
 
 CREATE TABLE prestations (
