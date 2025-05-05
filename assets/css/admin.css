@@ -40,6 +40,7 @@
   flex: 1;
   padding-top: var(--spacing-md);
   padding-bottom: var(--spacing-md);
+  margin-left: var(--sidebar-width-md);
   }
   
   /* icones */
@@ -60,15 +61,7 @@
   z-index: 100;
   padding: 3rem 0 0;
   box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.1);
-  }
-  
-  .sidebar-sticky {
-  position: relative;
-  top: 0;
-  height: calc(100vh - 3rem);
-  padding-top: var(--spacing-sm);
-  overflow-x: hidden;
-  overflow-y: auto;
+  width: var(--sidebar-width-md);
   }
   
   .sidebar .nav-link {
@@ -95,12 +88,6 @@
   text-transform: uppercase;
   }
   
-  @media (max-width: 767.98px) {
-  .sidebar {
-  top: 5rem;
-  }
-  }
-  
   /* 
   * barre de navigation
   * ------------------------------------------------ */
@@ -123,11 +110,6 @@
   padding-bottom: 0.75rem;
   font-size: 1rem;
   color: var(--color-primary);
-  }
-  
-  .navbar .navbar-toggler {
-  top: 0.25rem;
-  right: 1rem;
   }
   
   /* champ de recherche */
@@ -488,4 +470,263 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     pointer-events: none;
     background-color: var(--color-quaternary);
     border-color: var(--color-tertiary);
-} 
+}
+
+.sidebar-sticky {
+  position: relative;
+  top: 0;
+  height: calc(100vh - 3rem);
+  padding-top: var(--spacing-sm);
+  overflow-x: hidden;
+  overflow-y: auto;
+  color: var(--color-primary);
+  }
+  
+  /* champ de recherche */
+  .navbar .form-control {
+  padding: 0.75rem 1rem;
+  border-width: 0;
+  border-radius: 0;
+  }
+  
+  .form-control-dark {
+  color: #fff;
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  }
+  
+  .form-control-dark:focus {
+  border-color: transparent;
+  box-shadow: 0 0 0 0.1875rem var(--color-primary);
+  }
+  
+  /* alignement du header */
+  header.navbar .ms-sm-auto {
+  padding-right: 0.75rem;
+  }
+  
+  /* menu utilisateur */
+  .navbar .form-control-dark {
+  width: 100%;
+  max-width: 25rem;
+  margin-right: 0.625rem;
+  }
+  
+  .navbar .navbar-nav.flex-row {
+  display: flex;
+  align-items: center;
+  }
+  
+  .user-dropdown {
+  position: relative;
+  }
+  
+  .user-dropdown .dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 1031;
+  min-width: 10rem;
+  }
+  
+  .user-dropdown .dropdown-toggle {
+  white-space: nowrap;
+  }
+  
+  .dropdown-menu-end {
+  right: 0;
+  left: auto;
+  }
+  
+  /* 
+  * pied de page
+  * ------------------------------------------------ */
+  footer.footer {
+  z-index: 1030;
+  position: relative;
+  width: 100%;
+  margin-left: 0 !important;
+  }
+  
+  /* 
+  * cartes et composants
+  * ------------------------------------------------ */
+  .card-body {
+  position: relative;
+  }
+  
+  /* cartes avec bordure coloree */
+  .card[class*="border-left-"] {
+  border-left-width: 0.25rem !important;
+  border-left-style: solid !important;
+  }
+  
+  .card.border-left-primary {
+  border-left-color: var(--color-primary) !important;
+  }
+  
+  .card.border-left-success {
+  border-left-color: var(--color-success) !important;
+  }
+  
+  .card.border-left-info {
+  border-left-color: var(--color-info) !important;
+  }
+  
+  .card.border-left-warning {
+  border-left-color: var(--color-warning) !important;
+  }
+  
+  .card.border-left-danger {
+  border-left-color: var(--color-danger) !important;
+  }
+  
+  /* tableaux */
+  .table-actions {
+  white-space: nowrap;
+  }
+  
+  /* 
+  * utilitaires
+  * ------------------------------------------------ */
+  .text-gray-300 {
+  color: var(--color-tertiary) !important;
+  }
+  
+  .text-gray-800 {
+  color: var(--color-primary) !important;
+  }
+  
+  .font-weight-bold {
+  font-weight: 700 !important;
+  }
+  
+  .text-xs {
+  font-size: 0.7rem;
+  }
+  
+  .border-radius-0 {
+  border-radius: 0 !important;
+  }
+  
+  .bd-placeholder-img {
+  font-size: 1.125rem;
+  text-anchor: middle;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+  }
+  
+  @media (min-width: 768px) {
+  .bd-placeholder-img-lg {
+  font-size: 3.5rem;
+  }
+  }
+  
+  /* 
+   * pages specifiques
+  * ------------------------------------------------ */
+  /* page de connexion */
+  .login-page {
+  background-color: var(--color-quaternary);
+  display: flex;
+  align-items: center;
+  padding-top: 2.5rem;
+  padding-bottom: 2.5rem;
+  background-image: url('../images/cover/cucumber.jpg');
+  background-size: cover;
+  background-position: center;
+  }
+  
+  .form-signin {
+  width: 100%;
+  max-width: 25rem;
+  padding: var(--spacing-xl);
+  margin: auto;
+  background-color: #ffffff;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.25rem 0.9375rem rgba(0, 0, 0, 0.1);
+  }
+  
+  .form-signin img {
+  width: 5.625rem;
+  height: 5.625rem;
+  margin-bottom: var(--spacing-lg);
+  }
+  
+  .form-signin .form-floating:focus-within {
+  z-index: 2;
+  }
+  
+  .form-signin .form-control {
+  border-radius: 0.25rem;
+  }
+  
+  .form-signin input[type="email"] {
+  margin-bottom: -1px;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+  }
+  
+  .form-signin input[type="password"] {
+  margin-bottom: var(--spacing-md);
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  }
+  
+  .form-signin .btn-primary {
+  background-color: var(--color-secondary);
+  border-color: var(--color-secondary);
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+  }
+  
+  .form-signin .btn-primary:hover {
+  background-color: var(--color-tertiary);
+  border-color: var(--color-tertiary);
+  }
+  
+  .form-signin .checkbox {
+  font-weight: 400;
+  }
+  
+  .form-signin p a {
+  color: var(--color-secondary);
+  text-decoration: none;
+  }
+  
+  .form-signin p a:hover {
+  text-decoration: underline;
+  }
+  
+  .form-signin .text-muted {
+  color: var(--color-text-muted) !important;
+  font-size: 0.8rem;
+  }
+  
+  /* page d'installation de l'admin */
+  .install-page {
+    background-color: var(--color-quaternary);
+    padding-top: 2.5rem;
+    padding-bottom: 2.5rem;
+  }
+  
+  .form-install {
+    width: 100%;
+    max-width: 31.25rem;
+    padding: 1rem;
+    margin: 0 auto;
+  }
+  
+  .form-install .form-floating:focus-within {
+    z-index: 2;
+  }
+  
+  /* 
+   * messages et alertes
+   * ------------------------------------------------ */
+  .alert {
+    margin-bottom: 0;
+    border-radius: 0;
+  } 

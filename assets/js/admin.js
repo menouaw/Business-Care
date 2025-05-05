@@ -5,9 +5,42 @@
 document.addEventListener('DOMContentLoaded', function() {
     setupDeleteConfirmation();
     
-    setupSidebarToggle();
-    
     setupDynamicFormFields();
+
+    
+    if (typeof feather !== 'undefined') {
+        feather.replace();
+    }
+
+    const logoutButton = document.getElementById('logout-link'); 
+
+    if (logoutButton) {
+        logoutButton.addEventListener('click', async (event) => {
+            event.preventDefault(); 
+            console.log("Logout button clicked.");
+
+            if (!window.firebaseAuth) {
+                console.error("Les fonctions Firebase Auth ne sont pas disponibles pour la déconnexion.");
+                alert("Erreur lors de la déconnexion. Réessayez."); 
+                return;
+            }
+
+            try {
+                await window.firebaseAuth.logOut();
+                console.log("Déconnexion réussie. Redirection...");
+                
+                window.location.href = '/admin/login.php'; 
+                
+                
+            } catch (error) {
+                console.error("Déconnexion échouée:", error);
+                alert("Erreur lors de la déconnexion: " + error.message); 
+            }
+        });
+    } else {
+        console.warn("Bouton de déconnexion avec le sélecteur '#logout-link' non trouvé."); 
+        
+    }
 });
 
 function setupDeleteConfirmation() {
@@ -19,15 +52,6 @@ function setupDeleteConfirmation() {
             }
         });
     });
-}
-
-function setupSidebarToggle() {
-    const sidebarToggle = document.querySelector('.navbar-toggler');
-    if (sidebarToggle) {
-        sidebarToggle.addEventListener('click', function() {
-            document.querySelector('.sidebar').classList.toggle('show');
-        });
-    }
 }
 
 function setupDynamicFormFields() {
