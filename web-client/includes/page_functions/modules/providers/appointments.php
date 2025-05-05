@@ -72,7 +72,7 @@ function getProviderAppointments(int $provider_id, string $filter_status = 'upco
     $params[':limit'] = (int)$limit;
     $params[':offset'] = (int)$offset;
 
-    $stmt = executeQuery($sql, $params, PDO::FETCH_ASSOC, true);
+    $stmt = executeQuery($sql, $params);
     $result['appointments'] = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
 
     return $result;
@@ -123,19 +123,19 @@ function setupProviderAppointmentsPageData(int $provider_id): array
 {
     $pageTitle = "Mes Rendez-vous";
 
-    
+
     $allowed_filters = ['upcoming', 'past', 'canceled', 'all'];
     $filter_status = filter_input(INPUT_GET, 'filter', FILTER_SANITIZE_SPECIAL_CHARS);
     if (!$filter_status || !in_array($filter_status, $allowed_filters)) {
-        $filter_status = 'upcoming'; 
+        $filter_status = 'upcoming';
     }
 
-    
+
     $items_per_page = 15;
     $current_page = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT, ['options' => ['default' => 1, 'min_range' => 1]]);
     $offset = ($current_page - 1) * $items_per_page;
 
-    
+
     $appointments_data = [];
     $total_appointments = 0;
     if ($provider_id > 0) {
@@ -145,7 +145,7 @@ function setupProviderAppointmentsPageData(int $provider_id): array
     $appointments = $appointments_data['appointments'] ?? [];
     $total_pages = ceil($total_appointments / $items_per_page);
 
-    
+
     return [
         'pageTitle' => $pageTitle,
         'filter_status' => $filter_status,
@@ -153,7 +153,7 @@ function setupProviderAppointmentsPageData(int $provider_id): array
         'total_appointments' => $total_appointments,
         'current_page' => $current_page,
         'total_pages' => $total_pages,
-        
-        
+
+
     ];
 }
