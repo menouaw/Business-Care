@@ -123,12 +123,17 @@
                 </li>
             </ul>
 
+            <li class="nav-item">
+                <a class="nav-link <?= isActivePage('/modules/employees/providers.php') ? 'active' : '' ?>" href="<?= WEBCLIENT_URL ?>/modules/employees/providers.php">
+                    <i class="fas fa-id-badge me-2"></i> Nos Prestataires
+                </a>
+            </li>
 
         <?php
 
 
         elseif ($userRoleId === ROLE_PRESTATAIRE):
-            
+
             $providerModuleUrl = defined('WEBCLIENT_URL') ? WEBCLIENT_URL . '/modules/providers' : '/modules/providers';
         ?>
             <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-uppercase fw-semibold">

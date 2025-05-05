@@ -23,6 +23,7 @@ $contracts = [];
 $total_contracts = 0;
 $total_pages = 1;
 $current_page = 1;
+$usage_stats = []; 
 
 if ($action === 'view' && $contract_id) {
     $contract = getContractDetails($contract_id, $entreprise_id);
@@ -32,6 +33,8 @@ if ($action === 'view' && $contract_id) {
         exit;
     }
     $pageTitle = "Détails du Contrat #" . $contract['id'];
+    
+    $usage_stats = getContractUsageStats($contract_id, $entreprise_id);
 } else {
     $action = 'list';
     $pageTitle = "Mes Contrats";
@@ -107,6 +110,33 @@ include __DIR__ . '/../../templates/header.php';
                         </dl>
                     </div>
                 </div>
+
+                <!-- Section Statistiques d'Utilisation Anonymisées -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        Statistiques d'Utilisation (Anonymisées)
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center ps-0">
+                                Consultations médicales/sensibles utilisées :
+                                <span class="badge bg-primary rounded-pill">
+                                    <?= htmlspecialchars($usage_stats['medical_consultations_count'] ?? 0) ?>
+                                </span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center ps-0">
+                                Autres prestations utilisées (ateliers, webinars...) :
+                                <span class="badge bg-secondary rounded-pill">
+                                    <?= htmlspecialchars($usage_stats['other_prestations_count'] ?? 0) ?>
+                                </span>
+                            </li>
+                            <!-- Ajoutez ici d'autres statistiques si getContractUsageStats est étendue -->
+                        </ul>
+                        <div class="form-text mt-2">Ces statistiques sont agrégées et ne contiennent aucune information nominative sur les salariés ayant utilisé les services.</div>
+                    </div>
+                </div>
+                <!-- Fin Section Statistiques -->
+
             <?php else: ?>
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
                     <h1 class="h2"><?= htmlspecialchars($pageTitle) ?></h1>
