@@ -158,9 +158,6 @@ function generateInvoicePdf(array $invoiceData): bool
 
 
 
-requireRole(ROLE_ENTREPRISE);
-
-
 /**
  * Retourne la classe CSS Bootstrap pour le badge de statut de la facture.
  *
@@ -206,4 +203,195 @@ function generateInvoiceNumber(): string
 
 
 
-$entreprise_id = $_SESSION['user_entreprise'] ?? 0;
+/**
+ * Tente de créer une session Stripe Checkout pour une facture donnée.
+ * Gère les erreurs Stripe et logue les problèmes.
+ *
+ * @param array $invoice Les détails de la facture.
+ * @param string $success_url L'URL de succès.
+ * @param string $cancel_url L'URL d'annulation.
+ * @param int $entreprise_id L'ID de l'entreprise (pour les métadonnées).
+ * @return \Stripe\Checkout\Session|null L'objet session Stripe ou null en cas d'erreur.
+ */
+function createStripeCheckoutSessionForInvoice(array $invoice, string $success_url, string $cancel_url, int $entreprise_id): ?\Stripe\Checkout\Session
+{
+
+
+
+
+    try {
+        $currency = strtolower(defined('DEFAULT_CURRENCY_CODE') ? DEFAULT_CURRENCY_CODE : 'eur');
+        $amount_cents = (int) round(($invoice['montant_total'] ?? 0) * 100);
+
+        if ($amount_cents <= 0) {
+            throw new \Exception("Le montant de la facture est invalide pour le paiement.");
+        }
+
+        $checkout_session = \Stripe\Checkout\Session::create([
+            'payment_method_types' => ['card'],
+            'line_items' => [[
+                'price_data' => [
+                    'currency' => $currency,
+                    'product_data' => [
+                        'name' => 'Facture ' . ($invoice['numero_facture'] ?? $invoice['id']),
+                        'description' => 'Paiement facture Business Care #' . ($invoice['numero_facture'] ?? $invoice['id']),
+                    ],
+                    'unit_amount' => $amount_cents,
+                ],
+                'quantity' => 1,
+            ]],
+            'mode' => 'payment',
+            'success_url' => $success_url,
+            'cancel_url' => $cancel_url,
+            'metadata' => [
+                'invoice_id' => $invoice['id'] ?? null,
+                'company_id' => $entreprise_id,
+            ],
+        ]);
+
+        return $checkout_session;
+    } catch (\Stripe\Exception\ApiErrorException $e) {
+        flashMessage("Erreur lors de l'initialisation du paiement : " . htmlspecialchars($e->getMessage()), "danger");
+    } catch (\Exception $e) {
+        flashMessage("Une erreur technique est survenue lors de la préparation du paiement.", "danger");
+    }
+
+    return null;
+}
+
+/**
+ * Gère la création d'une session de paiement Stripe pour une facture. (Refactorisé)
+ * Redirige vers Stripe ou affiche un message d'erreur et redirige.
+ *
+ * @param int $invoice_id L'ID de la facture.
+ * @param int $entreprise_id L'ID de l'entreprise.
+ * @return void
+ */
+function handleInvoiceCheckoutSession(int $invoice_id, int $entreprise_id): void
+{
+
+
+    $invoice = getInvoiceDetails($invoice_id, $entreprise_id);
+    $payable_statuses = [INVOICE_STATUS_PENDING, INVOICE_STATUS_LATE, INVOICE_STATUS_UNPAID];
+
+
+    if (!$invoice || !in_array($invoice['statut'], $payable_statuses)) {
+        flashMessage("Facture non trouvée, déjà payée, ou non payable.", "warning");
+        redirectTo(WEBCLIENT_URL . '/modules/companies/invoices.php');
+        exit;
+    }
+
+
+    if (!defined('STRIPE_SECRET_KEY') || empty(STRIPE_SECRET_KEY)) {
+        flashMessage("La configuration pour le paiement en ligne est incomplète. Veuillez contacter le support.", "danger");
+        redirectTo(WEBCLIENT_URL . '/modules/companies/invoices.php?action=view&id=' . $invoice_id);
+        exit;
+    }
+
+
+
+    \Stripe\Stripe::setApiKey(STRIPE_SECRET_KEY);
+
+
+    $success_url = WEBCLIENT_URL . '/modules/companies/invoices.php?payment=success&session_id={CHECKOUT_SESSION_ID}';
+    $cancel_url = WEBCLIENT_URL . '/modules/companies/invoices.php?payment=cancelled';
+
+
+    $checkout_session = createStripeCheckoutSessionForInvoice($invoice, $success_url, $cancel_url, $entreprise_id);
+
+
+    if ($checkout_session !== null && isset($checkout_session->url)) {
+
+        header("HTTP/1.1 303 See Other");
+        header("Location: " . $checkout_session->url);
+        exit;
+    } else {
+
+
+        redirectTo(WEBCLIENT_URL . '/modules/companies/invoices.php');
+        exit;
+    }
+}
+
+/**
+ * Gère la demande de téléchargement PDF d'une facture.
+ * Tente de générer le PDF et l'envoie, sinon redirige avec une erreur.
+ *
+ * @param int $invoice_id L'ID de la facture.
+ * @param int $entreprise_id L'ID de l'entreprise.
+ * @return void
+ */
+function handleInvoiceDownload(int $invoice_id, int $entreprise_id): void
+{
+
+
+    $invoice = getInvoiceDetails($invoice_id, $entreprise_id);
+    if (!$invoice) {
+        flashMessage("Facture non trouvée ou accès refusé pour la génération PDF.", "warning");
+        redirectTo(WEBCLIENT_URL . '/modules/companies/invoices.php');
+        exit;
+    }
+
+    $pdfGenerated = generateInvoicePdf($invoice);
+
+
+    if ($pdfGenerated === false) {
+        flashMessage("Une erreur est survenue lors de la génération du fichier PDF. Veuillez réessayer ou contacter le support.", "danger");
+        redirectTo(WEBCLIENT_URL . '/modules/companies/invoices.php');
+        exit;
+    }
+}
+
+/**
+ * Récupère les données nécessaires pour l'affichage détaillé d'une facture.
+ *
+ * @param int $invoice_id L'ID de la facture.
+ * @param int $entreprise_id L'ID de l'entreprise.
+ * @return array|null Les données de la facture ou null si non trouvée/accès refusé.
+ */
+function getViewInvoiceData(int $invoice_id, int $entreprise_id): ?array
+{
+    $invoice = getInvoiceDetails($invoice_id, $entreprise_id);
+    if (!$invoice) {
+        flashMessage("Facture non trouvée ou accès refusé.", "warning");
+        return null;
+    }
+    return $invoice;
+}
+
+/**
+ * Récupère les données pour l'affichage de la liste des factures.
+ *
+ * @param int $entreprise_id L'ID de l'entreprise.
+ * @return array La liste des factures.
+ */
+function getListInvoicesData(int $entreprise_id): array
+{
+    return getCompanyInvoices($entreprise_id);
+}
+
+/**
+ * Gère le retour de Stripe après une tentative de paiement.
+ * Vérifie le statut dans l'URL, affiche un message flash et redirige
+ * pour nettoyer l'URL. Cette fonction termine le script via redirectTo().
+ *
+ * @return void
+ */
+function handleStripeReturn(): void
+{
+    $payment_status = filter_input(INPUT_GET, 'payment', FILTER_SANITIZE_SPECIAL_CHARS);
+
+    if ($payment_status) { // Si un statut de paiement est présent
+        if ($payment_status === 'success') {
+            // Note: Idéalement, vérifier la session_id ici via un webhook ou une query API avant de confirmer
+            flashMessage("Votre tentative de paiement a été initiée. Le statut de la facture sera mis à jour après confirmation.", "info");
+        } elseif ($payment_status === 'cancelled') {
+            flashMessage("Le processus de paiement a été annulé.", "warning");
+        }
+        // Rediriger pour nettoyer l'URL des paramètres de paiement
+        // Assurez-vous que WEBCLIENT_URL est défini comme constante globale
+        redirectTo(WEBCLIENT_URL . '/modules/companies/invoices.php');
+        // redirectTo contient exit(), donc le script s'arrête ici si $payment_status est trouvé.
+    }
+    // Si aucun statut de paiement n'est trouvé, la fonction ne fait rien et le script continue.
+}

@@ -190,3 +190,59 @@ function getQuoteStatusBadgeClass($status)
         default => 'light',
     };
 }
+
+/**
+ * Gère la soumission du formulaire de demande de devis (POST).
+ * Si la requête est POST et contient 'request_quote', traite les données,
+ * appelle saveQuoteRequest, affiche un message flash et redirige.
+ * Termine le script si une requête POST est traitée.
+ *
+ * @return void
+ */
+function handleQuoteRequestPost(): void
+{
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_quote'])) {
+
+
+
+
+
+
+
+
+        $entreprise_id = $_SESSION['user_entreprise'] ?? 0;
+        $personne_id = $_SESSION['user_id'] ?? 0;
+        $notes = filter_input(INPUT_POST, 'notes', FILTER_SANITIZE_SPECIAL_CHARS);
+        $selected_service_id = filter_input(INPUT_POST, 'service_id', FILTER_VALIDATE_INT);
+
+        $service_id_to_log = (!empty($selected_service_id) && $selected_service_id > 0) ? $selected_service_id : null;
+
+        if ($entreprise_id > 0 && $personne_id > 0 && !empty($notes)) {
+            $newQuoteId = saveQuoteRequest($entreprise_id, [
+                'notes' => $notes,
+                'service_id' => $service_id_to_log
+
+            ]);
+
+            if ($newQuoteId) {
+                flashMessage("Votre demande de devis (N°{$newQuoteId}) a bien été enregistrée avec le statut 'en attente'. Notre équipe la traitera prochainement.", "success");
+            } else {
+                flashMessage("Une erreur est survenue lors de l'enregistrement de votre demande. Veuillez réessayer.", "danger");
+            }
+        } else {
+
+            if (empty($notes)) {
+                flashMessage("Veuillez décrire vos besoins dans la zone de texte.", "warning");
+            } else {
+                flashMessage("Erreur lors de l\'envoi de la demande. Informations utilisateur ou entreprise manquantes.", "danger");
+            }
+
+            redirectTo(WEBCLIENT_URL . '/modules/companies/quotes.php?action=request');
+            exit;
+        }
+
+
+        redirectTo(WEBCLIENT_URL . '/modules/companies/quotes.php');
+        exit;
+    }
+}
