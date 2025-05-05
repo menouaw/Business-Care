@@ -7,7 +7,7 @@ Panneau d'administration backend pour la gestion de Business Care (entreprises, 
 ```
 web-admin/
 ├── includes/           # Fichiers PHP Core
-│   ├── init.php        # Initialisation (config, db, session, auth via /shared)
+│   ├── init.php        # Initialisation (config, db, Firebase auth state handling via JS)
 │   └── page_functions/ # Logique métier (fonctions par module)
 │       ├── dashboard.php   # Fonctions spécifiques au tableau de bord
 │       ├── login.php       # Fonctions de traitement de connexion
@@ -51,7 +51,8 @@ web-admin/
 
 - `config.php` - Configuration globale (URLs, constantes, rôles, tables)
 - `db.php` - Fonctions de connexion et d'interaction avec la base de données
-- `auth.php` - Système d'authentification (login, logout, vérification rôles)
+- `auth.php` - (Peut être obsolète ou complémentaire) Ancien système d'authentification par session PHP. L'authentification principale est gérée via Firebase.
+- `auth_firebase.php` - (Si existant) Fonctions de vérification des tokens Firebase ID pour l'API.
 - `functions.php` - Utilitaires communs (formatage, validation, pagination)
 - `logging.php` - Journalisation des évènements et activités
 
@@ -86,7 +87,7 @@ web-admin/
 - **Pattern MVC Léger** - Séparation entre les fonctions métier (`includes/page_functions/`) et les vues (`modules/`)
 - **Bibliothèques Frontend** - Bootstrap 5, Font Awesome 6, Chart.js
 - **Accès Base de Données** - Couche d'abstraction PDO avec requêtes préparées via `shared/web-admin/db.php`
-- **Sécurité** - Protection CSRF, validation des entrées, authentification par session
+- **Sécurité** - Protection CSRF, validation des entrées, Authentification via Firebase (Email/Password), Vérification des tokens Firebase ID pour l'API.
 - **Logging** - Système de journalisation des activités et évènements de sécurité
 
 ## Setup (Docker Recommandé)
@@ -122,8 +123,8 @@ web-admin/
 
 ## Sécurité
 
-- **Authentification** - Système complet de session avec fonction "Se souvenir de moi"
-- **Autorisation** - Vérification des rôles via `requireRole(ROLE_ADMIN)` et `hasRole()`
+- **Authentification** - Gérée principalement par Firebase Authentication (Email/Password). Le statut de connexion est vérifié côté client (JavaScript) et les tokens Firebase ID sont utilisés pour sécuriser les appels API. Les sessions PHP traditionnelles peuvent encore être utilisées pour des aspects spécifiques si nécessaire.
+- **Autorisation** - Vérification des rôles via `requireRole(ROLE_ADMIN)` et `hasRole()` (vérifie le rôle stocké dans la base de données locale après authentification Firebase).
 - **Protection Données** - Requêtes préparées PDO et validation des entrées
 - **CSRF** - Protection via tokens de formulaire (`generateToken()`, `validateToken()`)
 - **Journalisation** - Suivi des tentatives d'accès et actions sensibles
@@ -140,6 +141,6 @@ web-admin/
 
 ## Note sur l'API REST
 
-L'application expose une API REST sous `/api/admin/` qui permet l'accès programmatique aux données pour d'autres clients, notamment l'application Java de reporting (`/java-app/`). Cette API est implémentée dans le dossier `/api/admin/` et nécessite une authentification par token Bearer.
+L'application expose une API REST sous `/api/admin/` qui permet l'accès programmatique aux données pour d'autres clients, notamment l'application Java de reporting (`/java-app/`). Cette API est implémentée dans le dossier `/api/admin/` et nécessite une authentification via un **Firebase ID Token** transmis en tant que **Bearer Token** dans l'en-tête `Authorization`.
 
 Pour plus de détails sur les endpoints disponibles et leur utilisation, consultez `/api/admin/README.md`. 

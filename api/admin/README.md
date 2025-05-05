@@ -16,57 +16,32 @@ api/admin/
 
 ## Authentification
 
-Toutes les requêtes vers les points de terminaison protégés nécessitent une authentification via un Jeton Bearer (Bearer Token). L'API utilise JWT (JSON Web Tokens) pour l'authentification.
+Toutes les requêtes vers les points de terminaison protégés de l'API Admin nécessitent une authentification via un **Firebase ID Token** transmis comme **Jeton Bearer (Bearer Token)**.
 
-### Obtention d'un Token
+### Flux d'Authentification API
 
-**Endpoint:** `POST /api/admin/auth.php`
+1.  **Connexion Client**: L'utilisateur se connecte à l'interface `web-admin` via le formulaire de connexion (`web-admin/login.php`) en utilisant Firebase Authentication (Email/Password). Voir la section "Authentification (Firebase)" dans le `README.md` principal pour les détails du flux client.
+2.  **Obtention du Token Côté Client**: Après une connexion réussie, le SDK Firebase côté client (`assets/js/firebase-init.js`) obtient un Firebase ID Token.
+3.  **Stockage du Token**: Ce token est stocké temporairement par le client (par exemple, dans `sessionStorage`).
+4.  **Requêtes API**: Pour chaque requête vers un endpoint protégé de l'API Admin (ex: `GET /api/admin/users.php`), le client JavaScript doit :
+    *   Récupérer le Firebase ID Token stocké.
+    *   Inclure ce token dans l'en-tête `Authorization` de la requête HTTP :
+        ```
+        Authorization: Bearer <FIREBASE_ID_TOKEN>
+        ```
+5.  **Vérification Côté Serveur**: Pour chaque requête reçue par un endpoint protégé :
+    *   Le script PHP inclut `shared/web-admin/auth_firebase.php`.
+    *   La fonction `requireFirebaseAuthentication()` est appelée.
+    *   Elle extrait le token de l'en-tête `Authorization`.
+    *   Elle utilise `verifyFirebaseToken()` pour valider le token contre les clés publiques de Google (signature, expiration, audience=`FIREBASE_PROJECT_ID`, émetteur).
+    *   Si le token est valide, le script continue et peut utiliser les informations du token (comme l'UID Firebase : `$payload->sub`) pour identifier l'utilisateur.
+    *   Si le token est invalide ou manquant, une réponse `401 Unauthorized` est retournée, et l'exécution s'arrête.
 
-**Corps de la Requête:**
-```json
-{
-  "email": "admin@example.com",
-  "password": "your_password"
-}
-```
+### Points Importants
 
-**Réponse de Succès (200 OK):**
-```json
-{
-  "error": false,
-  "message": "Authentification réussie",
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "user": {
-    "id": 1,
-    "nom": "Admin",
-    "prenom": "Super",
-    "email": "admin@example.com",
-    "role_id": 1
-  }
-}
-```
-
-### Utilisation du Token
-
-Pour les requêtes suivantes, incluez le token dans l'en-tête HTTP:
-
-```
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-```
-
-### Déconnexion
-
-**Endpoint:** `DELETE /api/admin/auth.php`
-
-**En-tête:** Token Bearer requis
-
-**Réponse de Succès (200 OK):**
-```json
-{
-  "error": false,
-  "message": "Déconnexion réussie"
-}
-```
+*   L'API Admin **ne fournit pas** de point de terminaison pour *générer* directement des tokens (comme l'ancien `POST /api/admin/auth.php`). Les tokens sont obtenus exclusivement via le flux d'authentification Firebase côté client.
+*   Il n'y a **pas de point de terminaison de déconnexion** spécifique à l'API (`DELETE /api/admin/auth.php` est obsolète). La déconnexion est gérée côté client en effaçant le token stocké et en appelant `signOut()` du SDK Firebase.
+*   La sécurité repose sur la validation rigoureuse du Firebase ID Token à chaque requête API protégée.
 
 ## Ressources Disponibles
 
