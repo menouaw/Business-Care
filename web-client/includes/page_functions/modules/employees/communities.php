@@ -67,8 +67,8 @@ function setupCommunitiesPage(): array
         $userInterests = getUserInterests($salarie_id);
         $userInterestsLower = array_map('strtolower', $userInterests);
 
-        // DEBUG: Afficher les intérêts récupérés (décommenter pour voir)
-        // echo '<pre>Intérêts Utilisateur: '; var_dump($userInterestsLower); echo '</pre>';
+        
+        
 
         $allCommunities = fetchAll('communautes', '', 'nom ASC');
 

@@ -570,7 +570,7 @@ function markNotificationsAsRead(int $userId): int
 function truncateText(string $text, int $maxLength): string
 {
     if (mb_strlen($text) > $maxLength) {
-        // Utilise mb_substr pour la compatibilité multi-octets
+        
         return mb_substr($text, 0, $maxLength) . '...';
     }
     return $text;
@@ -590,19 +590,19 @@ function getUserInterests(int $userId): array
     $userInterestIds = array_column($userInterestsRaw, 'interet_id');
     if (empty($userInterestIds)) return [];
 
-    // Utilisation de la liaison de paramètres pour plus de sécurité et de clarté
+    
     $placeholders = implode(',', array_fill(0, count($userInterestIds), '?'));
     $sqlInterests = "SELECT nom FROM interets_utilisateurs WHERE id IN ($placeholders)";
 
     try {
-        // Assurez-vous que executeQuery peut gérer correctement les tableaux de paramètres pour IN()
-        // ou ajustez la fonction executeQuery/fetchAll si nécessaire.
-        // La plupart des wrappers PDO le font, mais il est bon de vérifier.
+        
+        
+        
         $stmt = executeQuery($sqlInterests, $userInterestIds);
         $userInterestsData = $stmt->fetchAll(PDO::FETCH_COLUMN);
         return $userInterestsData ?: [];
     } catch (PDOException $e) {
         error_log("Erreur lors de la récupération des intérêts pour l'utilisateur ID $userId: " . $e->getMessage());
-        return []; // Retourne un tableau vide en cas d'erreur
+        return []; 
     }
 }

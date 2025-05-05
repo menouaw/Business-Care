@@ -416,13 +416,13 @@ function generateCalendarHTML(int $year, int $month, array $days_data = []): str
 {
     $monthName = date('F', mktime(0, 0, 0, $month, 1, $year));
     $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $month, $year);
-    $firstDayOfMonth = date('N', mktime(0, 0, 0, $month, 1, $year)); 
+    $firstDayOfMonth = date('N', mktime(0, 0, 0, $month, 1, $year));
 
-    $calendar = '<table class="table table-bordered provider-calendar">';
+    $calendar = '<table class="table table-bordered calendar-table">';
     $calendar .= '<thead><tr><th>Lun</th><th>Mar</th><th>Mer</th><th>Jeu</th><th>Ven</th><th>Sam</th><th>Dim</th></tr></thead>';
     $calendar .= '<tbody><tr>';
 
-    
+
     if ($firstDayOfMonth > 1) {
         $calendar .= str_repeat('<td class="calendar-day-empty"></td>', $firstDayOfMonth - 1);
     }
@@ -432,7 +432,7 @@ function generateCalendarHTML(int $year, int $month, array $days_data = []): str
 
     while ($currentDay <= $daysInMonth) {
         if ($dayOfWeek == 1 && $currentDay > 1) {
-            $calendar .= '</tr><tr>'; 
+            $calendar .= '</tr><tr>';
         }
 
         $cell_class = 'calendar-day';
@@ -442,30 +442,30 @@ function generateCalendarHTML(int $year, int $month, array $days_data = []): str
             $cell_title = ' title="' . htmlspecialchars($days_data[$currentDay]['title'] ?? '') . '"';
         }
 
-        
+
         if ($year == date('Y') && $month == date('n') && $currentDay == date('j')) {
             $cell_class .= ' calendar-day-today';
         }
 
         $calendar .= '<td class="' . $cell_class . '"' . $cell_title . '>';
         $calendar .= '<div class="day-number">' . $currentDay . '</div>';
-        
+
         $calendar .= '</td>';
 
-        
+
         if ($dayOfWeek == 7) {
             $calendar .= '</tr>';
-            $dayOfWeek = 1; 
+            $dayOfWeek = 1;
         } else {
             $dayOfWeek++;
         }
         $currentDay++;
     }
 
-    
+
     if ($dayOfWeek > 1 && $dayOfWeek <= 7) {
         $calendar .= str_repeat('<td class="calendar-day-empty"></td>', 7 - $dayOfWeek + 1);
-        $calendar .= '</tr>'; 
+        $calendar .= '</tr>';
     }
 
     $calendar .= '</tbody></table>';
@@ -482,7 +482,7 @@ function generateCalendarHTML(int $year, int $month, array $days_data = []): str
  */
 function getCalendarDaysData(int $provider_id, int $year, int $month): array
 {
-    $availabilities = getProviderAvailabilities($provider_id); 
+    $availabilities = getProviderAvailabilities($provider_id);
     $days_data = [];
     $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $month, $year);
 
@@ -492,11 +492,11 @@ function getCalendarDaysData(int $provider_id, int $year, int $month): array
     for ($day = 1; $day <= $daysInMonth; $day++) {
         $current_day_ts_start = mktime(0, 0, 0, $month, $day, $year);
         $current_day_ts_end = mktime(23, 59, 59, $month, $day, $year);
-        $dayOfWeek = date('N', $current_day_ts_start); 
-        $dbDayOfWeek = ($dayOfWeek == 7) ? 0 : $dayOfWeek; 
+        $dayOfWeek = date('N', $current_day_ts_start);
+        $dbDayOfWeek = ($dayOfWeek == 7) ? 0 : $dayOfWeek;
 
-        $day_status = []; 
-        $day_titles = []; 
+        $day_status = [];
+        $day_titles = [];
 
         foreach ($availabilities as $av) {
             $applies = false;
@@ -506,23 +506,23 @@ function getCalendarDaysData(int $provider_id, int $year, int $month): array
                         $recurrence_end_ts = $av['recurrence_fin'] ? strtotime($av['recurrence_fin'] . ' 23:59:59') : PHP_INT_MAX;
                         if ($current_day_ts_start <= $recurrence_end_ts) {
                             $applies = true;
-                            $day_titles[] = formatAvailabilityForDisplay($av); 
+                            $day_titles[] = formatAvailabilityForDisplay($av);
                         }
                     }
                     break;
                 case 'specifique':
                 case 'indisponible':
                     $av_start_ts = strtotime($av['date_debut']);
-                    
+
                     $av_end_ts = $av['date_fin'] ? strtotime($av['date_fin']) : $av_start_ts;
-                    
+
                     if (date('H:i:s', $av_end_ts) == '00:00:00') {
                         $av_end_ts = strtotime(date('Y-m-d', $av_end_ts) . ' 23:59:59');
                     }
 
                     if ($current_day_ts_start <= $av_end_ts && $current_day_ts_end >= $av_start_ts) {
                         $applies = true;
-                        $day_titles[] = formatAvailabilityForDisplay($av); 
+                        $day_titles[] = formatAvailabilityForDisplay($av);
                     }
                     break;
             }
@@ -532,7 +532,7 @@ function getCalendarDaysData(int $provider_id, int $year, int $month): array
         }
 
         if (!empty($day_status)) {
-            $class = 'calendar-day-mixed'; 
+            $class = 'calendar-day-mixed';
             if (count($day_status) === 1) {
                 if ($day_status[0] === 'indisponible') {
                     $class = 'calendar-day-unavailable';
@@ -540,12 +540,12 @@ function getCalendarDaysData(int $provider_id, int $year, int $month): array
                     $class = 'calendar-day-available';
                 }
             } elseif (in_array('indisponible', $day_status)) {
-                $class = 'calendar-day-mixed-unavailable'; 
+                $class = 'calendar-day-mixed-unavailable';
             }
 
             $days_data[$day] = [
                 'class' => $class,
-                'title' => implode('\n', $day_titles) 
+                'title' => implode('\n', $day_titles)
             ];
         }
     }

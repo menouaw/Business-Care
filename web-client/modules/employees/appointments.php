@@ -264,7 +264,7 @@ include __DIR__ . '/../../templates/header.php';
                                                             <input type="hidden" name="action" value="cancel">
                                                             <input type="hidden" name="id" value="<?= $rdv['id'] ?>">
                                                             <input type="hidden" name="filter" value="<?= $filter ?>">
-                                                            <!-- Use the single generated token -->
+                                                            
                                                             <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
                                                             <button type="submit" class="btn btn-sm btn-outline-danger" title="Annuler ce rendez-vous">
                                                                 <i class="fas fa-times"></i>

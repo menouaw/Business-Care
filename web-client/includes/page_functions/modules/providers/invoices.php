@@ -111,6 +111,52 @@ function getProviderInvoiceDetails(int $invoice_id, int $provider_id): array|fal
 }
 
 /**
+ * Récupère les détails complets d'une facture prestataire spécifique, y compris les lignes de détail.
+ *
+ * @param int $invoice_id L'ID de la facture prestataire.
+ * @param int $provider_id L'ID du prestataire pour vérification.
+ * @return array|false Les détails de la facture avec un tableau 'lines' contenant les lignes, ou false si non trouvée ou non autorisée.
+ */
+function getProviderInvoiceWithLines(int $invoice_id, int $provider_id): array|false
+{
+    if ($invoice_id <= 0 || $provider_id <= 0) {
+        return false;
+    }
+
+    
+    $invoiceDetails = fetchOne('factures_prestataires', 'id = :invoice_id AND prestataire_id = :provider_id', [
+        ':invoice_id' => $invoice_id,
+        ':provider_id' => $provider_id
+    ]);
+
+    if (!$invoiceDetails) {
+        return false; 
+    }
+
+    
+    
+    $sql_lines = "SELECT 
+                    fpl.id AS line_id, 
+                    fpl.description AS line_description, 
+                    fpl.montant AS line_amount,
+                    rv.date_rdv, 
+                    p.nom AS prestation_nom,
+                    pers.nom AS salarie_nom,
+                    pers.prenom AS salarie_prenom
+                FROM facture_prestataire_lignes fpl
+                LEFT JOIN rendez_vous rv ON fpl.rendez_vous_id = rv.id
+                LEFT JOIN prestations p ON rv.prestation_id = p.id
+                LEFT JOIN personnes pers ON rv.personne_id = pers.id
+                WHERE fpl.facture_prestataire_id = :invoice_id
+                ORDER BY rv.date_rdv ASC, fpl.id ASC";
+
+    $stmt_lines = executeQuery($sql_lines, [':invoice_id' => $invoice_id]);
+    $invoiceDetails['lines'] = $stmt_lines ? $stmt_lines->fetchAll(PDO::FETCH_ASSOC) : [];
+
+    return $invoiceDetails;
+}
+
+/**
  * Génère le PDF d'une facture prestataire et l'envoie au navigateur.
  * Adapté de la fonction pour les factures entreprise.
  *
@@ -219,7 +265,7 @@ function generateProviderInvoicePdf(array $invoiceData): bool
  */
 function handleProviderInvoiceDownloadRequest(int $provider_id)
 {
-    
+
     if (isset($_GET['action']) && $_GET['action'] === 'download' && isset($_GET['id'])) {
         $invoice_id_to_download = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 
@@ -248,4 +294,70 @@ function handleProviderInvoiceDownloadRequest(int $provider_id)
             die('Facture non trouvée ou accès non autorisé.');
         }
     }
+}
+
+/**
+ * Prépare toutes les données nécessaires pour l'affichage de la page des factures prestataire (liste ou détail).
+ *
+ * @param int $provider_id L'ID du prestataire connecté.
+ * @return array Un tableau contenant toutes les variables nécessaires pour la vue :
+ *               'pageTitle' => string,
+ *               'invoice_details' => array|null, (détails si vue détail, sinon null)
+ *               'invoices' => array, (liste si vue liste, sinon vide)
+ *               'total_invoices' => int, (pour la liste)
+ *               'current_page' => int, (pour la liste)
+ *               'total_pages' => int (pour la liste)
+ */
+function setupProviderInvoicePageData(int $provider_id): array
+{
+    $result = [
+        'pageTitle' => 'Mes Factures',
+        'invoice_details' => null,
+        'invoices' => [],
+        'total_invoices' => 0,
+        'current_page' => 1,
+        'total_pages' => 1
+    ];
+
+    if ($provider_id <= 0) {
+        flashMessage("Erreur : Prestataire non identifié.", "danger");
+        return $result;
+    }
+
+    $view_details_id = filter_input(INPUT_GET, 'view_details', FILTER_VALIDATE_INT);
+
+    if ($view_details_id) {
+        
+        $invoice_details = getProviderInvoiceWithLines($view_details_id, $provider_id);
+        if ($invoice_details) {
+            $result['pageTitle'] = "Détails Facture : " . htmlspecialchars($invoice_details['numero_facture'] ?? 'N/A');
+            $result['invoice_details'] = $invoice_details;
+        } else {
+            flashMessage("Facture non trouvée ou accès non autorisé.", "danger");
+            
+            redirectTo(WEBCLIENT_URL . '/modules/providers/invoices.php');
+            exit;
+        }
+    } else {
+        
+        
+        handleProviderInvoiceDownloadRequest($provider_id);
+
+        $result['pageTitle'] = "Mes Factures";
+
+        
+        $items_per_page = 15;
+        $result['current_page'] = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT, ['options' => ['default' => 1, 'min_range' => 1]]);
+        $offset = ($result['current_page'] - 1) * $items_per_page;
+
+        $invoices_data = getProviderInvoices($provider_id, $items_per_page, $offset);
+        $result['invoices'] = $invoices_data['invoices'] ?? [];
+        $result['total_invoices'] = $invoices_data['total'] ?? 0;
+        $result['total_pages'] = ceil($result['total_invoices'] / $items_per_page);
+        if ($result['total_pages'] < 1) {
+            $result['total_pages'] = 1; 
+        }
+    }
+
+    return $result;
 }

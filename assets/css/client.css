@@ -446,3 +446,132 @@ footer a {
     color: #000;
     border: 1px solid #ccc;
 }
+
+.calendar-table {
+    table-layout: fixed; 
+    background-color: #fff;
+    border: 1px solid var(--gray);
+}
+
+.calendar-table th {
+    background-color: #f8f9fa;
+    font-weight: 500;
+    text-align: center;
+    padding: 0.5rem;
+}
+
+.calendar-day {
+    height: 120px; 
+    vertical-align: top;
+    padding: 5px;
+    position: relative;
+    border: 1px solid var(--gray-light);
+}
+
+.calendar-day-empty {
+    background-color: #f8f9fa;
+    border-color: transparent;
+}
+
+.calendar-day-today {
+    background-color: #e9f5ff;
+}
+
+.day-number {
+    font-size: 0.85em;
+    font-weight: bold;
+    margin-bottom: 5px;
+    text-align: right;
+    display: block;
+}
+
+.calendar-nav span {
+    display: inline-block;
+    min-width: 150px;
+    text-align: center;
+}
+
+.calendar-legend {
+    padding-top: 0.5rem;
+}
+.calendar-legend .badge {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    padding: 0;
+    border-radius: 3px;
+    vertical-align: middle;
+    margin-right: 5px;
+    border: 1px solid rgba(0,0,0,0.1);
+    border-left-width: 1px;
+    border-left-color: rgba(0,0,0,0.1);
+}
+.calendar-legend .badge.event-confirmed { background-color: #d4edda; }
+.calendar-legend .badge.event-planned { background-color: #cce5ff; }
+.calendar-legend .badge.event-intervention-booked { background-color: #f8d7da; }
+.calendar-legend .badge.event-intervention-free { background-color: #fff3cd; }
+.calendar-legend .badge.calendar-day-available { background-color: #e6ffed; }
+.calendar-legend .badge.calendar-day-unavailable { background-color: #ffe6e6; }
+.calendar-legend .badge.calendar-day-mixed { background-color: #fff3cd; }
+.calendar-legend .badge.calendar-day-mixed-unavailable { background-color: #ffd1d1; }
+
+
+.day-events {
+    font-size: 0.8em;
+    line-height: 1.3;
+    overflow-y: auto;   
+    max-height: 80px; 
+}
+
+.calendar-event {
+    padding: 2px 4px;
+    margin-bottom: 3px;
+    border-radius: 3px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;     
+    cursor: default; 
+}
+
+.calendar-event.event-confirmed {
+    background-color: #d4edda; 
+    border-left: 3px solid #28a745;
+    color: #155724;
+}
+.calendar-event.event-planned {
+    background-color: #cce5ff; 
+    border-left: 3px solid #007bff;
+    color: #004085;
+}
+.calendar-event.event-intervention-booked {
+    background-color: #f8d7da; 
+    border-left: 3px solid #dc3545;
+    color: #721c24;
+}
+.calendar-event.event-intervention-free {
+    background-color: #fff3cd; 
+    border-left: 3px solid #ffc107;
+    color: #856404;
+}
+
+.event-time {
+    font-weight: 600;
+    margin-right: 4px;
+}
+
+.calendar-day.calendar-day-available {
+    background-color: #e6ffed;
+}
+.calendar-day.calendar-day-unavailable {
+    background-color: #ffe6e6;
+}
+.calendar-day.calendar-day-mixed {
+    background-color: #fff3cd; 
+}
+.calendar-day.calendar-day-mixed-unavailable {
+    background-color: #ffd1d1; 
+}
+
+
+

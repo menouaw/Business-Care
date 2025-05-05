@@ -35,7 +35,7 @@ include __DIR__ . '/../../templates/header.php';
                     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4">
                         <?php foreach ($preferredCommunities as $community): ?>
                             <div class="col">
-                                <?php renderCommunityCard($community, $userMemberCommunityIds, $csrf_token, 'primary'); // Use primary color for preferred 
+                                <?php renderCommunityCard($community, $userMemberCommunityIds, $csrf_token, 'primary'); 
                                 ?>
                             </div>
                         <?php endforeach; ?>
@@ -51,14 +51,14 @@ include __DIR__ . '/../../templates/header.php';
                     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4">
                         <?php foreach ($otherCommunities as $community): ?>
                             <div class="col">
-                                <?php renderCommunityCard($community, $userMemberCommunityIds, $csrf_token, 'secondary'); // Use secondary color 
+                                <?php renderCommunityCard($community, $userMemberCommunityIds, $csrf_token, 'secondary'); 
                                 ?>
                             </div>
                         <?php endforeach; ?>
                     </div>
                 <?php endif; ?>
 
-                <!-- Pagination enlevée pour l'instant -->
+                
 
             <?php elseif ($viewMode === 'detail' && isset($community)): ?>
                 <div class="card shadow mb-4">
@@ -141,7 +141,7 @@ include __DIR__ . '/../../templates/header.php';
                                                         ?>
                                                             <form action="<?= WEBCLIENT_URL ?>/modules/employees/communities.php" method="POST" class="d-inline" style="margin-left: 5px;" onsubmit="return confirm('Voulez-vous vraiment supprimer ce message ?');">
                                                                 <input type="hidden" name="action" value="delete_message">
-                                                                <input type="hidden" name="id" value="<?= $community['id'] ?? 0 ?>"> <!-- Include community_id for potential redirect -->
+                                                                <input type="hidden" name="id" value="<?= $community['id'] ?? 0 ?>"> 
                                                                 <input type="hidden" name="message_id" value="<?= $message['id'] ?>">
                                                                 <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
                                                                 <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-1" title="Supprimer le message">

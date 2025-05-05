@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../../../../includes/init.php'; // Inclut config, db, functions, auth
+require_once __DIR__ . '/../../../../includes/init.php'; 
 
 /**
  * Récupère les statistiques pour le tableau de bord du prestataire.
@@ -20,23 +20,23 @@ function getProviderDashboardStats(int $provider_id): array
     }
 
     try {
-        // 1. Statut du profil
+        
         $providerInfo = fetchOne(TABLE_USERS, 'id = :id', [':id' => $provider_id], 'statut');
         if ($providerInfo) {
             $stats['profile_status'] = $providerInfo['statut'];
         }
 
-        // 2. Nombre de RDV à venir confirmés
-        // (On considère "à venir" comme aujourd'hui ou plus tard)
+        
+        
         $sql_appointments = "SELECT COUNT(*) 
                              FROM rendez_vous 
                              WHERE praticien_id = :provider_id 
                              AND date_rdv >= CURDATE()
-                             AND statut = 'confirme'"; // Ou 'planifie' si vous les incluez aussi
+                             AND statut IN ('confirme', 'planifie')"; 
         $stmt_appointments = executeQuery($sql_appointments, [':provider_id' => $provider_id]);
         $stats['upcoming_appointments'] = (int)$stmt_appointments->fetchColumn();
 
-        // 3. Nombre d'habilitations en attente de validation
+        
         $sql_habilitations = "SELECT COUNT(*) 
                               FROM habilitations 
                               WHERE prestataire_id = :provider_id 
@@ -45,7 +45,7 @@ function getProviderDashboardStats(int $provider_id): array
         $stats['pending_habilitations'] = (int)$stmt_habilitations->fetchColumn();
     } catch (PDOException $e) {
         error_log("Erreur PDO dans getProviderDashboardStats pour prestataire ID {$provider_id}: " . $e->getMessage());
-        // Retourner les stats par défaut en cas d'erreur
+        
     }
 
     return $stats;

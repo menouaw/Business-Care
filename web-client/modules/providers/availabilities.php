@@ -228,9 +228,9 @@ include __DIR__ . '/../../templates/header.php';
                     </div>
                     <div class="card-body p-2">
                         <?= $calendar_html ?>
-                        <div class="mt-2 small text-muted">
-                            <span class="badge calendar-day-available me-1">&nbsp;</span> Disponible
-                            <span class="badge calendar-day-unavailable me-1">&nbsp;</span> Indisponible
+                        <div class="mt-2 small text-muted calendar-legend">
+                            <span class="badge calendar-day calendar-day-available me-1">&nbsp;</span> Disponible
+                            <span class="badge calendar-day calendar-day-unavailable me-1">&nbsp;</span> Indisponible
                         </div>
                     </div>
                 </div>

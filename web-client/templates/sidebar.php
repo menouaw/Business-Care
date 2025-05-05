@@ -128,7 +128,7 @@
 
 
         elseif ($userRoleId === ROLE_PRESTATAIRE):
-            // Définir l'URL de base pour les modules prestataire
+            
             $providerModuleUrl = defined('WEBCLIENT_URL') ? WEBCLIENT_URL . '/modules/providers' : '/modules/providers';
         ?>
             <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-uppercase fw-semibold">
