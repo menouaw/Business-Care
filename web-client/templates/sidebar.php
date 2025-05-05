@@ -141,14 +141,12 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= isActivePage($providerModuleUrl . '/appointments.php') ? 'active' : '' ?>" href="<?= $providerModuleUrl ?>/appointments.php"> <?php // TODO: Créer la page appointments.php 
-                                                                                                                                                                            ?>
+                    <a class="nav-link <?= isActivePage($providerModuleUrl . '/appointments.php') ? 'active' : '' ?>" href="<?= $providerModuleUrl ?>/appointments.php">
                         <i class="fas fa-calendar-check fa-fw me-2"></i> Mes Rendez-vous
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= isActivePage($providerModuleUrl . '/availabilities.php') ? 'active' : '' ?>" href="<?= $providerModuleUrl ?>/availabilities.php"> <?php // TODO: Créer la page availabilities.php 
-                                                                                                                                                                                ?>
+                    <a class="nav-link <?= isActivePage($providerModuleUrl . '/availabilities.php') ? 'active' : '' ?>" href="<?= $providerModuleUrl ?>/availabilities.php">
                         <i class="fas fa-calendar-alt fa-fw me-2"></i> Mes Disponibilités
                     </a>
                 </li>
@@ -158,15 +156,23 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= isActivePage($providerModuleUrl . '/evaluations.php') ? 'active' : '' ?>" href="<?= $providerModuleUrl ?>/evaluations.php"> <?php // TODO: Créer la page evaluations.php 
-                                                                                                                                                                        ?>
+                    <a class="nav-link <?= isActivePage($providerModuleUrl . '/evaluations.php') ? 'active' : '' ?>" href="<?= $providerModuleUrl ?>/evaluations.php">
                         <i class="fas fa-star-half-alt fa-fw me-2"></i> Mes Évaluations
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= isActivePage($providerModuleUrl . '/invoices.php') ? 'active' : '' ?>" href="<?= $providerModuleUrl ?>/invoices.php"> <?php // TODO: Créer la page invoices.php 
-                                                                                                                                                                    ?>
+                    <a class="nav-link <?= isActivePage($providerModuleUrl . '/invoices.php') ? 'active' : '' ?>" href="<?= $providerModuleUrl ?>/invoices.php">
                         <i class="fas fa-file-invoice-dollar fa-fw me-2"></i> Mes Factures BC
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <?= isActivePage($providerModuleUrl . '/interventions.php') ? 'active' : '' ?>" href="<?= $providerModuleUrl ?>/interventions.php">
+                        <i class="fas fa-tasks fa-fw me-2"></i> Mes Interventions
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <?= isActivePage($providerModuleUrl . '/services.php') ? 'active' : '' ?>" href="<?= $providerModuleUrl ?>/services.php">
+                        <i class="fas fa-concierge-bell fa-fw me-2"></i> Mes Services
                     </a>
                 </li>
             </ul>

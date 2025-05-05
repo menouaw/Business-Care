@@ -45,7 +45,23 @@ $userNotifications = [];
 <body>
     <nav class="navbar navbar-expand-lg <?= isset($transparentNav) && $transparentNav ? 'navbar-dark' : 'navbar-light bg-white' ?> fixed-top">
         <div class="container">
-            <a class="navbar-brand" href="<?= WEBCLIENT_URL ?>">
+            <?php
+            $dashboard_url = WEBCLIENT_URL;
+            if (isset($_SESSION['user_role'])) {
+                switch ($_SESSION['user_role']) {
+                    case ROLE_ENTREPRISE:
+                        $dashboard_url = WEBCLIENT_URL . '/modules/companies/dashboard.php';
+                        break;
+                    case ROLE_SALARIE:
+                        $dashboard_url = WEBCLIENT_URL . '/modules/employees/dashboard.php';
+                        break;
+                    case ROLE_PRESTATAIRE:
+                        $dashboard_url = WEBCLIENT_URL . '/modules/providers/dashboard.php';
+                        break;
+                }
+            }
+            ?>
+            <a class="navbar-brand" href="<?= htmlspecialchars($dashboard_url) ?>">
                 <img src="<?= ASSETS_URL ?>/images/logo/<?= isset($transparentNav) && $transparentNav ? 'noBgWhite' : 'noBgBlack' ?>.png"
                     alt="Business Care" height="40">
             </a>

@@ -108,8 +108,15 @@ function getAppointmentStatusBadgeClass(?string $status): string
  */
 function formatAppointmentStatus(?string $status): string
 {
-    if ($status === null) return 'Inconnu';
-    return ucfirst(str_replace('_', ' ', $status));
+    
+    return match (strtolower($status ?? '')) {
+        'confirme' => 'Confirmé',
+        'planifie' => 'Planifié',
+        'termine' => 'Terminé',
+        'annule' => 'Annulé',
+        
+        default => 'Inconnu' 
+    };
 }
 
 /**

@@ -51,6 +51,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
 }
 
 include __DIR__ . '/../../templates/header.php';
+
+
+$dashboard_url = WEBCLIENT_URL; 
+if (isset($_SESSION['user_role'])) {
+    switch ($_SESSION['user_role']) {
+        case ROLE_ENTREPRISE:
+            $dashboard_url = WEBCLIENT_URL . '/modules/companies/dashboard.php';
+            break;
+        case ROLE_SALARIE:
+            $dashboard_url = WEBCLIENT_URL . '/modules/employees/dashboard.php';
+            break;
+        case ROLE_PRESTATAIRE:
+            $dashboard_url = WEBCLIENT_URL . '/modules/providers/dashboard.php';
+            break;
+    }
+}
+
 ?>
 
 <div class="container-fluid">
@@ -60,7 +77,7 @@ include __DIR__ . '/../../templates/header.php';
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 pt-3">
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
                 <h1 class="h2"><?= htmlspecialchars($pageTitle) ?></h1>
-                <a href="<?= WEBCLIENT_URL ?>/modules/companies/dashboard.php" class="btn btn-sm btn-outline-secondary">
+                <a href="<?= htmlspecialchars($dashboard_url) ?>" class="btn btn-sm btn-outline-secondary">
                     <i class="fas fa-arrow-left me-1"></i> Retour au Tableau de Bord
                 </a>
             </div>
