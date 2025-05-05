@@ -37,7 +37,7 @@ include __DIR__ . '/../../templates/header.php';
                     <a href="<?= WEBCLIENT_URL ?>/modules/providers/dashboard.php" class="btn btn-sm btn-outline-secondary me-2">
                         <i class="fas fa-arrow-left me-1"></i> Retour Tableau de Bord
                     </a>
-                    <!-- Potentiellement ajouter un bouton pour exporter ou autre action future -->
+                    
                 </div>
             </div>
 
@@ -87,7 +87,7 @@ include __DIR__ . '/../../templates/header.php';
                                                     title="Télécharger la facture <?= htmlspecialchars($invoice['numero_facture'] ?? '') ?>">
                                                     <i class="fas fa-download"></i>
                                                 </a>
-                                                <!-- Autres actions éventuelles -->
+                                                
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -95,7 +95,7 @@ include __DIR__ . '/../../templates/header.php';
                             </table>
                         </div>
 
-                        <!-- Pagination -->
+                        
                         <?php if ($total_pages > 1): ?>
                             <nav aria-label="Page navigation factures prestataires" class="mt-4">
                                 <ul class="pagination justify-content-center">
@@ -113,7 +113,7 @@ include __DIR__ . '/../../templates/header.php';
                                 </ul>
                             </nav>
                         <?php endif; ?>
-                        <!-- Fin Pagination -->
+                        
 
                     <?php endif; ?>
                 </div>

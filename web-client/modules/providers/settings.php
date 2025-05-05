@@ -32,7 +32,7 @@ include __DIR__ . '/../../templates/header.php';
 
                 <div class="col-lg-8">
 
-                    <!-- Informations du Profil -->
+                    
                     <div class="card shadow-sm mb-4">
                         <div class="card-header">
                             <h5 class="mb-0">Informations du Profil Prestataire</h5>
@@ -79,7 +79,7 @@ include __DIR__ . '/../../templates/header.php';
                         </div>
                     </div>
 
-                    <!-- Modifier le mot de passe -->
+                    
                     <div class="card shadow-sm mb-4">
                         <div class="card-header">
                             <h5 class="mb-0">Modifier le mot de passe</h5>
@@ -108,7 +108,7 @@ include __DIR__ . '/../../templates/header.php';
                         </div>
                     </div>
 
-                    <!-- Préférences Utilisateur -->
+                    
                     <div class="card shadow-sm mb-4">
                         <div class="card-header">
                             <h5 class="mb-0">Préférences Générales</h5>
@@ -148,7 +148,7 @@ include __DIR__ . '/../../templates/header.php';
 
                 </div>
 
-                <!-- Colonne Droite: Photo de Profil -->
+                
                 <div class="col-lg-4">
                     <div class="card shadow-sm mb-4">
                         <div class="card-header">

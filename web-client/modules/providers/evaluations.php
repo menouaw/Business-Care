@@ -80,7 +80,7 @@ include __DIR__ . '/../../templates/header.php';
                             <?php endforeach; ?>
                         </div>
 
-                        <!-- Pagination -->
+                        
                         <?php if ($total_pages > 1): ?>
                             <nav aria-label="Page navigation évaluations" class="mt-4">
                                 <ul class="pagination justify-content-center">
@@ -98,7 +98,7 @@ include __DIR__ . '/../../templates/header.php';
                                 </ul>
                             </nav>
                         <?php endif; ?>
-                        <!-- Fin Pagination -->
+                        
 
                     <?php endif; ?>
                 </div>

@@ -29,7 +29,7 @@ include __DIR__ . '/../../templates/header.php';
 
             <?php echo displayFlashMessages(); ?>
 
-            <!-- Onglets/Boutons de filtre -->
+            
             <ul class="nav nav-pills mb-3">
                 <li class="nav-item">
                     <a class="nav-link <?= ($filter_status === 'upcoming') ? 'active' : '' ?>" href="?filter=upcoming">À venir</a>
@@ -106,7 +106,7 @@ include __DIR__ . '/../../templates/header.php';
                             </table>
                         </div>
 
-                        <!-- Pagination -->
+                        
                         <?php if ($total_pages > 1): ?>
                             <nav aria-label="Page navigation rendez-vous prestataires" class="mt-4">
                                 <ul class="pagination justify-content-center">
@@ -124,7 +124,7 @@ include __DIR__ . '/../../templates/header.php';
                                 </ul>
                             </nav>
                         <?php endif; ?>
-                        <!-- Fin Pagination -->
+                        
 
                     <?php endif; ?>
                 </div>

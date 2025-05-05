@@ -130,7 +130,7 @@ include __DIR__ . '/../../templates/header.php';
                 </div>
             </div>
 
-            <!-- Modal Ajout Habilitation -->
+            
             <div class="modal fade" id="addHabilitationModal" tabindex="-1" aria-labelledby="addHabilitationModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content">
@@ -190,7 +190,7 @@ include __DIR__ . '/../../templates/header.php';
                     </div>
                 </div>
             </div>
-            <!-- Fin Modal -->
+            
 
         </main>
     </div>
