@@ -1,28 +1,25 @@
 :root {
-    /* === Palette Bleu Pâle & Gris === */
-    --bc-accent: #a8dadc;      
-    --bc-accent-light: #f1faee; 
-    --bc-accent-dark: #457b9d;  
+    --bc-accent: #DAC0A3;      
+    --bc-accent-light: #EADBC8; 
+    --bc-accent-dark: #102C57;  
 
-    --bc-text-primary: #343a40;   
-    --bc-text-secondary: #6c757d; 
+    --bc-text-primary: #343a40;  
+    --bc-text-secondary: #102C57; 
 
-    --bc-bg-main: #f7f5f0;      
-    --bc-bg-alt: #f8f9fa;     
+    --bc-bg-main: #FFFBF5;      
+    --bc-bg-alt: #EADBC8;       
 
-    --bc-border-color: #dee2e6;
+    --bc-border-color: #dee2e6; 
 
     --bc-success: #28a745;
     --bc-info: #17a2b8;
     --bc-warning: #ffc107;
     --bc-danger: #dc3545;
 
-    /* typographie*/
     --bc-font-main: 'Markazi Text', serif;
     --bc-font-headings: 'DM Serif Text', serif;
     --bc-base-font-size: 17px;
     --bc-line-height: 1.7;
-
     --bc-border-radius: 0.25rem;
     --bc-transition-speed: 0.2s;
     --bc-box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
@@ -502,6 +499,86 @@ footer ul li a:hover {
     color: var(--bc-accent-dark);
     background-color: transparent;
     font-weight: 600;
+}
+
+main .table {
+    background-color: var(--bc-bg-main); 
+    color: var(--bc-text-primary); 
+    border-color: var(--bc-border-color); 
+}
+
+main .table th,
+main .table td {
+    border-color: var(--bc-border-color); 
+    color: inherit; 
+}
+
+main .table thead th {
+    color: var(--bc-text-secondary); 
+    background-color: var(--bc-bg-alt); 
+    border-bottom-width: 2px; 
+}
+
+main .table-striped > tbody > tr:nth-of-type(odd) > * {
+    background-color: rgba(0, 0, 0, 0.02); 
+    color: var(--bc-text-primary);
+}
+main .table-striped > tbody > tr:nth-of-type(even) > * {
+    background-color: transparent; 
+    color: var(--bc-text-primary);
+}
+
+main .table-hover > tbody > tr:hover > * {
+    background-color: rgba(0, 0, 0, 0.04);
+    color: var(--bc-text-primary);
+}
+*/
+
+body.page-auth {
+    background-color: var(--bc-text-secondary); 
+    color: #f8f9fa; 
+}
+
+.page-auth h1,
+.page-auth h2,
+.page-auth h3,
+.page-auth h4,
+.page-auth h5,
+.page-auth h6 {
+    color: #ffffff; 
+}
+
+.page-auth .card {
+    background-color: var(--bc-bg-alt);
+    color: var(--bc-text-primary);
+    border: 1px solid var(--bc-border-color); 
+}
+
+.page-auth .card h1,
+.page-auth .card h2,
+.page-auth .card h3,
+.page-auth .card h4,
+.page-auth .card h5,
+.page-auth .card h6 {
+     color: var(--bc-text-primary); 
+}
+
+
+.page-auth > main > a,
+.page-auth .outside-card-link { 
+    color: var(--bc-accent-light); 
+}
+.page-auth > main > a:hover,
+.page-auth .outside-card-link:hover {
+    color: #ffffff; 
+}
+
+
+.page-auth .card a {
+     color: var(--bc-accent); 
+}
+.page-auth .card a:hover {
+    color: var(--bc-accent-dark); 
 }
 
 
