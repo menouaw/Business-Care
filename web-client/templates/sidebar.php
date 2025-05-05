@@ -175,27 +175,13 @@
             </h6>
             <ul class="nav flex-column mb-3">
                 <li class="nav-item">
-                    <a class="nav-link <?= isActivePage($providerModuleUrl . '/settings.php') ? 'active' : '' ?>" href="<?= $providerModuleUrl ?>/settings.php"> <?php // TODO: Créer la page settings.php 
-                                                                                                                                                                    ?>
+                    <a class="nav-link <?= isActivePage($providerModuleUrl . '/settings.php') ? 'active' : '' ?>" href="<?= $providerModuleUrl ?>/settings.php">
                         <i class="fas fa-cog fa-fw me-2"></i> Paramètres
                     </a>
                 </li>
+
                 <li class="nav-item">
-                    <a class="nav-link <?= isActivePage($providerModuleUrl . '/notifications.php') ? 'active' : '' ?>" href="<?= $providerModuleUrl ?>/notifications.php"> <?php // TODO: Créer la page notifications.php 
-                                                                                                                                                                            ?>
-                        <i class="fas fa-bell fa-fw me-2"></i> Notifications
-                        <?php
-                        // Optionnel: Afficher un badge pour les notifications non lues
-                        // $unreadCount = getUnreadNotificationCount($_SESSION['user_id'] ?? 0);
-                        // if ($unreadCount > 0) {
-                        //     echo '<span class="badge bg-danger rounded-pill ms-1">' . $unreadCount . '</span>';
-                        // }
-                        ?>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link <?= isActivePage($providerModuleUrl . '/contact.php') ? 'active' : '' ?>" href="<?= $providerModuleUrl ?>/contact.php"> <?php // TODO: Créer la page contact.php 
-                                                                                                                                                                ?>
+                    <a class="nav-link <?= isActivePage('/modules/companies/contact.php') ? 'active' : '' ?>" href="<?= WEBCLIENT_URL ?>/modules/companies/contact.php">
                         <i class="fas fa-headset fa-fw me-2"></i> Support BC
                     </a>
                 </li>
