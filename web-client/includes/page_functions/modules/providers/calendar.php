@@ -20,9 +20,9 @@ function getProviderCalendarEventsForMonth(int $provider_id, int $year, int $mon
         return $events_by_day;
     }
 
-    
+
     $start_date_str = sprintf("%d-%02d-01 00:00:00", $year, $month);
-    
+
     $days_in_month = cal_days_in_month(CAL_GREGORIAN, $month, $year);
     $end_date_str = sprintf("%d-%02d-%02d 23:59:59", $year, $month, $days_in_month);
 
@@ -37,7 +37,7 @@ function getProviderCalendarEventsForMonth(int $provider_id, int $year, int $mon
         ':end_date' => $end_date_str
     ];
 
-    
+
     $sql_rdv = "SELECT 
                     rv.id, 
                     rv.date_rdv, 
@@ -87,7 +87,7 @@ function getProviderCalendarEventsForMonth(int $provider_id, int $year, int $mon
         }
     }
 
-    
+
     $sql_creneaux = "SELECT 
                         cc.id, 
                         cc.start_time, 
@@ -132,13 +132,13 @@ function getProviderCalendarEventsForMonth(int $provider_id, int $year, int $mon
         }
     }
 
-    
+
     foreach ($events_by_day as $day => &$day_events) {
         usort($day_events, function ($a, $b) {
             return strcmp($a['start_time'], $b['start_time']);
         });
     }
-    unset($day_events); 
+    unset($day_events);
 
     return $events_by_day;
 }
@@ -154,9 +154,9 @@ function getProviderCalendarEventsForMonth(int $provider_id, int $year, int $mon
 function generateEventCalendarHTML(int $year, int $month, array $events_by_day): string
 {
     $days_in_month = cal_days_in_month(CAL_GREGORIAN, $month, $year);
-    
+
     $first_day_of_month_weekday = date('w', mktime(0, 0, 0, $month, 1, $year));
-    
+
     $first_day_of_month_weekday = ($first_day_of_month_weekday == 0) ? 6 : $first_day_of_month_weekday - 1;
 
     $calendar_html = '<table class="table table-bordered calendar-table">';
@@ -167,44 +167,44 @@ function generateEventCalendarHTML(int $year, int $month, array $events_by_day):
     }
     $calendar_html .= '</tr></thead><tbody><tr>';
 
-    
+
     $calendar_html .= str_repeat('<td class="calendar-day-empty"></td>', $first_day_of_month_weekday);
 
     $current_day = 1;
     $current_weekday = $first_day_of_month_weekday;
 
     while ($current_day <= $days_in_month) {
-        
+
         $today_class = (date('Y-m-d') == sprintf("%d-%02d-%02d", $year, $month, $current_day)) ? ' calendar-day-today' : '';
 
         $calendar_html .= '<td class="calendar-day' . $today_class . '">';
         $calendar_html .= '<div class="day-number">' . $current_day . '</div>';
         $calendar_html .= '<div class="day-events">';
 
-        
+
         if (isset($events_by_day[$current_day])) {
             foreach ($events_by_day[$current_day] as $event) {
                 $calendar_html .= '<div class="calendar-event ' . htmlspecialchars($event['class'] ?? '') . '" title="' . htmlspecialchars($event['title']) . '">';
-                $calendar_html .= '<span class="event-time">' . htmlspecialchars($event['start_time']) . ':</span> '; 
-                $calendar_html .= htmlspecialchars($event['title']); 
-                
+                $calendar_html .= '<span class="event-time">' . htmlspecialchars($event['start_time']) . ':</span> ';
+                $calendar_html .= htmlspecialchars($event['title']);
+
                 $calendar_html .= '</div>';
             }
         }
 
         $calendar_html .= '</div></td>';
 
-        
+
         if ($current_weekday == 6) {
             $calendar_html .= '</tr><tr>';
-            $current_weekday = -1; 
+            $current_weekday = -1;
         }
 
         $current_day++;
         $current_weekday++;
     }
 
-    
+
     if ($current_weekday != 0) {
         $calendar_html .= str_repeat('<td class="calendar-day-empty"></td>', 7 - $current_weekday);
     }
