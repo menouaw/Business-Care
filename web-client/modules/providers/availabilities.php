@@ -50,6 +50,34 @@ if (!$is_editing) {
     $availabilities = getProviderAvailabilities($provider_id);
 }
 
+
+$current_year = date('Y');
+$current_month = date('n');
+
+if (!$is_editing) {
+
+    $year = filter_input(INPUT_GET, 'year', FILTER_VALIDATE_INT, [
+        'options' => ['default' => $current_year, 'min_range' => 2000, 'max_range' => 2100]
+    ]);
+    $month = filter_input(INPUT_GET, 'month', FILTER_VALIDATE_INT, [
+        'options' => ['default' => $current_month, 'min_range' => 1, 'max_range' => 12]
+    ]);
+
+
+    $prev_month_ts = mktime(0, 0, 0, $month - 1, 1, $year);
+    $next_month_ts = mktime(0, 0, 0, $month + 1, 1, $year);
+    $prev_year = date('Y', $prev_month_ts);
+    $prev_month = date('n', $prev_month_ts);
+    $next_year = date('Y', $next_month_ts);
+    $next_month = date('n', $next_month_ts);
+    $month_name = date('F Y', mktime(0, 0, 0, $month, 1, $year));
+
+
+    $calendar_days_data = getCalendarDaysData($provider_id, $year, $month);
+
+    $calendar_html = generateCalendarHTML($year, $month, $calendar_days_data);
+}
+
 include __DIR__ . '/../../templates/header.php';
 ?>
 
@@ -79,7 +107,7 @@ include __DIR__ . '/../../templates/header.php';
             <?php echo displayFlashMessages(); ?>
 
             <?php if ($is_editing && $availability_to_edit): ?>
-                
+
                 <div class="card mb-4">
                     <div class="card-header">
                         Modifier l'entrée de disponibilité
@@ -176,10 +204,41 @@ include __DIR__ . '/../../templates/header.php';
                 </div>
 
             <?php else: ?>
-                
+
+
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>Vue Calendrier</span>
+                        <div class="calendar-nav">
+                            <a href="?month=<?= $prev_month ?>&year=<?= $prev_year ?>" class="btn btn-sm btn-outline-secondary">&lt; Précédent</a>
+                            <span class="mx-2"><strong><?php
+
+                                                        $formatter = new IntlDateFormatter(
+                                                            'fr_FR',
+                                                            IntlDateFormatter::FULL,
+                                                            IntlDateFormatter::NONE,
+                                                            null,
+                                                            IntlDateFormatter::GREGORIAN,
+                                                            'MMMM yyyy'
+                                                        );
+                                                        echo htmlentities(ucfirst($formatter->format(mktime(0, 0, 0, $month, 1, $year))));
+                                                        ?></strong></span>
+                            <a href="?month=<?= $next_month ?>&year=<?= $next_year ?>" class="btn btn-sm btn-outline-secondary">Suivant &gt;</a>
+                        </div>
+                    </div>
+                    <div class="card-body p-2">
+                        <?= $calendar_html ?>
+                        <div class="mt-2 small text-muted">
+                            <span class="badge calendar-day-available me-1">&nbsp;</span> Disponible
+                            <span class="badge calendar-day-unavailable me-1">&nbsp;</span> Indisponible
+                        </div>
+                    </div>
+                </div>
+
+
                 <div class="card mb-4">
                     <div class="card-header">
-                        Vos créneaux de disponibilité et périodes d'indisponibilité enregistrés
+                        Vos créneaux de disponibilité et périodes d'indisponibilité enregistrés (Liste détaillée)
                     </div>
                     <div class="card-body">
                         <?php if (empty($availabilities)): ?>
@@ -214,7 +273,7 @@ include __DIR__ . '/../../templates/header.php';
                     </div>
                 </div>
 
-                
+
                 <div class="modal fade" id="addAvailabilityModal" tabindex="-1" aria-labelledby="addAvailabilityModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-lg">
                         <div class="modal-content">
@@ -240,7 +299,7 @@ include __DIR__ . '/../../templates/header.php';
 
                                     <hr>
                                     <h6 class="text-muted">Champs pour Disponibilité Récurrente</h6>
-                                    
+
                                     <div id="recurrenteFields" class="mb-3 p-3 border rounded bg-light">
                                         <div class="mb-3">
                                             <label for="jour_semaine" class="form-label">Jour de la semaine <span class="text-info">(requis si récurrent)</span></label>
@@ -274,7 +333,7 @@ include __DIR__ . '/../../templates/header.php';
 
                                     <hr>
                                     <h6 class="text-muted">Champs pour Disponibilité Spécifique ou Indisponibilité</h6>
-                                    
+
                                     <div id="specifiqueFields" class="mb-3 p-3 border rounded bg-light">
                                         <div class="row">
                                             <div class="col-md-6 mb-3">

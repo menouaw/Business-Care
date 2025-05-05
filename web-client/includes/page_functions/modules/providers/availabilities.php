@@ -14,9 +14,9 @@ function getProviderAvailabilities(int $provider_id): array
         return [];
     }
 
-    $tableName = 'prestataires_disponibilites'; 
+    $tableName = 'prestataires_disponibilites';
 
-    
+
     $orderBy = "FIELD(type, 'recurrente', 'specifique', 'indisponible'), jour_semaine ASC, date_debut ASC, heure_debut ASC";
 
     return fetchAll(
@@ -63,7 +63,7 @@ function formatAvailabilityForDisplay(array $availability): string
             $startDate = $availability['date_debut'] ? date('d/m/Y', strtotime($availability['date_debut'])) : '';
             $startTime = $availability['heure_debut'] ? ' ' . date('H:i', strtotime($availability['heure_debut'])) : '';
             $endDate = $availability['date_fin'] ? date('d/m/Y', strtotime($availability['date_fin'])) : $startDate;
-            $endTime = $availability['heure_fin'] ? ' ' . date('H:i', strtotime($availability['heure_fin'])) : ''; 
+            $endTime = $availability['heure_fin'] ? ' ' . date('H:i', strtotime($availability['heure_fin'])) : '';
             $dateRange = ($startDate === $endDate) ? "Le <strong>{$startDate}</strong>" : "Du <strong>{$startDate}</strong> au <strong>{$endDate}</strong>";
             $timeInfo = ($startTime && $endTime && $startTime !== $endTime) ? " de {$startTime} à {$endTime}" : ($startTime ? " à partir de {$startTime}" : "");
             $output = "Indisponible: {$dateRange}{$timeInfo}";
@@ -101,7 +101,7 @@ function addProviderAvailability(int $provider_id, array $data): bool
         'notes' => !empty($data['notes']) ? trim($data['notes']) : null
     ];
 
-    
+
     try {
         switch ($data['type']) {
             case 'recurrente':
@@ -112,7 +112,7 @@ function addProviderAvailability(int $provider_id, array $data): bool
                 $dataToInsert['heure_debut'] = date('H:i:s', strtotime($data['heure_debut']));
                 $dataToInsert['heure_fin'] = date('H:i:s', strtotime($data['heure_fin']));
                 $dataToInsert['recurrence_fin'] = !empty($data['recurrence_fin']) ? date('Y-m-d', strtotime($data['recurrence_fin'])) : null;
-                
+
                 $dataToInsert['date_debut'] = null;
                 $dataToInsert['date_fin'] = null;
                 if ($dataToInsert['heure_fin'] <= $dataToInsert['heure_debut']) {
@@ -125,7 +125,7 @@ function addProviderAvailability(int $provider_id, array $data): bool
                 if (empty($data['date_debut'])) {
                     throw new Exception("La date de début est requise pour ce type.");
                 }
-                
+
                 $heure_debut_spec = $data['heure_debut_specifique'] ?? null;
                 $heure_fin_spec = $data['heure_fin_specifique'] ?? null;
 
@@ -138,8 +138,8 @@ function addProviderAvailability(int $provider_id, array $data): bool
                     }
                     $dataToInsert['heure_fin'] = !empty($heure_fin_spec) ? date('H:i:s', strtotime($heure_fin_spec)) : null;
                 } else {
-                    
-                    
+
+
                     $dataToInsert['date_fin'] = $dataToInsert['date_debut'];
                     if (!empty($heure_debut_spec) && !empty($heure_fin_spec)) {
                         $h_debut = date('H:i:s', strtotime($heure_debut_spec));
@@ -149,11 +149,11 @@ function addProviderAvailability(int $provider_id, array $data): bool
                         }
                         $dataToInsert['heure_fin'] = $h_fin;
                     } else {
-                        $dataToInsert['heure_fin'] = null; 
+                        $dataToInsert['heure_fin'] = null;
                     }
                 }
                 $dataToInsert['heure_debut'] = !empty($heure_debut_spec) ? date('H:i:s', strtotime($heure_debut_spec)) : null;
-                
+
                 $dataToInsert['jour_semaine'] = null;
                 $dataToInsert['recurrence_fin'] = null;
                 break;
@@ -166,7 +166,7 @@ function addProviderAvailability(int $provider_id, array $data): bool
         return false;
     }
 
-    
+
 
     $success = insertRow($tableName, $dataToInsert);
 
@@ -197,11 +197,11 @@ function handleAvailabilityAddRequest(int $provider_id): void
 
     verifyCsrfToken();
 
-    
-    $data = $_POST; 
+
+    $data = $_POST;
 
     addProviderAvailability($provider_id, $data);
-    
+
 
     redirectTo(WEBCLIENT_URL . '/modules/providers/availabilities.php');
     exit;
@@ -223,7 +223,7 @@ function deleteProviderAvailability(int $availability_id, int $provider_id): boo
 
     $tableName = 'prestataires_disponibilites';
 
-    
+
     $availability = fetchOne($tableName, 'id = :id AND prestataire_id = :provider_id', [':id' => $availability_id, ':provider_id' => $provider_id]);
 
     if (!$availability) {
@@ -231,7 +231,7 @@ function deleteProviderAvailability(int $availability_id, int $provider_id): boo
         return false;
     }
 
-    
+
 
     $rowsAffected = deleteRow($tableName, 'id = :id', [':id' => $availability_id]);
 
@@ -280,7 +280,7 @@ function updateProviderAvailability(int $availability_id, int $provider_id, arra
         return false;
     }
 
-    
+
     $existing = getProviderAvailabilityById($availability_id, $provider_id);
     if (!$existing) {
         flashMessage("Entrée non trouvée ou accès refusé pour la mise à jour.", "warning");
@@ -289,12 +289,12 @@ function updateProviderAvailability(int $availability_id, int $provider_id, arra
 
     $tableName = 'prestataires_disponibilites';
     $dataToUpdate = [
-        
+
         'type' => $data['type'],
         'notes' => !empty($data['notes']) ? trim($data['notes']) : null
     ];
 
-    
+
     try {
         switch ($data['type']) {
             case 'recurrente':
@@ -359,7 +359,7 @@ function updateProviderAvailability(int $availability_id, int $provider_id, arra
         ':provider_id' => $provider_id
     ]);
 
-    if ($rowsAffected !== false) { 
+    if ($rowsAffected !== false) {
         logSecurityEvent($provider_id, 'availability_update', '[SUCCESS] Mise à jour disponibilité ID: ' . $availability_id);
         flashMessage("Disponibilité mise à jour avec succès.", "success");
         return true;
@@ -393,13 +393,162 @@ function handleAvailabilityUpdateRequest(int $provider_id): void
         exit;
     }
 
-    
-    $data = $_POST; 
+
+    $data = $_POST;
 
     updateProviderAvailability($availability_id, $provider_id, $data);
-    
 
-    
+
+
     redirectTo(WEBCLIENT_URL . '/modules/providers/availabilities.php');
     exit;
+}
+
+/**
+ * Génère le HTML pour un calendrier mensuel simple.
+ *
+ * @param int $year L'année.
+ * @param int $month Le mois (1-12).
+ * @param array $days_data Données pour chaque jour (ex: [1 => ['class' => 'available', 'title' => 'Recurrent...'], ...]).
+ * @return string Le HTML du calendrier.
+ */
+function generateCalendarHTML(int $year, int $month, array $days_data = []): string
+{
+    $monthName = date('F', mktime(0, 0, 0, $month, 1, $year));
+    $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $month, $year);
+    $firstDayOfMonth = date('N', mktime(0, 0, 0, $month, 1, $year)); 
+
+    $calendar = '<table class="table table-bordered provider-calendar">';
+    $calendar .= '<thead><tr><th>Lun</th><th>Mar</th><th>Mer</th><th>Jeu</th><th>Ven</th><th>Sam</th><th>Dim</th></tr></thead>';
+    $calendar .= '<tbody><tr>';
+
+    
+    if ($firstDayOfMonth > 1) {
+        $calendar .= str_repeat('<td class="calendar-day-empty"></td>', $firstDayOfMonth - 1);
+    }
+
+    $currentDay = 1;
+    $dayOfWeek = $firstDayOfMonth;
+
+    while ($currentDay <= $daysInMonth) {
+        if ($dayOfWeek == 1 && $currentDay > 1) {
+            $calendar .= '</tr><tr>'; 
+        }
+
+        $cell_class = 'calendar-day';
+        $cell_title = '';
+        if (isset($days_data[$currentDay])) {
+            $cell_class .= ' ' . ($days_data[$currentDay]['class'] ?? '');
+            $cell_title = ' title="' . htmlspecialchars($days_data[$currentDay]['title'] ?? '') . '"';
+        }
+
+        
+        if ($year == date('Y') && $month == date('n') && $currentDay == date('j')) {
+            $cell_class .= ' calendar-day-today';
+        }
+
+        $calendar .= '<td class="' . $cell_class . '"' . $cell_title . '>';
+        $calendar .= '<div class="day-number">' . $currentDay . '</div>';
+        
+        $calendar .= '</td>';
+
+        
+        if ($dayOfWeek == 7) {
+            $calendar .= '</tr>';
+            $dayOfWeek = 1; 
+        } else {
+            $dayOfWeek++;
+        }
+        $currentDay++;
+    }
+
+    
+    if ($dayOfWeek > 1 && $dayOfWeek <= 7) {
+        $calendar .= str_repeat('<td class="calendar-day-empty"></td>', 7 - $dayOfWeek + 1);
+        $calendar .= '</tr>'; 
+    }
+
+    $calendar .= '</tbody></table>';
+    return $calendar;
+}
+
+/**
+ * Prépare les données des jours pour le calendrier pour un mois donné.
+ *
+ * @param int $provider_id L'ID du prestataire.
+ * @param int $year L'année.
+ * @param int $month Le mois (1-12).
+ * @return array Tableau associatif [jour => ['class' => '...', 'title' => '...']].
+ */
+function getCalendarDaysData(int $provider_id, int $year, int $month): array
+{
+    $availabilities = getProviderAvailabilities($provider_id); 
+    $days_data = [];
+    $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $month, $year);
+
+    $month_start_ts = mktime(0, 0, 0, $month, 1, $year);
+    $month_end_ts = mktime(23, 59, 59, $month, $daysInMonth, $year);
+
+    for ($day = 1; $day <= $daysInMonth; $day++) {
+        $current_day_ts_start = mktime(0, 0, 0, $month, $day, $year);
+        $current_day_ts_end = mktime(23, 59, 59, $month, $day, $year);
+        $dayOfWeek = date('N', $current_day_ts_start); 
+        $dbDayOfWeek = ($dayOfWeek == 7) ? 0 : $dayOfWeek; 
+
+        $day_status = []; 
+        $day_titles = []; 
+
+        foreach ($availabilities as $av) {
+            $applies = false;
+            switch ($av['type']) {
+                case 'recurrente':
+                    if ($av['jour_semaine'] == $dbDayOfWeek) {
+                        $recurrence_end_ts = $av['recurrence_fin'] ? strtotime($av['recurrence_fin'] . ' 23:59:59') : PHP_INT_MAX;
+                        if ($current_day_ts_start <= $recurrence_end_ts) {
+                            $applies = true;
+                            $day_titles[] = formatAvailabilityForDisplay($av); 
+                        }
+                    }
+                    break;
+                case 'specifique':
+                case 'indisponible':
+                    $av_start_ts = strtotime($av['date_debut']);
+                    
+                    $av_end_ts = $av['date_fin'] ? strtotime($av['date_fin']) : $av_start_ts;
+                    
+                    if (date('H:i:s', $av_end_ts) == '00:00:00') {
+                        $av_end_ts = strtotime(date('Y-m-d', $av_end_ts) . ' 23:59:59');
+                    }
+
+                    if ($current_day_ts_start <= $av_end_ts && $current_day_ts_end >= $av_start_ts) {
+                        $applies = true;
+                        $day_titles[] = formatAvailabilityForDisplay($av); 
+                    }
+                    break;
+            }
+            if ($applies && !in_array($av['type'], $day_status)) {
+                $day_status[] = $av['type'];
+            }
+        }
+
+        if (!empty($day_status)) {
+            $class = 'calendar-day-mixed'; 
+            if (count($day_status) === 1) {
+                if ($day_status[0] === 'indisponible') {
+                    $class = 'calendar-day-unavailable';
+                } elseif ($day_status[0] === 'recurrente' || $day_status[0] === 'specifique') {
+                    $class = 'calendar-day-available';
+                }
+            } elseif (in_array('indisponible', $day_status)) {
+                $class = 'calendar-day-mixed-unavailable'; 
+            }
+
+            $days_data[$day] = [
+                'class' => $class,
+                'title' => implode('\n', $day_titles) 
+            ];
+        }
+    }
+
+    return $days_data;
 }
