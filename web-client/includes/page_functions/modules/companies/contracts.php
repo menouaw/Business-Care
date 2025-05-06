@@ -114,29 +114,29 @@ function getContractUsageStats(int $contract_id, int $company_id): array
     $stats = [
         'medical_consultations_count' => 0,
         'other_prestations_count' => 0,
-        
+
     ];
 
     if ($contract_id <= 0 || $company_id <= 0) {
         return $stats;
     }
 
-    
+
     $contract_check = fetchOne('contrats', 'id = :contract_id AND entreprise_id = :company_id', [
         ':contract_id' => $contract_id,
         ':company_id' => $company_id
     ]);
     if (!$contract_check) {
-        
-        return $stats; 
+
+        return $stats;
     }
 
-    
+
     $medical_categories = ['Sante mentale', 'Nutrition', 'Sante', 'Bien-etre mental'];
     $placeholders_cat = implode(',', array_fill(0, count($medical_categories), '?'));
 
-    
-    
+
+
     $sql_employees = "SELECT p.id 
                       FROM personnes p
                       LEFT JOIN sites s ON p.site_id = s.id
@@ -146,11 +146,11 @@ function getContractUsageStats(int $contract_id, int $company_id): array
     $employee_ids = $stmt_employees ? $stmt_employees->fetchAll(PDO::FETCH_COLUMN) : [];
 
     if (empty($employee_ids)) {
-        return $stats; 
+        return $stats;
     }
     $placeholders_emp = implode(',', array_fill(0, count($employee_ids), '?'));
 
-    
+
     $sql_usage = "SELECT 
                         SUM(CASE WHEN pr.type = 'consultation' AND pr.categorie IN ({$placeholders_cat}) THEN 1 ELSE 0 END) as medical_count,
                         SUM(CASE WHEN pr.type != 'consultation' OR pr.categorie NOT IN ({$placeholders_cat}) THEN 1 ELSE 0 END) as other_count
@@ -161,13 +161,13 @@ function getContractUsageStats(int $contract_id, int $company_id): array
                       -- AND rv.date_rdv >= :contract_start_date 
                       -- AND rv.date_rdv <= :contract_end_date
                       AND rv.statut IN ('termine', 'confirme', 'planifie')";
-    
 
-    
-    $params = array_merge($medical_categories, $employee_ids);
-    
-    
-    
+
+
+    $params = array_merge($medical_categories, $medical_categories, $employee_ids);
+
+
+
 
     try {
         $stmt_usage = executeQuery($sql_usage, $params);
@@ -178,8 +178,6 @@ function getContractUsageStats(int $contract_id, int $company_id): array
             $stats['other_prestations_count'] = (int)$usage_counts['other_count'];
         }
     } catch (PDOException $e) {
-        
-        
     }
 
     return $stats;

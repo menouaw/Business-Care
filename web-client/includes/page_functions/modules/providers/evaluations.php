@@ -78,6 +78,7 @@ function getProviderEvaluations(int $provider_id, int $limit = 10, int $offset =
  */
 function formatRatingStars(int $note): string
 {
+    
     $output = '';
     $maxStars = 5;
     for ($i = 1; $i <= $maxStars; $i++) {

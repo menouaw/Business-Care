@@ -72,7 +72,7 @@ function countTableRows($table, $where = '', $params = [])
 function _buildOrderByClause($orderBy, string $table): string
 {
     if (is_string($orderBy) && !empty(trim($orderBy))) {
-        
+
         if (preg_match('/^[a-zA-Z0-9_,\s\.\(\)]+(?:\s+(?:ASC|DESC))?(?:,\s*[a-zA-Z0-9_,\s\.\(\)]+(?:\s+(?:ASC|DESC))?)*$/', $orderBy)) {
             return " ORDER BY " . $orderBy;
         } else {
@@ -81,7 +81,7 @@ function _buildOrderByClause($orderBy, string $table): string
     } elseif (!empty($orderBy)) {
         error_log("[WARNING] Invalid type or empty orderBy parameter passed to _buildOrderByClause for table '$table'. Expected string, got: " . gettype($orderBy));
     }
-    return ''; 
+    return '';
 }
 
 /**
@@ -96,7 +96,7 @@ function _buildLimitOffsetClause($limit, $offset): string
     $clause = '';
     if (is_numeric($limit) && (int)$limit > 0) {
         $clause .= " LIMIT " . (int)$limit;
-        
+
         if (is_numeric($offset) && (int)$offset >= 0) {
             $clause .= " OFFSET " . (int)$offset;
         }
@@ -115,7 +115,7 @@ function fetchAll($table, $where = '', $orderBy = '', $limit = 0, $offset = 0, $
         $sql .= " WHERE $where";
     }
 
-    
+
     $sql .= _buildOrderByClause($orderBy, $table);
     $sql .= _buildLimitOffsetClause($limit, $offset);
 
@@ -129,7 +129,7 @@ function fetchOne($table, $where, $params = [], $orderBy = '')
 
     $sql = "SELECT * FROM $table WHERE $where";
 
-    
+
     $sql .= _buildOrderByClause($orderBy, $table);
 
     $sql .= " LIMIT 1";
