@@ -321,8 +321,7 @@ function _handleStripeReturn(): bool
     $token = $_GET['token'];
     $tokenType = ($result === 'success') ? 'stripe_success' : 'stripe_cancel';
 
-
-    if (!validateToken($token, 'stripe_return_callback')) {
+    if (!validateToken($token)) {
         flashMessage("URL de retour invalide ou expirée.", "danger");
         redirectTo(WEBCLIENT_URL . '/modules/employees/donations.php');
         exit;

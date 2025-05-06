@@ -28,7 +28,7 @@ function getSalarieCalendarData(int $salarie_id, int $year, int $month): array
 
 
 
-    $allAppointments = getSalarieAppointments($salarie_id, 'rdv.date_rdv ASC');
+    $allAppointments = getSalarieAppointments($salarie_id, 'rdv.date_rdv ASC', $start_date_month_str, $end_date_month_str);
 
     foreach ($allAppointments as $rdv) {
         if (empty($rdv['date_rdv'])) {
@@ -41,25 +41,22 @@ function getSalarieCalendarData(int $salarie_id, int $year, int $month): array
             continue;
         }
 
+        $day = (int)date('j', $rdv_timestamp);
 
-        if ($rdv_timestamp >= strtotime($start_date_month_str) && $rdv_timestamp <= strtotime($end_date_month_str)) {
-            $day = (int)date('j', $rdv_timestamp);
-
-            if (!isset($calendar_data_by_day[$day])) {
-                $calendar_data_by_day[$day] = [];
-            }
-
-            $calendar_data_by_day[$day][] = [
-                'id' => $rdv['id'],
-                'start_time' => date('H:i', $rdv_timestamp),
-
-                'title' => htmlspecialchars($rdv['prestation_nom'] ?? 'Rendez-vous'),
-                'status' => $rdv['statut'] ?? 'inconnu',
-                'type' => 'appointment',
-                'view_url' => WEBCLIENT_URL . '/modules/employees/appointments.php?action=view&id=' . $rdv['id']
-
-            ];
+        if (!isset($calendar_data_by_day[$day])) {
+            $calendar_data_by_day[$day] = [];
         }
+
+        $calendar_data_by_day[$day][] = [
+            'id' => $rdv['id'],
+            'start_time' => date('H:i', $rdv_timestamp),
+
+            'title' => htmlspecialchars($rdv['prestation_nom'] ?? 'Rendez-vous'),
+            'status' => $rdv['statut'] ?? 'inconnu',
+            'type' => 'appointment',
+            'view_url' => WEBCLIENT_URL . '/modules/employees/appointments.php?action=view&id=' . $rdv['id']
+
+        ];
     }
 
 

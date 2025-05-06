@@ -2,9 +2,14 @@
 
 require_once __DIR__ . '/../../../../includes/init.php';
 
-function getSalarieAppointments(int $salarie_id, string $orderBy = 'rdv.date_rdv DESC'): array
+function getSalarieAppointments(int $salarie_id, string $orderBy = 'rdv.date_rdv DESC', ?string $startDate = null, ?string $endDate = null): array
 {
     if ($salarie_id <= 0) return [];
+
+    $params = [
+        ':salarie_id' => $salarie_id,
+        ':role_prestataire' => ROLE_PRESTATAIRE
+    ];
 
     $sql = "SELECT rdv.id, rdv.date_rdv, rdv.statut, rdv.type_rdv, rdv.lieu,
                    pres.nom as prestation_nom,
@@ -12,13 +17,20 @@ function getSalarieAppointments(int $salarie_id, string $orderBy = 'rdv.date_rdv
             FROM " . TABLE_APPOINTMENTS . " rdv
             LEFT JOIN " . TABLE_PRESTATIONS . " pres ON rdv.prestation_id = pres.id
             LEFT JOIN " . TABLE_USERS . " prat ON rdv.praticien_id = prat.id AND prat.role_id = :role_prestataire
-            WHERE rdv.personne_id = :salarie_id
-            ORDER BY " . $orderBy;
+            WHERE rdv.personne_id = :salarie_id";
 
-    return executeQuery($sql, [
-        ':salarie_id' => $salarie_id,
-        ':role_prestataire' => ROLE_PRESTATAIRE
-    ])->fetchAll();
+    if ($startDate !== null) {
+        $sql .= " AND rdv.date_rdv >= :start_date";
+        $params[':start_date'] = $startDate;
+    }
+    if ($endDate !== null) {
+        $sql .= " AND rdv.date_rdv <= :end_date";
+        $params[':end_date'] = $endDate;
+    }
+
+    $sql .= " ORDER BY " . $orderBy;
+
+    return executeQuery($sql, $params)->fetchAll();
 }
 
 function getAvailableServicesForBooking(int $page = 1, int $perPage = 3): array
@@ -267,14 +279,10 @@ function _getAndValidateAppointmentForCancellation(int $salarie_id, int $rdv_id)
         flashMessage("Rendez-vous non trouvé ou vous n'avez pas la permission de l'annuler.", "warning");
         return null;
     }
-
-
     if (!in_array($rdv['statut'], ['planifie', 'confirme'])) {
         flashMessage("Ce rendez-vous ne peut plus être annulé (statut: " . htmlspecialchars($rdv['statut']) . ").", "warning");
         return null;
     }
-
-
     if (strtotime($rdv['date_rdv']) <= time()) {
         flashMessage("Impossible d'annuler un rendez-vous déjà passé.", "warning");
         return null;
@@ -335,7 +343,6 @@ function cancelEmployeeAppointment(int $salarie_id, int $rdv_id): bool
         if ($pdo->inTransaction()) {
             $pdo->rollBack();
         }
-
 
         if (empty($_SESSION['flash_messages']) && $e->getMessage() !== "Validation du rendez-vous pour annulation échouée.") {
             if ($e->getMessage() !== "Échec de la mise à jour du statut du RDV.") {
