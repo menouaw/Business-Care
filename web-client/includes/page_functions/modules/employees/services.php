@@ -1,7 +1,37 @@
 <?php
 
-require_once __DIR__ . '/../../../init.php';
+require_once __DIR__ . '/../../../../includes/init.php';
 
+/**
+ * Récupère une liste paginée de prestations avec filtres optionnels.
+ * Fonction copiée ici (existe aussi dans prestations.php).
+ *
+ * @param string $type Filtre optionnel par type de prestation.
+ * @param string $categorie Filtre optionnel par catégorie.
+ * @param int $page Numéro de la page demandée.
+ * @param int $perPage Nombre d'éléments par page.
+ * @return array Tableau contenant les prestations et les informations de pagination.
+ */
+function getPrestations(string $type = '', string $categorie = '', int $page = 1, int $perPage = DEFAULT_ITEMS_PER_PAGE): array
+{
+    $where = [];
+    $params = [];
+
+    if (!empty($type)) {
+        $where[] = "type = :type";
+        $params['type'] = $type;
+    }
+
+    if (!empty($categorie)) {
+        $where[] = "categorie = :categorie";
+        $params['categorie'] = $categorie;
+    }
+
+    $whereClause = !empty($where) ? implode(' AND ', $where) : '';
+
+    // Assurez-vous que paginateResults est disponible (via init.php ou functions.php)
+    return paginateResults('prestations', $page, $perPage, $whereClause, 'nom ASC', $params);
+}
 
 
 /**

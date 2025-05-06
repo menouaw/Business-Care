@@ -20,7 +20,9 @@ include __DIR__ . '/../../templates/header.php';
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
                 <h1 class="h2"><?= htmlspecialchars($pageTitle) ?></h1>
                 <div class="btn-toolbar mb-2 mb-md-0">
-
+                    <a href="<?= WEBCLIENT_URL ?>/modules/employees/dashboard.php" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Retour au Tableau de Bord
+                    </a>
                 </div>
             </div>
 
@@ -35,7 +37,7 @@ include __DIR__ . '/../../templates/header.php';
                     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4">
                         <?php foreach ($preferredCommunities as $community): ?>
                             <div class="col">
-                                <?php renderCommunityCard($community, $userMemberCommunityIds, $csrf_token, 'primary'); 
+                                <?php renderCommunityCard($community, $userMemberCommunityIds, $csrf_token, 'primary');
                                 ?>
                             </div>
                         <?php endforeach; ?>
@@ -51,14 +53,14 @@ include __DIR__ . '/../../templates/header.php';
                     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4">
                         <?php foreach ($otherCommunities as $community): ?>
                             <div class="col">
-                                <?php renderCommunityCard($community, $userMemberCommunityIds, $csrf_token, 'secondary'); 
+                                <?php renderCommunityCard($community, $userMemberCommunityIds, $csrf_token, 'secondary');
                                 ?>
                             </div>
                         <?php endforeach; ?>
                     </div>
                 <?php endif; ?>
 
-                
+
 
             <?php elseif ($viewMode === 'detail' && isset($community)): ?>
                 <div class="card shadow mb-4">
@@ -68,7 +70,7 @@ include __DIR__ . '/../../templates/header.php';
                             <small class="text-muted ms-2">(<?= htmlspecialchars(ucfirst($community['type'] ?? 'N/D')) ?>)</small>
                         </h6>
                         <div class="d-flex align-items-center">
-                            <a href="<?= WEBCLIENT_URL ?>/modules/employees/dashboard.php" class="btn btn-sm btn-outline-secondary me-2" title="Retour au Tableau de Bord">
+                            <a href="<?= WEBCLIENT_URL ?>/modules/employees/communities.php" class="btn btn-sm btn-outline-secondary me-2" title="Retour à la liste des communautés">
                                 <i class="fas fa-arrow-left"></i>
                             </a>
                             <?php
@@ -141,7 +143,7 @@ include __DIR__ . '/../../templates/header.php';
                                                         ?>
                                                             <form action="<?= WEBCLIENT_URL ?>/modules/employees/communities.php" method="POST" class="d-inline" style="margin-left: 5px;" onsubmit="return confirm('Voulez-vous vraiment supprimer ce message ?');">
                                                                 <input type="hidden" name="action" value="delete_message">
-                                                                <input type="hidden" name="id" value="<?= $community['id'] ?? 0 ?>"> 
+                                                                <input type="hidden" name="id" value="<?= $community['id'] ?? 0 ?>">
                                                                 <input type="hidden" name="message_id" value="<?= $message['id'] ?>">
                                                                 <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
                                                                 <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-1" title="Supprimer le message">
