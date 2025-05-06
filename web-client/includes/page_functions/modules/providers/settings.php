@@ -15,7 +15,7 @@ function getProviderDetailsForSettings(int $provider_id): array|false
     if ($provider_id <= 0) {
         return false;
     }
-    
+
     return fetchOne(TABLE_USERS, 'id = :id AND role_id = :role_id', [":id" => $provider_id, ":role_id" => ROLE_PRESTATAIRE], 'id, nom, prenom, email, telephone, date_naissance, genre, photo_url');
 }
 
@@ -33,10 +33,10 @@ function getProviderPreferences(int $provider_id): array
 
     $prefs = fetchOne(TABLE_USER_PREFERENCES, 'personne_id = :id', [':id' => $provider_id]);
 
-    
+
     return [
         'langue' => $prefs['langue'] ?? 'fr',
-        'notif_email' => $prefs['notif_email'] ?? true, 
+        'notif_email' => $prefs['notif_email'] ?? true,
         'theme' => $prefs['theme'] ?? 'clair'
     ];
 }
@@ -78,12 +78,12 @@ function handleUpdateProviderProfile(int $provider_id, array $formData): array
 
     $updated = updateRow(TABLE_USERS, $dataToUpdate, 'id = :id AND role_id = :role_id', [':id' => $provider_id, ':role_id' => ROLE_PRESTATAIRE]);
     if ($updated > 0) {
-        $_SESSION['user_name'] = $prenom . ' ' . $nom; 
+        $_SESSION['user_name'] = htmlspecialchars($prenom, ENT_QUOTES, 'UTF-8') . ' ' . htmlspecialchars($nom, ENT_QUOTES, 'UTF-8');
         return ['success' => true, 'message' => 'Profil mis à jour avec succès.'];
     } else {
-        
-        
-        
+
+
+
         return ['success' => true, 'message' => 'Aucune modification détectée ou erreur lors de la mise à jour.'];
     }
 }
@@ -120,7 +120,7 @@ function handleUpdateProviderPreferences(int $provider_id, array $formData): arr
         $dataToUpdate['personne_id'] = $provider_id;
         insertRow(TABLE_USER_PREFERENCES, $dataToUpdate);
     }
-    $_SESSION['user_language'] = $langue; 
+    $_SESSION['user_language'] = $langue;
     return ['success' => true, 'message' => 'Préférences mises à jour.'];
 }
 
@@ -194,7 +194,7 @@ function updateProviderProfilePhoto(int $provider_id, array $fileData): array
         return ['success' => false, 'message' => $message, 'new_photo_url' => null];
     }
 
-    
+
     $finfo = new finfo(FILEINFO_MIME_TYPE);
     $mime_type = $finfo->file($fileData['tmp_name']);
     $allowed_mime_types = ['image/jpeg', 'image/png', 'image/gif'];
@@ -203,30 +203,30 @@ function updateProviderProfilePhoto(int $provider_id, array $fileData): array
         return ['success' => false, 'message' => "Type de fichier invalide. Seuls JPG, PNG, GIF sont autorisés.", 'new_photo_url' => null];
     }
 
-    if ($fileData['size'] > (2 * 1024 * 1024)) { 
+    if ($fileData['size'] > (2 * 1024 * 1024)) {
         return ['success' => false, 'message' => 'Fichier trop volumineux (maximum 2 Mo).', 'new_photo_url' => null];
     }
 
-    
+
     $uploadDir = realpath(__DIR__ . '/../../../../../uploads/photos');
     if (!$uploadDir || !is_dir($uploadDir)) {
         error_log("Le dossier d'upload n'existe pas ou n'est pas un dossier : {$uploadDir}");
         return ['success' => false, 'message' => "Erreur de configuration serveur pour l'upload.", 'new_photo_url' => null];
     }
 
-    
+
     $fileExtension = strtolower(pathinfo($fileData['name'], PATHINFO_EXTENSION));
     $newFileName = 'provider_' . $provider_id . '_' . time() . '.' . $fileExtension;
     $destinationPath = $uploadDir . DIRECTORY_SEPARATOR . $newFileName;
-    $relativePath = UPLOAD_URL . 'photos/' . $newFileName; 
+    $relativePath = UPLOAD_URL . 'photos/' . $newFileName;
 
-    
+
     if (move_uploaded_file($fileData['tmp_name'], $destinationPath)) {
-        
+
         $currentUser = fetchOne(TABLE_USERS, 'id = :id', [':id' => $provider_id], 'photo_url');
         if ($currentUser && !empty($currentUser['photo_url']) && strpos($currentUser['photo_url'], 'default-user.png') === false) {
             $oldRelativePath = $currentUser['photo_url'];
-            
+
             $oldFileName = basename(parse_url($oldRelativePath, PHP_URL_PATH));
             $oldFullPath = $uploadDir . DIRECTORY_SEPARATOR . $oldFileName;
             if (file_exists($oldFullPath) && is_file($oldFullPath)) {
@@ -234,13 +234,13 @@ function updateProviderProfilePhoto(int $provider_id, array $fileData): array
             }
         }
 
-        
+
         $updated = updateRow(TABLE_USERS, ['photo_url' => $relativePath], 'id = :id', [":id" => $provider_id]);
         if ($updated > 0) {
-            $_SESSION['user_photo'] = $relativePath; 
+            $_SESSION['user_photo'] = $relativePath;
             return ['success' => true, 'message' => 'Photo de profil mise à jour avec succès.', 'new_photo_url' => $relativePath];
         } else {
-            @unlink($destinationPath); 
+            @unlink($destinationPath);
             error_log("Échec de la mise à jour de photo_url en BDD pour l'utilisateur ID: {$provider_id}");
             return ['success' => false, 'message' => 'Erreur lors de la mise à jour de la base de données.', 'new_photo_url' => null];
         }
@@ -266,7 +266,7 @@ function setupProviderSettingsPage(): array
         exit;
     }
 
-    
+
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $action = $_POST['action'] ?? '';
         $csrf_token = $_POST['csrf_token'] ?? '';
@@ -274,7 +274,7 @@ function setupProviderSettingsPage(): array
         if (!validateToken($csrf_token)) {
             flashMessage("Jeton de sécurité invalide ou expiré. Veuillez réessayer.", "danger");
         } else {
-            $formData = getFormData(); 
+            $formData = getFormData();
             $result = ['success' => false, 'message' => 'Action inconnue ou non spécifiée.'];
 
             switch ($action) {
@@ -286,7 +286,7 @@ function setupProviderSettingsPage(): array
                     break;
                 case 'update_photo':
                     $result = updateProviderProfilePhoto($provider_id, $_FILES['profile_photo'] ?? []);
-                    
+
                     if ($result['success'] && isset($result['new_photo_url'])) {
                         $_SESSION['flash_new_photo_url'] = $result['new_photo_url'];
                     }
@@ -294,34 +294,33 @@ function setupProviderSettingsPage(): array
                 case 'update_preferences':
                     $result = handleUpdateProviderPreferences($provider_id, $formData);
                     break;
-                    
             }
             flashMessage($result['message'], $result['success'] ? 'success' : 'danger');
         }
 
-        
+
         redirectTo(WEBCLIENT_URL . '/modules/providers/settings.php');
         exit;
     }
 
-    
+
     $providerDetails = getProviderDetailsForSettings($provider_id);
     $providerPreferences = getProviderPreferences($provider_id);
 
     if (!$providerDetails) {
-        
+
         flashMessage("Erreur lors de la récupération de vos informations.", "danger");
-        
+
         session_unset();
         session_destroy();
         redirectTo(WEBCLIENT_URL . '/auth/login.php');
         exit;
     }
 
-    
-    $csrfToken = generateToken(); 
 
-    
+    $csrfToken = generateToken();
+
+
     $flash_new_photo_url = $_SESSION['flash_new_photo_url'] ?? null;
     if (isset($_SESSION['flash_new_photo_url'])) {
         unset($_SESSION['flash_new_photo_url']);
@@ -329,13 +328,13 @@ function setupProviderSettingsPage(): array
 
     return [
         'pageTitle' => "Mes Paramètres Prestataire",
-        'provider' => $providerDetails, 
+        'provider' => $providerDetails,
         'preferences' => $providerPreferences,
-        
+
         'csrf_token_profile' => $csrfToken,
         'csrf_token_password' => $csrfToken,
         'csrf_token_photo' => $csrfToken,
         'csrf_token_preferences' => $csrfToken,
-        'flash_new_photo_url' => $flash_new_photo_url 
+        'flash_new_photo_url' => $flash_new_photo_url
     ];
 }

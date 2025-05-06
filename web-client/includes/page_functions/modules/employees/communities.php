@@ -22,7 +22,7 @@ function _checkMappedInterestTypeMatch(string $communityTypeLower, array $userIn
         'activité physique' => 'sport',
         'activite physique' => 'sport',
         'bien-être physique' => 'sport'
-        
+
     ];
     foreach ($userInterestsLower as $interest) {
         if (isset($interestToTypeMapping[$interest]) && $interestToTypeMapping[$interest] === $communityTypeLower) {
@@ -172,7 +172,7 @@ function setupCommunitiesPage(): array
     $view_id = filter_input(INPUT_GET, 'view_id', FILTER_VALIDATE_INT);
     $csrfToken = generateToken();
 
-    
+
     $isDetailViewRequested = ($view_id !== null && $view_id > 0);
 
     if ($isDetailViewRequested) {
@@ -293,7 +293,7 @@ function _handleJoinLeaveDeleteAction(string $action, int $salarie_id, ?int $com
 
     $main_id_for_action = ($action === 'delete_message') ? $message_id : $community_id;
     if (!$main_id_for_action && ($action === 'join' || $action === 'leave' || $action === 'delete_message')) {
-        flashMessage("ID requis manquant pour l'action demandée ('.htmlspecialchars($action).').", "warning");
+        flashMessage("ID requis manquant pour l'action demandée '" . htmlspecialchars($action) . "'.", "warning");
 
         redirectTo(WEBCLIENT_URL . '/modules/employees/communities.php');
         exit;
@@ -357,7 +357,7 @@ function handleCommunityActions(int $salarie_id): void
         return;
     }
 
-    
+
     if (_isPostMessageActionRequested()) {
         $community_id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
         $csrf_token = filter_input(INPUT_POST, 'csrf_token', FILTER_SANITIZE_SPECIAL_CHARS);
@@ -366,7 +366,7 @@ function handleCommunityActions(int $salarie_id): void
         return;
     }
 
-    
+
     if (_isValidCommunityInteractionRequested($_POST)) {
         $action = filter_input(INPUT_POST, 'action', FILTER_SANITIZE_SPECIAL_CHARS);
         $community_id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
@@ -514,7 +514,7 @@ function leaveCommunity(int $salarie_id, int $community_id): bool
  */
 function _arePostMessageParametersValid(int $salarie_id, int $community_id, string $content): bool
 {
-    
+
     return $salarie_id > 0 && $community_id > 0 && !empty(trim($content));
 }
 
@@ -541,7 +541,7 @@ function postCommunityMessage(int $salarie_id, int $community_id, string $conten
     $data = [
         'communaute_id' => $community_id,
         'personne_id' => $salarie_id,
-        'message' => strip_tags(trim($content)) 
+        'message' => strip_tags(trim($content))
     ];
 
     $success = insertRow('communaute_messages', $data);

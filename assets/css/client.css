@@ -15,6 +15,7 @@
     --bc-info: #17a2b8;
     --bc-warning: #ffc107;
     --bc-danger: #dc3545;
+    --bc-white: #FFFFFF;
 
     --bc-font-main: 'Markazi Text', serif;
     --bc-font-headings: 'DM Serif Text', serif;
@@ -97,6 +98,20 @@ a {
     color: #ffffff; 
 }
 
+.btn-primary:focus,
+.btn-primary:active {
+    background-color: var(--bc-accent);  
+    border-color: var(--bc-accent);        
+    color: var(--bc-text-primary);         
+    box-shadow: none; 
+}
+.btn-primary:hover:focus,
+.btn-primary:hover:active {
+    background-color: var(--bc-accent-dark); 
+    border-color: var(--bc-accent-dark);  
+    color: #ffffff;                     
+}
+
 .btn-secondary { 
     background-color: var(--bc-text-secondary);
     border-color: var(--bc-text-secondary);
@@ -108,6 +123,21 @@ a {
     color: var(--bc-white);
 }
 
+.btn-outline-secondary:focus,
+.btn-outline-secondary:active {
+    color: var(--bc-text-secondary);        
+    border-color: var(--bc-text-secondary);     
+    background-color: transparent; 
+    box-shadow: none; 
+}
+
+.btn-outline-secondary:hover:focus,
+.btn-outline-secondary:hover:active {
+    background-color: var(--bc-text-secondary); 
+    border-color: var(--bc-text-secondary);  
+    color: var(--bc-white);                 
+}
+
 .btn-outline-primary {
     color: var(--bc-accent);
     border-color: var(--bc-accent);
@@ -116,15 +146,6 @@ a {
     background-color: var(--bc-accent);
     border-color: var(--bc-accent);
     color: var(--bc-text-primary); 
-}
-.btn-outline-secondary {
-    color: var(--bc-text-secondary);
-    border-color: var(--bc-text-secondary);
-}
-.btn-outline-secondary:hover {
-    background-color: var(--bc-text-secondary);
-    border-color: var(--bc-text-secondary);
-    color: var(--bc-white);
 }
 
 .btn-success { background-color: var(--bc-success); border-color: var(--bc-success); color: var(--bc-white); }
@@ -176,9 +197,6 @@ a {
 .navbar-nav .nav-link:hover,
 .navbar-nav .nav-link.active {
     color: var(--bc-accent) !important; 
-}
-.navbar-nav .nav-link:hover { 
-     color: var(--bc-text-secondary) !important; 
 }
 
 
@@ -392,7 +410,7 @@ footer ul li a:hover {
 :root { 
     --calendar-bg-today: #edf6f9; 
     --calendar-bg-empty: #f8f9fa;
-    --calendar-bg-available: #edf6f9; 
+    --calendar-bg-available: #d4edda;
     --calendar-bg-unavailable: #ffebee; 
     --calendar-bg-mixed: #fff9c4; 
     --calendar-bg-mixed-unavailable: #ffecb3; 
@@ -425,15 +443,18 @@ footer ul li a:hover {
 .calendar-day {
     border: 1px solid var(--bc-border-color);
     height: 110px;
+    overflow: hidden;
+    vertical-align: top;
+    position: relative;
 }
 .calendar-day:hover { background-color: #f1f1f1; }
 
 .calendar-day-empty { background-color: var(--calendar-bg-empty); border-color: transparent; }
 .calendar-day-today { background-color: var(--calendar-bg-today); }
-.calendar-day-available { background-color: var(--calendar-bg-available); }
-.calendar-day-unavailable { background-color: var(--calendar-bg-unavailable); }
-.calendar-day-mixed { background-color: var(--calendar-bg-mixed); }
-.calendar-day-mixed-unavailable { background-color: var(--calendar-bg-mixed-unavailable); }
+.calendar-day-available { background-color: var(--calendar-bg-available); } 
+.calendar-day-unavailable { background-color: var(--calendar-bg-unavailable); } 
+.calendar-day-mixed { background-color: var(--calendar-bg-mixed); } 
+.calendar-day-mixed-unavailable { background-color: var(--calendar-bg-mixed-unavailable); } 
 
 .day-number { color: var(--bc-text-secondary); font-weight: 600; }
 .calendar-day-today .day-number { color: var(--bc-accent-dark); font-weight: 700; }
@@ -444,22 +465,65 @@ footer ul li a:hover {
 
 .day-events {
     font-size: 0.85em;
-    max-height: calc(110px - 30px);
 }
+
 .calendar-event {
-    padding: 2px 5px;
-    margin-bottom: 4px;
-    border-radius: 2px;
+    padding: 2px 4px; 
+    margin-bottom: 2px; 
+    border-radius: 3px; 
     border-left-width: 3px;
     border-left-style: solid;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow: hidden; 
+    line-height: 1.3; 
 }
 .calendar-event.event-confirmed { background-color: var(--calendar-event-confirmed-bg); border-left-color: var(--calendar-event-confirmed-border); color: var(--calendar-event-confirmed-text); }
 .calendar-event.event-planned { background-color: var(--calendar-event-planned-bg); border-left-color: var(--calendar-event-planned-border); color: var(--calendar-event-planned-text); }
 .calendar-event.event-intervention-booked { background-color: var(--calendar-event-intervention-booked-bg); border-left-color: var(--calendar-event-intervention-booked-border); color: var(--calendar-event-intervention-booked-text); }
 .calendar-event.event-intervention-free { background-color: var(--calendar-event-intervention-free-bg); border-left-color: var(--calendar-event-intervention-free-border); color: var(--calendar-event-intervention-free-text); }
+
+
+.employee-day-events {
+    max-height: calc(110px - 30px); /* Hauteur pour le numéro du jour + un peu de marge */
+    overflow-y: auto; /* Barre de défilement si trop d'événements */
+    line-height: 1.4;
+    padding-top: 2px;
+}
+
+.employee-day-events .calendar-event.event-appointment-confirme {
+    background-color: var(--calendar-event-confirmed-bg, #e8f5e9);
+    border-left-color: var(--calendar-event-confirmed-border, var(--bc-success));
+    color: var(--calendar-event-confirmed-text, #1b5e20);
+}
+.employee-day-events .calendar-event.event-appointment-planifie {
+    background-color: var(--calendar-event-planned-bg, #e1f5fe);
+    border-left-color: var(--calendar-event-planned-border, var(--bc-info));
+    color: var(--calendar-event-planned-text, #01579b);
+}
+.employee-day-events .calendar-event.event-appointment-annule {
+    background-color: #f8f9fa; 
+    border-left-color: #adb5bd; 
+    color: #6c757d; 
+    text-decoration: line-through;
+}
+.employee-day-events .calendar-event.event-appointment-termine {
+    background-color: #e9ecef; 
+    border-left-color: #ced4da; 
+    color: #495057; 
+    opacity: 0.8;
+}
+.employee-day-events .calendar-event.event-appointment-default {
+    background-color: #e9ecef; 
+    border-left-color: #ced4da;
+    color: #495057;
+}
+.employee-day-events .event-link {
+    color: inherit; 
+    text-decoration: none;
+    display: block; 
+}
+.employee-day-events .event-link:hover {
+    text-decoration: underline;
+}
 
 .event-time { font-weight: 600; margin-right: 4px; }
 
@@ -572,7 +636,6 @@ body.page-auth {
 .page-auth .outside-card-link:hover {
     color: #ffffff; 
 }
-
 
 .page-auth .card a {
      color: var(--bc-accent); 

@@ -28,6 +28,17 @@ function getProviderInvoices(int $provider_id, int $limit = 10, int $offset = 0)
     }
 
 
+    $limit_int = (int)$limit;
+    $offset_int = (int)$offset;
+
+
+    if ($limit_int <= 0) {
+        $limit_int = 10;
+    }
+    if ($offset_int < 0) {
+        $offset_int = 0;
+    }
+
     $sql = "SELECT 
                 id, 
                 numero_facture, 
@@ -40,14 +51,13 @@ function getProviderInvoices(int $provider_id, int $limit = 10, int $offset = 0)
             FROM factures_prestataires
             WHERE prestataire_id = :provider_id
             ORDER BY date_facture DESC, id DESC
-            LIMIT :limit OFFSET :offset";
+            LIMIT {$limit_int} OFFSET {$offset_int}";
 
     $stmt = executeQuery(
         $sql,
         [
-            ':provider_id' => $provider_id,
-            ':limit' => (int)$limit,
-            ':offset' => (int)$offset
+            ':provider_id' => $provider_id
+
         ]
     );
 
@@ -123,18 +133,18 @@ function getProviderInvoiceWithLines(int $invoice_id, int $provider_id): array|f
         return false;
     }
 
-    
+
     $invoiceDetails = fetchOne('factures_prestataires', 'id = :invoice_id AND prestataire_id = :provider_id', [
         ':invoice_id' => $invoice_id,
         ':provider_id' => $provider_id
     ]);
 
     if (!$invoiceDetails) {
-        return false; 
+        return false;
     }
 
-    
-    
+
+
     $sql_lines = "SELECT 
                     fpl.id AS line_id, 
                     fpl.description AS line_description, 
@@ -327,25 +337,25 @@ function setupProviderInvoicePageData(int $provider_id): array
     $view_details_id = filter_input(INPUT_GET, 'view_details', FILTER_VALIDATE_INT);
 
     if ($view_details_id) {
-        
+
         $invoice_details = getProviderInvoiceWithLines($view_details_id, $provider_id);
         if ($invoice_details) {
             $result['pageTitle'] = "Détails Facture : " . htmlspecialchars($invoice_details['numero_facture'] ?? 'N/A');
             $result['invoice_details'] = $invoice_details;
         } else {
             flashMessage("Facture non trouvée ou accès non autorisé.", "danger");
-            
+
             redirectTo(WEBCLIENT_URL . '/modules/providers/invoices.php');
             exit;
         }
     } else {
-        
-        
+
+
         handleProviderInvoiceDownloadRequest($provider_id);
 
         $result['pageTitle'] = "Mes Factures";
 
-        
+
         $items_per_page = 15;
         $result['current_page'] = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT, ['options' => ['default' => 1, 'min_range' => 1]]);
         $offset = ($result['current_page'] - 1) * $items_per_page;
@@ -355,7 +365,7 @@ function setupProviderInvoicePageData(int $provider_id): array
         $result['total_invoices'] = $invoices_data['total'] ?? 0;
         $result['total_pages'] = ceil($result['total_invoices'] / $items_per_page);
         if ($result['total_pages'] < 1) {
-            $result['total_pages'] = 1; 
+            $result['total_pages'] = 1;
         }
     }
 

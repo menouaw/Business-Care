@@ -79,7 +79,7 @@ function _changeEmployeeStatus(int $employee_id, int $company_id, string $newSta
         return false;
     }
 
-    
+
     $employee = fetchOne('personnes', 'id = :id AND entreprise_id = :company_id AND role_id = :role_salarie', [
         ':id' => $employee_id,
         ':company_id' => $company_id,
@@ -87,11 +87,11 @@ function _changeEmployeeStatus(int $employee_id, int $company_id, string $newSta
     ]);
 
     if (!$employee) {
-        
+
         return false;
     }
 
-    
+
     $updatedRows = updateRow(
         'personnes',
         ['statut' => $newStatus],
@@ -99,21 +99,21 @@ function _changeEmployeeStatus(int $employee_id, int $company_id, string $newSta
         [':id' => $employee_id]
     );
 
-    
+
     if ($updatedRows > 0) {
         $actor_id = $_SESSION['user_id'] ?? null;
         if ($actor_id && function_exists('createNotification')) {
             $employee_name = htmlspecialchars($employee['prenom'] . ' ' . $employee['nom']);
-            
+
             $message = sprintf("Le salarié %s (ID: %d) a été %s.", $employee_name, $employee_id, $notificationVerb);
             $link = WEBCLIENT_URL . '/modules/companies/employees/index.php';
-            
+
             createNotification($actor_id, $notificationTitle, $message, $notificationType, $link);
         }
-        return true; 
+        return true;
     }
 
-    
+
     return false;
 }
 
@@ -209,7 +209,7 @@ function getCompanySites(int $company_id): array
 function _validateUpdateEmployeeInput(int $employee_id, int $company_id, array $data): bool
 {
     if ($employee_id <= 0 || $company_id <= 0 || empty($data)) {
-        
+
         return false;
     }
     return true;
@@ -223,17 +223,25 @@ function _validateUpdateEmployeeInput(int $employee_id, int $company_id, array $
  */
 function _filterUpdateData(array $data): array
 {
-    $allowed_data = $data;
-    
-    unset(
-        $allowed_data['id'],
-        $allowed_data['statut'],
-        $allowed_data['role_id'],
-        $allowed_data['entreprise_id'],
-        $allowed_data['mot_de_passe'],
-        $allowed_data['email'] 
-    );
-    return $allowed_data;
+    $allowed_keys = [
+        'nom',
+        'prenom',
+        'telephone',
+        'date_naissance',
+        'genre',
+        'photo_url', 
+        'site_id'
+        
+        
+    ];
+
+    $filtered_data = [];
+    foreach ($allowed_keys as $key) {
+        if (array_key_exists($key, $data)) {
+            $filtered_data[$key] = $data[$key];
+        }
+    }
+    return $filtered_data;
 }
 
 /**
@@ -286,7 +294,7 @@ function updateEmployeeDetails(int $employee_id, int $company_id, array $data): 
 
     if (empty($allowed_data)) {
         flashMessage("Aucune donnée modifiable fournie pour le salarié.", "info");
-        return false; 
+        return false;
     }
 
     $updatedRows = updateRow(
@@ -296,7 +304,7 @@ function updateEmployeeDetails(int $employee_id, int $company_id, array $data): 
         [':id' => $employee_id, ':company_id' => $company_id]
     );
 
-    if ($updatedRows !== false) { 
+    if ($updatedRows !== false) {
         _handleSuccessfulEmployeeUpdate($employee, (int)$updatedRows, $employee_id, $allowed_data);
         return true;
     }
@@ -337,9 +345,9 @@ function _checkExistingEmployeeByEmail(string $email): bool
     $existingUser = fetchOne('personnes', 'email = :email', [':email' => $email]);
     if ($existingUser) {
         flashMessage("L'adresse email " . htmlspecialchars($email) . " existe déjà.", "warning");
-        return true; 
+        return true;
     }
-    return false; 
+    return false;
 }
 
 /**
@@ -382,7 +390,7 @@ function _attemptEmployeeInsertion(array $dataToInsert, int $entreprise_id, arra
                 commitTransaction();
                 return $newEmployeeId;
             } else {
-                
+
                 rollbackTransaction();
                 flashMessage("Une erreur est survenue lors de la récupération de l'ID du nouveau salarié.", "danger");
                 return false;
@@ -395,7 +403,7 @@ function _attemptEmployeeInsertion(array $dataToInsert, int $entreprise_id, arra
         }
     } catch (Exception $e) {
         rollbackTransaction();
-        
+
         flashMessage("Une erreur exceptionnelle est survenue lors de l'ajout du salarié.", "danger");
         return false;
     }
@@ -441,6 +449,6 @@ function addEmployee($entreprise_id, $employeeData)
         return $newEmployeeId;
     }
 
-    
+
     return false;
 }

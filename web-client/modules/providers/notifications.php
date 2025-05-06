@@ -55,13 +55,42 @@ include __DIR__ . '/../../templates/header.php';
                     <?php foreach ($notifications as $notif): ?>
                         <?php
 
-                        $bg_class = $notif['lu'] ? 'list-group-item-light' : 'list-group-item-' . ($notif['type'] ?? 'info');
+
+                        $allowed_notification_types = [
+                            'info',
+                            'success',
+                            'warning',
+                            'danger',
+                            'primary',
+                            'secondary',
+                            'light',
+                            'dark'
+                        ];
+
+
+                        $notification_type_for_class = $notif['type'] ?? 'info';
+                        if (!in_array($notification_type_for_class, $allowed_notification_types, true)) {
+                            $notification_type_for_class = 'info';
+                        }
+
+                        $bg_class = $notif['lu'] ? 'list-group-item-light' : 'list-group-item-' . $notification_type_for_class;
                         $text_muted = $notif['lu'] ? 'text-muted' : '';
                         ?>
                         <div class="list-group-item list-group-item-action <?= $bg_class ?> mb-2 border rounded shadow-sm">
                             <div class="d-flex w-100 justify-content-between">
                                 <h5 class="mb-1 <?= $text_muted ?>"><?= htmlspecialchars($notif['titre']) ?></h5>
-                                <small class="<?= $text_muted ?>"><?= htmlspecialchars(timeAgo($notif['created_at'])) ?></small>
+                                <?php
+                                $created_at_display = 'Date invalide'; 
+                                if (!empty($notif['created_at'])) {
+                                    
+                                    $timestamp = strtotime($notif['created_at']);
+                                    if ($timestamp !== false) {
+                                        
+                                        $created_at_display = htmlspecialchars(timeAgo($notif['created_at']));
+                                    }
+                                }
+                                ?>
+                                <small class="<?= $text_muted ?>"><?= $created_at_display ?></small>
                             </div>
                             <p class="mb-1 <?= $text_muted ?>"><?= nl2br(htmlspecialchars($notif['message'])) ?></p>
                             <small class="<?= $text_muted ?>">

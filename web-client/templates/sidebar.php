@@ -67,6 +67,13 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link <?= isActivePage('/modules/employees/calendar.php') ?>"
+                        href="<?= WEBCLIENT_URL ?>/modules/employees/calendar.php">
+                        <i class="fas fa-calendar-day me-2"></i>
+                        Mon Planning
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link <?= isActivePage('/modules/employees/communities.php') ?>"
                         href="<?= WEBCLIENT_URL ?>/modules/employees/communities.php">
                         <i class="fas fa-users me-2"></i>

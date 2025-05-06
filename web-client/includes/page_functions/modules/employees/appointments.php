@@ -146,8 +146,8 @@ function _areBookingInputsInvalid(int $salarie_id, int $slot_id, int $service_id
  */
 function _needsBookingFallbackFlashMessage(Exception $e): bool
 {
-    
-    
+
+
     return empty($_SESSION['flash_messages']) && $e->getMessage() !== "Validation du créneau échouée.";
 }
 
@@ -179,7 +179,7 @@ function bookAppointmentSlot(int $salarie_id, int $slot_id, int $service_id_conf
 
         $slot = _getAndValidateSlotForBooking($slot_id, $service_id_confirm);
         if ($slot === null) {
-            throw new Exception("Validation du créneau échouée."); 
+            throw new Exception("Validation du créneau échouée.");
         }
 
         $prestation = getPrestationDetails($service_id_confirm);
@@ -286,7 +286,7 @@ function _getAndValidateAppointmentForCancellation(int $salarie_id, int $rdv_id)
 function cancelEmployeeAppointment(int $salarie_id, int $rdv_id): bool
 {
     if ($salarie_id <= 0 || $rdv_id <= 0) {
-        return false; 
+        return false;
     }
 
     $pdo = getDbConnection();
@@ -295,7 +295,7 @@ function cancelEmployeeAppointment(int $salarie_id, int $rdv_id): bool
 
         $rdv = _getAndValidateAppointmentForCancellation($salarie_id, $rdv_id);
         if ($rdv === null) {
-            
+
             throw new Exception("Validation du rendez-vous pour annulation échouée.");
         }
 
@@ -305,8 +305,8 @@ function cancelEmployeeAppointment(int $salarie_id, int $rdv_id): bool
         }
 
         if (!empty($rdv['consultation_creneau_id'])) {
-            
-            
+
+
             updateRow(
                 'consultation_creneaux',
                 ['is_booked' => 0],
@@ -326,7 +326,7 @@ function cancelEmployeeAppointment(int $salarie_id, int $rdv_id): bool
             "info",
             WEBCLIENT_URL . '/modules/employees/appointments.php'
         );
-        
+
         if (empty($_SESSION['flash_messages'])) {
             flashMessage("Votre rendez-vous a bien été annulé.", "success");
         }
@@ -335,10 +335,10 @@ function cancelEmployeeAppointment(int $salarie_id, int $rdv_id): bool
         if ($pdo->inTransaction()) {
             $pdo->rollBack();
         }
-        
-        
+
+
         if (empty($_SESSION['flash_messages']) && $e->getMessage() !== "Validation du rendez-vous pour annulation échouée.") {
-            if ($e->getMessage() !== "Échec de la mise à jour du statut du RDV.") { 
+            if ($e->getMessage() !== "Échec de la mise à jour du statut du RDV.") {
                 flashMessage("Une erreur technique est survenue lors de l'annulation: " . $e->getMessage(), "danger");
             }
         }

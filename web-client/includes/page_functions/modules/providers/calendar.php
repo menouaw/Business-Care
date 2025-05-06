@@ -68,7 +68,9 @@ function getProviderCalendarEventsForMonth(int $provider_id, int $year, int $mon
                 $end_dt->add(new DateInterval('PT60M'));
             }
 
-            $title = 'RDV: ' . htmlspecialchars($rdv['prestation_nom'] . ' - ' . ($rdv['salarie_prenom'] ?? '') . ' ' . ($rdv['salarie_nom'] ?? ''));
+            $start_time = date('H:i', strtotime($rdv['heure_debut']));
+            $end_time = date('H:i', strtotime($rdv['heure_fin']));
+            $title = 'RDV: ' . ($rdv['prestation_nom'] . ' - ' . ($rdv['salarie_prenom'] ?? '') . ' ' . ($rdv['salarie_nom'] ?? ''));
             $color_class = ($rdv['statut'] == 'confirme') ? 'event-confirmed' : 'event-planned';
 
             if (!isset($events_by_day[$day])) {
@@ -76,9 +78,9 @@ function getProviderCalendarEventsForMonth(int $provider_id, int $year, int $mon
             }
             $events_by_day[$day][] = [
                 'type' => 'rdv',
-                'id' => $rdv['id'],
-                'start_time' => $start_dt->format('H:i'),
-                'end_time' => $end_dt->format('H:i'),
+                'id' => 'rdv-' . $rdv['id'],
+                'start_time' => $start_time,
+                'end_time' => $end_time,
                 'title' => $title,
                 'class' => $color_class
             ];
@@ -86,8 +88,6 @@ function getProviderCalendarEventsForMonth(int $provider_id, int $year, int $mon
             error_log("Erreur de traitement de date pour RDV ID {" . $rdv['id'] . "}: " . $e->getMessage());
         }
     }
-
-
     $sql_creneaux = "SELECT 
                         cc.id, 
                         cc.start_time, 
@@ -112,8 +112,10 @@ function getProviderCalendarEventsForMonth(int $provider_id, int $year, int $mon
             $day = (int)$start_dt->format('j');
             $end_dt = new DateTime($int['end_time']);
 
-            $title = 'Interv: ' . htmlspecialchars($int['prestation_nom']);
-            $title .= ($int['site_nom'] ? ' @ ' . htmlspecialchars($int['site_nom']) : '');
+            $start_time = date('H:i', strtotime($int['heure_debut']));
+            $end_time = date('H:i', strtotime($int['heure_fin']));
+            $title = 'Interv: ' . $int['prestation_nom'];
+            $title .= ($int['site_nom'] ? ' @ ' . $int['site_nom'] : '');
             $color_class = $int['is_booked'] ? 'event-booked' : 'event-free';
 
             if (!isset($events_by_day[$day])) {
@@ -121,9 +123,9 @@ function getProviderCalendarEventsForMonth(int $provider_id, int $year, int $mon
             }
             $events_by_day[$day][] = [
                 'type' => 'intervention',
-                'id' => $int['id'],
-                'start_time' => $start_dt->format('H:i'),
-                'end_time' => $end_dt->format('H:i'),
+                'id' => 'intervention-' . $int['id'],
+                'start_time' => $start_time,
+                'end_time' => $end_time,
                 'title' => $title,
                 'class' => $color_class . ($int['is_booked'] ? ' event-intervention-booked' : ' event-intervention-free')
             ];

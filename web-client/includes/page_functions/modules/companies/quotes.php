@@ -202,13 +202,13 @@ function getQuoteStatusBadgeClass($status)
 function handleQuoteRequestPost(): void
 {
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_quote'])) {
-
-
-
-
-
-
-
+        
+        $csrf_token = $_POST['csrf_token'] ?? '';
+        if (!validateToken($csrf_token)) {
+            flashMessage("Jeton de sécurité invalide ou expiré. Veuillez réessayer.", "danger");
+            redirectTo(WEBCLIENT_URL . '/modules/companies/quotes.php?action=request');
+            exit;
+        }
 
         $entreprise_id = $_SESSION['user_entreprise'] ?? 0;
         $personne_id = $_SESSION['user_id'] ?? 0;

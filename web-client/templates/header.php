@@ -115,6 +115,7 @@ $userNotifications = [];
                                     <ul class="dropdown-menu">
                                         <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/index.php"><i class="fas fa-tachometer-alt me-2"></i>Tableau de bord</a></li>
                                         <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/appointments.php"><i class="fas fa-calendar-check me-2"></i>Mes Rendez-vous</a></li>
+                                        <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/calendar.php"><i class="fas fa-calendar-day me-2"></i>Mon Planning</a></li>
                                         <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/services.php"><i class="fas fa-concierge-bell me-2"></i>Catalogue Services</a></li>
                                         <li><a class="dropdown-item" href="<?= WEBCLIENT_URL ?>/modules/employees/communities.php"><i class="fas fa-users me-2"></i>Communautés</a></li>
                                         <li>

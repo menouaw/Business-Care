@@ -147,8 +147,11 @@ function getProviderProfileDetailsForEmployee(int $provider_id, int $employee_id
 
     $sql_avg_rating = "SELECT AVG(e.note) as average_rating, COUNT(e.id) as total_ratings
                        FROM evaluations e
-                       JOIN prestataires_prestations pp ON e.prestation_id = pp.prestation_id
-                       WHERE pp.prestataire_id = :provider_id";
+                       WHERE e.prestation_id IN (
+                           SELECT DISTINCT pp.prestation_id
+                           FROM prestataires_prestations pp
+                           WHERE pp.prestataire_id = :provider_id
+                       )";
     $stmt_avg_rating = executeQuery($sql_avg_rating, [':provider_id' => $provider_id]);
     $rating_data = $stmt_avg_rating ? $stmt_avg_rating->fetch(PDO::FETCH_ASSOC) : ['average_rating' => null, 'total_ratings' => 0];
     $provider_details['average_rating'] = $rating_data['average_rating'] ? round($rating_data['average_rating'], 1) : null;
@@ -176,14 +179,14 @@ function getEmployeeBookablePrestationsForProvider(int $employee_id, int $provid
         return [];
     }
 
-    
+
     $employee = fetchOne('personnes', 'id = :id AND role_id = :role_id', [':id' => $employee_id, ':role_id' => ROLE_SALARIE]);
     if (!$employee || !$employee['entreprise_id']) {
         return [];
     }
     $entreprise_id = $employee['entreprise_id'];
 
-    
+
     $contract = fetchOne(
         'contrats',
         'entreprise_id = :entreprise_id AND statut = :statut AND (date_fin IS NULL OR date_fin >= CURDATE())',
@@ -195,7 +198,7 @@ function getEmployeeBookablePrestationsForProvider(int $employee_id, int $provid
     }
     $contract_id = $contract['id'];
 
-    
+
     $allowed_prestation_ids_stmt = executeQuery(
         "SELECT prestation_id FROM contrats_prestations WHERE contrat_id = :contract_id",
         [':contract_id' => $contract_id]
@@ -205,12 +208,12 @@ function getEmployeeBookablePrestationsForProvider(int $employee_id, int $provid
         return [];
     }
 
-    
+
     $allowed_placeholders = implode(',', array_fill(0, count($allowed_prestation_ids), '?'));
 
-    
-    
-    
+
+
+
     $bookable_types = ['consultation'];
     $type_placeholders = implode(',', array_fill(0, count($bookable_types), '?'));
 
@@ -222,7 +225,7 @@ function getEmployeeBookablePrestationsForProvider(int $employee_id, int $provid
               AND pr.type IN ({$type_placeholders})
             ORDER BY pr.nom ASC";
 
-    
+
     $final_params = array_merge(
         [$provider_id],
         $allowed_prestation_ids,

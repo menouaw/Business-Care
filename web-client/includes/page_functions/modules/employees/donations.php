@@ -49,7 +49,7 @@ function _validateFinancialDonationDetails(array $formData): ?string
 {
     $montantInput = str_replace(',', '.', $formData['montant'] ?? '');
     $montant = filter_var($montantInput, FILTER_VALIDATE_FLOAT);
-    if ($montant === false || $montant <= 0) {
+    if ($montant === false || $montant < 0.01) {
         return "Montant invalide pour un don financier (minimum 0.01€).";
     }
     return null;
@@ -154,19 +154,19 @@ function processMaterialDonation(int $userId, int $associationId, string $descri
  */
 function processFinancialDonation(int $userId, int $associationId, float $montant, string $description): void
 {
-    
+
     $association = fetchOne('associations', 'id = ?', [$associationId]);
     if (!$association) {
-        
+
         error_log("FinancialDonation Error: Association not found. Association ID: " . $associationId . ", User ID: " . $userId);
         flashMessage('Error: Association details could not be retrieved.', 'danger');
         unset($_SESSION['pending_donation']);
         redirectTo(WEBCLIENT_URL . '/modules/employees/donations.php');
-        exit(); 
+        exit();
     }
 
-    
-    
+
+
     /*
     if (!isset($_SESSION['pending_donation'])) {
         $_SESSION['pending_donation'] = [
@@ -179,17 +179,17 @@ function processFinancialDonation(int $userId, int $associationId, float $montan
     }
     */
 
-    
+
     Stripe::setApiKey(STRIPE_SECRET_KEY);
 
-    
+
     $checkout_session = StripeCheckoutSession::create([
         'payment_method_types' => ['card', 'sepa_debit', 'bancontact'],
         'line_items' => [[
             'price_data' => [
                 'currency' => 'eur',
                 'product_data' => [
-                    'name' => 'Don à ' . htmlspecialchars($association['nom']), 
+                    'name' => 'Don à ' . htmlspecialchars($association['nom']),
                     'description' => $description ?: 'Don financier',
                 ],
                 'unit_amount' => intval($montant * 100),
@@ -209,7 +209,7 @@ function processFinancialDonation(int $userId, int $associationId, float $montan
         'customer_email' => $_SESSION['user_email'] ?? null,
     ]);
 
-    
+
     header("Location: " . $checkout_session->url);
     exit();
 }
@@ -226,7 +226,7 @@ function _validateDonationRequest(array $postData): ?array
         return ["Action invalide ou jeton de sécurité expiré."];
     }
 
-    $formData = sanitizeInput($postData); 
+    $formData = sanitizeInput($postData);
     $errors = validateDonationData($formData);
 
     return !empty($errors) ? $errors : null;
@@ -245,25 +245,25 @@ function _processValidDonation(int $userId, array $formData): void
     $description = trim($formData['description'] ?? '');
     $montant = null;
 
-    
+
     if ($type === 'financier') {
         $montantInput = str_replace(',', '.', $formData['montant']);
         $montant = (float)$montantInput;
-        $descriptionForProcessing = $description ?: "Don financier"; 
+        $descriptionForProcessing = $description ?: "Don financier";
 
-        
+
         $_SESSION['pending_donation'] = [
             'user_id' => $userId,
             'association_id' => $associationId,
             'montant' => $montant,
-            'description' => $description, 
+            'description' => $description,
             'type' => 'financier'
         ];
 
-        
+
         processFinancialDonation($userId, $associationId, $montant, $descriptionForProcessing);
     } elseif ($type === 'materiel') {
-        
+
         processMaterialDonation($userId, $associationId, $description);
     }
 }
@@ -274,7 +274,7 @@ function _processValidDonation(int $userId, array $formData): void
  */
 function handleNewDonation()
 {
-    
+
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         return;
     }
@@ -282,7 +282,7 @@ function handleNewDonation()
         return;
     }
 
-    
+
     requireRole(ROLE_SALARIE);
     $userId = $_SESSION['user_id'] ?? 0;
     if ($userId <= 0) {
@@ -291,7 +291,7 @@ function handleNewDonation()
         exit;
     }
 
-    
+
     $validationErrors = _validateDonationRequest($_POST);
     if ($validationErrors !== null) {
         foreach ($validationErrors as $error) {
@@ -301,14 +301,9 @@ function handleNewDonation()
         exit;
     }
 
-    
-    $formData = sanitizeInput($_POST); 
-    _processValidDonation($userId, $formData);
 
-    
-    
-    redirectTo(WEBCLIENT_URL . '/modules/employees/donations.php');
-    exit;
+    $formData = sanitizeInput($_POST);
+    _processValidDonation($userId, $formData);
 }
 
 /**
@@ -327,7 +322,7 @@ function _handleStripeReturn(): bool
     $tokenType = ($result === 'success') ? 'stripe_success' : 'stripe_cancel';
 
 
-    if (!validateToken($token)) {
+    if (!validateToken($token, 'stripe_return_callback')) {
         flashMessage("URL de retour invalide ou expirée.", "danger");
         redirectTo(WEBCLIENT_URL . '/modules/employees/donations.php');
         exit;

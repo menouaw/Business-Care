@@ -17,7 +17,7 @@ function getProviderEvaluations(int $provider_id, int $limit = 10, int $offset =
         return $result;
     }
 
-    
+
     $stmt_ids = executeQuery(
         "SELECT prestation_id FROM prestataires_prestations WHERE prestataire_id = :provider_id",
         [':provider_id' => $provider_id]
@@ -25,22 +25,22 @@ function getProviderEvaluations(int $provider_id, int $limit = 10, int $offset =
     $prestation_ids = $stmt_ids ? $stmt_ids->fetchAll(PDO::FETCH_COLUMN) : [];
 
     if (empty($prestation_ids)) {
-        return $result; 
+        return $result;
     }
 
     $placeholders = implode(',', array_fill(0, count($prestation_ids), '?'));
 
-    
+
     $sql_count = "SELECT COUNT(*) FROM evaluations e WHERE e.prestation_id IN ({$placeholders})";
     $stmt_count = executeQuery($sql_count, $prestation_ids);
     $total_evaluations = $stmt_count ? (int)$stmt_count->fetchColumn() : 0;
     $result['total'] = $total_evaluations;
 
     if ($total_evaluations === 0) {
-        return $result; 
+        return $result;
     }
 
-    
+
     $sql_evaluations = "SELECT 
                 e.id, 
                 e.note, 
@@ -56,16 +56,20 @@ function getProviderEvaluations(int $provider_id, int $limit = 10, int $offset =
             ORDER BY e.date_evaluation DESC
             LIMIT ? OFFSET ?";
 
-    
-    
-    
+
+
+
     $params = $prestation_ids;
     $params[] = (int)$limit;
     $params[] = (int)$offset;
 
-    
+
     $stmt_evaluations = executeQuery($sql_evaluations, $params);
-    $result['evaluations'] = $stmt_evaluations ? $stmt_evaluations->fetchAll(PDO::FETCH_ASSOC) : [];
+    if ($stmt_evaluations instanceof PDOStatement) {
+        $result['evaluations'] = $stmt_evaluations->fetchAll(PDO::FETCH_ASSOC);
+    } else {
+        $result['evaluations'] = [];
+    }
 
     return $result;
 }
@@ -78,14 +82,13 @@ function getProviderEvaluations(int $provider_id, int $limit = 10, int $offset =
  */
 function formatRatingStars(int $note): string
 {
-    
     $output = '';
     $maxStars = 5;
     for ($i = 1; $i <= $maxStars; $i++) {
         if ($i <= $note) {
-            $output .= '<i class="fas fa-star text-warning"></i>'; 
+            $output .= '<i class="fas fa-star text-warning"></i>';
         } else {
-            $output .= '<i class="far fa-star text-muted"></i>'; 
+            $output .= '<i class="far fa-star text-muted"></i>';
         }
     }
     return $output;
