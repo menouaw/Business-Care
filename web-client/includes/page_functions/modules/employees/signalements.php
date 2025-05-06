@@ -12,15 +12,12 @@ function handleNewSignalement(): void
         return;
     }
 
-
-
     if (!isset($_SESSION['user_id'])) {
 
         flashMessage("Vous devez être connecté pour effectuer un signalement.", "warning");
         redirectTo(WEBCLIENT_URL . '/auth/login.php');
         return;
     }
-
 
     if (!validateToken($_POST['csrf_token'] ?? '')) {
         handleClientCsrfFailureRedirect('envoyer un signalement', WEBCLIENT_URL . '/modules/employees/signalements.php');
