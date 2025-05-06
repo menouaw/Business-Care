@@ -127,7 +127,7 @@ function _getCommunityDetailPageData(int $view_id, int $salarie_id, string $csrf
 
 /**
  * Configure les données nécessaires pour la page des communautés.
- * Refactorisé pour utiliser des fonctions d'aide.
+ * Refactorisé pour utiliser des fonctions d'aide et un flux plus linéaire.
  *
  * @return array Un tableau contenant les données pour la vue.
  */
@@ -141,23 +141,27 @@ function setupCommunitiesPage(): array
         exit;
     }
 
-    $view_id = filter_input(INPUT_GET, 'view_id', FILTER_VALIDATE_INT);
-    $csrfToken = generateToken();
-
+    
     handleCommunityActions($salarie_id);
 
+    $view_id = filter_input(INPUT_GET, 'view_id', FILTER_VALIDATE_INT);
+    
+    
+    $csrfToken = generateToken();
+
     if ($view_id && $view_id > 0) {
-        $viewData = _getCommunityDetailPageData($view_id, $salarie_id, $csrfToken);
-    } else {
-        $viewData = _getCommunityListPageData($salarie_id, $csrfToken);
+        
+        $detailData = _getCommunityDetailPageData($view_id, $salarie_id, $csrfToken);
+        
+        
+        return $detailData; 
     }
+    
+    $listData = _getCommunityListPageData($salarie_id, $csrfToken);
+    return $listData; 
 
-    if ($viewData === null) {
-        redirectTo(WEBCLIENT_URL . '/modules/employees/communities.php');
-        exit;
-    }
-
-    return $viewData;
+       
+    
 }
 
 /**
