@@ -127,7 +127,7 @@
             <li class="nav-item">
                 <a class="nav-link <?php echo strpos($_SERVER['SCRIPT_NAME'], '/modules/ia/') !== false ? 'active' : ''; ?>" href="<?php echo WEBADMIN_URL; ?>/modules/ia/chatbot.php">
                     <i class="fas fa-robot me-2"></i>
-                    Chatbot IA
+                    Assistance
                 </a>
             </li>
         </ul>

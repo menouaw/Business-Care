@@ -7,7 +7,7 @@ if (!isset($_SESSION['chatbot_conversation'])) {
     $_SESSION['chatbot_conversation'] = [];
 }
 
-$pageTitle = "Chatbot IA";
+$pageTitle = "Assistance";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $formAction = sanitizeInput($_POST['form_action'] ?? '');
@@ -58,14 +58,26 @@ include __DIR__ . '/../../templates/header.php';
             <?php echo displayFlashMessages(); ?>
 
             <div class="card shadow-sm mb-4">
-                <div class="card-body chatbot-container" style="height: 60vh; overflow-y: auto; padding: 15px; background-color: #f8f9fa;">
+                <div class="card-body chatbot-container">
                     <?php if (empty($_SESSION['chatbot_conversation'])): ?>
                         <p class="text-center text-muted mt-3">Aucun message pour le moment. Commencez la conversation ci-dessous.</p>
                     <?php else: ?>
                         <?php foreach ($_SESSION['chatbot_conversation'] as $message): ?>
-                            <div class="chat-message mb-3 p-2 rounded shadow-sm <?php echo ($message['role'] === 'user') ? 'bg-primary text-white ms-auto' : 'bg-light text-dark me-auto border'; ?>" style="max-width: 75%; width: fit-content; word-wrap: break-word; list-style: none;">
-                                <strong class="d-block mb-1"><?php echo htmlspecialchars(ucfirst($message['role'])); ?>:</strong>
-                                <div style="white-space: pre-wrap;"><?php echo nl2br(htmlspecialchars($message['text_content'])); ?></div>
+                            <div class="chat-message mb-3 p-2 rounded shadow-sm <?php echo ($message['role'] === 'user') ? 'bg-primary text-white ms-auto' : 'bg-light text-dark me-auto border'; ?>">
+                                <strong class="d-block mb-1">
+                                    <?php 
+                                        $displayName = '';
+                                        if ($message['role'] === 'user') {
+                                            $displayName = 'Moi';
+                                        } elseif ($message['role'] === 'assistant') {
+                                            $displayName = 'Assistant';
+                                        } else {
+                                            $displayName = ucfirst($message['role']);
+                                        }
+                                        echo htmlspecialchars($displayName);
+                                    ?>:
+                                </strong>
+                                <div class="chat-message-text-content"><?php echo nl2br(htmlspecialchars($message['text_content'])); ?></div>
                             </div>
                         <?php endforeach; ?>
                     <?php endif; ?>
@@ -82,6 +94,15 @@ include __DIR__ . '/../../templates/header.php';
                     </form>
                 </div>
             </div>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const chatContainer = document.querySelector('.chatbot-container');
+                    if (chatContainer) {
+                        chatContainer.scrollTop = chatContainer.scrollHeight;
+                    }
+                });
+            </script>
 
             <?php
             include __DIR__ . '/../../templates/footer.php';

@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     setupMenuToggle();
     setupMenuOptions();
+    setupChatboxEnterSubmit();
 });
 
 function setupDeleteConfirmation() {
@@ -81,4 +82,19 @@ function setupMenuOptions() {
             document.getElementById('menu-container').style.display = 'none';
         });
     });
+}
+
+function setupChatboxEnterSubmit() {
+    const chatTextarea = document.querySelector('textarea[name="user_message"]');
+    if (chatTextarea) {
+        chatTextarea.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault(); 
+                const form = chatTextarea.closest('form');
+                if (form) {
+                    form.submit();
+                }
+            }
+        });
+    }
 } 
