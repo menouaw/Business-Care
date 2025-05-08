@@ -103,6 +103,3 @@ include __DIR__ . '/../../templates/header.php';
     </div>
 </div>
 
-<?php
-include __DIR__ . '/../../templates/footer.php';
-?>

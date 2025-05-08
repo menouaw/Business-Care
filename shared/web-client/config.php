@@ -55,7 +55,6 @@ define('MAX_APPOINTMENTS_PER_DAY', 8);
 define('DASHBOARD_ITEMS_LIMIT', 5);
 define('MIN_PASSWORD_LENGTH', 8);
 
-
 define('DEFAULT_DATE_FORMAT', 'd/m/Y H:i');
 define('DEFAULT_CURRENCY', '€');
 define('DEFAULT_CURRENCY_CODE', 'eur');

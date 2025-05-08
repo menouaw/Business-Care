@@ -139,6 +139,3 @@ if (isset($_SESSION['user_role'])) {
     </div>
 </div>
 
-<?php
-include __DIR__ . '/../../templates/footer.php';
-?>

@@ -252,5 +252,4 @@ function getIconForCommunityType(string $type): string
     }
 }
 
-include __DIR__ . '/../../templates/footer.php';
 ?>

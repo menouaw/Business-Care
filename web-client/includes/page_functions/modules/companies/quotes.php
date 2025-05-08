@@ -127,15 +127,12 @@ function saveQuoteRequest(int $entreprise_id, array $data): int|false
     $tva = defined('TVA_RATE') ? TVA_RATE * 100 : 20.0;
 
     if ($service_id) {
-
         $service = fetchOne('services', 'id = :id', [':id' => $service_id]);
         if ($service && isset($service['prix_base_indicatif']) && $service['prix_base_indicatif'] !== null) {
             $montant_total = (float)$service['prix_base_indicatif'];
-
             $montant_ht = $montant_total / (1 + (float)($tva / 100));
             $statut = QUOTE_STATUS_PENDING;
         } else {
-
             error_log("[WARNING] saveQuoteRequest: Service ID {$service_id} sélectionné mais non trouvé ou prix indicatif manquant.");
             $service_id = null;
         }
@@ -144,13 +141,11 @@ function saveQuoteRequest(int $entreprise_id, array $data): int|false
     $insertData = [
         'entreprise_id' => $entreprise_id,
         'service_id' => $service_id,
-        'notes_negociation' => $data['notes'],
         'date_creation' => date('Y-m-d'),
         'statut' => $statut,
         'montant_total' => $montant_total,
         'montant_ht' => $montant_ht,
         'tva' => $tva,
-
     ];
 
     $newQuoteId = insertRow('devis', $insertData);
@@ -202,7 +197,7 @@ function getQuoteStatusBadgeClass($status)
 function handleQuoteRequestPost(): void
 {
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_quote'])) {
-        
+
         $csrf_token = $_POST['csrf_token'] ?? '';
         if (!validateToken($csrf_token)) {
             flashMessage("Jeton de sécurité invalide ou expiré. Veuillez réessayer.", "danger");

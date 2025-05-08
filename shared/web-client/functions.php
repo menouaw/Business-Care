@@ -70,7 +70,7 @@ function sanitizeInput($input)
  */
 function _formatTimeDifferenceUnit(int $value, string $unit): string
 {
-    // Gère le pluriel, sauf pour 'mois' qui est invariable ici
+    
     $plural = ($value > 1 && $unit !== 'mois') ? 's' : '';
     return 'il y a ' . $value . ' ' . $unit . $plural;
 }
@@ -103,7 +103,7 @@ function timeAgo($time)
 
         if ($d >= 1) {
             $t = round($d);
-            // Utilisation de la fonction d'aide
+            
             return _formatTimeDifferenceUnit($t, $str);
         }
     }
@@ -427,7 +427,7 @@ function _renderPaginationLastPages(int $currentPage, int $totalPages, string $u
 function renderPagination($pagination, $urlPattern)
 {
     if (!is_array($pagination) || !isset($pagination['totalPages'], $pagination['currentPage'])) {
-        // error_log("renderPagination: Données de pagination invalides ou manquantes.");
+        
         return '';
     }
 
@@ -580,7 +580,7 @@ function createNotification(int $user_id, string $title, string $message, string
         if ($lastId) {
             return (int)$lastId;
         } else {
-            // error_log("Erreur createNotification: insertRow succeeded but lastInsertId returned invalid value for user_id: $user_id.");
+            
             return false;
         }
     }

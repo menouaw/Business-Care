@@ -4,21 +4,21 @@ require_once __DIR__ . '/../../includes/page_functions/modules/employees/appoint
 
 requireRole(ROLE_SALARIE);
 
-// IMPORTANT : Gérer les actions POST (réservation, annulation) AVANT de préparer les données de la page.
-// Cela permet à handleAppointmentPostAndGetActions de potentiellement rediriger l'utilisateur.
+
+
 $salarie_id_session = $_SESSION['user_id'] ?? 0;
 if ($salarie_id_session > 0) {
     handleAppointmentPostAndGetActions($salarie_id_session);
-    // Note: handleAppointmentPostAndGetActions (via ses helpers) contient des `exit` après redirection,
-    // donc le script s'arrêtera ici si une action POST a été traitée avec succès.
+    
+    
 } else {
-    // Gérer le cas où l'ID salarié n'est pas en session avant même d'essayer les actions POST
+    
     flashMessage("Session invalide ou expirée. Veuillez vous reconnecter.", "danger");
     redirectTo(WEBCLIENT_URL . '/auth/login.php');
     exit;
 }
 
-// Préparer les données pour l'affichage de la page (GET)
+
 $viewData = setupAppointmentsPage();
 
 if (!is_array($viewData)) {
@@ -381,4 +381,3 @@ include __DIR__ . '/../../templates/header.php';
     </div>
 </div>
 
-<?php include __DIR__ . '/../../templates/footer.php'; ?>

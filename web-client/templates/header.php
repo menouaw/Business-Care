@@ -167,14 +167,14 @@ $userNotifications = [];
                     <ul class="navbar-nav ms-auto">
                         <?php if ($isLoggedIn): ?>
 
-                            <li class="nav-item dropdown me-3">
+                            <li class="nav-item dropdown me-3 d-flex align-items-center">
                                 <?php
                                 $unread_count = getUnreadNotificationCount($_SESSION['user_id']);
                                 ?>
-                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownNotifications" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdownNotifications" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="height: 100%; padding-top: 0; padding-bottom: 0;">
                                     <i class="fas fa-bell"></i>
                                     <?php if ($unread_count > 0): ?>
-                                        <span class="badge rounded-pill bg-danger ms-1"><?= $unread_count ?></span>
+                                        <span class="badge rounded-pill bg-danger ms-1" style="position: relative; top: -0.25rem;"><?= $unread_count ?></span>
                                     <?php endif; ?>
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownNotifications">
@@ -254,6 +254,9 @@ $userNotifications = [];
     <?php endif; ?>
 
     <main role="main" class="flex-shrink-0 <?= $mainClass ?? '' ?>">
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

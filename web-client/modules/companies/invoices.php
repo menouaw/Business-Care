@@ -100,8 +100,8 @@ include __DIR__ . '/../../templates/header.php';
                         <?php
                         $payable_statuses = [INVOICE_STATUS_PENDING, INVOICE_STATUS_LATE, INVOICE_STATUS_UNPAID];
                         if (in_array($invoice['statut'], $payable_statuses)) : ?>
-                            <a href="<?= WEBCLIENT_URL ?>/modules/companies/invoices.php?action=create-checkout-session&id=<?= $invoice['id'] ?>" class="btn btn-sm btn-success" title="Payer cette facture">
-                                <i class="fas fa-credit-card me-1"></i> Payer Maintenant
+                            <a href="<?= WEBCLIENT_URL ?>/modules/companies/invoices.php?action=create-checkout-session&id=<?= $invoice['id'] ?>" class="btn btn-sm btn-primary" title="Payer avec Stripe">
+                                <i class="fa-brands fa-stripe me-1"></i> Payer avec Stripe
                             </a>
                         <?php endif; ?>
                         <?php
@@ -206,8 +206,8 @@ include __DIR__ . '/../../templates/header.php';
                                             <?php
                                             $payable_statuses = [INVOICE_STATUS_PENDING, INVOICE_STATUS_LATE, INVOICE_STATUS_UNPAID];
                                             if (in_array($invoice_item['statut'], $payable_statuses)) : ?>
-                                                <a href="<?= WEBCLIENT_URL ?>/modules/companies/invoices.php?action=create-checkout-session&id=<?= $invoice_item['id'] ?>" class="btn btn-sm btn-success" title="Payer cette facture">
-                                                    <i class="fas fa-credit-card"></i><span class="visually-hidden">Payer facture</span>
+                                                <a href="<?= WEBCLIENT_URL ?>/modules/companies/invoices.php?action=create-checkout-session&id=<?= $invoice_item['id'] ?>" class="btn btn-sm btn-primary" title="Payer avec Stripe">
+                                                    <i class="fa-brands fa-stripe"></i><span class="visually-hidden"> Payer la facture avec Stripe</span>
                                                 </a>
                                             <?php endif; ?>
                                             <?php
@@ -224,7 +224,3 @@ include __DIR__ . '/../../templates/header.php';
         </main>
     </div>
 </div>
-
-<?php
-include __DIR__ . '/../../templates/footer.php';
-?>

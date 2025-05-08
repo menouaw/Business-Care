@@ -381,17 +381,17 @@ function handleStripeReturn(): void
 {
     $payment_status = filter_input(INPUT_GET, 'payment', FILTER_SANITIZE_SPECIAL_CHARS);
 
-    if ($payment_status) { // Si un statut de paiement est présent
+    if ($payment_status) { 
         if ($payment_status === 'success') {
-            // Note: Idéalement, vérifier la session_id ici via un webhook ou une query API avant de confirmer
+            
             flashMessage("Votre tentative de paiement a été initiée. Le statut de la facture sera mis à jour après confirmation.", "info");
         } elseif ($payment_status === 'cancelled') {
             flashMessage("Le processus de paiement a été annulé.", "warning");
         }
-        // Rediriger pour nettoyer l'URL des paramètres de paiement
-        // Assurez-vous que WEBCLIENT_URL est défini comme constante globale
+        
+        
         redirectTo(WEBCLIENT_URL . '/modules/companies/invoices.php');
-        // redirectTo contient exit(), donc le script s'arrête ici si $payment_status est trouvé.
+        
     }
-    // Si aucun statut de paiement n'est trouvé, la fonction ne fait rien et le script continue.
+    
 }
