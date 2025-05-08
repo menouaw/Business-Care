@@ -12,7 +12,7 @@ $stream = $input['stream'] ?? false;
 $requestBody = buildChatCompletionRequest($messages, $stream);
 
 
-$url = "https://" . LOCATION_ID . "-aiplatform.googleapis.com/v1beta1/projects/" . PROJECT_ID . "/locations/" . LOCATION_ID . "/endpoints/openapi/chat/completions";
+$url = "https://" . API_HOST . "/" . API_PATH;
 
 
 $accessToken = getGoogleAccessToken();

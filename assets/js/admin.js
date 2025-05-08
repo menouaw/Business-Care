@@ -78,10 +78,6 @@ function setupMenuOptions() {
         option.addEventListener('click', function() {
             const action = this.dataset.action;
 
-            if (action === 'chatbot') {
-                window.location.href = 'web-admin/modules/ia/chatbot.php';
-            }
-
             document.getElementById('menu-container').style.display = 'none';
         });
     });
