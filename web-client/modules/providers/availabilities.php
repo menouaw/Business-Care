@@ -152,7 +152,8 @@ include __DIR__ . '/../../templates/header.php';
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label for="heure_fin_rec_edit" class="form-label">Heure de fin <span class="text-info">(requis si récurrent)</span></label>
-                                        <input type="time" class="form-control" id="heure_fin_rec_edit" name="heure_fin" value="<?= htmlspecialchars($availability_to_edit['heure_fin'] ? date('H:i', strtotime($availability_to_edit['heure_fin'])) : '') ?>">
+                                        <input type="time" class="form-control" id="heure_fin_rec_edit" name="heure_fin" value="<?= htmlspecialchars(!empty($availability_to_edit['heure_fin']) ? date('H:i', strtotime($availability_to_edit['heure_fin'])) : '') ?>">
+
                                     </div>
                                 </div>
                                 <div class="mb-3">
@@ -179,7 +180,7 @@ include __DIR__ . '/../../templates/header.php';
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label for="heure_debut_spec_edit" class="form-label">Heure de début (Optionnel)</label>
-                                        <input type="time" class="form-control" id="heure_debut_spec_edit" name="heure_debut_specifique" value="<?= htmlspecialchars($availability_to_edit['heure_debut'] ? date('H:i', strtotime($availability_to_edit['heure_debut'])) : '') ?>">
+                                        <input type="time" class="form-control" id="heure_debut_spec_edit" name="heure_debut_specifique" value="<?= htmlspecialchars(!empty($availability_to_edit['heure_debut']) ? date('H:i', strtotime($availability_to_edit['heure_debut'])) : '') ?>">
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label for="heure_fin_spec_edit" class="form-label">Heure de fin (Optionnel)</label>
