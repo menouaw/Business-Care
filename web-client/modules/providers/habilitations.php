@@ -18,9 +18,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_habilitation']
     $habilitation_id_to_delete = filter_input(INPUT_POST, 'habilitation_id', FILTER_VALIDATE_INT);
     if ($habilitation_id_to_delete) {
         if (deleteProviderHabilitation($habilitation_id_to_delete, $provider_id)) {
-            
+            flashMessage("Habilitation supprimée avec succès.", "success");
         } else {
-            
+            flashMessage("Erreur lors de la suppression de l'habilitation.", "danger");
         }
     } else {
         flashMessage("ID d'habilitation invalide pour la suppression.", "danger");
