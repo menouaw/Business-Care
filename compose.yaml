@@ -10,8 +10,10 @@ services:
       DB_DATABASE: ${MYSQL_DATABASE:-business_care}
       DB_USERNAME: ${MYSQL_USER:-business_care_user}
       DB_PASSWORD: ${MYSQL_PASSWORD}
+      GOOGLE_APPLICATION_CREDENTIALS: /app-credentials/adc.json
     volumes:
       - .:/var/www/html
+      - /c/Users/menou/AppData/Roaming/gcloud/application_default_credentials.json:/app-credentials/adc.json:ro
     depends_on:
       db:
         condition: service_healthy
