@@ -126,14 +126,6 @@ include __DIR__ . '/../../templates/header.php';
                                     </select>
                                 </div>
 
-                                <div class="mb-3">
-                                    <label for="theme" class="form-label">Thème d'affichage</label>
-                                    <select class="form-select" id="theme" name="theme">
-                                        <option value="clair" <?= ($preferences['theme'] ?? 'clair') === 'clair' ? 'selected' : '' ?>>Clair (Défaut)</option>
-                                        <option value="sombre" <?= ($preferences['theme'] ?? 'clair') === 'sombre' ? 'selected' : '' ?>>Sombre</option>
-                                    </select>
-                                </div>
-
                                 <div class="form-check mb-3">
                                     <input class="form-check-input" type="checkbox" id="notif_email" name="notif_email" value="1" <?= !empty($preferences['notif_email']) ? 'checked' : '' ?>>
                                     <label class="form-check-label" for="notif_email">

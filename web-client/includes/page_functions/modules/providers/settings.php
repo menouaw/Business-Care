@@ -33,11 +33,9 @@ function getProviderPreferences(int $provider_id): array
 
     $prefs = fetchOne(TABLE_USER_PREFERENCES, 'personne_id = :id', [':id' => $provider_id]);
 
-
     return [
         'langue' => $prefs['langue'] ?? 'fr',
         'notif_email' => $prefs['notif_email'] ?? true,
-        'theme' => $prefs['theme'] ?? 'clair'
     ];
 }
 
@@ -81,9 +79,6 @@ function handleUpdateProviderProfile(int $provider_id, array $formData): array
         $_SESSION['user_name'] = htmlspecialchars($prenom, ENT_QUOTES, 'UTF-8') . ' ' . htmlspecialchars($nom, ENT_QUOTES, 'UTF-8');
         return ['success' => true, 'message' => 'Profil mis à jour avec succès.'];
     } else {
-
-
-
         return ['success' => true, 'message' => 'Aucune modification détectée ou erreur lors de la mise à jour.'];
     }
 }
@@ -101,15 +96,12 @@ function handleUpdateProviderPreferences(int $provider_id, array $formData): arr
 
     $langue = $formData['langue'] ?? 'fr';
     $notif_email = isset($formData['notif_email']) ? 1 : 0;
-    $theme = $formData['theme'] ?? 'clair';
 
     if (!in_array($langue, ['fr', 'en'])) $langue = 'fr';
-    if (!in_array($theme, ['clair', 'sombre'])) $theme = 'clair';
 
     $dataToUpdate = [
         'langue' => $langue,
         'notif_email' => $notif_email,
-        'theme' => $theme
     ];
 
     $existingPrefs = fetchOne(TABLE_USER_PREFERENCES, 'personne_id = :id', [':id' => $provider_id]);

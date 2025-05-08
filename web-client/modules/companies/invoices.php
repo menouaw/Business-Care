@@ -207,7 +207,7 @@ include __DIR__ . '/../../templates/header.php';
                                             $payable_statuses = [INVOICE_STATUS_PENDING, INVOICE_STATUS_LATE, INVOICE_STATUS_UNPAID];
                                             if (in_array($invoice_item['statut'], $payable_statuses)) : ?>
                                                 <a href="<?= WEBCLIENT_URL ?>/modules/companies/invoices.php?action=create-checkout-session&id=<?= $invoice_item['id'] ?>" class="btn btn-sm btn-primary" title="Payer avec Stripe">
-                                                    <i class="fa-brands fa-stripe"></i><span class="visually-hidden"> Payer la facture avec Stripe</span>
+                                                    <i class="fas fa-credit-card me-1"></i> Payer
                                                 </a>
                                             <?php endif; ?>
                                             <?php
