@@ -35,15 +35,17 @@ include __DIR__ . '/../../templates/header.php';
     <div class="row">
         <?php include __DIR__ . '/../../templates/sidebar.php'; ?>
 
-        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 pt-3">
-            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+        <!-- MODIFICATION: Retiré la classe ms-sm-auto qui ajoutait une marge auto à gauche -->
+        <main class="col-md-9 col-lg-10 px-md-4 pt-3">
+            <!-- MODIFICATION: Supprimé les classes justify-content-between et flex-md-nowrap qui affectaient l'alignement -->
+            <div class="d-flex flex-wrap align-items-center pb-2 mb-3 border-bottom">
                 <h1 class="h2">Bienvenue, <?php echo htmlspecialchars($_SESSION['user_name'] ?? 'Utilisateur'); ?> !</h1>
             </div>
 
             <?php echo displayFlashMessages(); ?>
 
-
-            <div class="row mb-4">
+            <!-- MODIFICATION: Ajouté une classe personnalisée stats-row pour cibler spécifiquement ces cartes avec CSS -->
+            <div class="row mb-4 stats-row">
 
                 <div class="col-xl-3 col-md-6 mb-4">
                     <a href="<?= WEBCLIENT_URL ?>/modules/companies/employees/index.php" class="text-decoration-none">
@@ -130,6 +132,3 @@ include __DIR__ . '/../../templates/header.php';
         </main>
     </div>
 </div>
-
-<?php include __DIR__ . '/../../templates/footer.php';
-?>

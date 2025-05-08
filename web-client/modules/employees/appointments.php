@@ -4,6 +4,21 @@ require_once __DIR__ . '/../../includes/page_functions/modules/employees/appoint
 
 requireRole(ROLE_SALARIE);
 
+
+
+$salarie_id_session = $_SESSION['user_id'] ?? 0;
+if ($salarie_id_session > 0) {
+    handleAppointmentPostAndGetActions($salarie_id_session);
+    
+    
+} else {
+    
+    flashMessage("Session invalide ou expirée. Veuillez vous reconnecter.", "danger");
+    redirectTo(WEBCLIENT_URL . '/auth/login.php');
+    exit;
+}
+
+
 $viewData = setupAppointmentsPage();
 
 if (!is_array($viewData)) {
@@ -226,7 +241,7 @@ include __DIR__ . '/../../templates/header.php';
                     <div class="card-body">
 
                         <?php
-                        
+
                         $csrfToken = generateToken();
                         ?>
 
@@ -264,7 +279,7 @@ include __DIR__ . '/../../templates/header.php';
                                                             <input type="hidden" name="action" value="cancel">
                                                             <input type="hidden" name="id" value="<?= $rdv['id'] ?>">
                                                             <input type="hidden" name="filter" value="<?= $filter ?>">
-                                                            <!-- Use the single generated token -->
+
                                                             <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
                                                             <button type="submit" class="btn btn-sm btn-outline-danger" title="Annuler ce rendez-vous">
                                                                 <i class="fas fa-times"></i>
@@ -366,4 +381,3 @@ include __DIR__ . '/../../templates/header.php';
     </div>
 </div>
 
-<?php include __DIR__ . '/../../templates/footer.php'; ?>

@@ -62,6 +62,50 @@ function countTableRows($table, $where = '', $params = [])
     return $stmt->fetchColumn();
 }
 
+/**
+ * Construit la clause ORDER BY pour une requête SQL, en validant la chaîne.
+ *
+ * @param mixed $orderBy La clause ORDER BY potentielle.
+ * @param string $table Le nom de la table (pour logging).
+ * @return string La clause SQL ORDER BY formatée ou une chaîne vide.
+ */
+function _buildOrderByClause($orderBy, string $table): string
+{
+    if (is_string($orderBy) && !empty(trim($orderBy))) {
+
+        if (preg_match('/^[a-zA-Z0-9_,\s\.\(\)]+(?:\s+(?:ASC|DESC))?(?:,\s*[a-zA-Z0-9_,\s\.\(\)]+(?:\s+(?:ASC|DESC))?)*$/', $orderBy)) {
+            return " ORDER BY " . $orderBy;
+        } else {
+            error_log("[WARNING] Invalid characters detected in orderBy clause in _buildOrderByClause for table '$table': " . $orderBy);
+        }
+    } elseif (!empty($orderBy)) {
+        error_log("[WARNING] Invalid type or empty orderBy parameter passed to _buildOrderByClause for table '$table'. Expected string, got: " . gettype($orderBy));
+    }
+    return '';
+}
+
+/**
+ * Construit la clause LIMIT/OFFSET pour une requête SQL, en validant les nombres.
+ *
+ * @param mixed $limit La limite potentielle.
+ * @param mixed $offset Le décalage potentiel.
+ * @return string La clause SQL LIMIT/OFFSET formatée ou une chaîne vide.
+ */
+function _buildLimitOffsetClause($limit, $offset): string
+{
+    $clause = '';
+    if (is_numeric($limit) && (int)$limit > 0) {
+        $clause .= " LIMIT " . (int)$limit;
+
+        if (is_numeric($offset) && (int)$offset >= 0) {
+            $clause .= " OFFSET " . (int)$offset;
+        }
+    } elseif (!empty($limit)) {
+        error_log("[WARNING] Invalid limit parameter passed to _buildLimitOffsetClause. Expected positive number, got: " . print_r($limit, true));
+    }
+    return $clause;
+}
+
 function fetchAll($table, $where = '', $orderBy = '', $limit = 0, $offset = 0, $params = [])
 {
     $table = validateTableName($table);
@@ -70,23 +114,10 @@ function fetchAll($table, $where = '', $orderBy = '', $limit = 0, $offset = 0, $
     if ($where) {
         $sql .= " WHERE $where";
     }
-    if ($orderBy) {
-        if (is_string($orderBy) && !empty(trim($orderBy))) {
-            if (preg_match('/^[a-zA-Z0-9_,\s\.\(\)]+(?:\s+(?:ASC|DESC))?(?:,\s*[a-zA-Z0-9_,\s\.\(\)]+(?:\s+(?:ASC|DESC))?)*$/', $orderBy)) {
-                $sql .= " ORDER BY " . $orderBy;
-            } else {
-                error_log("[WARNING] Invalid characters detected in orderBy clause in fetchAll for table '$table': " . $orderBy);
-            }
-        } else {
-            error_log("[WARNING] Invalid type or empty orderBy parameter passed to fetchAll for table '$table'. Expected string, got: " . gettype($orderBy));
-        }
-    }
-    if ($limit) {
-        $sql .= " LIMIT $limit";
-        if ($offset) {
-            $sql .= " OFFSET $offset";
-        }
-    }
+
+
+    $sql .= _buildOrderByClause($orderBy, $table);
+    $sql .= _buildLimitOffsetClause($limit, $offset);
 
     $stmt = executeQuery($sql, $params);
     return $stmt->fetchAll();
@@ -97,22 +128,13 @@ function fetchOne($table, $where, $params = [], $orderBy = '')
     $table = validateTableName($table);
 
     $sql = "SELECT * FROM $table WHERE $where";
-    if ($orderBy) {
-        if (is_string($orderBy) && !empty(trim($orderBy))) {
-            if (preg_match('/^[a-zA-Z0-9_,\s\.\(\)]+(?:\s+(?:ASC|DESC))?(?:,\s*[a-zA-Z0-9_,\s\.\(\)]+(?:\s+(?:ASC|DESC))?)*$/', $orderBy)) {
-                $sql .= " ORDER BY " . $orderBy;
-            } else {
-                error_log("[WARNING] Invalid characters detected in orderBy clause in fetchOne for table '$table': " . $orderBy);
-            }
-        } else {
-            error_log("[WARNING] Invalid type or empty orderBy parameter passed to fetchOne for table '$table'. Expected string, got: " . gettype($orderBy));
-        }
-    }
+
+
+    $sql .= _buildOrderByClause($orderBy, $table);
+
     $sql .= " LIMIT 1";
 
     $stmt = executeQuery($sql, $params);
-
-
     return $stmt->fetch();
 }
 
@@ -130,20 +152,20 @@ function insertRow($table, $data)
 
     try {
         $stmt = executeQuery($sql, $data);
-        
+
         return true;
-    } catch (PDOException $e) { 
-        
+    } catch (PDOException $e) {
+
         if (strpos((string)$e->getCode(), '01') === 0) {
             error_log("PDO Warning caught within insertRow (considered success): " . $e->getMessage() . " | SQL: $sql | Params: " . json_encode($data));
-            
+
             return true;
         } else {
-            
+
             error_log("PDO Error caught within insertRow: " . $e->getMessage() . " | SQL: $sql | Params: " . json_encode($data));
             return false;
         }
-    } catch (Exception $e) { 
+    } catch (Exception $e) {
         error_log("General Exception caught within insertRow: " . $e->getMessage() . " | SQL: $sql | Params: " . json_encode($data));
         return false;
     }

@@ -1,9 +1,9 @@
 <?php
 require_once __DIR__ . '/../../includes/init.php';
-require_once __DIR__ . '/../../includes/page_functions/modules/employees/donations.php'; 
+require_once __DIR__ . '/../../includes/page_functions/modules/employees/donations.php';
 
 $viewData = setupDonationsPage();
-extract($viewData); 
+extract($viewData);
 
 include __DIR__ . '/../../templates/header.php';
 ?>
@@ -22,7 +22,7 @@ include __DIR__ . '/../../templates/header.php';
 
             <?php echo displayFlashMessages(); ?>
 
-            
+
             <div class="card shadow-sm mb-4">
                 <div class="card-header">
                     <h5 class="mb-0">Proposer un nouveau don</h5>
@@ -35,7 +35,7 @@ include __DIR__ . '/../../templates/header.php';
                             <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
 
                             <div class="row g-3">
-                                <div class="col-md-6 mb-3">
+                                <div class="col-12 mb-3">
                                     <label for="donation_type" class="form-label">Type de don*</label>
                                     <select class="form-select" id="donation_type" name="donation_type" required>
                                         <option value="" selected disabled>Choisir...</option>
@@ -44,7 +44,7 @@ include __DIR__ . '/../../templates/header.php';
                                     </select>
                                 </div>
 
-                                <div class="col-md-6 mb-3">
+                                <div class="col-12 mb-3">
                                     <label for="association_id" class="form-label">Association bénéficiaire*</label>
                                     <select class="form-select" id="association_id" name="association_id" required>
                                         <option value="" selected disabled>Choisir...</option>
@@ -54,16 +54,16 @@ include __DIR__ . '/../../templates/header.php';
                                     </select>
                                 </div>
 
-                                
-                                <div class="col-md-6 mb-3">
+
+                                <div class="col-12 mb-3">
                                     <label for="montant" class="form-label">Montant (€)</label>
                                     <input type="number" class="form-control" id="montant" name="montant" step="0.01" min="0.01" placeholder="Pour don financier">
                                     <small class="form-text text-muted">Requis uniquement si le type est "Financier".</small>
                                 </div>
-                                
+
                                 <div class="col-12 mb-3">
                                     <label for="description" class="form-label">Description</label>
-                                    <textarea class="form-control" id="description" name="description" rows="3" placeholder="Si don matériel, décrivez l'objet. Requis pour ce type. Si don financier, optionnel."></textarea>
+                                    <textarea class="form-control" id="description" name="description" rows="2" placeholder="Si don matériel, décrivez l'objet. Requis pour ce type. Si don financier, optionnel."></textarea>
                                     <small class="form-text text-muted">Requis si le type est "Matériel".</small>
                                 </div>
                             </div>
@@ -72,12 +72,12 @@ include __DIR__ . '/../../templates/header.php';
                                 <i class="fas fa-hand-holding-heart me-1"></i> Proposer mon don
                             </button>
                         </form>
-                    <?php endif; 
+                    <?php endif;
                     ?>
                 </div>
             </div>
 
-            
+
             <h3 class="mt-5 mb-3">Historique de mes dons</h3>
             <?php if (empty($donations)): ?>
                 <div class="alert alert-secondary">Vous n'avez pas encore effectué de don via la plateforme.</div>
@@ -105,14 +105,14 @@ include __DIR__ . '/../../templates/header.php';
                                 $assoNom = htmlspecialchars($don['association_nom'] ?? 'N/A');
                                 $dateDon = formatDate($don['date_don'], 'd/m/Y');
 
-                                
+
                                 $statutText = ucfirst(htmlspecialchars($don['statut']));
-                                $statutBadgeClass = 'bg-secondary'; 
+                                $statutBadgeClass = 'bg-secondary';
                                 if ($don['statut'] === 'enregistre') {
-                                    $statutBadgeClass = 'bg-success'; 
+                                    $statutBadgeClass = 'bg-success';
                                 }
-                                
-                                
+
+
                             ?>
                                 <tr>
                                     <td><?= $dateDon ?></td>
@@ -132,7 +132,3 @@ include __DIR__ . '/../../templates/header.php';
         </main>
     </div>
 </div>
-
-<?php
-include __DIR__ . '/../../templates/footer.php';
-?>

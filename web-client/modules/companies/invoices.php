@@ -17,120 +17,56 @@ if ($entreprise_id <= 0) {
     exit;
 }
 
-$payment_status = filter_input(INPUT_GET, 'payment', FILTER_SANITIZE_SPECIAL_CHARS);
-if ($payment_status === 'success') {
-    flashMessage("Votre tentative de paiement a été initiée. Le statut de la facture sera mis à jour après confirmation.", "info");
-    redirectTo(WEBCLIENT_URL . '/modules/companies/invoices.php');
-    exit;
-} elseif ($payment_status === 'cancelled') {
-    flashMessage("Le processus de paiement a été annulé.", "warning");
-    redirectTo(WEBCLIENT_URL . '/modules/companies/invoices.php');
-    exit;
-}
+handleStripeReturn();
 
-$action = filter_input(INPUT_GET, 'action', FILTER_SANITIZE_SPECIAL_CHARS);
+$action = filter_input(INPUT_GET, 'action', FILTER_SANITIZE_SPECIAL_CHARS) ?: 'list';
 $invoice_id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 
 $pageTitle = "Gestion des Factures";
 $invoice = null;
 $invoices = [];
 
-if ($action === 'create-checkout-session' && $invoice_id) {
-    $invoice = getInvoiceDetails($invoice_id, $entreprise_id);
-    $payable_statuses = [INVOICE_STATUS_PENDING, INVOICE_STATUS_LATE, INVOICE_STATUS_UNPAID];
-
-    if (!$invoice || !in_array($invoice['statut'], $payable_statuses)) {
-        flashMessage("Facture non trouvée, déjà payée, ou non payable.", "warning");
-        redirectTo(WEBCLIENT_URL . '/modules/companies/invoices.php');
-        exit;
-    }
-
-    if (!defined('STRIPE_SECRET_KEY') || empty(STRIPE_SECRET_KEY)) {
-        flashMessage("La configuration pour le paiement en ligne est incomplète. Veuillez contacter le support.", "danger");
-        error_log("[FATAL] Clé secrète Stripe non configurée dans les variables d'environnement ou config.php.");
-        redirectTo(WEBCLIENT_URL . '/modules/companies/invoices.php?action=view&id=' . $invoice_id);
-        exit;
-    }
-
-    Stripe::setApiKey(STRIPE_SECRET_KEY);
-
-    try {
-        $success_url = WEBCLIENT_URL . '/modules/companies/invoices.php?payment=success&session_id={CHECKOUT_SESSION_ID}';
-        $cancel_url = WEBCLIENT_URL . '/modules/companies/invoices.php?payment=cancelled';
-
-        $currency = strtolower(defined('DEFAULT_CURRENCY_CODE') ? DEFAULT_CURRENCY_CODE : 'eur');
-        $amount_cents = (int) round(($invoice['montant_total'] ?? 0) * 100);
-
-        if ($amount_cents <= 0) {
-            throw new Exception("Le montant de la facture est invalide pour le paiement.");
+switch ($action) {
+    case 'create-checkout-session':
+        if ($invoice_id) {
+            handleInvoiceCheckoutSession($invoice_id, $entreprise_id);
+        } else {
+            flashMessage("ID de facture manquant pour le paiement.", "warning");
+            redirectTo(WEBCLIENT_URL . '/modules/companies/invoices.php');
+            exit;
         }
 
-        $checkout_session = StripeCheckoutSession::create([
-            'payment_method_types' => ['card'],
-            'line_items' => [[
-                'price_data' => [
-                    'currency' => $currency,
-                    'product_data' => [
-                        'name' => 'Facture ' . ($invoice['numero_facture'] ?? $invoice['id']),
-                        'description' => 'Paiement facture Business Care #' . ($invoice['numero_facture'] ?? $invoice['id']),
-                    ],
-                    'unit_amount' => $amount_cents,
-                ],
-                'quantity' => 1,
-            ]],
-            'mode' => 'payment',
-            'success_url' => $success_url,
-            'cancel_url' => $cancel_url,
-            'metadata' => [
-                'invoice_id' => $invoice['id'],
-                'company_id' => $entreprise_id,
-            ],
-        ]);
+    case 'download':
+        if ($invoice_id) {
+            handleInvoiceDownload($invoice_id, $entreprise_id);
+        } else {
+            flashMessage("ID de facture manquant pour le téléchargement.", "warning");
+            redirectTo(WEBCLIENT_URL . '/modules/companies/invoices.php');
+            exit;
+        }
 
-        header("HTTP/1.1 303 See Other");
-        header("Location: " . $checkout_session->url);
-        exit;
-    } catch (StripeApiErrorException $e) {
-        error_log("Erreur API Stripe lors de la création de session Checkout pour facture ID: " . $invoice_id . " - " . $e->getMessage());
-        flashMessage("Erreur lors de l'initialisation du paiement : " . $e->getMessage(), "danger");
-    } catch (Exception $e) {
-        error_log("Erreur lors de la création de session Checkout pour facture ID: " . $invoice_id . " - " . $e->getMessage());
-        flashMessage("Une erreur technique est survenue lors de la préparation du paiement.", "danger");
-    }
+    case 'view':
+        $invoice = null;
+        if ($invoice_id) {
+            $invoice = getViewInvoiceData($invoice_id, $entreprise_id);
+            if ($invoice === null) {
+                redirectTo(WEBCLIENT_URL . '/modules/companies/invoices.php');
+                exit;
+            }
+            $pageTitle = "Détails de la Facture #" . htmlspecialchars($invoice['numero_facture'] ?? $invoice['id']);
+        } else {
+            flashMessage("ID de facture manquant pour la visualisation.", "warning");
+            redirectTo(WEBCLIENT_URL . '/modules/companies/invoices.php');
+            exit;
+        }
+        break;
 
-    redirectTo(WEBCLIENT_URL . '/modules/companies/invoices.php');
-    exit;
-}
-
-if ($action === 'download' && $invoice_id) {
-    $invoice = getInvoiceDetails($invoice_id, $entreprise_id);
-    if (!$invoice) {
-        flashMessage("Facture non trouvée ou accès refusé pour la génération PDF.", "warning");
-        redirectTo(WEBCLIENT_URL . '/modules/companies/invoices.php');
-        exit;
-    }
-
-    $pdfGenerated = generateInvoicePdf($invoice);
-
-    if ($pdfGenerated === false) {
-        flashMessage("Une erreur est survenue lors de la génération du fichier PDF. Veuillez réessayer ou contacter le support.", "danger");
-        redirectTo(WEBCLIENT_URL . '/modules/companies/invoices.php');
-        exit;
-    }
-}
-
-if ($action === 'view' && $invoice_id) {
-    $invoice = getInvoiceDetails($invoice_id, $entreprise_id);
-    if (!$invoice) {
-        flashMessage("Facture non trouvée ou accès refusé.", "warning");
-        redirectTo(WEBCLIENT_URL . '/modules/companies/invoices.php');
-        exit;
-    }
-    $pageTitle = "Détails de la Facture #" . htmlspecialchars($invoice['numero_facture'] ?? $invoice['id']);
-} else {
-    $action = 'list';
-    $pageTitle = "Mes Factures";
-    $invoices = getCompanyInvoices($entreprise_id);
+    case 'list':
+    default:
+        $action = 'list';
+        $pageTitle = "Mes Factures";
+        $invoices = getListInvoicesData($entreprise_id);
+        break;
 }
 
 include __DIR__ . '/../../templates/header.php';
@@ -147,7 +83,7 @@ include __DIR__ . '/../../templates/header.php';
             <?php
             ?>
 
-            <?php if ($action === 'view' && $invoice): ?>
+            <?php if ($action === 'view' && isset($invoice)): ?>
                 <?php
                 ?>
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
@@ -164,8 +100,8 @@ include __DIR__ . '/../../templates/header.php';
                         <?php
                         $payable_statuses = [INVOICE_STATUS_PENDING, INVOICE_STATUS_LATE, INVOICE_STATUS_UNPAID];
                         if (in_array($invoice['statut'], $payable_statuses)) : ?>
-                            <a href="<?= WEBCLIENT_URL ?>/modules/companies/invoices.php?action=create-checkout-session&id=<?= $invoice['id'] ?>" class="btn btn-sm btn-success" title="Payer cette facture">
-                                <i class="fas fa-credit-card me-1"></i> Payer Maintenant
+                            <a href="<?= WEBCLIENT_URL ?>/modules/companies/invoices.php?action=create-checkout-session&id=<?= $invoice['id'] ?>" class="btn btn-sm btn-primary" title="Payer avec Stripe">
+                                <i class="fa-brands fa-stripe me-1"></i> Payer avec Stripe
                             </a>
                         <?php endif; ?>
                         <?php
@@ -211,8 +147,7 @@ include __DIR__ . '/../../templates/header.php';
                             <dd class="col-sm-9"><?= $invoice['date_paiement'] ? htmlspecialchars(date(defined('DEFAULT_DATE_FORMAT') ? DEFAULT_DATE_FORMAT : 'd/m/Y H:i', strtotime($invoice['date_paiement']))) : '-' ?></dd>
 
                         </dl>
-                        <?php /* TODO: Ajouter affichage des lignes de la facture */
-                        ?>
+
                     </div>
                 </div>
 
@@ -271,8 +206,8 @@ include __DIR__ . '/../../templates/header.php';
                                             <?php
                                             $payable_statuses = [INVOICE_STATUS_PENDING, INVOICE_STATUS_LATE, INVOICE_STATUS_UNPAID];
                                             if (in_array($invoice_item['statut'], $payable_statuses)) : ?>
-                                                <a href="<?= WEBCLIENT_URL ?>/modules/companies/invoices.php?action=create-checkout-session&id=<?= $invoice_item['id'] ?>" class="btn btn-sm btn-success" title="Payer cette facture">
-                                                    <i class="fas fa-credit-card"></i><span class="visually-hidden">Payer facture</span>
+                                                <a href="<?= WEBCLIENT_URL ?>/modules/companies/invoices.php?action=create-checkout-session&id=<?= $invoice_item['id'] ?>" class="btn btn-sm btn-primary" title="Payer avec Stripe">
+                                                    <i class="fas fa-credit-card me-1"></i> Payer
                                                 </a>
                                             <?php endif; ?>
                                             <?php
@@ -289,7 +224,3 @@ include __DIR__ . '/../../templates/header.php';
         </main>
     </div>
 </div>
-
-<?php
-include __DIR__ . '/../../templates/footer.php';
-?>

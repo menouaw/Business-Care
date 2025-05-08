@@ -1,18 +1,158 @@
 <?php
 
-/**
- * Fonctions spécifiques à la page des communautés pour les employés.
- */
-
 require_once __DIR__ . '/../../../../includes/init.php';
 
 /**
- * Configure les données nécessaires pour la page des communautés.
+ * Vérifie une correspondance directe entre le type de communauté et les intérêts de l'utilisateur.
+ */
+function _checkDirectInterestTypeMatch(string $communityTypeLower, array $userInterestsLower): bool
+{
+    return !empty($communityTypeLower) && in_array($communityTypeLower, $userInterestsLower);
+}
+
+/**
+ * Vérifie une correspondance entre les intérêts mappés de l'utilisateur et le type de communauté.
+ */
+function _checkMappedInterestTypeMatch(string $communityTypeLower, array $userInterestsLower): bool
+{
+    $interestToTypeMapping = [
+        'sport' => 'sport',
+        'santé mentale' => 'bien_etre',
+        'bien-être mental' => 'bien_etre',
+        'activité physique' => 'sport',
+        'activite physique' => 'sport',
+        'bien-être physique' => 'sport'
+
+    ];
+    foreach ($userInterestsLower as $interest) {
+        if (isset($interestToTypeMapping[$interest]) && $interestToTypeMapping[$interest] === $communityTypeLower) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Vérifie si des mots-clés d'intérêt utilisateur se trouvent dans le nom ou la description de la communauté.
+ */
+function _checkKeywordInCommunityTextsMatch(string $communityNameLower, string $communityDescLower, array $userInterestsLower): bool
+{
+    foreach ($userInterestsLower as $interest) {
+        if (str_contains($communityNameLower, $interest) || str_contains($communityDescLower, $interest)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Détermine si une communauté doit être considérée comme "préférée" pour un utilisateur,
+ * en fonction de ses intérêts enregistrés et du type/nom/description de la communauté.
+ * Refactorisée pour utiliser des fonctions d'aide pour chaque type de vérification.
  *
- * Gère les modes d'affichage (liste ou détail), récupère les données appropriées
- * (liste des communautés, détails d'une communauté, messages, membres),
- * gère les actions utilisateur (rejoindre, quitter, poster, supprimer message)
- * et prépare le tableau final de données pour la vue.
+ * @param array $community Les détails de la communauté.
+ * @param array $userInterestsLower Tableau des intérêts de l'utilisateur en minuscules.
+ * @return bool True si la communauté est considérée comme préférée.
+ */
+function _isCommunityPreferred(array $community, array $userInterestsLower): bool
+{
+    if (empty($userInterestsLower)) {
+        return false;
+    }
+
+    $communityTypeLower = strtolower($community['type'] ?? '');
+    $communityNameLower = strtolower($community['nom'] ?? '');
+    $communityDescLower = strtolower($community['description'] ?? '');
+
+    if (_checkDirectInterestTypeMatch($communityTypeLower, $userInterestsLower)) {
+        return true;
+    }
+
+    if (_checkMappedInterestTypeMatch($communityTypeLower, $userInterestsLower)) {
+        return true;
+    }
+
+    if (_checkKeywordInCommunityTextsMatch($communityNameLower, $communityDescLower, $userInterestsLower)) {
+        return true;
+    }
+
+    return false;
+}
+
+/**
+ * Récupère les données nécessaires pour la vue "liste" des communautés.
+ *
+ * @param int $salarie_id L'ID de l'employé.
+ * @param string $csrfToken Le jeton CSRF actuel.
+ * @return array Les données pour la vue liste.
+ */
+function _getCommunityListPageData(int $salarie_id, string $csrfToken): array
+{
+    $viewData = [
+        'viewMode' => 'list',
+        'pageTitle' => "Communautés",
+        'preferredCommunities' => [],
+        'otherCommunities' => [],
+        'userMemberCommunityIds' => [],
+        'csrf_token' => $csrfToken
+    ];
+
+
+
+
+    $userInterests = getUserInterests($salarie_id);
+    $userInterestsLower = array_map('strtolower', $userInterests);
+
+    $allCommunities = fetchAll('communautes', '', 'nom ASC');
+    $userMemberCommunityIds = getUserCommunityIds($salarie_id);
+    $viewData['userMemberCommunityIds'] = $userMemberCommunityIds;
+
+    foreach ($allCommunities as $community) {
+        if (_isCommunityPreferred($community, $userInterestsLower)) {
+            $viewData['preferredCommunities'][] = $community;
+        } else {
+            $viewData['otherCommunities'][] = $community;
+        }
+    }
+
+    return $viewData;
+}
+
+/**
+ * Récupère les données nécessaires pour la vue "détail" d'une communauté.
+ *
+ * @param int $view_id L'ID de la communauté à afficher.
+ * @param int $salarie_id L'ID de l'utilisateur actuel.
+ * @param string $csrfToken Le jeton CSRF actuel.
+ * @return array|null Les données pour la vue détail, ou null si la communauté n'est pas trouvée.
+ */
+function _getCommunityDetailPageData(int $view_id, int $salarie_id, string $csrfToken): ?array
+{
+    $communityDetails = getCommunityDetails($view_id);
+
+    if (!$communityDetails) {
+        flashMessage("Communauté non trouvée.", "warning");
+        redirectTo(WEBCLIENT_URL . '/modules/employees/communities.php');
+        exit;
+    }
+
+    $viewData = [
+        'viewMode' => 'detail',
+        'pageTitle' => htmlspecialchars($communityDetails['nom']),
+        'community' => $communityDetails,
+        'messages' => getCommunityMessages($view_id),
+        'isMember' => isUserMemberOfCommunity($salarie_id, $view_id),
+        'memberCount' => getCommunityMemberCount($view_id),
+        'members' => getCommunityMembers($view_id),
+        'csrf_token' => $csrfToken
+    ];
+
+    return $viewData;
+}
+
+/**
+ * Configure les données nécessaires pour la page des communautés.
+ * Refactorisé pour utiliser des fonctions d'aide et un flux plus linéaire.
  *
  * @return array Un tableau contenant les données pour la vue.
  */
@@ -26,100 +166,24 @@ function setupCommunitiesPage(): array
         exit;
     }
 
-    $view_id = filter_input(INPUT_GET, 'view_id', FILTER_VALIDATE_INT);
-    $viewData = [];
-    $csrfToken = generateToken();
 
     handleCommunityActions($salarie_id);
 
-    if ($view_id && $view_id > 0) {
-        $viewData['viewMode'] = 'detail';
-        $viewData['pageTitle'] = "Détails de la Communauté";
+    $view_id = filter_input(INPUT_GET, 'view_id', FILTER_VALIDATE_INT);
+    $csrfToken = generateToken();
 
-        $communityDetails = getCommunityDetails($view_id);
 
-        if (!$communityDetails) {
-            flashMessage("Communauté non trouvée.", "warning");
-            redirectTo(WEBCLIENT_URL . '/modules/employees/communities.php');
-            exit;
-        }
+    $isDetailViewRequested = ($view_id !== null && $view_id > 0);
 
-        $viewData['pageTitle'] = htmlspecialchars($communityDetails['nom']);
+    if ($isDetailViewRequested) {
 
-        $communityMessages = getCommunityMessages($view_id);
+        $detailData = _getCommunityDetailPageData($view_id, $salarie_id, $csrfToken);
 
-        $isMember = isUserMemberOfCommunity($salarie_id, $view_id);
-
-        $memberCount = getCommunityMemberCount($view_id);
-        $members = getCommunityMembers($view_id);
-
-        $viewData['community'] = $communityDetails;
-        $viewData['messages'] = $communityMessages;
-        $viewData['isMember'] = $isMember;
-        $viewData['memberCount'] = $memberCount;
-        $viewData['members'] = $members;
-
-        $viewData['csrf_token'] = $csrfToken;
-    } else {
-        $viewData['viewMode'] = 'list';
-        $viewData['pageTitle'] = "Communautés";
-
-        $userInterests = getUserInterests($salarie_id);
-        $userInterestsLower = array_map('strtolower', $userInterests);
-
-        // DEBUG: Afficher les intérêts récupérés (décommenter pour voir)
-        // echo '<pre>Intérêts Utilisateur: '; var_dump($userInterestsLower); echo '</pre>';
-
-        $allCommunities = fetchAll('communautes', '', 'nom ASC');
-
-        $userMemberCommunityIds = getUserCommunityIds($salarie_id);
-
-        $preferredCommunities = [];
-        $otherCommunities = [];
-
-        foreach ($allCommunities as $community) {
-            $communityTypeLower = strtolower($community['type'] ?? '');
-            $isPreferred = false;
-
-            if (!empty($communityTypeLower) && in_array($communityTypeLower, $userInterestsLower)) {
-                $isPreferred = true;
-            } else {
-                $communityNameLower = strtolower($community['nom'] ?? '');
-                $communityDescLower = strtolower($community['description'] ?? '');
-                foreach ($userInterestsLower as $interest) {
-                    if (str_contains($communityNameLower, $interest) || str_contains($communityDescLower, $interest)) {
-                        $isPreferred = true;
-                        break;
-                    }
-                    if ($interest === 'sport' && $communityTypeLower === 'sport') {
-                        $isPreferred = true;
-                        break;
-                    }
-                    if (($interest === 'santé mentale' || $interest === 'bien-être mental') && $communityTypeLower === 'bien_etre') {
-                        $isPreferred = true;
-                        break;
-                    }
-                    if (($interest === 'activité physique' || $interest === 'activite physique' || $interest === 'bien-être physique') && $communityTypeLower === 'sport') {
-                        $isPreferred = true;
-                        break;
-                    }
-                }
-            }
-
-            if ($isPreferred) {
-                $preferredCommunities[] = $community;
-            } else {
-                $otherCommunities[] = $community;
-            }
-        }
-
-        $viewData['preferredCommunities'] = $preferredCommunities;
-        $viewData['otherCommunities'] = $otherCommunities;
-        $viewData['userMemberCommunityIds'] = $userMemberCommunityIds;
-        $viewData['csrf_token'] = $csrfToken;
+        return $detailData;
     }
 
-    return $viewData;
+    $listData = _getCommunityListPageData($salarie_id, $csrfToken);
+    return $listData;
 }
 
 /**
@@ -139,68 +203,177 @@ function getUserCommunityIds(int $salarie_id): array
 }
 
 /**
- * Gère les actions utilisateur (POST pour poster, GET pour rejoindre/quitter/supprimer).
+ * Gère la soumission d'un nouveau message dans une communauté.
+ *
+ * @param int $salarie_id L'ID de l'auteur.
+ * @param int|null $community_id L'ID de la communauté cible.
+ * @param string|null $csrf_token Le jeton CSRF reçu.
+ * @param mixed $message_content Le contenu du message reçu.
+ */
+function _handlePostMessageAction(int $salarie_id, ?int $community_id, ?string $csrf_token, $message_content): void
+{
+    if (!$community_id || !$csrf_token || !validateToken($csrf_token)) {
+        flashMessage("Action invalide ou jeton de sécurité expiré.", "danger");
+        $redirectUrl = $community_id
+            ? WEBCLIENT_URL . '/modules/employees/communities.php?view_id=' . $community_id
+            : WEBCLIENT_URL . '/modules/employees/communities.php';
+        redirectTo($redirectUrl);
+        exit;
+    }
+
+    $trimmed_content = is_string($message_content) ? trim($message_content) : '';
+    if (empty($trimmed_content)) {
+        flashMessage("Le contenu du message ne peut pas être vide.", "warning");
+    } else {
+        postCommunityMessage($salarie_id, $community_id, $trimmed_content);
+    }
+
+    redirectTo(WEBCLIENT_URL . '/modules/employees/communities.php?view_id=' . $community_id);
+    exit;
+}
+
+/**
+ * Exécute l'action de rejoindre une communauté.
+ */
+function _performJoinAction(int $salarie_id, ?int $community_id): void
+{
+    if (!$community_id) {
+        flashMessage("ID de communauté manquant pour rejoindre.", "warning");
+        return;
+    }
+    joinCommunity($salarie_id, $community_id);
+}
+
+/**
+ * Exécute l'action de quitter une communauté.
+ */
+function _performLeaveAction(int $salarie_id, ?int $community_id): void
+{
+    if (!$community_id) {
+        flashMessage("ID de communauté manquant pour quitter.", "warning");
+        return;
+    }
+    leaveCommunity($salarie_id, $community_id);
+}
+
+/**
+ * Exécute l'action de supprimer un message.
+ */
+function _performDeleteMessageAction(int $salarie_id, ?int $message_id): void
+{
+    if (!$message_id) {
+        flashMessage("ID de message manquant pour la suppression.", "warning");
+        return;
+    }
+    deleteCommunityMessage($salarie_id, $message_id);
+}
+
+/**
+ * Gère les actions pour rejoindre, quitter une communauté ou supprimer un message.
+ * Refactorisé pour utiliser des fonctions d'aide spécifiques à chaque action.
+ *
+ * @param string $action L'action demandée ('join', 'leave', 'delete_message').
+ * @param int $salarie_id L'ID de l'utilisateur effectuant l'action.
+ * @param int|null $community_id L'ID de la communauté concernée.
+ * @param int|null $message_id L'ID du message concerné (si action=delete_message).
+ * @param string|null $csrf_token Le jeton CSRF reçu.
+ */
+function _handleJoinLeaveDeleteAction(string $action, int $salarie_id, ?int $community_id, ?int $message_id, ?string $csrf_token): void
+{
+
+    if (!$csrf_token || !validateToken($csrf_token)) {
+        flashMessage("Action invalide ou jeton de sécurité expiré.", "danger");
+        $redirectUrl = $community_id && $action !== 'leave'
+            ? WEBCLIENT_URL . '/modules/employees/communities.php?view_id=' . $community_id
+            : WEBCLIENT_URL . '/modules/employees/communities.php';
+        redirectTo($redirectUrl);
+        exit;
+    }
+
+
+    $main_id_for_action = ($action === 'delete_message') ? $message_id : $community_id;
+    if (!$main_id_for_action && ($action === 'join' || $action === 'leave' || $action === 'delete_message')) {
+        flashMessage("ID requis manquant pour l'action demandée '" . htmlspecialchars($action) . "'.", "warning");
+
+        redirectTo(WEBCLIENT_URL . '/modules/employees/communities.php');
+        exit;
+    }
+
+    switch ($action) {
+        case 'join':
+            _performJoinAction($salarie_id, $community_id);
+            break;
+        case 'leave':
+            _performLeaveAction($salarie_id, $community_id);
+            break;
+        case 'delete_message':
+            _performDeleteMessageAction($salarie_id, $message_id);
+            break;
+        default:
+            flashMessage("Action non reconnue.", "warning");
+
+
+            break;
+    }
+
+
+
+    $redirectUrl = WEBCLIENT_URL . '/modules/employees/communities.php';
+
+
+    if ($community_id && ($action === 'join' || $action === 'delete_message')) {
+        $redirectUrl = WEBCLIENT_URL . '/modules/employees/communities.php?view_id=' . $community_id;
+    }
+
+    redirectTo($redirectUrl);
+    exit;
+}
+
+/**
+ * Vérifie si une action de publication de message est demandée via GET.
+ */
+function _isPostMessageActionRequested(): bool
+{
+    return isset($_GET['action']) && $_GET['action'] === 'post_message';
+}
+
+/**
+ * Vérifie si une action d'interaction communautaire valide (join, leave, delete_message) est demandée via POST.
+ */
+function _isValidCommunityInteractionRequested(array $postData): bool
+{
+    return isset($postData['action']) && in_array($postData['action'], ['join', 'leave', 'delete_message']);
+}
+
+/**
+ * Gère les actions utilisateur POST (poster, rejoindre, quitter, supprimer).
+ * Refactorisé pour utiliser des fonctions d'aide.
  *
  * @param int $salarie_id L'ID de l'employé actuellement connecté.
  */
 function handleCommunityActions(int $salarie_id): void
 {
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['action'] === 'post_message') {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        return;
+    }
+
+
+    if (_isPostMessageActionRequested()) {
         $community_id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
         $csrf_token = filter_input(INPUT_POST, 'csrf_token', FILTER_SANITIZE_SPECIAL_CHARS);
         $message_content = filter_input(INPUT_POST, 'message_content', FILTER_DEFAULT);
-
-        if (!$community_id || !$csrf_token || !validateToken($csrf_token)) {
-            flashMessage("Action invalide ou jeton de sécurité expiré.", "danger");
-        } elseif (empty(trim($message_content))) {
-            flashMessage("Le contenu du message ne peut pas être vide.", "warning");
-        } else {
-            postCommunityMessage($salarie_id, $community_id, trim($message_content));
-        }
-
-        redirectTo(WEBCLIENT_URL . '/modules/employees/communities.php?view_id=' . $community_id);
-        exit;
+        _handlePostMessageAction($salarie_id, $community_id, $csrf_token, $message_content);
+        return;
     }
 
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && in_array($_POST['action'], ['join', 'leave', 'delete_message'])) {
+
+    if (_isValidCommunityInteractionRequested($_POST)) {
         $action = filter_input(INPUT_POST, 'action', FILTER_SANITIZE_SPECIAL_CHARS);
         $community_id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
         $message_id = filter_input(INPUT_POST, 'message_id', FILTER_VALIDATE_INT);
         $csrf_token = filter_input(INPUT_POST, 'csrf_token', FILTER_SANITIZE_SPECIAL_CHARS);
-
-        $required_id = ($action === 'delete_message') ? $message_id : $community_id;
-
-        if (!$required_id || !$csrf_token || !validateToken($csrf_token)) {
-            flashMessage("Action invalide, ID manquant ou jeton de sécurité expiré.", "danger");
-            $redirectUrl = $community_id
-                ? WEBCLIENT_URL . '/modules/employees/communities.php?view_id=' . $community_id
-                : WEBCLIENT_URL . '/modules/employees/communities.php';
-            redirectTo($redirectUrl);
-            exit;
-        }
-
-        $redirectUrl = WEBCLIENT_URL . '/modules/employees/communities.php';
-
-        if ($action === 'join') {
-            if ($community_id) {
-                joinCommunity($salarie_id, $community_id);
-                $redirectUrl = WEBCLIENT_URL . '/modules/employees/communities.php?view_id=' . $community_id;
-            }
-        } elseif ($action === 'leave') {
-            if ($community_id) {
-                leaveCommunity($salarie_id, $community_id);
-            }
-        } elseif ($action === 'delete_message') {
-            deleteCommunityMessage($salarie_id, $message_id);
-            if ($community_id) {
-                $redirectUrl = WEBCLIENT_URL . '/modules/employees/communities.php?view_id=' . $community_id;
-            }
-        } else {
-            flashMessage("Action non reconnue.", "warning");
-        }
-
-        redirectTo($redirectUrl);
-        exit;
+        _handleJoinLeaveDeleteAction($action, $salarie_id, $community_id, $message_id, $csrf_token);
+        return;
     }
 }
 
@@ -337,6 +510,15 @@ function leaveCommunity(int $salarie_id, int $community_id): bool
 }
 
 /**
+ * Vérifie si les paramètres pour poster un message sont valides.
+ */
+function _arePostMessageParametersValid(int $salarie_id, int $community_id, string $content): bool
+{
+
+    return $salarie_id > 0 && $community_id > 0 && !empty(trim($content));
+}
+
+/**
  * Ajoute un message au mur d'une communauté.
  *
  * @param int $salarie_id L'ID de l'auteur.
@@ -346,7 +528,7 @@ function leaveCommunity(int $salarie_id, int $community_id): bool
  */
 function postCommunityMessage(int $salarie_id, int $community_id, string $content): bool
 {
-    if ($salarie_id <= 0 || $community_id <= 0 || empty($content)) {
+    if (!_arePostMessageParametersValid($salarie_id, $community_id, $content)) {
         flashMessage("Données invalides pour poster le message.", "warning");
         return false;
     }
@@ -359,7 +541,7 @@ function postCommunityMessage(int $salarie_id, int $community_id, string $conten
     $data = [
         'communaute_id' => $community_id,
         'personne_id' => $salarie_id,
-        'message' => strip_tags($content)
+        'message' => strip_tags(trim($content))
     ];
 
     $success = insertRow('communaute_messages', $data);
@@ -442,21 +624,4 @@ function getCommunityMembers(int $community_id): array
             ORDER BY p.nom ASC, p.prenom ASC";
 
     return executeQuery($sql, [':community_id' => $community_id])->fetchAll();
-}
-
-/**
- * Récupère les clés de préférence pour un utilisateur spécifique.
- *
- * @param int $salarie_id L'ID de l'utilisateur.
- * @return array Un tableau de clés de préférence (ex: ['sport', 'lecture']).
- */
-function getUserPreferences(int $salarie_id): array
-{
-    if ($salarie_id <= 0) {
-        return [];
-    }
-
-    $sql = "SELECT preference_key FROM personne_preferences WHERE personne_id = :salarie_id";
-    $stmt = executeQuery($sql, [':salarie_id' => $salarie_id]);
-    return $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
 }
