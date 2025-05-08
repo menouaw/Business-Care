@@ -488,4 +488,70 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     pointer-events: none;
     background-color: var(--color-quaternary);
     border-color: var(--color-tertiary);
+}
+
+/*
+ * Chatbot Styles
+ * ------------------------------------------------ */
+.chatbot-button {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    width: 4rem;
+    height: 4rem;
+    border-radius: 50%;
+    background-color: var(--color-primary);
+    border: none;
+    box-shadow: 0 0.25rem 0.9375rem rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.chatbot-button img {
+    width: 3rem;
+    height: 3rem;
+}
+
+/*
+ * Menu Styles
+ * ------------------------------------------------ */
+.menu-container {
+    position: fixed;
+    bottom: 6rem;
+    right: 1.5rem;
+    width: 15rem; /* Adjust width as needed */
+    background-color: #fff;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.25rem 0.9375rem rgba(0, 0, 0, 0.2);
+    display: none; /* Hidden by default */
+    flex-direction: column;
+    z-index: 1000;
+    overflow: hidden;
+    padding-top: 0.5rem; /* Added padding since header is removed */
+    padding-bottom: 0.5rem; /* Added padding since header is removed */
+}
+
+.menu-options {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.menu-option {
+    padding: 0.75rem;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+    font-family: 'Markazi Text', serif;
+    color: var(--color-primary);
+}
+
+.menu-option:last-child {
+    border-bottom: none;
+}
+
+.menu-option:hover {
+    background-color: var(--color-quaternary);
 } 

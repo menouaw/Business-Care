@@ -8,6 +8,9 @@ document.addEventListener('DOMContentLoaded', function() {
     setupSidebarToggle();
     
     setupDynamicFormFields();
+    
+    setupMenuToggle();
+    setupMenuOptions();
 });
 
 function setupDeleteConfirmation() {
@@ -49,6 +52,37 @@ function setupDynamicFormFields() {
                     div.remove();
                 });
             }
+        });
+    });
+}
+
+function setupMenuToggle() {
+    const menuButton = document.getElementById('chatbot-toggle-button');
+    const menuContainer = document.getElementById('menu-container');
+
+    if (menuButton && menuContainer) {
+        menuButton.addEventListener('click', function() {
+            if (menuContainer.style.display === 'none' || menuContainer.style.display === '') {
+                menuContainer.style.display = 'flex';
+            } else {
+                menuContainer.style.display = 'none';
+            }
+        });
+    }
+}
+
+function setupMenuOptions() {
+    const menuOptions = document.querySelectorAll('.menu-option');
+
+    menuOptions.forEach(function(option) {
+        option.addEventListener('click', function() {
+            const action = this.dataset.action;
+
+            if (action === 'chatbot') {
+                window.location.href = 'web-admin/modules/ia/chatbot.php';
+            }
+
+            document.getElementById('menu-container').style.display = 'none';
         });
     });
 } 

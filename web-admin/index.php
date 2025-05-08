@@ -113,6 +113,8 @@ include 'templates/header.php';
                 </table>
             </div>
             
+            <?php include 'templates/ia.php'; ?>
+
             <?php include 'templates/footer.php'; ?>
         </main>
     </div>
