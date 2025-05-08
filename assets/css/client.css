@@ -54,11 +54,15 @@ body {
     font-size: 1.1rem !important;
     color: var(--color-primary);
     line-height: 1.5;
-    background-color: #f8f9fa !important;
+    background-color: #e9ecef !important;
     padding-top: var(--navbar-height);
     padding-left: 12rem !important;
     overflow-y: auto !important;
     position: relative;
+}
+
+body:has(main.landing-page) {
+    padding-left: 0 !important;
 }
 
 main {
@@ -73,11 +77,12 @@ main {
 
 main > .container,
 main > .container-fluid {
-    width: 100%;
     margin-top: 0 !important;
     padding-top: 0 !important;
-    flex-shrink: 0 !important;
-    flex-grow: 0 !important;
+}
+
+main > .container-fluid {
+    width: 100%;
 }
 
 /* ===== NAVBAR ===== */
@@ -102,7 +107,6 @@ main > .container-fluid {
     z-index: 1031 !important;
 }
 
-/* Style pour les avatars dans la navbar */
 .navbar .avatar-sm {
   width: 32px;  
   height: 32px; 
@@ -523,4 +527,62 @@ body.page-auth .navbar {
     right: 0;
     left: auto;
 }
+
+/* ===== FOOTER STYLES ===== */
+footer {
+    background-color: #343a40 !important; 
+    color: var(--color-quaternary); 
+    padding: var(--spacing-md) 0;
+    border-top: 1px solid #495057; 
+    text-align: center;
+}
+
+footer p {
+    margin-bottom: var(--spacing-sm);
+}
+
+footer a {
+    color: var(--color-secondary); 
+    text-decoration: none;
+}
+
+footer a:hover {
+    color: var(--color-primary);
+    text-decoration: underline;
+}
+
+.bg-light-grey-pack-header {
+    background-color: #e9ecef !important; 
+}
+
+.bg-dark-grey-pack-header {
+    background-color: #343a40 !important; 
+}
+
+.landing-page .hero-image {
+
+    footer {
+        background-color: var(--color-quaternary) !important; 
+        color: var(--color-primary); 
+        padding: var(--spacing-md) 0; 
+        border-top: 1px solid var(--color-tertiary); 
+        text-align: center; 
+    }
+
+    footer p {
+        margin-bottom: var(--spacing-sm);
+    }
+
+    footer a {
+        color: var(--color-secondary); 
+        text-decoration: none;
+    }
+
+    footer a:hover {
+        color: var(--color-primary);
+        text-decoration: underline;
+    }
+}
+
+
 
