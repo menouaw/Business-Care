@@ -264,28 +264,28 @@ main .card-body dl.row dd pre {
 }
 
 /* ===== STYLES CALENDRIER ===== */
-td.calendar-day-today { 
-    background-color: var(--calendar-bg-today) !important; 
+td.calendar-day-today {
+    background-color: var(--calendar-bg-today) !important;
 }
 
-td.calendar-day-empty { 
-    background-color: var(--calendar-bg-empty) !important; 
+td.calendar-day-empty {
+    background-color: var(--calendar-bg-empty) !important;
 }
 
-td.calendar-day-available { 
-    background-color: var(--calendar-bg-available) !important; 
+.calendar-day-available {
+    background-color: var(--calendar-bg-available) !important;
 }
 
-td.calendar-day-unavailable { 
-    background-color: var(--calendar-bg-unavailable) !important; 
+.calendar-day-unavailable {
+    background-color: var(--calendar-bg-unavailable) !important;
 }
 
-td.calendar-day-mixed { 
-    background-color: var(--calendar-bg-mixed) !important; 
+td.calendar-day-mixed {
+    background-color: var(--calendar-bg-mixed) !important;
 }
 
-td.calendar-day-mixed-unavailable { 
-    background-color: var(--calendar-bg-mixed-unavailable) !important; 
+td.calendar-day-mixed-unavailable {
+    background-color: var(--calendar-bg-mixed-unavailable) !important;
 }
 
 .calendar-event-confirmed {
