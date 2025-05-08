@@ -7,6 +7,8 @@ RUN apt-get update && apt-get install -y \
     curl \
     libzip-dev \
     zip \
+    nodejs \
+    npm \
     unzip \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -16,16 +18,15 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 
 COPY composer.json composer.lock ./
 
-
-
 RUN composer install --no-dev --no-interaction --no-scripts --prefer-dist
 
+COPY package.json package-lock.json ./
+
+RUN npm install
 
 COPY . .
 
 RUN composer install --no-dev --no-interaction --optimize-autoloader --prefer-dist
-
-
 
 RUN chown -R www-data:www-data /var/www/html
 
