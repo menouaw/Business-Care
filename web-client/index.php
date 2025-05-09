@@ -52,7 +52,7 @@ include_once __DIR__ . '/templates/header.php';
 
 <main class="landing-page">
 
-    <section class="hero bg-primary text-white">
+    <section class="hero bg-light-blue text-dark">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-6">
@@ -60,9 +60,7 @@ include_once __DIR__ . '/templates/header.php';
                     <p class="lead">Business Care propose des solutions pour améliorer la santé, le bien-être et la cohésion en milieu professionnel.</p>
                     <?php if (!$isLoggedIn): ?>
                         <div class="mt-4">
-                            <a href="<?= WEBCLIENT_URL ?>/login.php" class="btn btn-light btn-lg me-2">Connexion</a>
-                            <a href="<?= WEBCLIENT_URL ?>/inscription.php" class="btn btn-outline-light btn-lg">Inscription</a>
-
+                            <a href="<?= WEBCLIENT_URL ?>/login.php" class="btn btn-primary btn-lg me-2">Connexion</a>
                         </div>
                     <?php endif; ?>
                 </div>
@@ -87,7 +85,7 @@ include_once __DIR__ . '/templates/header.php';
                         <div class="card h-100 service-card">
                             <div class="card-body text-center">
                                 <div class="icon-wrapper mb-3">
-                                    <i class="fas <?php echo htmlspecialchars($category['icon']); ?> fa-3x text-primary"></i>
+                                    <i class="fas <?php echo htmlspecialchars($category['icon']); ?> fa-3x text-secondary"></i>
                                 </div>
                                 <h3 class="card-title"><?php echo htmlspecialchars($category['title']); ?></h3>
                                 <p class="card-text"><?php echo htmlspecialchars($category['description']); ?></p>
@@ -116,7 +114,9 @@ include_once __DIR__ . '/templates/header.php';
                         $buttonClass = 'btn btn-outline-primary';
                         $badge = '';
 
-
+                        // Initialisation par défaut (pourrait être pour des cartes qui ne sont ni Starter, Basic, ni Premium)
+                        // Ou on peut laisser une des conditions définir la "norme"
+                        $headerCardClass = 'bg-secondary text-white';
 
                         $pricingText = "Prix sur devis";
                         $features = [
@@ -124,7 +124,9 @@ include_once __DIR__ . '/templates/header.php';
                             'Support client',
                             'Interface intuitive'
                         ];
-                        if ($service['id'] == 1) {
+
+                        if ($service['id'] == 1) { // Starter Pack
+                            $headerCardClass = 'bg-dark-grey-pack-header text-white'; // MODIFICATION: Fond gris foncé, texte blanc
                             $pricingText = "À partir de 20€ <small class=\"text-muted\">/ salarié / an</small>";
                             $features = [
                                 'Conseils hebdomadaires',
@@ -132,7 +134,8 @@ include_once __DIR__ . '/templates/header.php';
                                 'Accès webinars collectifs',
                                 '2 RDV médicaux / salarié'
                             ];
-                        } elseif ($service['id'] == 2) {
+                        } elseif ($service['id'] == 2) { // Basic Pack
+                            $headerCardClass = 'bg-light-grey-pack-header text-dark'; // Reste gris clair, texte foncé
                             $pricingText = "À partir de 35€ <small class=\"text-muted\">/ salarié / an</small>";
                             $features = [
                                 'Avantages Starter',
@@ -141,7 +144,8 @@ include_once __DIR__ . '/templates/header.php';
                                 '4 RDV médicaux / salarié',
                                 'Programme personnalisé'
                             ];
-                        } elseif ($service['id'] == 3) {
+                        } elseif ($service['id'] == 3) { // Premium Pack
+                            $headerCardClass = 'bg-dark-grey-pack-header text-white'; // MODIFICATION: Fond gris foncé, texte blanc
                             $pricingText = "À partir de 50€ <small class=\"text-muted\">/ salarié / an</small>";
                             $features = [
                                 'Avantages Basic',
@@ -151,12 +155,16 @@ include_once __DIR__ . '/templates/header.php';
                                 'Chatbot signalement',
                                 'Service sur mesure'
                             ];
+                        } else {
+                            // Fallback pour d'autres services non spécifiquement stylés
+                            $headerCardClass = 'bg-secondary text-white'; // Beige par défaut
                         }
+
 
                         ?>
                         <div class="col-md-4">
                             <div class="card h-100 <?php echo $cardClass; ?>">
-                                <div class="card-header text-center bg-primary text-white">
+                                <div class="card-header text-center <?php echo $headerCardClass; ?>">
                                     <h3 class="my-0"><?php echo htmlspecialchars($service['type']); ?></h3>
                                 </div>
                                 <div class="card-body d-flex flex-column">
@@ -244,7 +252,7 @@ include_once __DIR__ . '/templates/header.php';
     </section>
 
 
-    <section class="cta py-5 bg-primary text-white">
+    <section class="cta py-5 bg-light text-dark">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-8 text-lg-start text-center">
@@ -252,7 +260,7 @@ include_once __DIR__ . '/templates/header.php';
                     <p class="lead mb-0">Contactez-nous dès aujourd'hui pour discuter de vos besoins spécifiques.</p>
                 </div>
                 <div class="col-lg-4 text-lg-end text-center mt-3 mt-lg-0">
-                    <a href="modules/companies/contact.php" class="btn btn-light btn-lg">Nous contacter</a>
+                    <a href="modules/companies/contact.php" class="btn btn-primary btn-lg">Nous contacter</a>
                 </div>
             </div>
         </div>

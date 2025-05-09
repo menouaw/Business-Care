@@ -1,5 +1,6 @@
 <?php
 
+
 require_once __DIR__ . '/../../../includes/init.php';
 require_once __DIR__ . '/../../../includes/page_functions/modules/companies/employees.php';
 
@@ -55,7 +56,7 @@ include __DIR__ . '/../../../templates/header.php';
         <?php include __DIR__ . '/../../../templates/sidebar.php';
         ?>
 
-        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 pt-3">
+        <main class="col-md-9 col-lg-10 px-md-4 pt-3">
 
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
                 <h1 class="h2"><?= htmlspecialchars($pageTitle) ?></h1>
@@ -151,7 +152,3 @@ include __DIR__ . '/../../../templates/header.php';
         </main>
     </div>
 </div>
-
-<?php
-include __DIR__ . '/../../../templates/footer.php';
-?>

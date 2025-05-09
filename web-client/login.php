@@ -39,6 +39,7 @@ $transparentNav = false;
 
 $pageTitle = "Connexion - Business Care";
 
+$hideNavbar = true;
 include_once __DIR__ . '/templates/header.php';
 ?>
 
@@ -90,9 +91,7 @@ include_once __DIR__ . '/templates/header.php';
                                     <span class="input-group-text"><i class="fas fa-lock"></i></span>
                                     <input type="password" class="form-control" id="password" name="password"
                                         required placeholder="Votre mot de passe">
-                                    <button class="btn btn-outline-secondary" type="button" id="togglePassword">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
+
                                     <div class="invalid-feedback">
                                         Veuillez saisir votre mot de passe.
                                     </div>
@@ -122,9 +121,6 @@ include_once __DIR__ . '/templates/header.php';
                             </div>
                         </form>
 
-                        <div class="text-center mt-4">
-                            <p class="mb-0">Vous n'avez pas de compte ? <a href="inscription.php" class="text-decoration-none">Créer un compte</a></p>
-                        </div>
                     </div>
                 </div>
 
@@ -138,7 +134,3 @@ include_once __DIR__ . '/templates/header.php';
         </div>
     </div>
 </main>
-
-<?php
-include_once __DIR__ . '/templates/footer.php';
-?>

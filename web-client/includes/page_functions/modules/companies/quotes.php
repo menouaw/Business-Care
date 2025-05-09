@@ -127,15 +127,12 @@ function saveQuoteRequest(int $entreprise_id, array $data): int|false
     $tva = defined('TVA_RATE') ? TVA_RATE * 100 : 20.0;
 
     if ($service_id) {
-
         $service = fetchOne('services', 'id = :id', [':id' => $service_id]);
         if ($service && isset($service['prix_base_indicatif']) && $service['prix_base_indicatif'] !== null) {
             $montant_total = (float)$service['prix_base_indicatif'];
-
             $montant_ht = $montant_total / (1 + (float)($tva / 100));
             $statut = QUOTE_STATUS_PENDING;
         } else {
-
             error_log("[WARNING] saveQuoteRequest: Service ID {$service_id} sélectionné mais non trouvé ou prix indicatif manquant.");
             $service_id = null;
         }
@@ -144,13 +141,11 @@ function saveQuoteRequest(int $entreprise_id, array $data): int|false
     $insertData = [
         'entreprise_id' => $entreprise_id,
         'service_id' => $service_id,
-        'notes_negociation' => $data['notes'],
         'date_creation' => date('Y-m-d'),
         'statut' => $statut,
         'montant_total' => $montant_total,
         'montant_ht' => $montant_ht,
         'tva' => $tva,
-
     ];
 
     $newQuoteId = insertRow('devis', $insertData);
@@ -189,4 +184,60 @@ function getQuoteStatusBadgeClass($status)
         QUOTE_STATUS_EXPIRED => 'secondary',
         default => 'light',
     };
+}
+
+/**
+ * Gère la soumission du formulaire de demande de devis (POST).
+ * Si la requête est POST et contient 'request_quote', traite les données,
+ * appelle saveQuoteRequest, affiche un message flash et redirige.
+ * Termine le script si une requête POST est traitée.
+ *
+ * @return void
+ */
+function handleQuoteRequestPost(): void
+{
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_quote'])) {
+
+        $csrf_token = $_POST['csrf_token'] ?? '';
+        if (!validateToken($csrf_token)) {
+            flashMessage("Jeton de sécurité invalide ou expiré. Veuillez réessayer.", "danger");
+            redirectTo(WEBCLIENT_URL . '/modules/companies/quotes.php?action=request');
+            exit;
+        }
+
+        $entreprise_id = $_SESSION['user_entreprise'] ?? 0;
+        $personne_id = $_SESSION['user_id'] ?? 0;
+        $notes = filter_input(INPUT_POST, 'notes', FILTER_SANITIZE_SPECIAL_CHARS);
+        $selected_service_id = filter_input(INPUT_POST, 'service_id', FILTER_VALIDATE_INT);
+
+        $service_id_to_log = (!empty($selected_service_id) && $selected_service_id > 0) ? $selected_service_id : null;
+
+        if ($entreprise_id > 0 && $personne_id > 0 && !empty($notes)) {
+            $newQuoteId = saveQuoteRequest($entreprise_id, [
+                'notes' => $notes,
+                'service_id' => $service_id_to_log
+
+            ]);
+
+            if ($newQuoteId) {
+                flashMessage("Votre demande de devis (N°{$newQuoteId}) a bien été enregistrée avec le statut 'en attente'. Notre équipe la traitera prochainement.", "success");
+            } else {
+                flashMessage("Une erreur est survenue lors de l'enregistrement de votre demande. Veuillez réessayer.", "danger");
+            }
+        } else {
+
+            if (empty($notes)) {
+                flashMessage("Veuillez décrire vos besoins dans la zone de texte.", "warning");
+            } else {
+                flashMessage("Erreur lors de l\'envoi de la demande. Informations utilisateur ou entreprise manquantes.", "danger");
+            }
+
+            redirectTo(WEBCLIENT_URL . '/modules/companies/quotes.php?action=request');
+            exit;
+        }
+
+
+        redirectTo(WEBCLIENT_URL . '/modules/companies/quotes.php');
+        exit;
+    }
 }

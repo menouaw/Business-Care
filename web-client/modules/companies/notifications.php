@@ -76,8 +76,9 @@ include __DIR__ . '/../../templates/header.php';
                                 <?php else: ?>
                                     <a href="<?= WEBCLIENT_URL ?>/modules/companies/notifications.php?action=read&id=<?= $notif['id'] ?>" class="btn btn-sm btn-link p-0">Marquer comme lu</a>
                                 <?php endif; ?>
-                                <?php if (!empty($notif['lien'])): ?>
-                                    | <a href="<?= htmlspecialchars($notif['lien']) ?>" class="<?= $text_muted ?>">Voir détails</a>
+
+                                <?php if (!empty($notif['redirect_url'])): ?>
+                                    <a href="<?= htmlspecialchars($notif['redirect_url']) ?>" class="btn btn-sm btn-outline-primary ms-2 px-1">Noter la prestation</a>
                                 <?php endif; ?>
                             </small>
                         </div>
@@ -88,7 +89,3 @@ include __DIR__ . '/../../templates/header.php';
         </main>
     </div>
 </div>
-
-<?php
-include __DIR__ . '/../../templates/footer.php';
-?>

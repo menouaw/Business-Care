@@ -5,41 +5,11 @@ require_once __DIR__ . '/../../includes/page_functions/modules/companies/quotes.
 requireRole(ROLE_ENTREPRISE);
 
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_quote'])) {
-
-    $entreprise_id = $_SESSION['user_entreprise'] ?? 0;
-    $personne_id = $_SESSION['user_id'] ?? 0;
-    $notes = filter_input(INPUT_POST, 'notes', FILTER_SANITIZE_SPECIAL_CHARS);
-    $selected_service_id = filter_input(INPUT_POST, 'service_id', FILTER_VALIDATE_INT);
-
-
-    $service_id_to_log = (!empty($selected_service_id) && $selected_service_id > 0) ? $selected_service_id : null;
-
-
-    if ($entreprise_id > 0 && $personne_id > 0 && !empty($notes)) {
-        $newQuoteId = saveQuoteRequest($entreprise_id, [
-            'notes' => $notes,
-            'service_id' => $service_id_to_log
-        ]);
-
-        if ($newQuoteId) {
-            flashMessage("Votre demande de devis (N°{$newQuoteId}) a bien été enregistrée avec le statut 'en attente'. Notre équipe la traitera prochainement.", "success");
-        } else {
-            flashMessage("Une erreur est survenue lors de l'enregistrement de votre demande. Veuillez réessayer.", "danger");
-        }
-    } else {
-        flashMessage("Erreur lors de l\'envoi de la demande. Veuillez remplir tous les champs nécessaires.", "danger");
-    }
-
-    redirectTo(WEBCLIENT_URL . '/modules/companies/quotes.php');
-    exit;
-}
-
+handleQuoteRequestPost();
 
 
 
 $entreprise_id = $_SESSION['user_entreprise'] ?? 0;
-
 
 if ($entreprise_id <= 0) {
     flashMessage("Impossible d'identifier votre entreprise.", "danger");
@@ -47,34 +17,48 @@ if ($entreprise_id <= 0) {
     exit;
 }
 
-$action = filter_input(INPUT_GET, 'action', FILTER_SANITIZE_SPECIAL_CHARS);
 
-if (empty($action) || $_SERVER['REQUEST_METHOD'] === 'POST') {
-    $action = 'list';
-}
+$action = filter_input(INPUT_GET, 'action', FILTER_SANITIZE_SPECIAL_CHARS) ?: 'list'; 
 $quote_id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 
-$pageTitle = "Gestion des Devis";
-$quote = null;
-$quotes = [];
-$servicePacks = [];
 
-if ($action === 'view' && $quote_id) {
-    $quote = getQuoteDetails($quote_id, $entreprise_id);
-    if (!$quote) {
-        flashMessage("Devis non trouvé ou accès refusé.", "warning");
-        redirectTo(WEBCLIENT_URL . '/modules/companies/quotes.php');
-        exit;
-    }
-    $pageTitle = "Détails du Devis #" . $quote['id'];
-} elseif ($action === 'request') {
-    $pageTitle = "Demander un Devis";
-    $servicePacks = getAvailableServicePacks();
-} else {
-    $action = 'list';
-    $pageTitle = "Mes Devis";
-    $quotes = getCompanyQuotes($entreprise_id);
+
+
+
+
+
+
+switch ($action) {
+    case 'view':
+        $quote = null; 
+        if ($quote_id) {
+            $quote = getQuoteDetails($quote_id, $entreprise_id);
+            if (!$quote) {
+                flashMessage("Devis non trouvé ou accès refusé.", "warning");
+                redirectTo(WEBCLIENT_URL . '/modules/companies/quotes.php');
+                exit;
+            }
+            $pageTitle = "Détails du Devis #" . htmlspecialchars($quote['id']); 
+        } else {
+            flashMessage("ID de devis manquant pour la visualisation.", "warning");
+            redirectTo(WEBCLIENT_URL . '/modules/companies/quotes.php');
+            exit;
+        }
+        break;
+
+    case 'request':
+        $pageTitle = "Demander un Devis"; 
+        $servicePacks = getAvailableServicePacks(); 
+        break;
+
+    case 'list':
+    default:
+        $action = 'list'; 
+        $pageTitle = "Mes Devis"; 
+        $quotes = getCompanyQuotes($entreprise_id); 
+        break;
 }
+
 
 include __DIR__ . '/../../templates/header.php';
 ?>
@@ -87,7 +71,7 @@ include __DIR__ . '/../../templates/header.php';
 
             <?php echo displayFlashMessages(); ?>
 
-            <?php if ($action === 'view' && $quote): ?>
+            <?php if ($action === 'view' && isset($quote)): ?>
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
                     <h1 class="h2"><?= htmlspecialchars($pageTitle) ?></h1>
                     <div class="btn-toolbar mb-2 mb-md-0">
@@ -216,7 +200,7 @@ include __DIR__ . '/../../templates/header.php';
                     </button>
                 </form>
 
-            <?php else:
+            <?php else: 
             ?>
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
                     <h1 class="h2"><?= htmlspecialchars($pageTitle) ?></h1>
@@ -276,7 +260,3 @@ include __DIR__ . '/../../templates/header.php';
         </main>
     </div>
 </div>
-
-<?php
-include __DIR__ . '/../../templates/footer.php';
-?>

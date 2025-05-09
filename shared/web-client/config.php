@@ -39,6 +39,7 @@ define('TABLE_NOTIFICATIONS', 'notifications');
 define('TABLE_REMEMBER_ME', 'remember_me_tokens');
 define('TABLE_SIGNALEMENTS', 'signalements');
 define('TABLE_QUOTES', 'devis');
+define('TABLE_HABILITATIONS', 'habilitations');
 
 
 define('STATUS_ACTIVE', 'actif');
@@ -53,7 +54,6 @@ define('USER_STATUSES', ['actif', 'inactif', 'suspendu', 'supprime']);
 define('MAX_APPOINTMENTS_PER_DAY', 8);
 define('DASHBOARD_ITEMS_LIMIT', 5);
 define('MIN_PASSWORD_LENGTH', 8);
-
 
 define('DEFAULT_DATE_FORMAT', 'd/m/Y H:i');
 define('DEFAULT_CURRENCY', '€');

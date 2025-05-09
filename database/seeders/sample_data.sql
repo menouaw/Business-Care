@@ -226,18 +226,18 @@ INSERT INTO contrats (entreprise_id, service_id, date_debut, date_fin, nombre_sa
 (25, 2, '2024-06-10', NULL, 300, 'en_attente', 'Validation en cours');
 
 INSERT INTO contrats_prestations (contrat_id, prestation_id) VALUES
-(1, 4), (1, 5), (1, 7), (1, 11), 
-(2, 6), (2, 9), (2, 10), (2, 12), (2, 14), 
-(3, 13), (3, 17), 
-(4, 1), (4, 2), (4, 13), 
-(5, 1), (5, 2), (5, 3), (5, 6), (5, 7), (5, 8), (5, 10), (5, 11), 
-(7, 1), (7, 2), (7, 5), (7, 15), (7, 20), 
-(9, 3), (9, 16), 
-(10, 1), (10, 4), (10, 5), (10, 9), (10, 22), 
-(13, 2), (13, 8), (13, 18), 
-(15, 1), (15, 6), (15, 12), (15, 21), 
-(16, 3), (16, 11), 
-(18, 1), (18, 4), (18, 9), 
+(1, 4), (1, 5), (1, 7), (1, 11),
+(2, 6), (2, 9), (2, 10), (2, 12), (2, 14),
+(3, 1), (3, 30),
+(4, 1), (4, 2), (4, 13),
+(5, 1), (5, 2), (5, 3), (5, 6), (5, 7), (5, 8), (5, 10), (5, 11),
+(7, 1), (7, 2), (7, 5), (7, 15), (7, 20),
+(9, 3), (9, 16),
+(10, 1), (10, 4), (10, 5), (10, 9), (10, 22),
+(13, 2), (13, 8), (13, 18),
+(15, 1), (15, 6), (15, 12), (15, 21),
+(16, 3), (16, 11),
+(18, 1), (18, 4), (18, 9),
 (16, 1), (16, 5), (16, 7), (16, 10), (16, 14), (16, 25), (16, 30);
 
 INSERT INTO devis (entreprise_id, service_id, date_creation, date_validite, montant_total, montant_ht, tva, statut, conditions_paiement, delai_paiement) VALUES
@@ -416,16 +416,16 @@ INSERT INTO interets_utilisateurs (nom, description) VALUES
 ('Developpement Personnel', 'Ressources pour la croissance et l\'epanouissement personnel');
 
 INSERT INTO prestataires_prestations (prestataire_id, prestation_id) VALUES
-(3, 1), (3, 9), (3, 7), 
-(11, 1), (11, 4), (11, 15), 
-(27, 1), (27, 29), 
-(28, 2), (28, 5), (28, 11), (28, 30), (28, 41), 
-(29, 4), (29, 17), (29, 24), 
-(30, 9), (30, 27), 
-(31, 21), 
-(32, 19), 
-(33, 29), (33, 39), 
-(34, 41); 
+(3, 1), (3, 9), (3, 7),
+(11, 1), (11, 4), (11, 15),
+(27, 1), (27, 7), (27, 9), (27, 29), (27, 30),
+(28, 2), (28, 5), (28, 11), (28, 13), (28, 30), (28, 41),
+(29, 4), (29, 17), (29, 24),
+(30, 9), (30, 27),
+(31, 21),
+(32, 19),
+(33, 29), (33, 39),
+(34, 41);
 
 
 INSERT INTO habilitations (prestataire_id, type, nom_document, organisme_emission, date_obtention, date_expiration, statut) VALUES
@@ -479,7 +479,8 @@ INSERT INTO factures (entreprise_id, devis_id, numero_facture, date_emission, da
 (27, 25, 'FACT-2024-023', '2024-06-06', '2024-07-06', 3150.00, 2625.00, 20.00, 'annulee', NULL, NULL),
 (28, 31, 'FACT-2024-024', '2024-03-05', '2024-04-04', 1800.00, 1500.00, 20.00, 'payee', 'prelevement', NOW() - INTERVAL 2 DAY),
 (29, 32, 'FACT-2024-025', '2024-07-01', '2024-07-31', 4500.00, 3750.00, 20.00, 'en_attente', 'virement', NULL),
-(30, 26, 'FACT-2024-026', '2024-06-12', '2024-07-27', 22500.00, 18750.00, 20.00, 'retard', 'prelevement', NULL);
+(2, 26, 'FACT-2024-033', '2024-06-12', '2024-07-27', 22500.00, 18750.00, 20.00, 'retard', 'prelevement', NULL),
+(2, 18, 'FACT-2024-034', '2024-05-30', '2024-06-29', 57000.00, 47500.00, 20.00, 'en_attente', NULL, NULL); -- <<<=== LIGNE AJOUTÉE ===>>>
 
 
 INSERT INTO devis_prestations (devis_id, prestation_id, quantite, prix_unitaire_devis, description_specifique) VALUES
@@ -527,8 +528,6 @@ INSERT INTO communaute_messages (communaute_id, personne_id, message) VALUES
 INSERT INTO communaute_messages (communaute_id, personne_id, message) VALUES
 (1, 7, 'Des conseils pour tenir la posture de l\'arbre plus longtemps ?'),
 (2, 10, 'Quelqu\'un a une bonne appli pour suivre ses parcours de course ?'),
-(1, 9, 'La séance de méditation guidée d\'hier soir était vraiment apaisante.'),
-(2, 18, 'Entraînement fractionné ce soir, qui est partant ?'),
 (1, 17, 'Est-ce qu\'il y a un cours de Yoga prévu la semaine prochaine sur le site Sante+ ?'),
 (2, 20, 'Besoin de motivation pour sortir courir avec ce temps ! Des astuces ?');
 
@@ -542,4 +541,25 @@ INSERT INTO support_tickets (entreprise_id, personne_id, sujet, message, statut)
 INSERT INTO signalements (sujet, description, statut) VALUES
 ('Commentaire inaproprie communaute', 'Un utilisateur a poste un message deplace dans le Running Club.', 'en_cours'),
 ('Lien mort page Conseils', 'Le lien vers l''article sur le sommeil ne fonctionne pas.', 'clos');
+
+INSERT INTO communaute_membres (communaute_id, personne_id) VALUES
+(1, 5),
+(2, 6),
+(1, 8),
+(2, 12),
+(1, 7),
+(2, 10),
+(1, 17),
+(2, 20);
+
+INSERT INTO communaute_messages (communaute_id, personne_id, message) VALUES
+(1, 5, 'Quelqu''un a essaye le cours de Yoga Avance ?'),
+(2, 6, 'Motivation pour le semi-marathon ce week-end ! Qui court ?'),
+(2, 12, 'Nouveau record perso sur 10km ! :-)');
+
+INSERT INTO communaute_messages (communaute_id, personne_id, message) VALUES
+(1, 7, 'Des conseils pour tenir la posture de l\'arbre plus longtemps ?'),
+(2, 10, 'Quelqu\'un a une bonne appli pour suivre ses parcours de course ?'),
+(1, 17, 'Est-ce qu\'il y a un cours de Yoga prévu la semaine prochaine sur le site Sante+ ?'),
+(2, 20, 'Besoin de motivation pour sortir courir avec ce temps ! Des astuces ?');
 
