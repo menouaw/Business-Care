@@ -328,34 +328,78 @@ function handleQuoteRequestPost(): void
 }
 
 /**
- * Récupère les packs de services disponibles avec leurs détails et prestations incluses.
+ * Récupère les packs de services disponibles avec leurs détails et les prestations incluses.
  *
  * @return array Liste des packs avec leurs détails.
- *               Chaque pack est un tableau associatif contenant au moins 'id', 'type', 'description',
- *               et 'prestations' (une liste de tableaux associatifs ['nom' => ..., 'quantite' => ...]).
+ *               Chaque pack est un tableau associatif contenant 'id', 'type', 'description', etc.,
+ *               et 'prestations' (une liste de tableaux associatifs ['nom' => ..., 'quantite' => ..., 'description' => ...]).
  */
 function getDetailedServicePacks(): array
 {
-    $sql = "SELECT 
-                id, 
-                type, 
-                description, 
-                max_effectif_inferieur_egal, 
-                activites_incluses, 
-                rdv_medicaux_inclus, 
-                chatbot_questions_limite, 
-                conseils_hebdo_personnalises, 
-                tarif_annuel_par_salarie
-            FROM 
-                services 
-            WHERE 
-                actif = 1
-            ORDER BY 
-                ordre ASC, id ASC";
+    
+    $sql_packs = "SELECT 
+                    id, 
+                    type, 
+                    description, 
+                    max_effectif_inferieur_egal, 
+                    activites_incluses, 
+                    rdv_medicaux_inclus, 
+                    chatbot_questions_limite, 
+                    conseils_hebdo_personnalises, 
+                    tarif_annuel_par_salarie
+                FROM 
+                    services 
+                WHERE 
+                    actif = 1
+                ORDER BY 
+                    ordre ASC, id ASC";
 
-    $stmt = executeQuery($sql);
-    $packs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $stmt_packs = executeQuery($sql_packs);
+    $packs = $stmt_packs->fetchAll(PDO::FETCH_ASSOC);
 
+    if (!$packs) {
+        return [];
+    }
 
-    return $packs ?: [];
+    
+    $pack_ids = array_column($packs, 'id');
+
+    
+    $placeholders = rtrim(str_repeat('?,', count($pack_ids)), ',');
+    $sql_prestations = "SELECT 
+                            spi.service_id, 
+                            p.nom, 
+                            p.description, 
+                            spi.quantite 
+                        FROM 
+                            service_pack_items spi
+                        JOIN 
+                            prestations p ON spi.prestation_id = p.id
+                        WHERE 
+                            spi.service_id IN ($placeholders)";
+
+    $stmt_prestations = executeQuery($sql_prestations, $pack_ids);
+    $all_pack_prestations = $stmt_prestations->fetchAll(PDO::FETCH_ASSOC);
+
+    
+    $prestations_by_pack_id = [];
+    foreach ($all_pack_prestations as $prestation) {
+        $service_id = $prestation['service_id'];
+        if (!isset($prestations_by_pack_id[$service_id])) {
+            $prestations_by_pack_id[$service_id] = [];
+        }
+        $prestations_by_pack_id[$service_id][] = [
+            'nom' => $prestation['nom'],
+            'quantite' => $prestation['quantite'],
+            'description' => $prestation['description']
+        ];
+    }
+
+    
+    foreach ($packs as $key => $pack) {
+        $pack_id = $pack['id'];
+        $packs[$key]['prestations'] = $prestations_by_pack_id[$pack_id] ?? []; 
+    }
+
+    return $packs;
 }
