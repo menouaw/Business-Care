@@ -112,10 +112,10 @@ public class ReportApplication {
     private static Map<String, JFreeChart> generateClientCharts(ClientStats stats) {
         logger.info(LOG_GEN_CHARTS_CLIENT_START);
         Map<String, JFreeChart> charts = Map.of(
-                Constants.CHART_TITLE_CONTRACT_STATUS, ChartGenerator.createContractStatusChart(stats),
-                Constants.CHART_TITLE_CLIENT_SECTOR, ChartGenerator.createClientDistributionBySectorChart(stats),
-                Constants.CHART_TITLE_CLIENT_SIZE, ChartGenerator.createClientDistributionBySizeChart(stats),
-                Constants.CHART_TITLE_CLIENT_REVENUE, ChartGenerator.createClientRevenueDistributionChart(stats)
+                CHART_TITLE_CONTRACT_STATUS, ChartGenerator.createContractStatusChart(stats),
+                CHART_TITLE_CLIENT_SECTOR, ChartGenerator.createClientDistributionBySectorChart(stats),
+                CHART_TITLE_CLIENT_SIZE, ChartGenerator.createClientDistributionBySizeChart(stats),
+                CHART_TITLE_CLIENT_REVENUE, ChartGenerator.createClientRevenueDistributionChart(stats)
         );
         logger.info(LOG_GEN_CHARTS_CLIENT_END, charts.size());
         return charts;
@@ -124,8 +124,8 @@ public class ReportApplication {
     private static Map<String, JFreeChart> generateEventCharts(EventStats stats) {
         logger.info(LOG_GEN_CHARTS_EVENT_START);
         Map<String, JFreeChart> charts = Map.of(
-                Constants.CHART_TITLE_EVENT_TYPE_PIE, ChartGenerator.createEventTypeDistributionChart(stats),
-                Constants.CHART_TITLE_EVENT_TYPE_BAR, ChartGenerator.createEventTypeDistributionBarChart(stats)
+                CHART_TITLE_EVENT_TYPE_PIE, ChartGenerator.createEventTypeDistributionChart(stats),
+                CHART_TITLE_EVENT_TYPE_BAR, ChartGenerator.createEventTypeDistributionBarChart(stats)
         );
         logger.info(LOG_GEN_CHARTS_EVENT_END, charts.size());
         return charts;
@@ -134,8 +134,8 @@ public class ReportApplication {
     private static Map<String, JFreeChart> generatePrestationCharts(PrestationStats stats) {
         logger.info(LOG_GEN_CHARTS_PRESTATION_START);
         Map<String, JFreeChart> charts = Map.of(
-                Constants.CHART_TITLE_PRESTATION_TYPE, ChartGenerator.createPrestationTypeDistributionChart(stats),
-                Constants.CHART_TITLE_PRESTATION_CATEGORY, ChartGenerator.createPrestationCategoryDistributionChart(stats)
+                CHART_TITLE_PRESTATION_TYPE, ChartGenerator.createPrestationTypeDistributionChart(stats),
+                CHART_TITLE_PRESTATION_CATEGORY, ChartGenerator.createPrestationCategoryDistributionChart(stats)
         );
         logger.info(LOG_GEN_CHARTS_PRESTATION_END, charts.size());
         return charts;
@@ -188,7 +188,7 @@ public class ReportApplication {
         } catch (IOException ioe) {
             logger.error(LOG_ERR_PDF_IO, outputPath, ioe.getMessage(), ioe);
             
-            throw new ReportGenerationException(LOG_ERR_PDF_IO, outputPath, ioe.getMessage(), ioe);
+            throw new ReportGenerationException(LOG_ERR_PDF_IO, ioe);
         }
     }
 
@@ -202,32 +202,6 @@ public class ReportApplication {
                 
                 throw new ReportGenerationException(ERR_CREATE_DIR + Constants.OUTPUT_DIRECTORY);
             }
-        }
-    }
-
-    /** Regroupe toutes les données brutes récupérées de l'API. */
-    private static class AllData {
-        final List<Company> companies;
-        final List<Contract> contracts;
-        final List<Quote> quotes;
-        final List<Invoice> invoices;
-        final List<Event> events;
-        final List<Prestation> prestations;
-
-        AllData(List<Company> c, List<Contract> co, List<Quote> q, List<Invoice> i, List<Event> e, List<Prestation> p) {
-            this.companies = c; this.contracts = co; this.quotes = q;
-            this.invoices = i; this.events = e; this.prestations = p;
-        }
-    }
-
-    /** Regroupe toutes les statistiques calculées. */
-    private static class ProcessedStats {
-        final ClientStats clientStats;
-        final EventStats eventStats;
-        final PrestationStats prestationStats;
-
-        ProcessedStats(ClientStats cs, EventStats es, PrestationStats ps) {
-            this.clientStats = cs; this.eventStats = es; this.prestationStats = ps;
         }
     }
 }

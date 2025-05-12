@@ -105,27 +105,4 @@ public class JsonReportLauncher {
         System.out.println("Sortie JSON générée et sauvegardée vers " + outputPath + ":");
         System.out.println(jsonString);
     }
-
-    /** Regroupe toutes les statistiques calculées. */
-    private static class ProcessedStats {
-        final ClientStats clientStats;
-        final EventStats eventStats;
-        final PrestationStats prestationStats;
-
-        ProcessedStats(ClientStats cs, EventStats es, PrestationStats ps) {
-            this.clientStats = cs; this.eventStats = es; this.prestationStats = ps;
-        }
-
-        public ClientStats getClientStats() {
-            return clientStats;
-        }
-
-        public EventStats getEventStats() {
-            return eventStats;
-        }
-
-        public PrestationStats getPrestationStats() {
-            return prestationStats;
-        }
-    }
 } 

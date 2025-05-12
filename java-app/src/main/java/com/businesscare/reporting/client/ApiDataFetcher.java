@@ -8,6 +8,7 @@ import com.businesscare.reporting.util.ConfigLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.List;
 
 public class ApiDataFetcher {
@@ -19,7 +20,7 @@ public class ApiDataFetcher {
     private static final String LOG_FETCH_DATA_START = "Récupération des données depuis l'API...";
     private static final String LOG_FETCH_DATA_END = "Données récupérées: {} entreprises, {} contrats, {} devis, {} factures, {} évènements, {} prestations.";
 
-    public AllData fetchAllData() throws ApiException {
+    public AllData fetchAllData() throws ApiException, IOException {
         ApiConfig config = loadConfiguration();
         try (ApiClient apiClient = new ApiClient(config.getBaseUrl())) {
             authenticate(apiClient, config);
