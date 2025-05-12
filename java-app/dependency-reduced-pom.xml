@@ -110,14 +110,14 @@
     </dependencies>
   </dependencyManagement>
   <properties>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven-shade-plugin.version>3.5.2</maven-shade-plugin.version>
+    <jackson.version>2.17.0</jackson.version>
+    <jfreechart.version>1.5.4</jfreechart.version>
     <itext.version>8.0.4</itext.version>
     <httpclient5.version>5.3.1</httpclient5.version>
     <maven.compiler.target>17</maven.compiler.target>
     <slf4j.version>2.0.12</slf4j.version>
-    <maven.compiler.source>17</maven.compiler.source>
-    <maven-shade-plugin.version>3.5.2</maven-shade-plugin.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <jackson.version>2.17.0</jackson.version>
-    <jfreechart.version>1.5.4</jfreechart.version>
   </properties>
 </project>
