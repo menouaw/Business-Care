@@ -1,15 +1,16 @@
 package com.businesscare.reporting.main;
 
 import com.businesscare.reporting.chart.ChartGenerator;
-import com.businesscare.reporting.client.ApiClient;
-import com.businesscare.reporting.client.ApiConfig;
+import com.businesscare.reporting.client.ApiDataFetcher;
 import com.businesscare.reporting.exception.ApiException;
 import com.businesscare.reporting.exception.ReportGenerationException;
 import com.businesscare.reporting.model.*;
+import com.businesscare.reporting.model.AllData;
+import com.businesscare.reporting.model.ProcessedStats;
 import com.businesscare.reporting.pdf.PdfGenerator;
 import com.businesscare.reporting.service.ReportService;
-import com.businesscare.reporting.util.ConfigLoader;
 import com.businesscare.reporting.util.Constants;
+import com.businesscare.reporting.util.OutputDirectoryUtil;
 
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
@@ -53,8 +54,6 @@ public class ReportApplication {
     private static final String CHART_TITLE_PRESTATION_TYPE = "Répartition des prestations par type";
     private static final String CHART_TITLE_PRESTATION_CATEGORY = "Répartition des prestations par catégorie";
 
-    private static final String LOG_APP_START = "Application de reporting démarrée.";
-    private static final String LOG_APP_END = "Application de reporting terminée.";
     private static final String LOG_CONFIG_LOADED = "Configuration API chargée pour URL: {}";
     private static final String LOG_AUTH_ATTEMPT = "Tentative d'authentification auprès de {}...";
     private static final String LOG_AUTH_SUCCESS = "Authentification réussie pour {}";
@@ -78,98 +77,45 @@ public class ReportApplication {
     private static final String LOG_ERR_CREATE_DIR = "Impossible de créer le répertoire de sortie : {}";
     private static final String ERR_CREATE_DIR = "Impossible de créer le répertoire de sortie: ";
     private static final String LOG_ERR_PDF_IO = "Erreur I/O lors de la génération du PDF : {} ({})";
-    private static final String LOG_ERR_API = "Erreur API: {} ({})";
-    private static final String LOG_ERR_UNEXPECTED = "Erreur inattendue dans l'application: {} ({})";
-    private static final String LOG_ERR_PDF_IO = "Erreur I/O lors de la génération du PDF : {} ({})";
 
     public static void main(String[] args) {
-        logger.info(LOG_APP_START);
+        logger.info(Constants.LOG_APP_START);
         ReportService reportService = new ReportService();
         PdfGenerator pdfGenerator = new PdfGenerator();
 
         try {
-            ApiConfig config = loadConfiguration();
+            ApiDataFetcher dataFetcher = new ApiDataFetcher();
+            AllData data = dataFetcher.fetchAllData();
 
-            try (ApiClient apiClient = new ApiClient(config.getBaseUrl())) {
-                authenticate(apiClient, config);
+            
+            ProcessedStats stats = reportService.processData(data);
 
-                
-                AllData data = fetchData(apiClient);
+            
+            Map<String, JFreeChart> clientCharts = generateClientCharts(stats.clientStats);
+            Map<String, JFreeChart> eventCharts = generateEventCharts(stats.eventStats);
+            Map<String, JFreeChart> prestationCharts = generatePrestationCharts(stats.prestationStats);
 
-                
-                ProcessedStats stats = processData(reportService, data);
-
-                
-                Map<String, JFreeChart> clientCharts = generateClientCharts(stats.clientStats);
-                Map<String, JFreeChart> eventCharts = generateEventCharts(stats.eventStats);
-                Map<String, JFreeChart> prestationCharts = generatePrestationCharts(stats.prestationStats);
-
-                
-                generatePdfReport(pdfGenerator, stats, clientCharts, eventCharts, prestationCharts);
-
-            } 
+            
+            generatePdfReport(pdfGenerator, stats, clientCharts, eventCharts, prestationCharts);
 
         } catch (ApiException e) {
-            logger.error(LOG_ERR_API, e.getMessage(), e.getCause() != null ? e.getCause().getMessage() : "N/A", e);
+            logger.error(Constants.LOG_ERR_API, e.getMessage(), e.getCause() != null ? e.getCause().getMessage() : "N/A", e);
         } catch (ReportGenerationException rge) {
             logger.error(LOG_ERR_PDF_IO, rge.getMessage(), rge.getCause() != null ? rge.getCause().getMessage() : "N/A", rge);
         } catch (Exception e) {
-            logger.error(LOG_ERR_UNEXPECTED, e.getMessage(), e.getClass().getSimpleName(), e);
+            logger.error(Constants.LOG_ERR_UNEXPECTED, e.getMessage(), e.getClass().getSimpleName(), e);
         }
 
-        logger.info(LOG_APP_END);
-    }
-
-    
-
-    private static ApiConfig loadConfiguration() {
-        ApiConfig config = ConfigLoader.loadApiConfig();
-        logger.info(LOG_CONFIG_LOADED, config.getBaseUrl());
-        return config;
-    }
-
-    private static void authenticate(ApiClient client, ApiConfig config) throws ApiException {
-        logger.info(LOG_AUTH_ATTEMPT, config.getBaseUrl());
-        AuthResponse auth = client.login(config.getApiUser(), config.getApiPassword());
-        
-        
-    }
-
-    private static AllData fetchData(ApiClient client) throws ApiException {
-        logger.info(LOG_FETCH_DATA_START);
-        List<Company> companies = client.getCompanies();
-        List<Contract> contracts = client.getContracts();
-        List<Quote> quotes = client.getQuotes(); 
-        List<Invoice> invoices = client.getInvoices();
-        List<Event> events = client.getEvents();
-        List<Prestation> prestations = client.getPrestations();
-        logger.info(LOG_FETCH_DATA_END, companies.size(), contracts.size(), quotes.size(), invoices.size(), events.size(), prestations.size());
-        return new AllData(companies, contracts, quotes, invoices, events, prestations);
-    }
-
-    private static ProcessedStats processData(ReportService service, AllData data) {
-        logger.info(LOG_PROCESS_CLIENT_START);
-        ClientStats clientStats = service.processClientFinancialData(data.companies, data.contracts, data.invoices);
-        logger.info(LOG_PROCESS_CLIENT_END);
-
-        logger.info(LOG_PROCESS_EVENT_START);
-        EventStats eventStats = service.processEventData(data.events);
-        logger.info(LOG_PROCESS_EVENT_END);
-
-        logger.info(LOG_PROCESS_PRESTATION_START);
-        PrestationStats prestationStats = service.processPrestationData(data.prestations);
-        logger.info(LOG_PROCESS_PRESTATION_END);
-
-        return new ProcessedStats(clientStats, eventStats, prestationStats);
+        logger.info(Constants.LOG_APP_END);
     }
 
     private static Map<String, JFreeChart> generateClientCharts(ClientStats stats) {
         logger.info(LOG_GEN_CHARTS_CLIENT_START);
         Map<String, JFreeChart> charts = Map.of(
-                CHART_TITLE_CONTRACT_STATUS, ChartGenerator.createContractStatusChart(stats),
-                CHART_TITLE_CLIENT_SECTOR, ChartGenerator.createClientDistributionBySectorChart(stats),
-                CHART_TITLE_CLIENT_SIZE, ChartGenerator.createClientDistributionBySizeChart(stats),
-                CHART_TITLE_CLIENT_REVENUE, ChartGenerator.createClientRevenueDistributionChart(stats)
+                Constants.CHART_TITLE_CONTRACT_STATUS, ChartGenerator.createContractStatusChart(stats),
+                Constants.CHART_TITLE_CLIENT_SECTOR, ChartGenerator.createClientDistributionBySectorChart(stats),
+                Constants.CHART_TITLE_CLIENT_SIZE, ChartGenerator.createClientDistributionBySizeChart(stats),
+                Constants.CHART_TITLE_CLIENT_REVENUE, ChartGenerator.createClientRevenueDistributionChart(stats)
         );
         logger.info(LOG_GEN_CHARTS_CLIENT_END, charts.size());
         return charts;
@@ -178,8 +124,8 @@ public class ReportApplication {
     private static Map<String, JFreeChart> generateEventCharts(EventStats stats) {
         logger.info(LOG_GEN_CHARTS_EVENT_START);
         Map<String, JFreeChart> charts = Map.of(
-                CHART_TITLE_EVENT_TYPE_PIE, ChartGenerator.createEventTypeDistributionChart(stats),
-                CHART_TITLE_EVENT_TYPE_BAR, ChartGenerator.createEventTypeDistributionBarChart(stats)
+                Constants.CHART_TITLE_EVENT_TYPE_PIE, ChartGenerator.createEventTypeDistributionChart(stats),
+                Constants.CHART_TITLE_EVENT_TYPE_BAR, ChartGenerator.createEventTypeDistributionBarChart(stats)
         );
         logger.info(LOG_GEN_CHARTS_EVENT_END, charts.size());
         return charts;
@@ -188,8 +134,8 @@ public class ReportApplication {
     private static Map<String, JFreeChart> generatePrestationCharts(PrestationStats stats) {
         logger.info(LOG_GEN_CHARTS_PRESTATION_START);
         Map<String, JFreeChart> charts = Map.of(
-                CHART_TITLE_PRESTATION_TYPE, ChartGenerator.createPrestationTypeDistributionChart(stats),
-                CHART_TITLE_PRESTATION_CATEGORY, ChartGenerator.createPrestationCategoryDistributionChart(stats)
+                Constants.CHART_TITLE_PRESTATION_TYPE, ChartGenerator.createPrestationTypeDistributionChart(stats),
+                Constants.CHART_TITLE_PRESTATION_CATEGORY, ChartGenerator.createPrestationCategoryDistributionChart(stats)
         );
         logger.info(LOG_GEN_CHARTS_PRESTATION_END, charts.size());
         return charts;
@@ -201,20 +147,20 @@ public class ReportApplication {
                                         Map<String, JFreeChart> prestationCharts) throws ReportGenerationException {
 
         LocalDate today = LocalDate.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_FORMAT_PATTERN);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(Constants.DATE_FORMAT_PATTERN);
         String formattedDate = today.format(formatter);
-        String dynamicFilename = REPORT_FILENAME_PREFIX + formattedDate + REPORT_FILENAME_SUFFIX;
+        String dynamicFilename = Constants.REPORT_FILENAME_PREFIX + formattedDate + Constants.REPORT_FILENAME_SUFFIX;
         String outputPath = Constants.OUTPUT_DIRECTORY + File.separator + dynamicFilename;
 
         logger.info(LOG_GEN_PDF_START, outputPath);
 
-        createOutputDirectory(); 
+        OutputDirectoryUtil.createOutputDirectory(Constants.OUTPUT_DIRECTORY);
 
         try (PdfWriter writer = new PdfWriter(outputPath);
              PdfDocument pdfDoc = new PdfDocument(writer);
              Document document = new Document(pdfDoc)) {
 
-            document.setMargins(PDF_MARGIN_TOP, PDF_MARGIN_RIGHT, PDF_MARGIN_BOTTOM, PDF_MARGIN_LEFT);
+            document.setMargins(Constants.PDF_MARGIN_TOP, Constants.PDF_MARGIN_RIGHT, Constants.PDF_MARGIN_BOTTOM, Constants.PDF_MARGIN_LEFT);
 
             pdfGenerator.generateTitlePage(document, formattedDate);
 
@@ -258,8 +204,6 @@ public class ReportApplication {
             }
         }
     }
-
-    
 
     /** Regroupe toutes les données brutes récupérées de l'API. */
     private static class AllData {

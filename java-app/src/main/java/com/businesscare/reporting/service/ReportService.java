@@ -20,6 +20,23 @@ public class ReportService {
     private static final String NA_STRING = "N/A";
 
     /**
+     * Orchestre le traitement de toutes les données brutes pour générer des statistiques agrégées.
+     *
+     * @param data Les données brutes récupérées de l'API.
+     * @return Un objet ProcessedStats contenant toutes les statistiques calculées.
+     */
+    public ProcessedStats processData(AllData data) {
+        logger.info("Traitement de toutes les données brutes...");
+
+        ClientStats clientStats = processClientFinancialData(data.getCompanies(), data.getContracts(), data.getInvoices());
+        EventStats eventStats = processEventData(data.getEvents());
+        PrestationStats prestationStats = processPrestationData(data.getPrestations());
+
+        logger.info("Traitement de toutes les données brutes terminé.");
+        return new ProcessedStats(clientStats, eventStats, prestationStats);
+    }
+
+    /**
      * Traite les données des clients, contrats et factures pour générer des statistiques financières.
      *
      * @param companies La liste des entreprises.
