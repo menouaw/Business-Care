@@ -256,15 +256,15 @@ function handleQuoteRequestPost(): void
 
         ];
 
-        // Log des données avant insertion
-        error_log("[DEBUG] handleQuoteRequestPost - Attempting to insert into devis: " . print_r($insertDataDevis, true));
 
-        $newQuoteId = insertRow('devis', $insertDataDevis, $pdo);
+
+
+        $newQuoteId = insertRow('devis', $insertDataDevis);
 
         if (!$newQuoteId) {
-            // Log additionnel en cas d'échec
-            error_log("[ERROR] handleQuoteRequestPost - insertRow('devis') failed for data: " . print_r($insertDataDevis, true));
-            throw new Exception("Échec de la création de l'enregistrement principal du devis.");
+
+
+            throw new Exception("Échec de la création de l\'enregistrement principal du devis.");
         }
 
 
@@ -277,8 +277,13 @@ function handleQuoteRequestPost(): void
                     'prix_unitaire_devis' => $ligne['prix_unitaire_devis'],
 
                 ];
-                if (!insertRow('devis_prestations', $insertDataLigne, $pdo)) {
-                    throw new Exception("Échec de l'insertion d'une ligne de prestation supplémentaire pour le devis ID {$newQuoteId}.");
+
+
+
+                if (!insertRow('devis_prestations', $insertDataLigne)) {
+
+
+                    throw new Exception("Échec de l\'insertion d\'une ligne de prestation supplémentaire pour le devis ID {$newQuoteId}.");
                 }
             }
         }
