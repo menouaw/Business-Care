@@ -80,6 +80,7 @@ public class ReportApplication {
     private static final String LOG_ERR_PDF_IO = "Erreur I/O lors de la génération du PDF : {} ({})";
     private static final String LOG_ERR_API = "Erreur API: {} ({})";
     private static final String LOG_ERR_UNEXPECTED = "Erreur inattendue dans l'application: {} ({})";
+    private static final String LOG_ERR_PDF_IO = "Erreur I/O lors de la génération du PDF : {} ({})";
 
     public static void main(String[] args) {
         logger.info(LOG_APP_START);
@@ -111,7 +112,7 @@ public class ReportApplication {
         } catch (ApiException e) {
             logger.error(LOG_ERR_API, e.getMessage(), e.getCause() != null ? e.getCause().getMessage() : "N/A", e);
         } catch (ReportGenerationException rge) {
-            logger.error("Erreur lors de la génération du rapport: {} ({})", rge.getMessage(), rge.getCause() != null ? rge.getCause().getMessage() : "N/A", rge);
+            logger.error(LOG_ERR_PDF_IO, rge.getMessage(), rge.getCause() != null ? rge.getCause().getMessage() : "N/A", rge);
         } catch (Exception e) {
             logger.error(LOG_ERR_UNEXPECTED, e.getMessage(), e.getClass().getSimpleName(), e);
         }
@@ -241,7 +242,7 @@ public class ReportApplication {
         } catch (IOException ioe) {
             logger.error(LOG_ERR_PDF_IO, outputPath, ioe.getMessage(), ioe);
             
-            throw new ReportGenerationException("Erreur lors de l'écriture du fichier PDF: " + outputPath, ioe);
+            throw new ReportGenerationException(LOG_ERR_PDF_IO, outputPath, ioe.getMessage(), ioe);
         }
     }
 

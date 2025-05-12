@@ -3,9 +3,7 @@ package com.businesscare.reporting.jsonmain;
 import com.businesscare.reporting.client.ApiClient;
 import com.businesscare.reporting.client.ApiConfig;
 import com.businesscare.reporting.exception.ApiException;
-import com.businesscare.reporting.model.AllData;
 import com.businesscare.reporting.model.AuthResponse;
-import com.businesscare.reporting.model.ProcessedStats;
 import com.businesscare.reporting.service.ReportService;
 import com.businesscare.reporting.util.ConfigLoader;
 import com.businesscare.reporting.util.Constants;
@@ -13,6 +11,7 @@ import com.businesscare.reporting.util.Constants;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,17 +29,36 @@ public class JsonReportLauncher {
 
     private static final Logger logger = LoggerFactory.getLogger(JsonReportLauncher.class);
 
-    private static final String DATE_FORMAT_PATTERN = "dd-MM-yyyy";
-    private static final String JSON_FILENAME_PREFIX = "report_";
-    private static final String JSON_FILENAME_SUFFIX = ".json";
-    private static final String JSON_OUTPUT_SUBDIRECTORY = "json";
+    
+    private static final String LOG_APP_START = "Application de reporting JSON démarrée.";
+    private static final String LOG_APP_END = "Application de reporting JSON terminée.";
+    private static final String LOG_CONFIG_LOADED = "Configuration API chargée pour URL: {}";
+    private static final String LOG_AUTH_ATTEMPT = "Tentative d'authentification auprès de {}...";
+    private static final String LOG_AUTH_SUCCESS = "Authentification réussie pour {}";
+    private static final String LOG_FETCH_DATA_START = "Récupération des données depuis l'API...";
+    private static final String LOG_FETCH_DATA_END = "Données récupérées: {} entreprises, {} contrats, {} devis, {} factures, {} évènements, {} prestations.";
+    private static final String LOG_PROCESS_CLIENT_START = "Traitement des données financières client...";
+    private static final String LOG_PROCESS_CLIENT_END = "Traitement des données financières terminé.";
+    private static final String LOG_PROCESS_EVENT_START = "Traitement des données d'évènements...";
+    private static final String LOG_PROCESS_EVENT_END = "Traitement des données d'évènements terminé.";
+    private static final String LOG_PROCESS_PRESTATION_START = "Traitement des données de prestations...";
+    private static final String LOG_PROCESS_PRESTATION_END = "Traitement des données de prestations terminé.";
+    private static final String LOG_GEN_JSON_START = "Génération de la sortie JSON...";
+    private static final String LOG_GEN_JSON_SUCCESS = "Sortie JSON générée et sauvegardée vers {}.";
     private static final String LOG_CREATE_DIR_SUCCESS = "Répertoire de sortie JSON créé : {}";
     private static final String LOG_ERR_CREATE_DIR = "Impossible de créer le répertoire de sortie JSON : {}";
     private static final String ERR_CREATE_DIR = "Impossible de créer le répertoire de sortie JSON: ";
     private static final String LOG_ERR_JSON_IO = "Erreur I/O lors de la génération du fichier JSON : {} ({})";
+    private static final String LOG_ERR_API = "Erreur API: {} ({})";
+    private static final String LOG_ERR_UNEXPECTED = "Erreur inattendue dans l'application: {} ({})";
+
+    private static final String DATE_FORMAT_PATTERN = "dd-MM-yyyy";
+    private static final String JSON_FILENAME_PREFIX = "report_";
+    private static final String JSON_FILENAME_SUFFIX = ".json";
+    private static final String JSON_OUTPUT_SUBDIRECTORY = "json";
 
     public static void main(String[] args) {
-        logger.info("JSON reporting application started.");
+        logger.info(LOG_APP_START);
         ReportService reportService = new ReportService();
 
         try {
@@ -48,79 +66,78 @@ public class JsonReportLauncher {
 
             try (ApiClient apiClient = new ApiClient(config.getBaseUrl())) {
                 authenticate(apiClient, config);
-                
+
                 AllData data = fetchData(apiClient);
-                
+
                 ProcessedStats stats = processData(reportService, data);
 
                 generateJsonOutput(stats);
 
-            } 
+            }
 
         } catch (ApiException e) {
-            logger.error("API error: {} ({})", e.getMessage(), e.getCause() != null ? e.getCause().getMessage() : "N/A", e);
+            logger.error(LOG_ERR_API, e.getMessage(), e.getCause() != null ? e.getCause().getMessage() : "N/A", e);
         } catch (JsonProcessingException jpe) {
-             logger.error("Error processing JSON: {} ({})", jpe.getMessage(), jpe.getClass().getSimpleName(), jpe);
+             logger.error(LOG_ERR_JSON_IO, jpe.getMessage(), jpe.getClass().getSimpleName(), jpe);
         } catch (IOException ioe) {
-             logger.error(LOG_ERR_JSON_IO, "N/A", ioe.getMessage(), ioe); // N/A as file path is determined later
+             logger.error(LOG_ERR_JSON_IO, "N/A", ioe.getMessage(), ioe);
         } catch (Exception e) {
-            logger.error("Unexpected error in application: {} ({})", e.getMessage(), e.getClass().getSimpleName(), e);
+            logger.error(LOG_ERR_UNEXPECTED, e.getMessage(), e.getClass().getSimpleName(), e);
         }
 
-        logger.info("JSON reporting application finished.");
+        logger.info(LOG_APP_END);
     }
 
     private static ApiConfig loadConfiguration() {
-        logger.info("Loading API configuration...");
+        logger.info(LOG_CONFIG_LOADED);
         ApiConfig config = ConfigLoader.loadApiConfig();
-        logger.info("API configuration loaded for URL: {}", config.getBaseUrl());
+        logger.info(LOG_CONFIG_LOADED, config.getBaseUrl());
         return config;
     }
 
     private static void authenticate(ApiClient client, ApiConfig config) throws ApiException {
-        logger.info("Attempting authentication with {}...", config.getBaseUrl());
+        logger.info(LOG_AUTH_ATTEMPT, config.getBaseUrl());
         AuthResponse auth = client.login(config.getApiUser(), config.getApiPassword());
-        // The AuthResponse object contains the token, which is handled internally by ApiClient
-        logger.info("Authentication successful for {}", config.getBaseUrl());
+        logger.info(LOG_AUTH_SUCCESS, config.getBaseUrl());
     }
 
     private static AllData fetchData(ApiClient client) throws ApiException {
-        logger.info("Fetching data from API...");
+        logger.info(LOG_FETCH_DATA_START);
         List<Company> companies = client.getCompanies();
         List<Contract> contracts = client.getContracts();
         List<Quote> quotes = client.getQuotes();
         List<Invoice> invoices = client.getInvoices();
         List<Event> events = client.getEvents();
         List<Prestation> prestations = client.getPrestations();
-        logger.info("Data fetched: {} companies, {} contracts, {} quotes, {} invoices, {} events, {} prestations.",
-                    companies.size(), contracts.size(), quotes.size(), invoices.size(), events.size(), prestations.size());
+        logger.info(LOG_FETCH_DATA_END, companies.size(), contracts.size(), quotes.size(), invoices.size(), events.size(), prestations.size());
         return new AllData(companies, contracts, quotes, invoices, events, prestations);
     }
 
     private static ProcessedStats processData(ReportService service, AllData data) {
-        logger.info("Processing client financial data...");
+        logger.info(LOG_PROCESS_CLIENT_START);
         ClientStats clientStats = service.processClientFinancialData(data.companies, data.contracts, data.invoices);
-        logger.info("Client financial data processing finished.");
+        logger.info(LOG_PROCESS_CLIENT_END);
 
-        logger.info("Processing event data...");
+        logger.info(LOG_PROCESS_EVENT_START);
         EventStats eventStats = service.processEventData(data.events);
-        logger.info("Event data processing finished.");
+        logger.info(LOG_PROCESS_EVENT_END);
 
-        logger.info("Processing prestation data...");
+        logger.info(LOG_PROCESS_PRESTATION_START);
         PrestationStats prestationStats = service.processPrestationData(data.prestations);
-        logger.info("Prestation data processing finished.");
+        logger.info(LOG_PROCESS_PRESTATION_END);
 
         return new ProcessedStats(clientStats, eventStats, prestationStats);
     }
 
     private static void generateJsonOutput(ProcessedStats stats) throws JsonProcessingException, IOException {
-        logger.info("Generating JSON output...");
+        logger.info(LOG_GEN_JSON_START);
         ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
         objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 
         String jsonString = objectMapper.writeValueAsString(stats);
 
-        // Determine output path and create directory
+        
         LocalDate today = LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_FORMAT_PATTERN);
         String formattedDate = today.format(formatter);
@@ -130,13 +147,13 @@ public class JsonReportLauncher {
 
         createOutputDirectory(outputDirectory);
 
-        // Write JSON to file
+        
         try (FileWriter fileWriter = new FileWriter(outputPath)) {
             fileWriter.write(jsonString);
         }
 
-        logger.info("JSON output generated and saved to {}.", outputPath);
-        System.out.println("JSON output (also saved to " + outputPath + "):");
+        logger.info(LOG_GEN_JSON_SUCCESS, outputPath);
+        System.out.println("Sortie JSON générée et sauvegardée vers " + outputPath + ":");
         System.out.println(jsonString);
     }
 
@@ -175,6 +192,18 @@ public class JsonReportLauncher {
 
         ProcessedStats(ClientStats cs, EventStats es, PrestationStats ps) {
             this.clientStats = cs; this.eventStats = es; this.prestationStats = ps;
+        }
+
+        public ClientStats getClientStats() {
+            return clientStats;
+        }
+
+        public EventStats getEventStats() {
+            return eventStats;
+        }
+
+        public PrestationStats getPrestationStats() {
+            return prestationStats;
         }
     }
 } 
