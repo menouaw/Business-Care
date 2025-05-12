@@ -200,10 +200,10 @@ INSERT INTO personnes (nom, prenom, email, mot_de_passe, telephone, date_naissan
 ('Representant', 'TechSolutions', 'rep.techsolutions@businesscare.fr', '$2y$10$CGP1gfg0khtXjAZcJFC6iO3oYisjwlPfkm8tQ8Q/OxWpFdR7tOiqO', '0000000002', '1975-05-10', 'Autre', '/assets/images/icons/default-user.png', 4, 1, 1, 'actif', NOW()),
 ('Representant', 'RetailExpress', 'rep.retailexpress@businesscare.fr', '$2y$10$CGP1gfg0khtXjAZcJFC6iO3oYisjwlPfkm8tQ8Q/OxWpFdR7tOiqO', '0000000003', '1982-09-15', 'Autre', '/assets/images/icons/default-user.png', 4, 5, 6, 'suspendu', NOW());
 
-INSERT INTO services (id, type, description, actif, ordre, tarif_annuel_par_salarie, prix_base_indicatif) VALUES
-(1, 'Starter Pack', 'Pour les petites equipes (jusqu''a 30 salaries)', TRUE, 10, 180.00, 100.00),
-(2, 'Basic Pack', 'Solution equilibree (jusqu''a 250 salaries)', TRUE, 20, 150.00, 500.00),
-(3, 'Premium Pack', 'Offre complete pour grandes entreprises (251+ salaries)', TRUE, 30, 100.00, 1000.00);
+INSERT INTO services (id, type, description, actif, ordre, max_effectif_inferieur_egal, activites_incluses, rdv_medicaux_inclus, chatbot_questions_limite, conseils_hebdo_personnalises, tarif_annuel_par_salarie, prix_base_indicatif) VALUES
+(1, 'Starter Pack', 'Pour les petites équipes (jusqu\'à 30 salariés). Inclut : 2 Activités (participation BC), 1 RDV médicaux (présentiel/visio), RDV médicaux supplémentaires à 75€/rdv, 6 questions/salarié/mois au chatbot, accès illimité aux fiches pratiques BC, conseils hebdomadaires non personnalisés, accès illimité aux événements/communautés internes.', TRUE, 10, 30, 2, 1, 6, FALSE, 180.00, NULL),
+(2, 'Basic Pack', 'Solution équilibrée (jusqu\'à 250 salariés). Inclut : 3 Activités (participation BC), 2 RDV médicaux (présentiel/visio), RDV médicaux supplémentaires à 75€/rdv, 20 questions/salarié/mois au chatbot, accès illimité aux fiches pratiques BC, conseils hebdomadaires non personnalisés, accès illimité aux événements/communautés internes.', TRUE, 20, 250, 3, 2, 20, FALSE, 150.00, NULL),
+(3, 'Premium Pack', 'Offre complète pour grandes entreprises (251+ salariés). Inclut : 4 Activités (participation BC), 3 RDV médicaux (présentiel/visio), RDV médicaux supplémentaires à 50€/rdv, accès illimité au chatbot, accès illimité aux fiches pratiques BC, conseils hebdomadaires personnalisés (suggestion d\'activités), accès illimité aux événements/communautés internes.', TRUE, 30, NULL, 4, 3, NULL, TRUE, 100.00, NULL);
  
 INSERT INTO contrats (entreprise_id, service_id, date_debut, date_fin, nombre_salaries, statut, conditions_particulieres) VALUES
 (1, 3, '2024-01-01', '2025-12-31', 150, 'actif', 'Acces a toutes les prestations premium'),
@@ -371,40 +371,40 @@ INSERT INTO conseils (titre, icone, resume, categorie, contenu) VALUES
 4. Demande (D) : Formuler une demande concrete, positive, realisable et negociable, visant a satisfaire le besoin identifie. Preferer une demande a une exigence. (Ex. : "Serais-tu d''accord pour que nous prenions 5 minutes ensemble pour decider comment organiser cet espace ?")\n\nEcoute empathique : La CNV s''applique a l''ecoute. Tentez de deviner les sentiments et besoins de l''autre derriere ses mots, meme s''ils sont exprimes maladroitement.\n\nPratiquer la CNV demande de l''entrainement mais ameliore significativement la qualite des relations professionnelles et personnelles.');
 
 INSERT INTO consultation_creneaux (prestation_id, praticien_id, start_time, end_time, is_booked, site_id) VALUES
-(2, 3, NOW() + INTERVAL 20 DAY + INTERVAL '10:00' HOUR_MINUTE, NOW() + INTERVAL 20 DAY + INTERVAL '11:00' HOUR_MINUTE, FALSE, NULL), -- Yoga (60 min)
-(3, 3, NOW() + INTERVAL 20 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 20 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), -- Webinar Stress (90 min)
-(5, 3, NOW() + INTERVAL 20 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 20 DAY + INTERVAL '15:00' HOUR_MINUTE, FALSE, NULL), -- Meditation (60 min)
-(6, 3, NOW() + INTERVAL 21 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 21 DAY + INTERVAL '11:00' HOUR_MINUTE, FALSE, NULL), -- Ergonomie (120 min)
-(8, 3, NOW() + INTERVAL 21 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 21 DAY + INTERVAL '13:30' HOUR_MINUTE, FALSE, NULL), -- Com Assertive (120 min)
-(10, 3, NOW() + INTERVAL 21 DAY + INTERVAL '14:30' HOUR_MINUTE, NOW() + INTERVAL 21 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), -- Conf Sommeil (90 min)
-(12, 3, NOW() + INTERVAL 22 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 22 DAY + INTERVAL '11:00' HOUR_MINUTE, FALSE, NULL), -- Gest Temps (120 min)
-(13, 3, NOW() + INTERVAL 22 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 22 DAY + INTERVAL '12:30' HOUR_MINUTE, FALSE, NULL), -- Pilates (60 min)
-(14, 3, NOW() + INTERVAL 22 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 22 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), -- Webinar Cyber (90 min)
-(15, 3, NOW() + INTERVAL 23 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '09:50' HOUR_MINUTE, FALSE, NULL), -- Arret Tabac (50 min)
-(16, 3, NOW() + INTERVAL 23 DAY + INTERVAL '10:00' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '11:15' HOUR_MINUTE, FALSE, NULL), -- Conf Nutri Sport (75 min)
-(17, 3, NOW() + INTERVAL 23 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), -- Cuisine Saine (90 min)
-(18, 3, NOW() + INTERVAL 23 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '15:00' HOUR_MINUTE, FALSE, NULL), -- Coaching Pro (60 min)
-(19, 3, NOW() + INTERVAL 24 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 24 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), -- Secourisme (240 min)
-(20, 3, NOW() + INTERVAL 24 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 24 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), -- Webinar CNV (120 min)
-(22, 3, NOW() + INTERVAL 25 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 25 DAY + INTERVAL '09:50' HOUR_MINUTE, FALSE, NULL), -- Reflexologie (50 min)
-(23, 3, NOW() + INTERVAL 25 DAY + INTERVAL '10:00' HOUR_MINUTE, NOW() + INTERVAL 25 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), -- Gest Conflits (180 min)
-(24, 3, NOW() + INTERVAL 25 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 25 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), -- Conf Equilibre (90 min)
-(25, 3, NOW() + INTERVAL 26 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 26 DAY + INTERVAL '10:00' HOUR_MINUTE, FALSE, NULL), -- Dietetique (60 min)
-(26, 3, NOW() + INTERVAL 26 DAY + INTERVAL '10:30' HOUR_MINUTE, NOW() + INTERVAL 26 DAY + INTERVAL '12:30' HOUR_MINUTE, FALSE, NULL), -- Creativite (120 min)
-(27, 3, NOW() + INTERVAL 26 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 26 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), -- Webinar Burnout (90 min)
-(28, 3, NOW() + INTERVAL 27 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 27 DAY + INTERVAL '10:00' HOUR_MINUTE, FALSE, NULL), -- Hypnose Relax (60 min)
-(29, 3, NOW() + INTERVAL 27 DAY + INTERVAL '10:30' HOUR_MINUTE, NOW() + INTERVAL 27 DAY + INTERVAL '16:30' HOUR_MINUTE, FALSE, NULL), -- Management Bien (360 min)
-(30, 3, NOW() + INTERVAL 28 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 28 DAY + INTERVAL '10:15' HOUR_MINUTE, FALSE, NULL), -- Conf Numerique (75 min)
-(31, 3, NOW() + INTERVAL 28 DAY + INTERVAL '10:30' HOUR_MINUTE, NOW() + INTERVAL 28 DAY + INTERVAL '11:30' HOUR_MINUTE, FALSE, NULL), -- Auto-massage (60 min)
-(32, 3, NOW() + INTERVAL 28 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 28 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), -- Orientation (90 min)
-(33, 3, NOW() + INTERVAL 29 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 29 DAY + INTERVAL '10:30' HOUR_MINUTE, FALSE, NULL), -- Webinar Invest (90 min)
-(34, 3, NOW() + INTERVAL 29 DAY + INTERVAL '11:00' HOUR_MINUTE, NOW() + INTERVAL 29 DAY + INTERVAL '14:00' HOUR_MINUTE, FALSE, NULL), -- Prise Parole (180 min)
-(35, 3, NOW() + INTERVAL 29 DAY + INTERVAL '15:00' HOUR_MINUTE, NOW() + INTERVAL 29 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), -- Sexologie (60 min)
-(36, 3, NOW() + INTERVAL 30 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 30 DAY + INTERVAL '10:30' HOUR_MINUTE, FALSE, NULL), -- Conf Addictions (90 min)
-(37, 3, NOW() + INTERVAL 30 DAY + INTERVAL '11:00' HOUR_MINUTE, NOW() + INTERVAL 30 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), -- Jardinage (120 min)
-(38, 3, NOW() + INTERVAL 30 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 30 DAY + INTERVAL '14:45' HOUR_MINUTE, FALSE, NULL), -- Musicotherapie (45 min)
-(39, 3, NOW() + INTERVAL 31 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 31 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), -- Formation RPS (420 min)
-(40, 3, NOW() + INTERVAL 32 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 32 DAY + INTERVAL '10:30' HOUR_MINUTE, FALSE, NULL); -- Webinar Art (90 min)
+(2, 3, NOW() + INTERVAL 20 DAY + INTERVAL '10:00' HOUR_MINUTE, NOW() + INTERVAL 20 DAY + INTERVAL '11:00' HOUR_MINUTE, FALSE, NULL), 
+(3, 3, NOW() + INTERVAL 20 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 20 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), 
+(5, 3, NOW() + INTERVAL 20 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 20 DAY + INTERVAL '15:00' HOUR_MINUTE, FALSE, NULL), 
+(6, 3, NOW() + INTERVAL 21 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 21 DAY + INTERVAL '11:00' HOUR_MINUTE, FALSE, NULL), 
+(8, 3, NOW() + INTERVAL 21 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 21 DAY + INTERVAL '13:30' HOUR_MINUTE, FALSE, NULL), 
+(10, 3, NOW() + INTERVAL 21 DAY + INTERVAL '14:30' HOUR_MINUTE, NOW() + INTERVAL 21 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), 
+(12, 3, NOW() + INTERVAL 22 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 22 DAY + INTERVAL '11:00' HOUR_MINUTE, FALSE, NULL), 
+(13, 3, NOW() + INTERVAL 22 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 22 DAY + INTERVAL '12:30' HOUR_MINUTE, FALSE, NULL), 
+(14, 3, NOW() + INTERVAL 22 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 22 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), 
+(15, 3, NOW() + INTERVAL 23 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '09:50' HOUR_MINUTE, FALSE, NULL), 
+(16, 3, NOW() + INTERVAL 23 DAY + INTERVAL '10:00' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '11:15' HOUR_MINUTE, FALSE, NULL), 
+(17, 3, NOW() + INTERVAL 23 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), 
+(18, 3, NOW() + INTERVAL 23 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '15:00' HOUR_MINUTE, FALSE, NULL), 
+(19, 3, NOW() + INTERVAL 24 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 24 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), 
+(20, 3, NOW() + INTERVAL 24 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 24 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), 
+(22, 3, NOW() + INTERVAL 25 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 25 DAY + INTERVAL '09:50' HOUR_MINUTE, FALSE, NULL), 
+(23, 3, NOW() + INTERVAL 25 DAY + INTERVAL '10:00' HOUR_MINUTE, NOW() + INTERVAL 25 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), 
+(24, 3, NOW() + INTERVAL 25 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 25 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), 
+(25, 3, NOW() + INTERVAL 26 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 26 DAY + INTERVAL '10:00' HOUR_MINUTE, FALSE, NULL), 
+(26, 3, NOW() + INTERVAL 26 DAY + INTERVAL '10:30' HOUR_MINUTE, NOW() + INTERVAL 26 DAY + INTERVAL '12:30' HOUR_MINUTE, FALSE, NULL), 
+(27, 3, NOW() + INTERVAL 26 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 26 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), 
+(28, 3, NOW() + INTERVAL 27 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 27 DAY + INTERVAL '10:00' HOUR_MINUTE, FALSE, NULL), 
+(29, 3, NOW() + INTERVAL 27 DAY + INTERVAL '10:30' HOUR_MINUTE, NOW() + INTERVAL 27 DAY + INTERVAL '16:30' HOUR_MINUTE, FALSE, NULL), 
+(30, 3, NOW() + INTERVAL 28 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 28 DAY + INTERVAL '10:15' HOUR_MINUTE, FALSE, NULL), 
+(31, 3, NOW() + INTERVAL 28 DAY + INTERVAL '10:30' HOUR_MINUTE, NOW() + INTERVAL 28 DAY + INTERVAL '11:30' HOUR_MINUTE, FALSE, NULL), 
+(32, 3, NOW() + INTERVAL 28 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 28 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), 
+(33, 3, NOW() + INTERVAL 29 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 29 DAY + INTERVAL '10:30' HOUR_MINUTE, FALSE, NULL), 
+(34, 3, NOW() + INTERVAL 29 DAY + INTERVAL '11:00' HOUR_MINUTE, NOW() + INTERVAL 29 DAY + INTERVAL '14:00' HOUR_MINUTE, FALSE, NULL), 
+(35, 3, NOW() + INTERVAL 29 DAY + INTERVAL '15:00' HOUR_MINUTE, NOW() + INTERVAL 29 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), 
+(36, 3, NOW() + INTERVAL 30 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 30 DAY + INTERVAL '10:30' HOUR_MINUTE, FALSE, NULL), 
+(37, 3, NOW() + INTERVAL 30 DAY + INTERVAL '11:00' HOUR_MINUTE, NOW() + INTERVAL 30 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), 
+(38, 3, NOW() + INTERVAL 30 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 30 DAY + INTERVAL '14:45' HOUR_MINUTE, FALSE, NULL), 
+(39, 3, NOW() + INTERVAL 31 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 31 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), 
+(40, 3, NOW() + INTERVAL 32 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 32 DAY + INTERVAL '10:30' HOUR_MINUTE, FALSE, NULL); 
 
 INSERT INTO interets_utilisateurs (nom, description) VALUES
 ('Sante Mentale', 'Conseils et ressources pour le bien-être psychologique'),
@@ -480,7 +480,7 @@ INSERT INTO factures (entreprise_id, devis_id, numero_facture, date_emission, da
 (28, 31, 'FACT-2024-024', '2024-03-05', '2024-04-04', 1800.00, 1500.00, 20.00, 'payee', 'prelevement', NOW() - INTERVAL 2 DAY),
 (29, 32, 'FACT-2024-025', '2024-07-01', '2024-07-31', 4500.00, 3750.00, 20.00, 'en_attente', 'virement', NULL),
 (2, 26, 'FACT-2024-033', '2024-06-12', '2024-07-27', 22500.00, 18750.00, 20.00, 'retard', 'prelevement', NULL),
-(2, 18, 'FACT-2024-034', '2024-05-30', '2024-06-29', 57000.00, 47500.00, 20.00, 'en_attente', NULL, NULL); -- <<<=== LIGNE AJOUTÉE ===>>>
+(2, 18, 'FACT-2024-034', '2024-05-30', '2024-06-29', 57000.00, 47500.00, 20.00, 'en_attente', NULL, NULL); 
 
 
 INSERT INTO devis_prestations (devis_id, prestation_id, quantite, prix_unitaire_devis, description_specifique) VALUES
@@ -562,4 +562,5 @@ INSERT INTO communaute_messages (communaute_id, personne_id, message) VALUES
 (2, 10, 'Quelqu\'un a une bonne appli pour suivre ses parcours de course ?'),
 (1, 17, 'Est-ce qu\'il y a un cours de Yoga prévu la semaine prochaine sur le site Sante+ ?'),
 (2, 20, 'Besoin de motivation pour sortir courir avec ce temps ! Des astuces ?');
+
 
