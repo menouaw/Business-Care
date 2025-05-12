@@ -17,9 +17,6 @@ require_once __DIR__ . '/../includes/init.php';
         <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3 d-flex align-items-center" href="<?php echo WEBADMIN_URL; ?>/" title="<?php echo APP_NAME; ?>">
             <img src="<?php echo ASSETS_URL; ?>/images/logo/noBgBlack.png" alt="<?php echo APP_NAME; ?>" height="30">
         </a>
-        <button class="navbar-toggler position-absolute d-md-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
         <div class="col-md-9 col-lg-10 ms-sm-auto">
             <div class="d-flex justify-content-between align-items-center">
                 <div class="navbar-nav flex-row ms-auto">
@@ -28,16 +25,10 @@ require_once __DIR__ . '/../includes/init.php';
                             <i class="fas fa-question-circle"></i>
                         </button>
                     </div>
-                    <div class="nav-item text-nowrap dropdown user-dropdown">
-                        <a class="nav-link px-3 dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <?php echo isset($_SESSION['user_name']) ? htmlspecialchars($_SESSION['user_name']) : 'User'; ?>
+                    <div class="nav-item text-nowrap">
+                        <a class="nav-link px-3" href="<?php echo WEBADMIN_URL; ?>/logout.php" title="Deconnexion">
+                            <i class="fas fa-sign-out-alt"></i>
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                            <li><a class="dropdown-item" href="<?php echo WEBADMIN_URL; ?>/profile.php">Profil</a></li>
-                            <li><a class="dropdown-item" href="<?php echo WEBADMIN_URL; ?>/settings.php">Parametres</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="<?php echo WEBADMIN_URL; ?>/logout.php">Deconnexion</a></li>
-                        </ul>
                     </div>
                 </div>
             </div>

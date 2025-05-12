@@ -125,11 +125,6 @@
   color: var(--color-primary);
   }
   
-  .navbar .navbar-toggler {
-  top: 0.25rem;
-  right: 1rem;
-  }
-  
   /* champ de recherche */
   .navbar .form-control {
   padding: 0.75rem 1rem;
@@ -163,22 +158,6 @@
   .navbar .navbar-nav.flex-row {
   display: flex;
   align-items: center;
-  }
-  
-  .user-dropdown {
-  position: relative;
-  }
-  
-  .user-dropdown .dropdown-menu {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  z-index: 1031;
-  min-width: 10rem;
-  }
-  
-  .user-dropdown .dropdown-toggle {
-  white-space: nowrap;
   }
   
   .dropdown-menu-end {
