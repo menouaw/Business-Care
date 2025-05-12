@@ -69,6 +69,7 @@ Le conteneur :
 
 ## Sortie
 - Rapports PDF nommés `report_JJ-MM-AAAA.pdf` dans `java-app/output/`
+- Fichiers JSON nommés `report_JJ-MM-AAAA.json` dans `java-app/output/json/`
 - Répertoire de sortie créé automatiquement si nécessaire
 - Avec Docker : montage du volume local `./java-app/output` vers `/app/output` dans le conteneur
 
