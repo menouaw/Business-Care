@@ -6,37 +6,6 @@ $fake_users = [
     ['id' => 4, 'prenom' => 'Christophe', 'nom' => 'Delon', 'email' => 'christophe@hotmail.com', 'password' => 'pass101'],
 ];
 
-function display_page_start($title)
-{
-    return "
-<!DOCTYPE html>
-<html lang='fr'>
-<head>
-    <meta charset='UTF-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <title>$title</title>
-    <link href='https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css' rel='stylesheet'>
-    <style>
-        body { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; background-color: #f8f9fa; }
-        .card { width: 100%; max-width: 900px; }
-        .image-container img { margin: 10px; max-width: 300px; height: auto; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-    </style>
-</head>
-<body>
-";
-}
-
-function display_page_end()
-{
-    return "
-    <script src='https://code.jquery.com/jquery-3.5.1.slim.min.js'></script>
-    <script src='https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js'></script>
-    <script src='https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js'></script>
-</body>
-</html>
-";
-}
-
 if (isset($_POST['email']) && isset($_POST['password'])) {
     $email = $_POST['email'];
     $password = $_POST['password'];
@@ -50,7 +19,8 @@ if (isset($_POST['email']) && isset($_POST['password'])) {
             $log = "Tentative de connexion réussie : IP: $ip, Host: $host, Utilisateur: " . $user['prenom'] . " " . $user['nom'] . "\n";
             file_put_contents("logs.txt", $log, FILE_APPEND);
 
-            echo display_page_start("Piégé !");
+            $title = "Piégé !";
+            include 'header.php';
             echo "
             <div class='container text-center'>
                 <div class='card p-4 my-4 shadow'>
@@ -62,13 +32,14 @@ if (isset($_POST['email']) && isset($_POST['password'])) {
                     </div>
                 </div>
             </div>";
-            echo display_page_end();
+            include 'footer.php';
             exit;
         }
     }
 
     if (!$user_found) {
-        echo display_page_start("Erreur de connexion");
+        $title = "Erreur de connexion";
+        include 'header.php';
         echo "
         <div class='container text-center'>
             <div class='card p-4 my-4 shadow'>
@@ -76,10 +47,11 @@ if (isset($_POST['email']) && isset($_POST['password'])) {
                 <a href='#' onclick='window.location.reload(); return false;' class='btn btn-primary mt-3'>Réessayer</a>
             </div>
         </div>";
-        echo display_page_end();
+        include 'footer.php';
     }
 } else {
-    echo display_page_start("Connexion");
+    $title = "Connexion";
+    include 'header.php';
     echo "
     <div class='container'>
         <div class='card p-4 my-4 shadow'>
@@ -95,5 +67,5 @@ if (isset($_POST['email']) && isset($_POST['password'])) {
             </form>
         </div>
     </div>";
-    echo display_page_end();
+    include 'footer.php';
 }
