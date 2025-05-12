@@ -12,7 +12,7 @@ public final class Constants {
     public static final String ENV_API_PASSWORD = "API_PASSWORD";
 
     
-    public static final String DEFAULT_API_BASE_URL = "http://localhost/api/admin";
+    public static final String DEFAULT_API_BASE_URL = "http://192.168.213.22/api/admin";
     public static final String DEFAULT_API_USER = "admin@businesscare.fr";
     public static final String DEFAULT_API_PASSWORD = "admin123"; 
 

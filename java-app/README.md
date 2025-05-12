@@ -47,7 +47,7 @@ mvnd clean package
 
 ## Configuration
 Variables d'environnement :
-- `API_BASE_URL` : URL de l'API Admin (défaut : `http://localhost/api/admin`)
+- `API_BASE_URL` : URL de l'API Admin (défaut : `http://192.168.213.22/api/admin`)
 - `API_USER` : Email admin (défaut : `admin@businesscare.fr`)
 - `API_PASSWORD` : Mot de passe admin (défaut : `admin123`)
 

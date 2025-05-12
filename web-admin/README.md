@@ -98,7 +98,7 @@ web-admin/
 1. Assurez-vous que Docker Desktop (ou équivalent) est en cours d'exécution
 2. Configurez les variables d'environnement nécessaires dans le fichier `.env` à la racine du projet
 3. Depuis la racine du projet, exécutez : `docker-compose up -d --build`
-4. Le panneau d'administration sera accessible via `http://localhost/admin`
+4. Le panneau d'administration sera accessible via `http://192.168.213.22/admin`
 
 **Installation Manuelle (Alternative) :**
 1. Prérequis : PHP >= 7.4, MySQL >= 5.7, Serveur web (Apache/Nginx)

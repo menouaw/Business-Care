@@ -147,7 +147,7 @@ La réponse de `chatbot.php` est directement la réponse JSON de l'API Google AI
 
 ```php
 <?php
-$apiUrl = 'http://localhost/api/admin/ai/chatbot.php'; // Remplacez par votre URL si nécessaire
+$apiUrl = 'http://192.168.213.22/api/admin/ai/chatbot.php';
 
 $conversationHistory = [
     [
