@@ -357,49 +357,10 @@ function getDetailedServicePacks(): array
     $stmt_packs = executeQuery($sql_packs);
     $packs = $stmt_packs->fetchAll(PDO::FETCH_ASSOC);
 
+    
     if (!$packs) {
         return [];
     }
 
-    
-    $pack_ids = array_column($packs, 'id');
-
-    
-    $placeholders = rtrim(str_repeat('?,', count($pack_ids)), ',');
-    $sql_prestations = "SELECT 
-                            spi.service_id, 
-                            p.nom, 
-                            p.description, 
-                            spi.quantite 
-                        FROM 
-                            service_pack_items spi
-                        JOIN 
-                            prestations p ON spi.prestation_id = p.id
-                        WHERE 
-                            spi.service_id IN ($placeholders)";
-
-    $stmt_prestations = executeQuery($sql_prestations, $pack_ids);
-    $all_pack_prestations = $stmt_prestations->fetchAll(PDO::FETCH_ASSOC);
-
-    
-    $prestations_by_pack_id = [];
-    foreach ($all_pack_prestations as $prestation) {
-        $service_id = $prestation['service_id'];
-        if (!isset($prestations_by_pack_id[$service_id])) {
-            $prestations_by_pack_id[$service_id] = [];
-        }
-        $prestations_by_pack_id[$service_id][] = [
-            'nom' => $prestation['nom'],
-            'quantite' => $prestation['quantite'],
-            'description' => $prestation['description']
-        ];
-    }
-
-    
-    foreach ($packs as $key => $pack) {
-        $pack_id = $pack['id'];
-        $packs[$key]['prestations'] = $prestations_by_pack_id[$pack_id] ?? []; 
-    }
-
-    return $packs;
+    return $packs; 
 }
