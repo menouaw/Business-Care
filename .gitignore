@@ -30,6 +30,7 @@ composer.phar
 
 # fichiers de configuration avec des informations sensibles
 documentation/
+.documentation
 .cursor/
 docs/
 

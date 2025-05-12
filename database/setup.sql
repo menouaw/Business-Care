@@ -17,18 +17,18 @@ source C:/MAMP/htdocs/Business-Care/database/schemas/triggers.sql;
 USE business_care;
 
 -- Suppression des utilisateurs existants
-DROP USER IF EXISTS 'business_care_user'@'localhost';
-DROP USER IF EXISTS 'business_care_backup'@'localhost';
+DROP USER IF EXISTS 'business_care_user'@'%';
+DROP USER IF EXISTS 'business_care_backup'@'%';
 
 -- Creation d'un utilisateur dedie pour l'application
-CREATE USER 'business_care_user'@'localhost' IDENTIFIED BY 'business_care_password';
+CREATE USER 'business_care_user'@'%' IDENTIFIED BY 'business_care_password';
 
 -- Attribution des privileges necessaires
-GRANT SELECT, INSERT, UPDATE, DELETE ON business_care.* TO 'business_care_user'@'localhost';
+GRANT SELECT, INSERT, UPDATE, DELETE ON business_care.* TO 'business_care_user'@'%';
 
 -- Creation d'un utilisateur pour les sauvegardes
-CREATE USER 'business_care_backup'@'localhost' IDENTIFIED BY 'business_care_backup_password';
-GRANT SELECT, LOCK TABLES ON business_care.* TO 'business_care_backup'@'localhost';
+CREATE USER 'business_care_backup'@'%' IDENTIFIED BY 'business_care_backup_password';
+GRANT SELECT, LOCK TABLES ON business_care.* TO 'business_care_backup'@'%';
 
 -- Application des privileges
 FLUSH PRIVILEGES;

@@ -5,9 +5,9 @@
 document.addEventListener('DOMContentLoaded', function() {
     setupDeleteConfirmation();
     
-    setupSidebarToggle();
-    
     setupDynamicFormFields();
+    
+    setupChatboxEnterSubmit();
 });
 
 function setupDeleteConfirmation() {
@@ -19,15 +19,6 @@ function setupDeleteConfirmation() {
             }
         });
     });
-}
-
-function setupSidebarToggle() {
-    const sidebarToggle = document.querySelector('.navbar-toggler');
-    if (sidebarToggle) {
-        sidebarToggle.addEventListener('click', function() {
-            document.querySelector('.sidebar').classList.toggle('show');
-        });
-    }
 }
 
 function setupDynamicFormFields() {
@@ -51,4 +42,19 @@ function setupDynamicFormFields() {
             }
         });
     });
+}
+
+function setupChatboxEnterSubmit() {
+    const chatTextarea = document.querySelector('textarea[name="user_message"]');
+    if (chatTextarea) {
+        chatTextarea.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault(); 
+                const form = chatTextarea.closest('form');
+                if (form) {
+                    form.submit();
+                }
+            }
+        });
+    }
 } 
