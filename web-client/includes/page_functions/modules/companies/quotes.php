@@ -257,33 +257,39 @@ function handleQuoteRequestPost(): void
         ];
 
 
+        
+        
+        $insertSuccess = insertRow('devis', $insertDataDevis); 
 
-
-        $newQuoteId = insertRow('devis', $insertDataDevis);
-
-        if (!$newQuoteId) {
-
-
+        
+        if (!$insertSuccess) { 
             throw new Exception("Échec de la création de l\'enregistrement principal du devis.");
+        }
+
+        
+        $newQuoteId = $pdo->lastInsertId();
+
+        
+        if (!$newQuoteId || $newQuoteId <= 0) {
+            error_log("[ERROR] handleQuoteRequestPost: Impossible de récupérer l'ID du devis après insertion réussie.");
+            throw new Exception("Impossible de récupérer l\'ID du devis nouvellement créé.");
         }
 
 
         if (!empty($extras_details_for_db)) {
             foreach ($extras_details_for_db as $ligne) {
                 $insertDataLigne = [
-                    'devis_id' => $newQuoteId,
+                    'devis_id' => $newQuoteId, 
                     'prestation_id' => $ligne['prestation_id'],
                     'quantite' => $ligne['quantite'],
                     'prix_unitaire_devis' => $ligne['prix_unitaire_devis'],
-
                 ];
 
-
-
-                if (!insertRow('devis_prestations', $insertDataLigne)) {
-
-
-                    throw new Exception("Échec de l\'insertion d\'une ligne de prestation supplémentaire pour le devis ID {$newQuoteId}.");
+                
+                $insertLineSuccess = insertRow('devis_prestations', $insertDataLigne);
+                if (!$insertLineSuccess) {
+                    
+                    throw new Exception("Échec de l\'insertion d\'une ligne de prestation supplémentaire pour le devis ID {$newQuoteId}. Prestation ID: {$ligne['prestation_id']}");
                 }
             }
         }
@@ -336,7 +342,7 @@ function handleQuoteRequestPost(): void
  */
 function getDetailedServicePacks(): array
 {
-    
+
     $sql_packs = "SELECT 
                     id, 
                     type, 
@@ -357,10 +363,10 @@ function getDetailedServicePacks(): array
     $stmt_packs = executeQuery($sql_packs);
     $packs = $stmt_packs->fetchAll(PDO::FETCH_ASSOC);
 
-    
+
     if (!$packs) {
         return [];
     }
 
-    return $packs; 
+    return $packs;
 }
