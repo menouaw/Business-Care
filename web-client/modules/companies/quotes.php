@@ -18,19 +18,14 @@ if ($entreprise_id <= 0) {
 }
 
 
-$action = filter_input(INPUT_GET, 'action', FILTER_SANITIZE_SPECIAL_CHARS) ?: 'list'; 
+$action = filter_input(INPUT_GET, 'action', FILTER_SANITIZE_SPECIAL_CHARS) ?: 'list';
 $quote_id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
-
-
-
-
-
 
 
 
 switch ($action) {
     case 'view':
-        $quote = null; 
+        $quote = null;
         if ($quote_id) {
             $quote = getQuoteDetails($quote_id, $entreprise_id);
             if (!$quote) {
@@ -38,7 +33,7 @@ switch ($action) {
                 redirectTo(WEBCLIENT_URL . '/modules/companies/quotes.php');
                 exit;
             }
-            $pageTitle = "Détails du Devis #" . htmlspecialchars($quote['id']); 
+            $pageTitle = "Détails du Devis #" . htmlspecialchars($quote['id']);
         } else {
             flashMessage("ID de devis manquant pour la visualisation.", "warning");
             redirectTo(WEBCLIENT_URL . '/modules/companies/quotes.php');
@@ -47,15 +42,16 @@ switch ($action) {
         break;
 
     case 'request':
-        $pageTitle = "Demander un Devis"; 
-        $servicePacks = getAvailableServicePacks(); 
+        $pageTitle = "Demander un Devis";
+        $detailedServicePacks = getDetailedServicePacks();
+        $availablePrestations = getAvailablePrestationsWithPrices();
         break;
 
     case 'list':
     default:
-        $action = 'list'; 
-        $pageTitle = "Mes Devis"; 
-        $quotes = getCompanyQuotes($entreprise_id); 
+        $action = 'list';
+        $pageTitle = "Mes Devis";
+        $quotes = getCompanyQuotes($entreprise_id);
         break;
 }
 
@@ -168,11 +164,86 @@ include __DIR__ . '/../../templates/header.php';
                         <i class="fas fa-arrow-left me-1"></i> Annuler et retour à la liste
                     </a>
                 </div>
-                <p>Vous pouvez sélectionner un pack de services standard ou décrire vos besoins pour une proposition sur mesure dans la zone de texte.</p>
 
-                <form method="POST" action="<?= WEBCLIENT_URL ?>/modules/companies/quotes.php">
-                    <input type="hidden" name="request_quote" value="1"> <?php
-                                                                            ?>
+                <div class="mb-4">
+                    <h5>Nos offres standards :</h5>
+                    <?php if (empty($detailedServicePacks)): ?>
+                        <p>Aucun pack de service n'est actuellement disponible.</p>
+                    <?php else: ?>
+                        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                            <?php foreach ($detailedServicePacks as $pack): ?>
+                                <div class="col">
+                                    <div class="card h-100">
+                                        <div class="card-header bg-light-grey-pack-header">
+                                            <h5 class="card-title mb-0"><?= htmlspecialchars($pack['type']) ?></h5>
+                                        </div>
+                                        <div class="card-body d-flex flex-column">
+                                            <!-- Optionnel : Récupérer une description plus courte si elle existe ou générer un résumé -->
+                                            <!-- <?php if (!empty($pack['description'])): ?>
+                                                <p class="card-text flex-grow-1"><small><?= htmlspecialchars($pack['description']) ?></small></p>
+                                            <?php endif; ?> -->
+
+                                            <h6 class="mt-3 mb-2">Ce pack inclut :</h6>
+                                            <ul class="list-group list-group-flush list-group-small flex-grow-1">
+                                                <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                                    <span><i class="fas fa-users me-2 text-primary"></i>Effectif max</span>
+                                                    <span class="badge bg-light text-dark rounded-pill">
+                                                        <?= isset($pack['max_effectif_inferieur_egal']) ? '&le; ' . htmlspecialchars($pack['max_effectif_inferieur_egal']) : '251+' ?>
+                                                    </span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                                    <span><i class="fas fa-running me-2 text-success"></i>Activités (participation BC)</span>
+                                                    <span class="badge bg-success rounded-pill"><?= htmlspecialchars($pack['activites_incluses'] ?? 0) ?></span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                                    <span><i class="fas fa-stethoscope me-2 text-info"></i>RDV médicaux inclus</span>
+                                                    <span class="badge bg-info rounded-pill"><?= htmlspecialchars($pack['rdv_medicaux_inclus'] ?? 0) ?></span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                                    <span><i class="fas fa-headset me-2 text-danger"></i>RDV médicaux suppl.</span>
+                                                    <span class="badge bg-light text-dark rounded-pill">
+                                                        <?php
+                                                        $rdv_supp_cost = 'N/A';
+                                                        if ($pack['type'] === 'Premium Pack') $rdv_supp_cost = '50 euros/rdv';
+                                                        elseif ($pack['type'] === 'Starter Pack' || $pack['type'] === 'Basic Pack') $rdv_supp_cost = '75 euros/rdv';
+                                                        echo $rdv_supp_cost;
+                                                        ?>
+                                                    </span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                                    <span><i class="fas fa-robot me-2 text-secondary"></i>Questions Chatbot /mois</span>
+                                                    <span class="badge bg-secondary rounded-pill">
+                                                        <?= isset($pack['chatbot_questions_limite']) ? htmlspecialchars($pack['chatbot_questions_limite']) : 'Illimité' ?>
+                                                    </span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                                    <span><i class="fas fa-book-open me-2 text-dark"></i>Accès Fiches Pratiques</span>
+                                                    <span class="badge bg-dark rounded-pill">Illimité</span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                                    <span><i class="fas fa-bullhorn me-2 text-warning"></i>Conseils hebdomadaires</span>
+                                                    <span class="badge bg-warning text-dark rounded-pill">
+                                                        <?= $pack['conseils_hebdo_personnalises'] ? 'Personnalises' : 'Non personnalises' ?>
+                                                    </span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                                    <span><i class="fas fa-calendar-alt me-2 text-muted"></i>Événements / Communautés</span>
+                                                    <span class="badge bg-light text-dark rounded-pill">Accès illimité</span>
+                                                </li>
+                                            </ul>
+                                            <div class="mt-auto text-center pt-3">
+                                                <span class="h5 fw-bold"><?= htmlspecialchars(number_format($pack['tarif_annuel_par_salarie'] ?? 0, 0)) ?> euros</span>
+                                                <small class="text-muted">/ an / salarié</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
+                <hr>
+                <form method="POST" action="<?= WEBCLIENT_URL ?>/modules/companies/quotes.php" id="quote-request-form">
                     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken()); ?>">
 
                     <div class="mb-3">
@@ -207,7 +278,7 @@ include __DIR__ . '/../../templates/header.php';
                     </div>
                 </form>
 
-            <?php else: 
+            <?php else:
             ?>
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
                     <h1 class="h2"><?= htmlspecialchars($pageTitle) ?></h1>
@@ -267,3 +338,7 @@ include __DIR__ . '/../../templates/header.php';
         </main>
     </div>
 </div>
+
+<?php
+include __DIR__ . '/../../templates/footer.php';
+?>
