@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -36,14 +35,7 @@ public class ReportApplication {
 
     private static final Logger logger = LoggerFactory.getLogger(ReportApplication.class);
 
-    
-    private static final String DATE_FORMAT_PATTERN = "dd-MM-yyyy";
-    private static final String REPORT_FILENAME_PREFIX = "report_";
-    private static final String REPORT_FILENAME_SUFFIX = ".pdf";
-    private static final float PDF_MARGIN_TOP = 50f;
-    private static final float PDF_MARGIN_RIGHT = 50f;
-    private static final float PDF_MARGIN_BOTTOM = 50f;
-    private static final float PDF_MARGIN_LEFT = 50f;
+
 
     private static final String CHART_TITLE_CONTRACT_STATUS = "Répartition des contrats par statut";
     private static final String CHART_TITLE_CLIENT_SECTOR = "Répartition des clients par secteur";
@@ -54,17 +46,6 @@ public class ReportApplication {
     private static final String CHART_TITLE_PRESTATION_TYPE = "Répartition des prestations par type";
     private static final String CHART_TITLE_PRESTATION_CATEGORY = "Répartition des prestations par catégorie";
 
-    private static final String LOG_CONFIG_LOADED = "Configuration API chargée pour URL: {}";
-    private static final String LOG_AUTH_ATTEMPT = "Tentative d'authentification auprès de {}...";
-    private static final String LOG_AUTH_SUCCESS = "Authentification réussie pour {}";
-    private static final String LOG_FETCH_DATA_START = "Récupération des données depuis l'API...";
-    private static final String LOG_FETCH_DATA_END = "Données récupérées: {} entreprises, {} contrats, {} devis, {} factures, {} évènements, {} prestations.";
-    private static final String LOG_PROCESS_CLIENT_START = "Traitement des données financières client...";
-    private static final String LOG_PROCESS_CLIENT_END = "Traitement des données financières terminé.";
-    private static final String LOG_PROCESS_EVENT_START = "Traitement des données d'évènements...";
-    private static final String LOG_PROCESS_EVENT_END = "Traitement des données d'évènements terminé.";
-    private static final String LOG_PROCESS_PRESTATION_START = "Traitement des données de prestations...";
-    private static final String LOG_PROCESS_PRESTATION_END = "Traitement des données de prestations terminé.";
     private static final String LOG_GEN_CHARTS_CLIENT_START = "Génération des graphiques financiers...";
     private static final String LOG_GEN_CHARTS_CLIENT_END = "{} graphiques financiers générés.";
     private static final String LOG_GEN_CHARTS_EVENT_START = "Génération des graphiques d'évènements...";
@@ -73,9 +54,6 @@ public class ReportApplication {
     private static final String LOG_GEN_CHARTS_PRESTATION_END = "{} graphiques de prestations générés.";
     private static final String LOG_GEN_PDF_START = "Génération du rapport PDF : {}";
     private static final String LOG_GEN_PDF_SUCCESS = "Rapport PDF généré avec succès ({} pages).";
-    private static final String LOG_CREATE_DIR_SUCCESS = "Répertoire de sortie créé : {}";
-    private static final String LOG_ERR_CREATE_DIR = "Impossible de créer le répertoire de sortie : {}";
-    private static final String ERR_CREATE_DIR = "Impossible de créer le répertoire de sortie: ";
     private static final String LOG_ERR_PDF_IO = "Erreur I/O lors de la génération du PDF : {} ({})";
 
     public static void main(String[] args) {
@@ -189,19 +167,6 @@ public class ReportApplication {
             logger.error(LOG_ERR_PDF_IO, outputPath, ioe.getMessage(), ioe);
             
             throw new ReportGenerationException(LOG_ERR_PDF_IO, ioe);
-        }
-    }
-
-    private static void createOutputDirectory() throws ReportGenerationException {
-        File outputDir = new File(Constants.OUTPUT_DIRECTORY);
-        if (!outputDir.exists()) {
-            if (outputDir.mkdirs()) {
-                logger.info(LOG_CREATE_DIR_SUCCESS, Constants.OUTPUT_DIRECTORY);
-            } else {
-                logger.error(LOG_ERR_CREATE_DIR, Constants.OUTPUT_DIRECTORY);
-                
-                throw new ReportGenerationException(ERR_CREATE_DIR + Constants.OUTPUT_DIRECTORY);
-            }
         }
     }
 }
