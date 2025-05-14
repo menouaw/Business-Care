@@ -76,6 +76,99 @@ include __DIR__ . '/../../templates/header.php';
                 </div>
             </div>
 
+            <?php if ($stats['pack_info']): ?>
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">Votre Pack</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5 class="card-title"><?= htmlspecialchars($stats['pack_info']['type']) ?></h5>
+                                    <p class="card-text">
+                                        <small class="text-muted">
+                                            Date de début : <?= htmlspecialchars(formatDate($stats['pack_info']['date_debut'], 'd/m/Y')) ?>
+                                            <?php if ($stats['pack_info']['date_fin']): ?>
+                                            <br>Date de fin : <?= htmlspecialchars(formatDate($stats['pack_info']['date_fin'], 'd/m/Y')) ?>
+                                            <?php endif; ?>
+                                        </small>
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="usage-stats">
+                                        <div class="mb-2">
+                                            <span><i class="fas fa-book"></i> Accès aux fiches pratiques BC illimité</span>
+                                        </div>
+                                        <div class="mb-2">
+                                            <span><i class="fas fa-user-md"></i> RDV médicaux :
+                                                <?php
+                                                    if (isset($stats['pack_info']['usage_stats']['consultations'])) {
+                                                        echo $stats['pack_info']['usage_stats']['consultations']['used'] . '/' . $stats['pack_info']['usage_stats']['consultations']['total'] . ' utilisé' . ($stats['pack_info']['usage_stats']['consultations']['total'] > 1 ? 's' : '');
+                                                    } else {
+                                                        echo 'illimité';
+                                                    }
+                                                ?>
+                                            </span>
+                                        </div>
+                                        <div class="mb-2">
+                                            <span><i class="fas fa-robot"></i> Chatbot :
+                                                <?php
+                                                    $limite = $stats['pack_info']['chatbot_questions_limite'] ?? null;
+                                                    $usage = $stats['pack_info']['usage_stats']['chatbot'] ?? null;
+                                                    if ($limite === null) {
+                                                        echo 'illimité';
+                                                        if ($usage && isset($usage['used'])) {
+                                                            echo ' (' . $usage['used'] . ' utilisée' . ($usage['used'] > 1 ? 's' : '') . ')';
+                                                        }
+                                                    } else {
+                                                        echo htmlspecialchars($limite) . ' question' . ($limite > 1 ? 's' : '');
+                                                        if ($usage && isset($usage['used'], $usage['total'])) {
+                                                            echo ' (' . $usage['used'] . '/' . $usage['total'] . ' utilisée' . ($usage['total'] > 1 ? 's' : '') . ')';
+                                                        }
+                                                    }
+                                                ?>
+                                            </span>
+                                        </div>
+                                        <div class="mb-2">
+                                            <span><i class="fas fa-lightbulb"></i> Conseils hebdomadaires :
+                                                <?php
+                                                    if (!empty($stats['pack_info']['conseils_hebdo_personnalises'])) {
+                                                        echo 'oui (personnalisés)';
+                                                    } elseif (($stats['pack_info']['type'] ?? '') === 'Basic Pack') {
+                                                        echo 'oui (non personnalisés)';
+                                                    } else {
+                                                        echo 'non';
+                                                    }
+                                                ?>
+                                            </span>
+                                        </div>
+                                        <div class="mb-2">
+                                            <span><i class="fas fa-calendar-alt"></i> Événements organisés par BC :
+                                                <?php
+                                                    $used = $stats['pack_info']['usage_stats']['ateliers']['used'] ?? 0;
+                                                    $total = $stats['pack_info']['usage_stats']['ateliers']['total'] ?? null;
+                                                    if ($total) {
+                                                        echo $used . '/' . $total;
+                                                    } else {
+                                                        echo 'illimité';
+                                                    }
+                                                ?>
+                                            </span>
+                                        </div>
+                                        <div class="mb-2">
+                                            <span><i class="fas fa-users"></i> Événements / Communautés : accès illimité</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
+
             <?php if (!empty($upcomingAppointments)): ?>
                 <div class="row">
                     <div class="col-lg-12 mb-4">

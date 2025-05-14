@@ -56,7 +56,8 @@ SELECT
     e.type,
     e.capacite_max,
     e.niveau_difficulte,
-    e.lieu
+    e.lieu,
+    e.organise_par_bc
 FROM evenements e
 WHERE e.date_debut >= CURDATE()
 ORDER BY e.date_debut;

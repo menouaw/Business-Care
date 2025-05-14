@@ -17,6 +17,63 @@ function _handleEventRegistration(int $eventId, int $userId, string $redirectUrl
             throw new Exception("Événement non trouvé, expiré ou invalide.");
         }
 
+        // Vérification du quota si l'événement est organisé par BC
+        if ($event['organise_par_bc']) {
+            $employee = fetchOne('personnes', 'id = :id AND role_id = :role_id', [
+                ':id' => $userId, 
+                ':role_id' => ROLE_SALARIE
+            ]);
+            
+            if ($employee && $employee['entreprise_id']) {
+                $contract = fetchOne(
+                    'contrats',
+                    'entreprise_id = :entreprise_id AND statut = :statut AND (date_fin IS NULL OR date_fin >= CURDATE())',
+                    [
+                        ':entreprise_id' => $employee['entreprise_id'],
+                        ':statut' => 'actif'
+                    ],
+                    'date_debut DESC'
+                );
+
+                if ($contract) {
+                    $service = fetchOne('services', 'id = :id', [':id' => $contract['service_id']]);
+                    if ($service) {
+                        $sql_ateliers = "SELECT (
+                            (SELECT COUNT(*) FROM " . TABLE_APPOINTMENTS . "
+                            WHERE personne_id = :salarie_id_rdv 
+                            AND prestation_id IN (
+                                SELECT id FROM " . TABLE_PRESTATIONS . "
+                                WHERE type = 'atelier'
+                            )
+                            AND statut IN ('termine', 'confirme')
+                            AND date_rdv >= :date_debut_rdv)
+                            +
+                            (SELECT COUNT(*) FROM evenement_inscriptions ei
+                            JOIN evenements e ON ei.evenement_id = e.id
+                            WHERE ei.personne_id = :salarie_id_event
+                            AND e.organise_par_bc = TRUE
+                            AND e.date_debut >= :date_debut_event
+                            AND ei.statut = 'inscrit')
+                        ) as total_ateliers";
+                        
+                        $stmt_ateliers = executeQuery($sql_ateliers, [
+                            ':salarie_id_rdv' => $userId,
+                            ':date_debut_rdv' => $contract['date_debut'],
+                            ':salarie_id_event' => $userId,
+                            ':date_debut_event' => $contract['date_debut']
+                        ]);
+                        
+                        $ateliers_utilises = (int)$stmt_ateliers->fetchColumn();
+                        $quota_max = $service['activites_incluses'] ?? 0;
+                        
+                        if ($ateliers_utilises >= $quota_max) {
+                            throw new Exception("Votre quota d'ateliers est atteint pour cette période.");
+                        }
+                    }
+                }
+            }
+        }
+
         $existingRegistration = fetchOne('evenement_inscriptions', 'evenement_id = ? AND personne_id = ?', [$eventId, $userId]);
         if ($existingRegistration) {
             throw new Exception("Vous êtes déjà inscrit(e) à cet événement.");
@@ -282,18 +339,90 @@ function setupEventsPage()
     }
 
     try {
+        // Vérification du quota d'ateliers
+        $employee = fetchOne('personnes', 'id = :id AND role_id = :role_id', [
+            ':id' => $userId, 
+            ':role_id' => ROLE_SALARIE
+        ]);
+        
+        $quota_depasse = false;
+        if ($employee && $employee['entreprise_id']) {
+            $contract = fetchOne(
+                'contrats',
+                'entreprise_id = :entreprise_id AND statut = :statut AND (date_fin IS NULL OR date_fin >= CURDATE())',
+                [
+                    ':entreprise_id' => $employee['entreprise_id'],
+                    ':statut' => 'actif'
+                ],
+                'date_debut DESC'
+            );
+
+            if ($contract) {
+                $service = fetchOne('services', 'id = :id', [':id' => $contract['service_id']]);
+                if ($service) {
+                    // Comptage des ateliers utilisés
+                    $sql_ateliers = "SELECT (
+                        -- Comptage des rendez-vous ateliers
+                        (SELECT COUNT(*) FROM " . TABLE_APPOINTMENTS . "
+                        WHERE personne_id = :salarie_id_rdv 
+                        AND prestation_id IN (
+                            SELECT id FROM " . TABLE_PRESTATIONS . "
+                            WHERE type = 'atelier'
+                        )
+                        AND statut IN ('termine', 'confirme')
+                        AND date_rdv >= :date_debut_rdv)
+                        +
+                        -- Comptage des événements organisés par BC
+                        (SELECT COUNT(*) FROM evenement_inscriptions ei
+                        JOIN evenements e ON ei.evenement_id = e.id
+                        WHERE ei.personne_id = :salarie_id_event
+                        AND e.organise_par_bc = TRUE
+                        AND e.date_debut >= :date_debut_event
+                        AND ei.statut = 'inscrit')
+                    ) as total_ateliers";
+                    
+                    $stmt_ateliers = executeQuery($sql_ateliers, [
+                        ':salarie_id_rdv' => $userId,
+                        ':date_debut_rdv' => $contract['date_debut'],
+                        ':salarie_id_event' => $userId,
+                        ':date_debut_event' => $contract['date_debut']
+                    ]);
+                    
+                    $ateliers_utilises = (int)$stmt_ateliers->fetchColumn();
+                    $quota_max = $service['activites_incluses'] ?? 0;
+                    $quota_depasse = $ateliers_utilises >= $quota_max;
+                }
+            }
+        }
+
         $userInterestNamesLower = _getUserInterestNames($userId);
 
         $allUpcomingEvents = fetchAll(
             'evenements',
             "date_debut >= NOW()",
-            'date_debut ASC'
+            'date_debut ASC',
+            0,
+            0,
+            [],
+            ['id', 'titre', 'description', 'date_debut', 'date_fin', 'lieu', 'type', 'capacite_max', 'niveau_difficulte', 'organise_par_bc']
         );
 
         $categorizedEvents = _categorizeEvents($allUpcomingEvents, $userInterestNamesLower);
 
         $preferredEvents = _enrichEventsData($categorizedEvents['preferred'], $userId);
         $otherEvents = _enrichEventsData($categorizedEvents['other'], $userId);
+
+        // Ajout de l'information de quota pour chaque événement
+        $preferredEvents = array_map(function($event) use ($quota_depasse) {
+            $event['quota_depasse'] = $quota_depasse && $event['organise_par_bc'];
+            return $event;
+        }, $preferredEvents);
+
+        $otherEvents = array_map(function($event) use ($quota_depasse) {
+            $event['quota_depasse'] = $quota_depasse && $event['organise_par_bc'];
+            return $event;
+        }, $otherEvents);
+
     } catch (Exception $e) {
         error_log("ERREUR dans setupEventsPage pour user $userId: " . $e->getMessage());
         flashMessage("Impossible de charger la liste des événements.", "danger");
@@ -305,6 +434,7 @@ function setupEventsPage()
     return [
         'pageTitle' => $pageTitle,
         'preferredEvents' => $preferredEvents,
-        'otherEvents' => $otherEvents
+        'otherEvents' => $otherEvents,
+        'quota_depasse' => $quota_depasse
     ];
 }
