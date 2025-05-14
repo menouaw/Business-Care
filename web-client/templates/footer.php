@@ -1,3 +1,5 @@
+    </main>
+
     <footer class="rounded-top">
         <div class="container-fluid py-3">
             <div class="row g-4">
@@ -69,7 +71,6 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
     <script src="<?= ASSETS_URL ?>/js/client.js"></script>
 
     <?php if (isset($pageScripts) && is_array($pageScripts)): ?>

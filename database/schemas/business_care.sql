@@ -500,8 +500,8 @@ CREATE TABLE communaute_membres (
     personne_id INT NOT NULL,            
     joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
     PRIMARY KEY (communaute_id, personne_id), 
-    FOREIGN KEY (communaute_id) REFERENCES communautes(id) ON DELETE CASCADE, -- Lien vers la table communautes
-    FOREIGN KEY (personne_id) REFERENCES personnes(id) ON DELETE CASCADE    -- Lien vers la table personnes
+    FOREIGN KEY (communaute_id) REFERENCES communautes(id) ON DELETE CASCADE, 
+    FOREIGN KEY (personne_id) REFERENCES personnes(id) ON DELETE CASCADE    
 );
 
 CREATE TABLE interets_utilisateurs (
@@ -519,3 +519,4 @@ CREATE TABLE personne_interets (
     FOREIGN KEY (personne_id) REFERENCES personnes(id) ON DELETE CASCADE,
     FOREIGN KEY (interet_id) REFERENCES interets_utilisateurs(id) ON DELETE CASCADE
 );
+
