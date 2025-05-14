@@ -166,3 +166,5 @@ define('MAIN_TUTORIAL_MODULES', [
     '/modules/contracts/',
     '/modules/companies/'
 ]);
+
+define('EVENEMENT_TYPES', ['conférence', 'webinar', 'atelier', 'defi_sportif', 'autre']);
