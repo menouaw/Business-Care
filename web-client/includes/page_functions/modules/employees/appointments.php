@@ -2,9 +2,17 @@
 
 require_once __DIR__ . '/../../../../includes/init.php';
 
-function getSalarieAppointments(int $salarie_id): array
+function getSalarieAppointments(int $salarie_id, string $orderBy = 'rdv.date_rdv DESC'): array
 {
     if ($salarie_id <= 0) return [];
+    
+    
+    $allowedOrderBy = ['rdv.date_rdv DESC', 'rdv.date_rdv ASC'];
+    if (!in_array($orderBy, $allowedOrderBy)) {
+        
+        $orderBy = 'rdv.date_rdv DESC';
+    }
+
     $sql = "SELECT rdv.id, rdv.date_rdv, rdv.statut, rdv.type_rdv, rdv.lieu,
                    pres.nom as prestation_nom,
                    CONCAT(prat.prenom, ' ', prat.nom) as praticien_nom
@@ -12,7 +20,8 @@ function getSalarieAppointments(int $salarie_id): array
             LEFT JOIN " . TABLE_PRESTATIONS . " pres ON rdv.prestation_id = pres.id
             LEFT JOIN " . TABLE_USERS . " prat ON rdv.praticien_id = prat.id AND prat.role_id = :role_prestataire
             WHERE rdv.personne_id = :salarie_id
-            ORDER BY rdv.date_rdv DESC";
+            ORDER BY ". $orderBy;
+            
     return executeQuery($sql, [':salarie_id' => $salarie_id, ':role_prestataire' => ROLE_PRESTATAIRE])->fetchAll();
 }
 
