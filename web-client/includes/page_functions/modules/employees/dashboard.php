@@ -99,7 +99,8 @@ function getSalarieDashboardStats(int $salarie_id): array
                     'date_fin' => $contract['date_fin'],
                     'usage_stats' => $usage_stats,
                     'chatbot_questions_limite' => $service['chatbot_questions_limite'],
-                    'conseils_hebdo_personnalises' => $service['conseils_hebdo_personnalises']
+                    'conseils_hebdo_personnalises' => $service['conseils_hebdo_personnalises'],
+                    'rdv_medicaux_supplementaires_prix' => $service['rdv_medicaux_supplementaires_prix']
                 ];
             }
         }

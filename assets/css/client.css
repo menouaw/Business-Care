@@ -11,7 +11,7 @@
     --color-warning: #f6c23e;
     --color-danger: #e74a3b;
     --color-text-muted: #6c757d;
-    
+
     /* Variables de tailles et espacements */
     --spacing-xs: 0.25rem;
     --spacing-sm: 0.5rem;
@@ -20,32 +20,32 @@
     --spacing-xl: 3rem;
     --sidebar-width-md: 12rem;
     --navbar-height: 3.5rem;
-    
+
     /* Variables de polices */
     --font-main: 'Markazi Text', serif;
     --font-headings: 'DM Serif Text', serif;
-    
+
     /* Variables de calendrier */
-    --calendar-bg-today: #cfe2ff; 
+    --calendar-bg-today: #cfe2ff;
     --calendar-bg-empty: #f8f9fa;
-    --calendar-bg-available: #d1e7dd; 
-    --calendar-bg-unavailable: #f8d7da; 
-    --calendar-bg-mixed: #fff3cd; 
-    --calendar-bg-mixed-unavailable: #ffe69c; 
+    --calendar-bg-available: #d1e7dd;
+    --calendar-bg-unavailable: #f8d7da;
+    --calendar-bg-mixed: #fff3cd;
+    --calendar-bg-mixed-unavailable: #ffe69c;
 
-    --calendar-event-confirmed-border: #a3cfbb; 
-    --calendar-event-planned-border: #9eeaf9;   
-    --calendar-event-intervention-booked-border: #f1aeb5; 
-    --calendar-event-intervention-free-border: #ffe69c;   
+    --calendar-event-confirmed-border: #a3cfbb;
+    --calendar-event-planned-border: #9eeaf9;
+    --calendar-event-intervention-booked-border: #f1aeb5;
+    --calendar-event-intervention-free-border: #ffe69c;
 
-    --calendar-event-confirmed-bg: #d1e7dd; 
-    --calendar-event-planned-bg: #cff4fc;   
-    --calendar-event-intervention-booked-bg: #f8d7da; 
-    --calendar-event-intervention-free-bg: #fff3cd;  
+    --calendar-event-confirmed-bg: #d1e7dd;
+    --calendar-event-planned-bg: #cff4fc;
+    --calendar-event-intervention-booked-bg: #f8d7da;
+    --calendar-event-intervention-free-bg: #fff3cd;
 
-    --calendar-event-confirmed-text: #0a3622; 
-    --calendar-event-planned-text: #055160;   
-    --calendar-event-intervention-booked-text: #58151c; 
+    --calendar-event-confirmed-text: #0a3622;
+    --calendar-event-planned-text: #055160;
+    --calendar-event-intervention-booked-text: #58151c;
     --calendar-event-intervention-free-text: #664d03;
 }
 
@@ -76,13 +76,13 @@ main {
     display: block;
 }
 
-main > .container,
-main > .container-fluid {
+main>.container,
+main>.container-fluid {
     margin-top: 0 !important;
     padding-top: 0 !important;
 }
 
-main > .container-fluid {
+main>.container-fluid {
     width: 100%;
 }
 
@@ -109,10 +109,10 @@ main > .container-fluid {
 }
 
 .navbar .avatar-sm {
-  width: 32px;  
-  height: 32px; 
-  object-fit: cover; 
-  border: 1px solid var(--color-tertiary, #EADBC8); 
+    width: 32px;
+    height: 32px;
+    object-fit: cover;
+    border: 1px solid var(--color-tertiary, #EADBC8);
 }
 
 /* ===== SIDEBAR ===== */
@@ -362,10 +362,12 @@ main .row {
     justify-content: space-between !important;
 }
 
-main .col-xl-3, main .col-lg-3, main .col-md-6 {
+main .col-xl-3,
+main .col-lg-3,
+main .col-md-6 {
     flex: 1 !important;
-    padding-left: 0.5rem !important;
-    padding-right: 0.5rem !important;
+    padding-left: 0.25rem !important;
+    padding-right: 0.25rem !important;
 }
 
 /* ===== PAGE DE CONNEXION ===== */
@@ -440,7 +442,7 @@ body.page-auth .navbar {
     padding: 3.5rem 2.5rem !important;
 }
 
-.login-page .card + .card {
+.login-page .card+.card {
     margin-top: 1.5rem !important;
 }
 
@@ -473,9 +475,9 @@ body.page-auth .navbar {
 
 /* ===== MENU DÉROULANT NAVBAR SANS JAVASCRIPT (CSS PURE) ===== */
 .navbar .nav-item.dropdown .dropdown-menu {
-    display: none; 
+    display: none;
     position: absolute;
-    top: 100%; 
+    top: 100%;
     left: 0;
     z-index: 1000;
     float: left;
@@ -490,11 +492,11 @@ body.page-auth .navbar {
     background-clip: padding-box;
     border: 1px solid rgba(0, 0, 0, 0.15);
     border-radius: 0.25rem;
-    box-shadow: 0 0.5rem 1rem rgba(0,0,0,.175);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, .175);
 }
 
-.navbar .nav-item.dropdown:hover > .dropdown-menu {
-    display: block; 
+.navbar .nav-item.dropdown:hover>.dropdown-menu {
+    display: block;
 }
 
 .navbar .dropdown-menu .dropdown-item {
@@ -531,10 +533,10 @@ body.page-auth .navbar {
 
 /* ===== FOOTER STYLES ===== */
 footer {
-    background-color: #343a40 !important; 
-    color: var(--color-quaternary); 
+    background-color: #343a40 !important;
+    color: var(--color-quaternary);
     padding: var(--spacing-md) 0;
-    border-top: 1px solid #495057; 
+    border-top: 1px solid #495057;
     text-align: center;
 }
 
@@ -543,7 +545,7 @@ footer p {
 }
 
 footer a {
-    color: var(--color-secondary); 
+    color: var(--color-secondary);
     text-decoration: none;
 }
 
@@ -553,21 +555,21 @@ footer a:hover {
 }
 
 .bg-light-grey-pack-header {
-    background-color: #e9ecef !important; 
+    background-color: #e9ecef !important;
 }
 
 .bg-dark-grey-pack-header {
-    background-color: #343a40 !important; 
+    background-color: #343a40 !important;
 }
 
 .landing-page .hero-image {
 
     footer {
-        background-color: var(--color-quaternary) !important; 
-        color: var(--color-primary); 
-        padding: var(--spacing-md) 0; 
-        border-top: 1px solid var(--color-tertiary); 
-        text-align: center; 
+        background-color: var(--color-quaternary) !important;
+        color: var(--color-primary);
+        padding: var(--spacing-md) 0;
+        border-top: 1px solid var(--color-tertiary);
+        text-align: center;
     }
 
     footer p {
@@ -575,7 +577,7 @@ footer a:hover {
     }
 
     footer a {
-        color: var(--color-secondary); 
+        color: var(--color-secondary);
         text-decoration: none;
     }
 
@@ -585,5 +587,28 @@ footer a:hover {
     }
 }
 
+/* Nouvelle règle plus spécifique pour l'espacement des cartes de communauté */
+main div.community-card-row.row.g-0>div.col {
+    padding-left: 0.25rem !important;
+    /* Petit espace à gauche de la carte */
+    padding-right: 0.25rem !important;
+    /* Petit espace à droite de la carte */
+    padding-bottom: 0.5rem !important;
+    /* Espace en bas de la carte pour l'alignement vertical */
+}
 
+main div.community-card-row.row.g-0>div.col>.card.community-card {
+    margin-bottom: 0.5rem !important;
 
+    margin-left: 0 !important;
+
+    margin-right: 0 !important;
+
+    height: calc(100% - 0.5rem);
+
+}
+
+main div.community-card-row.row.g-0 {
+    justify-content: start !important;
+    /* Aligne les cartes au début de la ligne */
+}

@@ -339,16 +339,35 @@ INSERT INTO communautes (nom, description, type, niveau, capacite_max) VALUES
 ('Yoga & Meditation', 'Groupe de pratique du yoga et de la meditation', 'bien_etre', 'debutant', 20), 
 ('Running Club', 'Club de course a pied pour tous niveaux', 'sport', 'intermediaire', 30); 
 
-INSERT INTO associations (id, nom) VALUES
-(1, 'Association Bienfaiteurs'),
-(2, 'Aide et Partage'),
-(3, 'Sourire pour Tous');
+INSERT INTO associations (id, nom, resume, histoire) VALUES
+(101, 'Solidarite Sante', 'Aide aux personnes en difficulte d acces aux soins.', 'Fondee en 2010, Solidarite Sante oeuvre pour l acces aux soins pour tous, en France et a l international.'),
+(102, 'Enfance & Avenir', 'Soutien a l education et a l epanouissement des enfants defavorises.', 'Depuis 2005, l association accompagne des centaines d enfants vers la reussite scolaire et sociale.'),
+(103, 'Planete Verte', 'Protection de l environnement et sensibilisation ecologique.', 'Planete Verte mobilise citoyens et entreprises pour preserver la biodiversite et lutter contre la pollution.'),
+(104, 'Culture Partagee', 'Promotion de la culture pour tous.', 'Depuis 2012, Culture Partagee organise des evenements culturels accessibles a tous.'),
+(105, 'Sport & Sante', 'Encourager la pratique sportive pour la sante.', 'Sport & Sante accompagne les jeunes et les seniors dans la pratique d une activite physique reguliere.');
+
+INSERT INTO association_projets (association_id, titre, description) VALUES
+(101, 'Collecte de materiel medical', 'Organisation de collectes pour redistribuer du materiel medical a ceux qui en ont besoin.'),
+(101, 'Ateliers de prevention sante', 'Sessions d information et de prevention dans les quartiers defavorises.'),
+(101, 'Soutien psychologique gratuit', 'Mise en place d une ligne d ecoute et de consultations gratuites.'),
+(102, 'Parrainage scolaire', 'Mise en relation d enfants avec des parrains pour un suivi educatif.'),
+(102, 'Distribution de fournitures', 'Collecte et distribution de fournitures scolaires dans les ecoles rurales.'),
+(102, 'Organisation de colonies de vacances', 'Sejours educatifs et ludiques pour enfants defavorises.'),
+(103, 'Reboisement local', 'Plantation d arbres dans les zones urbaines et rurales.'),
+(103, 'Nettoyage de plages', 'Actions de nettoyage et de sensibilisation sur les plages.'),
+(103, 'Ateliers zero dechet', 'Ateliers pratiques pour apprendre a reduire ses dechets au quotidien.'),
+(104, 'Festival annuel', 'Organisation d un festival culturel chaque ete.'),
+(104, 'Ateliers theatre', 'Ateliers de theatre pour enfants et adultes.'),
+(104, 'Expositions itinerantes', 'Expositions d art dans differents quartiers.'),
+(105, 'Cours de gym seniors', 'Seances de gymnastique adaptees aux seniors.'),
+(105, 'Tournois inter-quartiers', 'Organisation de tournois sportifs pour tous.'),
+(105, 'Programme nutrition', 'Accompagnement nutritionnel pour sportifs amateurs.');
 
 INSERT INTO dons (personne_id, association_id, montant, type, description, date_don, statut) VALUES
-(5, 1, 50.00, 'financier', 'Don pour le programme de bien-etre', '2024-03-01', 'valide'),
-(6, 2, NULL, 'materiel', 'Don de materiel informatique (ecran)', '2024-03-15', 'valide'),
-(7, 3, 100.00, 'financier', 'Soutien au programme de sante mentale', '2024-03-20', 'valide'),
-(2, 1, 25.00, 'financier', 'Petit don pour Salarie Test', '2024-05-12', 'valide');
+(5, 101, 50.00, 'financier', 'Don pour le programme de bien-etre', '2024-03-01', 'valide'),
+(6, 102, NULL, 'materiel', 'Don de materiel informatique (ecran)', '2024-03-15', 'valide'),
+(7, 103, 100.00, 'financier', 'Soutien au programme de sante mentale', '2024-03-20', 'valide'),
+(2, 101, 25.00, 'financier', 'Petit don pour Salarie Test', '2024-05-12', 'valide');
 
 INSERT INTO logs (personne_id, action, details, ip_address, created_at) VALUES
 (5, 'login', 'Connexion reussie', '192.168.1.10', NOW() - INTERVAL 5 DAY),

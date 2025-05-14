@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../../includes/init.php';
 require_once __DIR__ . '/../../includes/page_functions/modules/employees/appointments.php';
+require_once __DIR__ . '/../../includes/page_functions/modules/employees/dashboard.php';
 
 requireRole(ROLE_SALARIE);
 
@@ -18,6 +19,11 @@ if ($salarie_id_session > 0) {
     exit;
 }
 
+// Récupère les stats du pack pour le salarié connecté
+$stats = getSalarieDashboardStats($salarie_id_session);
+$rdv_utilises = $stats['pack_info']['usage_stats']['consultations']['used'] ?? 0;
+$rdv_max = $stats['pack_info']['usage_stats']['consultations']['total'] ?? 0;
+$prix_rdv_supp = $stats['pack_info']['rdv_medicaux_supplementaires_prix'] ?? 75;
 
 $viewData = setupAppointmentsPage();
 
@@ -169,9 +175,16 @@ include __DIR__ . '/../../templates/header.php';
                                         </label>
                                     <?php endforeach; ?>
                                 </div>
-                                <button type="submit" class="btn btn-success mt-3">
-                                    <i class="fas fa-check me-1"></i> Réserver le créneau sélectionné
-                                </button>
+                                <?php if ($rdv_max > 0 && $rdv_utilises >= $rdv_max): ?>
+                                    <button type="button" class="btn btn-warning mt-3" disabled>
+                                        Payer <?= htmlspecialchars($prix_rdv_supp) ?> €
+                                    </button>
+                                    <div class="text-danger mt-2">Vous avez atteint la limite de RDV inclus dans votre pack.<br>Pour réserver un RDV supplémentaire, veuillez contacter le support ou procéder au paiement.</div>
+                                <?php else: ?>
+                                    <button type="submit" class="btn btn-success mt-3">
+                                        <i class="fas fa-check me-1"></i> Réserver le créneau sélectionné
+                                    </button>
+                                <?php endif; ?>
                             </form>
                         <?php endif; ?>
                     </div>
@@ -199,9 +212,17 @@ include __DIR__ . '/../../templates/header.php';
                                             <div class="card-body d-flex flex-column">
                                                 <h5 class="card-title fs-6"><?= htmlspecialchars($service['nom']) ?></h5>
                                                 <p class="card-text small flex-grow-1"><?= htmlspecialchars(substr($service['description'] ?? '', 0, 80)) . (strlen($service['description'] ?? '') > 80 ? '...' : '') ?></p>
-                                                <a href="<?= WEBCLIENT_URL ?>/modules/employees/appointments.php?action=select_slot&service_id=<?= $service['id'] ?>" class="btn btn-sm btn-outline-primary mt-auto">
-                                                    Choisir <i class="fas fa-arrow-right ms-1"></i>
-                                                </a>
+                                                <?php
+                                                $isConsultation = isset($service['type']) && $service['type'] === 'consultation';
+                                                if ($isConsultation && $rdv_max > 0 && $rdv_utilises >= $rdv_max): ?>
+                                                    <button type="button" class="btn btn-warning mt-auto" disabled>
+                                                        Payer <?= htmlspecialchars($prix_rdv_supp) ?> €
+                                                    </button>
+                                                <?php else: ?>
+                                                    <a href="<?= WEBCLIENT_URL ?>/modules/employees/appointments.php?action=select_slot&service_id=<?= $service['id'] ?>" class="btn btn-sm btn-outline-primary mt-auto">
+                                                        Choisir <i class="fas fa-arrow-right ms-1"></i>
+                                                    </a>
+                                                <?php endif; ?>
                                             </div>
                                         </div>
                                     </div>

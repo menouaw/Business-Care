@@ -108,7 +108,6 @@ CREATE TABLE services (
     activites_incluses INT NOT NULL DEFAULT 0,
     rdv_medicaux_inclus INT NOT NULL DEFAULT 0,
     chatbot_questions_limite INT NULL,
-    max_effectif_inferieur_egal INT NULL,
     rdv_medicaux_supplementaires_prix DECIMAL(6,2) NULL,
     conseils_hebdo_personnalises BOOLEAN DEFAULT FALSE,
     tarif_annuel_par_salarie DECIMAL(10,2) NOT NULL DEFAULT 0.00,
@@ -241,6 +240,8 @@ CREATE TABLE communautes (
 CREATE TABLE associations (
     id INT PRIMARY KEY AUTO_INCREMENT,
     nom VARCHAR(255) NOT NULL UNIQUE,
+    resume TEXT DEFAULT NULL,
+    histoire TEXT DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -521,4 +522,13 @@ CREATE TABLE personne_interets (
     PRIMARY KEY (personne_id, interet_id),
     FOREIGN KEY (personne_id) REFERENCES personnes(id) ON DELETE CASCADE,
     FOREIGN KEY (interet_id) REFERENCES interets_utilisateurs(id) ON DELETE CASCADE
+);
+
+CREATE TABLE association_projets (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    association_id INT NOT NULL,
+    titre VARCHAR(255) NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (association_id) REFERENCES associations(id) ON DELETE CASCADE
 );
