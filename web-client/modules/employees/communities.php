@@ -34,7 +34,7 @@ include __DIR__ . '/../../templates/header.php';
                 <?php if (empty($preferredCommunities)): ?>
                     <div class="alert alert-light text-muted">Aucune communauté correspondant à vos intérêts ou préférences n'a été trouvée pour le moment.</div>
                 <?php else: ?>
-                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4">
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-0 mb-4 community-card-row">
                         <?php foreach ($preferredCommunities as $community): ?>
                             <div class="col">
                                 <?php renderCommunityCard($community, $userMemberCommunityIds, $csrf_token, 'primary');
@@ -50,7 +50,7 @@ include __DIR__ . '/../../templates/header.php';
                 <?php if (empty($otherCommunities)): ?>
                     <div class="alert alert-light text-muted">Aucune autre communauté disponible pour le moment.</div>
                 <?php else: ?>
-                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4">
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-0 mb-4 community-card-row">
                         <?php foreach ($otherCommunities as $community): ?>
                             <div class="col">
                                 <?php renderCommunityCard($community, $userMemberCommunityIds, $csrf_token, 'secondary');

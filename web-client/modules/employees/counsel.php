@@ -22,6 +22,16 @@ include __DIR__ . '/../../templates/header.php';
 
             <?php echo displayFlashMessages(); ?>
 
+            <?php    
+            if (isset($userServiceType) && $userServiceType === 'Starter Pack') :
+            ?>
+                <div class="alert alert-info shadow-sm mb-4" role="alert">
+                    <h4 class="alert-heading"><i class="fas fa-info-circle me-2"></i>Informations concernant votre Pack Starter</h4>
+                    <p>Avec votre abonnement actuel <strong>Starter Pack</strong>, les <strong>conseils hebdomadaires</strong> (qu'ils soient personnalisés ou généraux) ne sont pas inclus.</p>
+                    <p class="mb-0">Vous continuez cependant à bénéficier d'un accès illimité à toutes nos <strong>fiches pratiques</strong> de bien-être. Celles-ci apparaîtront ci-dessous si elles correspondent aux catégories sélectionnées.</p>
+                </div>
+            <?php endif; ?>
+
             <?php 
             ?>
             <?php if (!empty($preferredCounselsGrouped)): ?>

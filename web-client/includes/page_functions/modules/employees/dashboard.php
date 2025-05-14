@@ -5,14 +5,107 @@ require_once __DIR__ . '/../../../../includes/init.php';
  * Récupère les statistiques principales pour le tableau de bord Salarié.
  *
  * @param int $salarie_id L'ID du salarié connecté.
- * @return array Tableau des statistiques ['prochains_rdv', 'notifications_non_lues'].
+ * @return array Tableau des statistiques ['prochains_rdv', 'notifications_non_lues', 'pack_info'].
  */
 function getSalarieDashboardStats(int $salarie_id): array
 {
     if ($salarie_id <= 0) {
-        return ['prochains_rdv' => 0, 'notifications_non_lues' => 0];
+        return [
+            'prochains_rdv' => 0, 
+            'notifications_non_lues' => 0,
+            'pack_info' => null
+        ];
     }
 
+    
+    $employee = fetchOne('personnes', 'id = :id AND role_id = :role_id', [
+        ':id' => $salarie_id, 
+        ':role_id' => ROLE_SALARIE
+    ]);
+    
+    $pack_info = null;
+    if ($employee && $employee['entreprise_id']) {
+        
+        $contract = fetchOne(
+            'contrats',
+            'entreprise_id = :entreprise_id AND statut = :statut AND (date_fin IS NULL OR date_fin >= CURDATE())',
+            [
+                ':entreprise_id' => $employee['entreprise_id'],
+                ':statut' => 'actif'
+            ],
+            'date_debut DESC'
+        );
+
+        if ($contract) {
+            
+            $service = fetchOne('services', 'id = :id', [':id' => $contract['service_id']]);
+            if ($service) {
+                
+                $usage_stats = [
+                    'chatbot' => [
+                        'used' => 0,
+                        'total' => $service['chatbot_questions_limite']
+                    ],
+                    'consultations' => ['used' => 0, 'total' => $service['rdv_medicaux_inclus'] ?? 0],
+                    'ateliers' => ['used' => 0, 'total' => $service['activites_incluses'] ?? 0]
+                ];
+
+                
+                $sql_consultations = "SELECT COUNT(*) FROM " . TABLE_APPOINTMENTS . "
+                                    WHERE personne_id = :salarie_id 
+                                    AND prestation_id IN (
+                                        SELECT id FROM " . TABLE_PRESTATIONS . "
+                                        WHERE type = 'consultation'
+                                    )
+                                    AND statut IN ('termine', 'confirme')
+                                    AND date_rdv >= :date_debut";
+                $stmt_consultations = executeQuery($sql_consultations, [
+                    ':salarie_id' => $salarie_id,
+                    ':date_debut' => $contract['date_debut']
+                ]);
+                $usage_stats['consultations']['used'] = (int)$stmt_consultations->fetchColumn();
+
+                
+                $sql_ateliers = "SELECT (
+                                    -- Comptage des rendez-vous ateliers
+                                    (SELECT COUNT(*) FROM " . TABLE_APPOINTMENTS . "
+                                    WHERE personne_id = :salarie_id_rdv 
+                                    AND prestation_id IN (
+                                        SELECT id FROM " . TABLE_PRESTATIONS . "
+                                        WHERE type = 'atelier'
+                                    )
+                                    AND statut IN ('termine', 'confirme')
+                                    AND date_rdv >= :date_debut_rdv)
+                                    +
+                                    -- Comptage des événements organisés par BC
+                                    (SELECT COUNT(*) FROM evenement_inscriptions ei
+                                    JOIN evenements e ON ei.evenement_id = e.id
+                                    WHERE ei.personne_id = :salarie_id_event
+                                    AND e.organise_par_bc = TRUE
+                                    AND e.date_debut >= :date_debut_event
+                                    AND ei.statut = 'inscrit')
+                                ) as total_ateliers";
+                $stmt_ateliers = executeQuery($sql_ateliers, [
+                    ':salarie_id_rdv' => $salarie_id,
+                    ':date_debut_rdv' => $contract['date_debut'],
+                    ':salarie_id_event' => $salarie_id,
+                    ':date_debut_event' => $contract['date_debut']
+                ]);
+                $usage_stats['ateliers']['used'] = (int)$stmt_ateliers->fetchColumn();
+
+                $pack_info = [
+                    'type' => $service['type'],
+                    'date_debut' => $contract['date_debut'],
+                    'date_fin' => $contract['date_fin'],
+                    'usage_stats' => $usage_stats,
+                    'chatbot_questions_limite' => $service['chatbot_questions_limite'],
+                    'conseils_hebdo_personnalises' => $service['conseils_hebdo_personnalises'],
+                    'rdv_medicaux_supplementaires_prix' => $service['rdv_medicaux_supplementaires_prix']
+                ];
+            }
+        }
+    }
+    
     
     $sqlRdv = "SELECT COUNT(id) FROM " . TABLE_APPOINTMENTS . "
                WHERE personne_id = :salarie_id
@@ -27,6 +120,7 @@ function getSalarieDashboardStats(int $salarie_id): array
     return [
         'prochains_rdv' => $prochains_rdv,
         'notifications_non_lues' => $notifications_non_lues,
+        'pack_info' => $pack_info
     ];
 }
 

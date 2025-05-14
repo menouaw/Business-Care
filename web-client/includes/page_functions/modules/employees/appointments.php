@@ -2,14 +2,16 @@
 
 require_once __DIR__ . '/../../../../includes/init.php';
 
-function getSalarieAppointments(int $salarie_id, string $orderBy = 'rdv.date_rdv DESC', ?string $startDate = null, ?string $endDate = null): array
+function getSalarieAppointments(int $salarie_id, string $orderBy = 'rdv.date_rdv DESC'): array
 {
     if ($salarie_id <= 0) return [];
-
-    $params = [
-        ':salarie_id' => $salarie_id,
-        ':role_prestataire' => ROLE_PRESTATAIRE
-    ];
+    
+    
+    $allowedOrderBy = ['rdv.date_rdv DESC', 'rdv.date_rdv ASC'];
+    if (!in_array($orderBy, $allowedOrderBy)) {
+        
+        $orderBy = 'rdv.date_rdv DESC';
+    }
 
     $sql = "SELECT rdv.id, rdv.date_rdv, rdv.statut, rdv.type_rdv, rdv.lieu,
                    pres.nom as prestation_nom,
@@ -17,20 +19,66 @@ function getSalarieAppointments(int $salarie_id, string $orderBy = 'rdv.date_rdv
             FROM " . TABLE_APPOINTMENTS . " rdv
             LEFT JOIN " . TABLE_PRESTATIONS . " pres ON rdv.prestation_id = pres.id
             LEFT JOIN " . TABLE_USERS . " prat ON rdv.praticien_id = prat.id AND prat.role_id = :role_prestataire
-            WHERE rdv.personne_id = :salarie_id";
+            WHERE rdv.personne_id = :salarie_id
+            ORDER BY ". $orderBy;
+            
+    return executeQuery($sql, [':salarie_id' => $salarie_id, ':role_prestataire' => ROLE_PRESTATAIRE])->fetchAll();
+}
 
-    if ($startDate !== null) {
-        $sql .= " AND rdv.date_rdv >= :start_date";
-        $params[':start_date'] = $startDate;
+function getAppointmentDetailsForEmployee(int $salarie_id, int $rdv_id): array|false
+{
+    if ($salarie_id <= 0 || $rdv_id <= 0) return false;
+    $sql = "SELECT rdv.*, pres.nom as prestation_nom, pres.description as prestation_description,
+                   CONCAT(prat.prenom, ' ', prat.nom) as praticien_nom, prat.email as praticien_email, prat.telephone as praticien_tel,
+                   s.nom as site_nom, CONCAT(s.adresse, ', ', s.code_postal, ' ', s.ville) as site_adresse
+            FROM " . TABLE_APPOINTMENTS . " rdv
+            LEFT JOIN " . TABLE_PRESTATIONS . " pres ON rdv.prestation_id = pres.id
+            LEFT JOIN " . TABLE_USERS . " prat ON rdv.praticien_id = prat.id AND prat.role_id = :role_prestataire
+            LEFT JOIN consultation_creneaux cc ON rdv.consultation_creneau_id = cc.id
+            LEFT JOIN sites s ON cc.site_id = s.id
+            WHERE rdv.id = :rdv_id AND rdv.personne_id = :salarie_id
+            LIMIT 1";
+    $params = [':rdv_id' => $rdv_id, ':salarie_id' => $salarie_id, ':role_prestataire' => ROLE_PRESTATAIRE];
+    $stmt = executeQuery($sql, $params);
+    return $stmt->fetch();
+}
+
+function bookAppointmentSlot(int $salarie_id, int $slot_id, int $service_id_confirm): bool
+{
+    if ($salarie_id <= 0 || $slot_id <= 0 || $service_id_confirm <= 0) return false;
+    $slot = executeQuery("SELECT * FROM consultation_creneaux WHERE id = :slot_id AND prestation_id = :service_id", [':slot_id' => $slot_id, ':service_id' => $service_id_confirm])->fetch();
+    if (!$slot || $slot['is_booked']) return false;
+    $prestation = fetchOne(TABLE_PRESTATIONS, 'id = :id', [':id' => $service_id_confirm]);
+    if (!$prestation) return false;
+    updateRow('consultation_creneaux', ['is_booked' => 1], 'id = :slot_id AND is_booked = 0', [':slot_id' => $slot_id]);
+    $duree = $prestation['duree'] ?? 60;
+    $type_rdv = $prestation['type'] ?? 'consultation';
+    $rdvData = [
+        'personne_id' => $salarie_id,
+        'prestation_id' => $slot['prestation_id'],
+        'praticien_id' => $slot['praticien_id'],
+        'date_rdv' => $slot['start_time'],
+        'duree' => $duree,
+        'lieu' => $slot['site_id'] ? 'Site ID: ' . $slot['site_id'] : null,
+        'type_rdv' => $type_rdv,
+        'statut' => 'confirme',
+        'notes' => 'Réservé via plateforme web.',
+        'consultation_creneau_id' => $slot_id
+    ];
+    $insertResult = insertRow(TABLE_APPOINTMENTS, $rdvData);
+    return (bool)$insertResult;
+}
+
+function cancelEmployeeAppointment(int $salarie_id, int $rdv_id): bool
+{
+    if ($salarie_id <= 0 || $rdv_id <= 0) return false;
+    $rdv = executeQuery("SELECT * FROM " . TABLE_APPOINTMENTS . " WHERE id = :rdv_id AND personne_id = :salarie_id", [':rdv_id' => $rdv_id, ':salarie_id' => $salarie_id])->fetch();
+    if (!$rdv || !in_array($rdv['statut'], ['planifie', 'confirme'])) return false;
+    updateRow(TABLE_APPOINTMENTS, ['statut' => 'annule'], 'id = :rdv_id', [':rdv_id' => $rdv_id]);
+    if (!empty($rdv['consultation_creneau_id'])) {
+        updateRow('consultation_creneaux', ['is_booked' => 0], 'id = :creneau_id', [':creneau_id' => $rdv['consultation_creneau_id']]);
     }
-    if ($endDate !== null) {
-        $sql .= " AND rdv.date_rdv <= :end_date";
-        $params[':end_date'] = $endDate;
-    }
-
-    $sql .= " ORDER BY " . $orderBy;
-
-    return executeQuery($sql, $params)->fetchAll();
+    return true;
 }
 
 function getAvailableServicesForBooking(int $page = 1, int $perPage = 3): array
@@ -70,34 +118,6 @@ function getAvailableSlotsForService(int $service_id, string $startDate, string 
         ':end_date' => date('Y-m-d 23:59:59', strtotime($endDate)),
         ':role_prestataire' => ROLE_PRESTATAIRE
     ])->fetchAll();
-}
-
-function getAppointmentDetailsForEmployee(int $salarie_id, int $rdv_id): array|false
-{
-    if ($salarie_id <= 0 || $rdv_id <= 0) {
-        return false;
-    }
-
-    $sql = "SELECT rdv.*,
-                   pres.nom as prestation_nom, pres.description as prestation_description,
-                   CONCAT(prat.prenom, ' ', prat.nom) as praticien_nom, prat.email as praticien_email, prat.telephone as praticien_tel,
-                   s.nom as site_nom, CONCAT(s.adresse, ', ', s.code_postal, ' ', s.ville) as site_adresse
-            FROM " . TABLE_APPOINTMENTS . " rdv
-            LEFT JOIN " . TABLE_PRESTATIONS . " pres ON rdv.prestation_id = pres.id
-            LEFT JOIN " . TABLE_USERS . " prat ON rdv.praticien_id = prat.id AND prat.role_id = :role_prestataire
-            LEFT JOIN consultation_creneaux cc ON rdv.consultation_creneau_id = cc.id
-            LEFT JOIN sites s ON cc.site_id = s.id
-            WHERE rdv.id = :rdv_id AND rdv.personne_id = :salarie_id
-            LIMIT 1";
-
-    $params = [
-        ':rdv_id' => $rdv_id,
-        ':salarie_id' => $salarie_id,
-        ':role_prestataire' => ROLE_PRESTATAIRE
-    ];
-
-    $stmt = executeQuery($sql, $params);
-    return $stmt->fetch();
 }
 
 /**
@@ -158,8 +178,6 @@ function _areBookingInputsInvalid(int $salarie_id, int $slot_id, int $service_id
  */
 function _needsBookingFallbackFlashMessage(Exception $e): bool
 {
-
-
     return empty($_SESSION['flash_messages']) && $e->getMessage() !== "Validation du créneau échouée.";
 }
 
@@ -179,180 +197,6 @@ function _isBookingExceptionMessageAlreadyHandled(Exception $e): bool
     return in_array($e->getMessage(), $handledMessages, true);
 }
 
-function bookAppointmentSlot(int $salarie_id, int $slot_id, int $service_id_confirm): bool
-{
-    if (_areBookingInputsInvalid($salarie_id, $slot_id, $service_id_confirm)) {
-        return false;
-    }
-
-    $pdo = getDbConnection();
-    try {
-        $pdo->beginTransaction();
-
-        $slot = _getAndValidateSlotForBooking($slot_id, $service_id_confirm);
-        if ($slot === null) {
-            throw new Exception("Validation du créneau échouée.");
-        }
-
-        $prestation = getPrestationDetails($service_id_confirm);
-        if (!$prestation) {
-            flashMessage("Impossible de récupérer les détails de la prestation.", "danger");
-            throw new Exception("Détails de la prestation introuvables.");
-        }
-
-        $duree = $prestation['duree'] ?? 60;
-        $type_rdv = _determineAppointmentType($prestation);
-
-        $updatedRows = updateRow(
-            'consultation_creneaux',
-            ['is_booked' => 1],
-            'id = :slot_id AND is_booked = 0',
-            [':slot_id' => $slot_id]
-        );
-
-        if ($updatedRows === 0) {
-            flashMessage("Ce créneau vient d'être réservé à l'instant par quelqu'un d'autre.", "warning");
-            throw new Exception("Échec de la mise à jour du créneau (probablement réservé simultanément).");
-        }
-
-        $rdvData = [
-            'personne_id' => $salarie_id,
-            'prestation_id' => $slot['prestation_id'],
-            'praticien_id' => $slot['praticien_id'],
-            'date_rdv' => $slot['start_time'],
-            'duree' => $duree,
-            'lieu' => $slot['site_id'] ? 'Site ID: ' . $slot['site_id'] : null,
-            'type_rdv' => $type_rdv,
-            'statut' => 'confirme',
-            'notes' => 'Réservé via plateforme web.',
-            'consultation_creneau_id' => $slot_id
-        ];
-
-        $insertResult = insertRow(TABLE_APPOINTMENTS, $rdvData);
-        if (!$insertResult) {
-            flashMessage("Une erreur est survenue lors de la finalisation de la réservation.", "danger");
-            throw new Exception("Échec de l'insertion du rendez-vous.");
-        }
-
-        $pdo->commit();
-
-        createNotification(
-            $salarie_id,
-            "Confirmation de rendez-vous",
-            "Votre RDV pour '" . htmlspecialchars($prestation['nom']) . "' le " . htmlspecialchars(formatDate($slot['start_time'], 'd/m/Y H:i')) . " est confirmé.",
-            "success",
-            WEBCLIENT_URL . '/modules/employees/appointments.php'
-        );
-        if (empty($_SESSION['flash_messages'])) {
-            flashMessage("Votre rendez-vous a bien été réservé !", "success");
-        }
-        return true;
-    } catch (Exception $e) {
-        if ($pdo->inTransaction()) {
-            $pdo->rollBack();
-        }
-
-        if (_needsBookingFallbackFlashMessage($e)) {
-            if (!_isBookingExceptionMessageAlreadyHandled($e)) {
-                flashMessage("Une erreur technique est survenue lors de la réservation: " . $e->getMessage(), "danger");
-            }
-        }
-        return false;
-    }
-}
-
-/**
- * Récupère et valide un rendez-vous pour l'annulation. Vérifie l'existence, la propriété, le statut et la date.
- * Utilise FOR UPDATE pour verrouiller la ligne pendant la transaction.
- *
- * @param int $salarie_id ID de l'employé qui demande l'annulation.
- * @param int $rdv_id ID du rendez-vous à annuler.
- * @return array|null Les détails du RDV si valide pour annulation, null sinon.
- */
-function _getAndValidateAppointmentForCancellation(int $salarie_id, int $rdv_id): ?array
-{
-    $sqlGetRdv = "SELECT * FROM " . TABLE_APPOINTMENTS . " WHERE id = :rdv_id AND personne_id = :salarie_id FOR UPDATE";
-    $stmt = executeQuery($sqlGetRdv, [':rdv_id' => $rdv_id, ':salarie_id' => $salarie_id]);
-    $rdv = $stmt->fetch();
-
-    if (!$rdv) {
-        flashMessage("Rendez-vous non trouvé ou vous n'avez pas la permission de l'annuler.", "warning");
-        return null;
-    }
-    if (!in_array($rdv['statut'], ['planifie', 'confirme'])) {
-        flashMessage("Ce rendez-vous ne peut plus être annulé (statut: " . htmlspecialchars($rdv['statut']) . ").", "warning");
-        return null;
-    }
-    if (strtotime($rdv['date_rdv']) <= time()) {
-        flashMessage("Impossible d'annuler un rendez-vous déjà passé.", "warning");
-        return null;
-    }
-
-    return $rdv;
-}
-
-function cancelEmployeeAppointment(int $salarie_id, int $rdv_id): bool
-{
-    if ($salarie_id <= 0 || $rdv_id <= 0) {
-        return false;
-    }
-
-    $pdo = getDbConnection();
-    try {
-        $pdo->beginTransaction();
-
-        $rdv = _getAndValidateAppointmentForCancellation($salarie_id, $rdv_id);
-        if ($rdv === null) {
-
-            throw new Exception("Validation du rendez-vous pour annulation échouée.");
-        }
-
-        if (updateRow(TABLE_APPOINTMENTS, ['statut' => 'annule'], 'id = :rdv_id', [':rdv_id' => $rdv_id]) === 0) {
-            flashMessage("Erreur lors de la mise à jour du statut du rendez-vous.", "danger");
-            throw new Exception("Échec de la mise à jour du statut du RDV.");
-        }
-
-        if (!empty($rdv['consultation_creneau_id'])) {
-
-
-            updateRow(
-                'consultation_creneaux',
-                ['is_booked' => 0],
-                'id = :creneau_id',
-                [':creneau_id' => $rdv['consultation_creneau_id']]
-            );
-        }
-
-        $pdo->commit();
-
-        $prestation = getPrestationDetails($rdv['prestation_id']);
-        $prestationNom = $prestation ? htmlspecialchars($prestation['nom']) : 'inconnue';
-        createNotification(
-            $salarie_id,
-            "Annulation de rendez-vous",
-            "Votre RDV pour '" . $prestationNom . "' le " . htmlspecialchars(formatDate($rdv['date_rdv'], 'd/m/Y H:i')) . " a été annulé.",
-            "info",
-            WEBCLIENT_URL . '/modules/employees/appointments.php'
-        );
-
-        if (empty($_SESSION['flash_messages'])) {
-            flashMessage("Votre rendez-vous a bien été annulé.", "success");
-        }
-        return true;
-    } catch (Exception $e) {
-        if ($pdo->inTransaction()) {
-            $pdo->rollBack();
-        }
-
-        if (empty($_SESSION['flash_messages']) && $e->getMessage() !== "Validation du rendez-vous pour annulation échouée.") {
-            if ($e->getMessage() !== "Échec de la mise à jour du statut du RDV.") {
-                flashMessage("Une erreur technique est survenue lors de l'annulation: " . $e->getMessage(), "danger");
-            }
-        }
-        return false;
-    }
-}
-
 /**
  * Gère la logique POST pour la réservation d'un créneau.
  * Refactorisée pour utiliser des guard clauses.
@@ -362,7 +206,6 @@ function cancelEmployeeAppointment(int $salarie_id, int $rdv_id): bool
  */
 function _handleBookingPostAction(int $salarie_id, array $postData): void
 {
-
     $csrf_token_booking = $postData['csrf_token'] ?? '';
     if (!validateToken($csrf_token_booking)) {
         flashMessage("Jeton de sécurité invalide ou expiré pour la réservation. Veuillez réessayer.", "danger");
@@ -382,13 +225,10 @@ function _handleBookingPostAction(int $salarie_id, array $postData): void
     $bookingSuccess = bookAppointmentSlot($salarie_id, $slot_id, $service_id_confirm);
 
     if ($bookingSuccess) {
-
         if (empty($_SESSION['flash_messages'])) {
             flashMessage("Votre rendez-vous a bien été réservé !", "success");
         }
     } elseif (empty($_SESSION['flash_messages'])) {
-
-
         flashMessage("Erreur lors de la réservation. Le créneau n'est peut-être plus disponible ou une erreur technique est survenue.", "danger");
     }
 
@@ -444,7 +284,6 @@ function _handleCancelPostAction(int $salarie_id, array $postData): void
  */
 function handleAppointmentPostAndGetActions(int $salarie_id)
 {
-
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $postData = $_POST;
 
@@ -484,7 +323,6 @@ function _getAppointmentListData(int $salarie_id, string $filter): array
         }
     }
     usort($upcoming, fn($a, $b) => strtotime($a['date_rdv']) <=> strtotime($b['date_rdv']));
-
 
     return [
         'pageTitle' => "Mes Rendez-vous",
@@ -570,7 +408,6 @@ function _getShowSlotsData(int $service_id): ?array
     $startDate = date('Y-m-d');
     $endDate = date('Y-m-d', strtotime('+4 weeks'));
     $availableSlots = getAvailableSlotsForService($service_id, $startDate, $endDate);
-
 
     return [
         'pageTitle' => $pageTitle,
@@ -662,22 +499,17 @@ function setupAppointmentsPage(): array
  */
 function isTimeSlotAvailable($dateHeure, $duree, $prestationId): bool
 {
-
     if (empty($dateHeure) || !is_numeric($duree) || $duree <= 0 || !is_numeric($prestationId) || $prestationId <= 0) {
-
         return false;
     }
 
-
     $debutTimestamp = strtotime($dateHeure);
     if ($debutTimestamp === false) {
-
         return false;
     }
     $finTimestamp = $debutTimestamp + ($duree * 60);
     $finRdv = date('Y-m-d H:i:s', $finTimestamp);
     $debutRdv = date('Y-m-d H:i:s', $debutTimestamp);
-
 
     $sql = "SELECT COUNT(id) FROM rendez_vous 
                 WHERE prestation_id = :prestation_id
@@ -695,7 +527,6 @@ function isTimeSlotAvailable($dateHeure, $duree, $prestationId): bool
         ':debut_rdv' => $debutRdv,
         ':fin_rdv' => $finRdv
     ];
-
 
     $stmt = executeQuery($sql, $params);
     $conflictCount = $stmt->fetchColumn();
