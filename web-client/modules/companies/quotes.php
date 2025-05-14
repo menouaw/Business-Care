@@ -245,37 +245,88 @@ include __DIR__ . '/../../templates/header.php';
                 <hr>
                 <form method="POST" action="<?= WEBCLIENT_URL ?>/modules/companies/quotes.php" id="quote-request-form">
                     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken()); ?>">
+                    <input type="hidden" name="request_type" id="request_type_hidden" value="">
+                    <input type="hidden" name="selected_pack_id" id="selected_pack_id_hidden" value="">
+                    <input type="hidden" name="submit_quote_request" value="1">
 
-                    <div class="mb-3">
-                        <label for="service_id" class="form-label">Choisir un Pack Standard (Optionnel)</label>
-                        <select class="form-select" id="service_id" name="service_id">
-                            <option value="">-- Demande Personnalisée (décrire ci-dessous) --</option> <?php
-                                                                                                        ?>
-                            <?php foreach ($servicePacks as $pack): ?>
-                                <option value="<?= htmlspecialchars($pack['id']) ?>">
-                                    <?= htmlspecialchars($pack['type']) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
+                    <div class="mb-4">
+                        <h5>Choisissez votre type de devis :</h5>
+                        <?php foreach ($detailedServicePacks as $pack): ?>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input quote-type-selector" type="radio" name="quote_type_choice"
+                                    id="pack-<?= htmlspecialchars($pack['id']) ?>" value="pack_<?= htmlspecialchars($pack['id']) ?>"
+                                    data-pack-price="<?= htmlspecialchars($pack['tarif_annuel_par_salarie'] ?? 0) ?>"
+                                    data-pack-name="<?= htmlspecialchars($pack['type']) ?>">
+                                <label class="form-check-label" for="pack-<?= htmlspecialchars($pack['id']) ?>">
+                                    <strong><?= htmlspecialchars($pack['type']) ?></strong>
+                                    <small class="text-muted">(<?= htmlspecialchars(number_format($pack['tarif_annuel_par_salarie'] ?? 0, 0)) ?> euros/an/salarié)</small>
+                                </label>
+                            </div>
+                        <?php endforeach; ?>
                     </div>
 
-                    <div class="mb-3" id="nombre-salaries-container" style="display: none;">
-                        <label for="nombre_salaries" class="form-label">Nombre de salariés concernés pour ce pack</label>
-                        <input type="number" class="form-control" id="nombre_salaries" name="nombre_salaries" min="1" value="">
-                        <div class="form-text">Ce nombre sera utilisé pour calculer le coût total du pack sélectionné.</div>
-                    </div>
+                    <div id="personalize-section">
+                        <hr>
+                        <h5>Ajoutez des prestations supplémentaires :</h5>
+                        <p>Saisissez la quantité souhaitée pour chaque prestation additionnelle. Le total ci-dessous correspond uniquement à ces extras.</p>
 
-                    <div id="pack-specific-action-btn-container" class="mb-3" style="display: none;">
-                        <div class="mb-3">
-                            <label for="notes" class="form-label">Vos besoins et demandes spécifiques <span class="text-danger">*</span></label>
-                            <textarea class="form-control" id="notes" name="notes" rows="6" required></textarea>
-                            <div class="form-text">Si vous n'avez pas choisi de pack, décrivez ici vos besoins (nombre salariés, prestations souhaitées...). Si vous avez choisi un pack, vous pouvez ajouter ici des questions ou précisions.</div>
+                        <div class="table-responsive mb-3">
+                            <table class="table table-sm table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Prestation</th>
+                                        <th>Description</th>
+                                        <th class="text-end">Prix Unitaire</th>
+                                        <th style="width: 100px;">Quantité</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="prestations-list">
+                                    <?php if (empty($availablePrestations)): ?>
+                                        <tr>
+                                            <td colspan="4">Aucune prestation disponible pour la personnalisation.</td>
+                                        </tr>
+                                    <?php else: ?>
+                                        <?php foreach ($availablePrestations as $prestation): ?>
+                                            <tr>
+                                                <td><?= htmlspecialchars($prestation['nom']) ?></td>
+                                                <td><small><?= htmlspecialchars($prestation['description']) ?></small></td>
+                                                <td class="text-end"><?= htmlspecialchars(number_format($prestation['prix'] ?? 0, 2, ',', ' ')) ?> <?= DEFAULT_CURRENCY ?></td>
+                                                <td>
+                                                    <input type="number" class="form-control form-control-sm quote-quantity-input"
+                                                        name="quantities[<?= htmlspecialchars($prestation['id']) ?>]" value="0" min="0" step="1"
+                                                        data-id="<?= htmlspecialchars($prestation['id']) ?>"
+                                                        data-price="<?= htmlspecialchars($prestation['prix'] ?? 0) ?>">
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
                         </div>
 
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-paper-plane me-1"></i> Envoyer ma demande
-                        </button>
+                        <div class="row justify-content-end mb-3">
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body text-end">
+                                        <h5 class="card-title">Total Devis Estimé TTC*</h5>
+                                        <p id="selected-pack-info" class="mb-1 text-muted"><small>Base: Aucun</small></p>
+                                        <p class="card-text fs-4 fw-bold" id="quote-total-display">0,00 <?= DEFAULT_CURRENCY ?></p>
+                                        <small class="text-muted">*Pack + Extras. Hors TVA potentielle.</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+
+                    <hr>
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notes ou questions supplémentaires</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane me-1"></i> Envoyer la Demande
+                    </button>
                 </form>
 
             <?php else:
