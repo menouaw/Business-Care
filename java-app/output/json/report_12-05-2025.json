@@ -1,0 +1,346 @@
+{
+  "clientStats" : {
+    "clientCountBySector" : {
+      "FINANCE" : 4,
+      "TECHNOLOGIE" : 3,
+      "AUTRE" : 23
+    },
+    "clientCountBySize" : {
+      "S500_PLUS" : 4,
+      "S51_200" : 7,
+      "S201_500" : 6,
+      "S1_10" : 6,
+      "S11_50" : 7
+    },
+    "contractCountByStatus" : {
+      "resilie" : 1,
+      "actif" : 13,
+      "expire" : 3,
+      "en_attente" : 1
+    },
+    "totalRevenueByClientId" : {
+      "1" : 1500.00,
+      "2" : 2000.00,
+      "20" : 1200.00,
+      "4" : 950.00,
+      "23" : 4050.00,
+      "9" : 4500.00,
+      "25" : 42000.00,
+      "28" : 1800.00,
+      "13" : 30000.00
+    },
+    "top5ClientsByRevenue" : [ {
+      "company" : {
+        "id" : 25,
+        "nom" : "SecureNet Systems",
+        "siret" : "22334455667790",
+        "adresse" : "Cyber Hub Center",
+        "ville" : "Paris",
+        "telephone" : "01 33 55 77 99",
+        "email" : "info@securenet.sys",
+        "pays" : null,
+        "contracts" : null,
+        "quotes" : null,
+        "invoices" : null,
+        "code_postal" : "75015",
+        "site_web" : "www.securenet.sys",
+        "logo_url" : "/logos/securenet.png",
+        "taille_entreprise" : "201-500",
+        "secteur_activite" : "Technologie",
+        "date_creation" : "2016-04-25"
+      },
+      "revenue" : 42000.00,
+      "companyName" : "SecureNet Systems"
+    }, {
+      "company" : {
+        "id" : 13,
+        "nom" : "CodeCraft Software",
+        "siret" : "00112233445566",
+        "adresse" : "Silicon Alley 5",
+        "ville" : "Paris",
+        "telephone" : "01 66 77 88 99",
+        "email" : "dev@codecraft.io",
+        "pays" : null,
+        "contracts" : null,
+        "quotes" : null,
+        "invoices" : null,
+        "code_postal" : "75009",
+        "site_web" : "www.codecraft.io",
+        "logo_url" : "/logos/codecraft.png",
+        "taille_entreprise" : "51-200",
+        "secteur_activite" : "Technologie",
+        "date_creation" : "2019-01-01"
+      },
+      "revenue" : 30000.00,
+      "companyName" : "CodeCraft Software"
+    }, {
+      "company" : {
+        "id" : 9,
+        "nom" : "AgriBio Solutions",
+        "siret" : "66778899001122",
+        "adresse" : "Domaine de la Ferme",
+        "ville" : "Montpellier",
+        "telephone" : "04 22 33 44 55",
+        "email" : "info@agribiosolutions.fr",
+        "pays" : null,
+        "contracts" : null,
+        "quotes" : null,
+        "invoices" : null,
+        "code_postal" : "34000",
+        "site_web" : "https://www.agribiosolutions.fr",
+        "logo_url" : "/logos/agribio.png",
+        "taille_entreprise" : "500+",
+        "secteur_activite" : "Autre",
+        "date_creation" : "2020-03-20"
+      },
+      "revenue" : 4500.00,
+      "companyName" : "AgriBio Solutions"
+    }, {
+      "company" : {
+        "id" : 23,
+        "nom" : "DigitalWave Marketing",
+        "siret" : "00112233445567",
+        "adresse" : "18 Rue de la Pub",
+        "ville" : "Paris",
+        "telephone" : "01 11 33 55 77",
+        "email" : "contact@digitalwave.mkt",
+        "pays" : null,
+        "contracts" : null,
+        "quotes" : null,
+        "invoices" : null,
+        "code_postal" : "75002",
+        "site_web" : "www.digitalwave.mkt",
+        "logo_url" : "/logos/digitalwave.png",
+        "taille_entreprise" : "11-50",
+        "secteur_activite" : "Autre",
+        "date_creation" : "2020-07-07"
+      },
+      "revenue" : 4050.00,
+      "companyName" : "DigitalWave Marketing"
+    }, {
+      "company" : {
+        "id" : 2,
+        "nom" : "Sante Plus",
+        "siret" : "98765432109876",
+        "adresse" : "456 Avenue de la Sante",
+        "ville" : "Paris",
+        "telephone" : "01 98 76 54 32",
+        "email" : "contact@santeplus.fr",
+        "pays" : null,
+        "contracts" : null,
+        "quotes" : null,
+        "invoices" : null,
+        "code_postal" : "75002",
+        "site_web" : "www.santeplus.fr",
+        "logo_url" : "/logos/santeplus.png",
+        "taille_entreprise" : "201-500",
+        "secteur_activite" : "Autre",
+        "date_creation" : "2019-06-20"
+      },
+      "revenue" : 2000.00,
+      "companyName" : "Sante Plus"
+    } ],
+    "totalRevenueOverall" : 88000.00,
+    "totalClients" : 30,
+    "totalContracts" : 18,
+    "totalPaidInvoices" : 9
+  },
+  "eventStats" : {
+    "eventCountByType" : {
+      "conference" : 7,
+      "defi_sportif" : 4,
+      "webinar" : 6,
+      "atelier" : 9
+    },
+    "eventFrequency" : {
+      "Conference Bien-etre Paris" : 0,
+      "Atelier Communication Interculturelle" : 0,
+      "Webinar Communication Assertive" : 0,
+      "Webinar Gestion du Stress" : 0,
+      "Webinar Sommeil Reparateur" : 0,
+      "Webinar Developpement Durable en Entreprise" : 0,
+      "Conference Nutrition et Performance" : 0,
+      "Atelier Cuisine Vegetarienne" : 0,
+      "Defi Sportif Inter-Entreprises" : 0,
+      "Conference Gestion des Emotions" : 0,
+      "Atelier Meditation Pleine Conscience Avance" : 0,
+      "Conference Neurosciences et Apprentissage" : 0,
+      "Conference Securite Informatique PME" : 0,
+      "Defi Sportif : Challenge Velotaf" : 0,
+      "Defi Solidaire : Collecte de Dons" : 0,
+      "Atelier Gestion Financiere Personnelle" : 0,
+      "Conference Leadership Positif" : 0,
+      "Conference Sante Mentale au Travail" : 0,
+      "Atelier Ergonomie Sante+" : 0,
+      "Webinar Ergonomie a Domicile" : 0,
+      "Atelier Prevention TMS" : 0,
+      "Atelier Yoga du Rire" : 0,
+      "Atelier Auto-Hypnose" : 0,
+      "Atelier Initiation Sophrologie" : 0,
+      "Webinar Gestion de Projet Agile" : 0,
+      "Defi Bien-etre : Semaine sans ecran" : 0
+    },
+    "top5EventsByPopularity" : [ {
+      "event" : {
+        "id" : 9,
+        "titre" : "Conference Gestion des Emotions",
+        "description" : "Comprendre et maitriser ses emotions",
+        "lieu" : "Amphitheatre EduForma Paris",
+        "type" : "conference",
+        "inscriptions" : null,
+        "date_debut" : "2025-07-14 13:12:12",
+        "date_fin" : "2025-07-14 15:12:12",
+        "capacite_max" : 120,
+        "associated_services" : null
+      },
+      "popularityMetric" : 0,
+      "eventTitle" : "Conference Gestion des Emotions"
+    }, {
+      "event" : {
+        "id" : 22,
+        "titre" : "Webinar Developpement Durable en Entreprise",
+        "description" : "Initiatives et bonnes pratiques RSE",
+        "lieu" : "En ligne",
+        "type" : "webinar",
+        "inscriptions" : null,
+        "date_debut" : "2025-10-13 13:12:12",
+        "date_fin" : "2025-10-13 14:12:12",
+        "capacite_max" : 90,
+        "associated_services" : null
+      },
+      "popularityMetric" : 0,
+      "eventTitle" : "Webinar Developpement Durable en Entreprise"
+    }, {
+      "event" : {
+        "id" : 15,
+        "titre" : "Webinar Gestion de Projet Agile",
+        "description" : "Introduction aux methodes agiles",
+        "lieu" : "En ligne",
+        "type" : "webinar",
+        "inscriptions" : null,
+        "date_debut" : "2025-08-25 13:12:12",
+        "date_fin" : "2025-08-25 15:12:12",
+        "capacite_max" : 60,
+        "associated_services" : null
+      },
+      "popularityMetric" : 0,
+      "eventTitle" : "Webinar Gestion de Projet Agile"
+    }, {
+      "event" : {
+        "id" : 2,
+        "titre" : "Webinar Gestion du Stress",
+        "description" : "Formation en ligne accessible a tous",
+        "lieu" : "En ligne",
+        "type" : "webinar",
+        "inscriptions" : null,
+        "date_debut" : "2025-05-26 13:12:12",
+        "date_fin" : "2025-05-26 14:42:12",
+        "capacite_max" : 50,
+        "associated_services" : null
+      },
+      "popularityMetric" : 0,
+      "eventTitle" : "Webinar Gestion du Stress"
+    }, {
+      "event" : {
+        "id" : 23,
+        "titre" : "Atelier Gestion Financiere Personnelle",
+        "description" : "Mieux gerer son budget et son epargne",
+        "lieu" : "Salle Formation Sante Plus Paris",
+        "type" : "atelier",
+        "inscriptions" : null,
+        "date_debut" : "2025-10-20 13:12:12",
+        "date_fin" : "2025-10-20 15:12:12",
+        "capacite_max" : 25,
+        "associated_services" : null
+      },
+      "popularityMetric" : 0,
+      "eventTitle" : "Atelier Gestion Financiere Personnelle"
+    } ],
+    "totalEvents" : 26
+  },
+  "prestationStats" : {
+    "distributionParCategorie" : null,
+    "distributionParType" : null,
+    "distributionParDifficulte" : null,
+    "revenuParPrestation" : null,
+    "top5Prestations" : null,
+    "prestationCountByType" : {
+      "conference" : 5,
+      "atelier" : 16,
+      "consultation" : 14,
+      "webinar" : 6
+    },
+    "prestationCountByCategory" : {
+      "Bien-Ãªtre mental" : 4,
+      "Nutrition" : 4,
+      "Bien-Ãªtre physique" : 2,
+      "Bien-etre mental" : 4,
+      "Sante mentale" : 4,
+      "Formation" : 8,
+      "Sante" : 2,
+      "Developpement personnel" : 8,
+      "Communication" : 1,
+      "Bien-etre physique" : 4
+    },
+    "prestationCountByName" : {
+      "Yoga en Entreprise" : 1,
+      "Atelier Communication Assertive" : 1,
+      "Consultation Conseil en Image Professionnelle" : 1,
+      "Formation Secourisme en Entreprise" : 1,
+      "Atelier Gestion des Conflits" : 1,
+      "Webinar Gestion du Stress" : 1,
+      "Formation Risques Psycho-Sociaux (RPS)" : 1,
+      "Consultation Arret Tabac" : 1,
+      "Sophrologie Relaxation" : 1,
+      "Atelier Jardinage Urbain Anti-Stress" : 1,
+      "Consultation Sexologie" : 1,
+      "Atelier Creativite et Innovation" : 1,
+      "Consultation Nutritionniste" : 1,
+      "Atelier Auto-massage Do-In" : 1,
+      "Conference Equilibre Vie Pro/Vie Perso" : 1,
+      "Formation Ergonomie Bureau" : 1,
+      "Consultation Orientation Scolaire/Professionnelle" : 1,
+      "Webinar Initiation a l'Investissement Financier" : 1,
+      "Webinar Decouverte de l'Art-therapie" : 1,
+      "Seance d'Hypnose Relaxation" : 1,
+      "Conference Nutrition Sportive" : 1,
+      "Pilates pour le Dos" : 1,
+      "Atelier Gestion du Temps" : 1,
+      "Formation Management Bienveillant" : 1,
+      "Coaching de Vie Individuel" : 1,
+      "Webinar Prevention Burn-out" : 1,
+      "Consultation Dietetique Personnalisee" : 1,
+      "Atelier Cuisine Saine et Rapide" : 1,
+      "Conference Addictions (ecrans, jeux...)" : 1,
+      "Conference Impact du Numerique sur le Bien-Ãªtre" : 1,
+      "Massage Amma Assis" : 1,
+      "Conference Sommeil Reparateur" : 1,
+      "Seance de Musicotherapie Receptive" : 1,
+      "Atelier Initiation Tai Chi Chuan" : 1,
+      "Webinar Communication Non Violente" : 1,
+      "Meditation Pleine Conscience" : 1,
+      "Reflexologie Plantaire" : 1,
+      "Consultation Psychologique" : 1,
+      "Consultation Coaching Professionnel" : 1,
+      "Webinar Cybersecurite au Quotidien" : 1,
+      "Atelier Prise de Parole en Public" : 1
+    },
+    "top5PrestationsByFrequency" : [ {
+      "prestationName" : "Yoga en Entreprise",
+      "frequency" : 1
+    }, {
+      "prestationName" : "Atelier Communication Assertive",
+      "frequency" : 1
+    }, {
+      "prestationName" : "Consultation Conseil en Image Professionnelle",
+      "frequency" : 1
+    }, {
+      "prestationName" : "Formation Secourisme en Entreprise",
+      "frequency" : 1
+    }, {
+      "prestationName" : "Atelier Gestion des Conflits",
+      "frequency" : 1
+    } ],
+    "totalPrestations" : 41
+  }
+}

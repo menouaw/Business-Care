@@ -137,21 +137,21 @@ INSERT INTO prestations (nom, description, prix, duree, type, categorie, niveau_
 ('Consultation Dietetique Personnalisee', 'Plan alimentaire adapte a vos besoins specifiques', 95.00, 60, 'consultation', 'Nutrition', NULL, 1, 'Aucun', 'Bilan sanguin recent (optionnel)'),
 ('Atelier Creativite et Innovation', 'Liberer son potentiel creatif au travail', 180.00, 120, 'atelier', 'Developpement personnel', 'debutant', 20, 'Materiel de dessin/ecriture', 'Aucun'),
 ('Webinar Prevention Burn-out', 'Reconnaître les signes et prevenir l''epuisement professionnel', 210.00, 90, 'webinar', 'Sante mentale', 'debutant', 80, 'Ordinateur, connexion internet', 'Aucun'),
-('Seance d''Hypnose Relaxation', 'Atteindre un etat de relaxation profonde par l''hypnose', 100.00, 60, 'consultation', 'Bien-être mental', NULL, 1, 'Fauteuil confortable', 'Aucun'),
-('Formation Management Bienveillant', 'Diriger ses equipes avec empathie et efficacite', 400.00, 360, 'atelier', 'Formation', 'intermediaire', 12, 'Support de cours', 'Être manager'),
-('Conference Impact du Numerique sur le Bien-être', 'Comprendre les enjeux de l''hyperconnexion', 250.00, 75, 'conference', 'Sante mentale', 'debutant', 100, 'Aucun', 'Aucun'),
-('Atelier Auto-massage Do-In', 'Techniques simples pour soulager les tensions', 90.00, 60, 'atelier', 'Bien-être physique', 'debutant', 15, 'Aucun', 'Aucun'),
+('Seance d''Hypnose Relaxation', 'Atteindre un etat de relaxation profonde par l''hypnose', 100.00, 60, 'consultation', 'Bien-etre mental', NULL, 1, 'Fauteuil confortable', 'Aucun'),
+('Formation Management Bienveillant', 'Diriger ses equipes avec empathie et efficacite', 400.00, 360, 'atelier', 'Formation', 'intermediaire', 12, 'Support de cours', 'etre manager'),
+('Conference Impact du Numerique sur le Bien-etre', 'Comprendre les enjeux de l''hyperconnexion', 250.00, 75, 'conference', 'Sante mentale', 'debutant', 100, 'Aucun', 'Aucun'),
+('Atelier Auto-massage Do-In', 'Techniques simples pour soulager les tensions', 90.00, 60, 'atelier', 'Bien-etre physique', 'debutant', 15, 'Aucun', 'Aucun'),
 ('Consultation Orientation Scolaire/Professionnelle', 'Aide a la definition d''un projet d''avenir', 120.00, 90, 'consultation', 'Developpement personnel', NULL, 1, 'Aucun', 'Jeunes/Adultes en questionnement'),
 ('Webinar Initiation a l''Investissement Financier', 'Comprendre les bases pour gerer son epargne', 150.00, 90, 'webinar', 'Formation', 'debutant', 50, 'Ordinateur, connexion internet', 'Aucun'),
 ('Atelier Prise de Parole en Public', 'Gagner en aisance et en impact a l''oral', 250.00, 180, 'atelier', 'Formation', 'intermediaire', 12, 'Camera (optionnel)', 'Aucun'),
 ('Consultation Sexologie', 'Aborder les questions liees a la sexualite', 90.00, 60, 'consultation', 'Sante', NULL, 1, 'Aucun', 'Aucun'),
 ('Conference Addictions (ecrans, jeux...)', 'Comprendre et prevenir les dependances comportementales', 280.00, 90, 'conference', 'Sante mentale', 'debutant', 90, 'Aucun', 'Aucun'),
-('Atelier Jardinage Urbain Anti-Stress', 'Cultiver des plantes pour se detendre', 130.00, 120, 'atelier', 'Bien-être mental', 'debutant', 10, 'Petits pots, terreau, graines', 'Aucun'),
-('Seance de Musicotherapie Receptive', 'ecoute musicale guidee pour la relaxation', 60.00, 45, 'consultation', 'Bien-être mental', NULL, 1, 'Casque audio', 'Aucun'),
+('Atelier Jardinage Urbain Anti-Stress', 'Cultiver des plantes pour se detendre', 130.00, 120, 'atelier', 'Bien-etre mental', 'debutant', 10, 'Petits pots, terreau, graines', 'Aucun'),
+('Seance de Musicotherapie Receptive', 'ecoute musicale guidee pour la relaxation', 60.00, 45, 'consultation', 'Bien-etre mental', NULL, 1, 'Casque audio', 'Aucun'),
 ('Formation Risques Psycho-Sociaux (RPS)', 'Identifier et prevenir les RPS en entreprise', 450.00, 420, 'atelier', 'Formation', 'intermediaire', 15, 'Support de cours', 'Managers/RH'),
-('Webinar Decouverte de l''Art-therapie', 'Explorer son potentiel creatif pour le bien-être', 160.00, 90, 'webinar', 'Bien-être mental', 'debutant', 40, 'Feuilles, crayons/peinture', 'Aucun'),
+('Webinar Decouverte de l''Art-therapie', 'Explorer son potentiel creatif pour le bien-etre', 160.00, 90, 'webinar', 'Bien-etre mental', 'debutant', 40, 'Feuilles, crayons/peinture', 'Aucun'),
 ('Consultation Conseil en Image Professionnelle', 'Valoriser son image au travail', 140.00, 75, 'consultation', 'Developpement personnel', NULL, 1, 'Aucun', 'Aucun'),
-('Atelier Initiation Tai Chi Chuan', 'Art martial doux pour l''equilibre et la serenite', 100.00, 60, 'atelier', 'Bien-être physique', 'debutant', 15, 'Tenue souple', 'Aucun');
+('Atelier Initiation Tai Chi Chuan', 'Art martial doux pour l''equilibre et la serenite', 100.00, 60, 'atelier', 'Bien-etre physique', 'debutant', 15, 'Tenue souple', 'Aucun');
 
 INSERT INTO personnes (nom, prenom, email, mot_de_passe, telephone, date_naissance, genre, photo_url, role_id, entreprise_id, site_id, statut, derniere_connexion) VALUES
 ('Admin', 'System', 'admin@businesscare.fr', '$2y$10$CGP1gfg0khtXjAZcJFC6iO3oYisjwlPfkm8tQ8Q/OxWpFdR7tOiqO', '0000000000', '1990-01-01', 'Autre', '/assets/images/icons/default-user.png', 1, NULL, NULL, 'actif', NOW()), 
@@ -407,7 +407,7 @@ INSERT INTO consultation_creneaux (prestation_id, praticien_id, start_time, end_
 (40, 3, NOW() + INTERVAL 32 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 32 DAY + INTERVAL '10:30' HOUR_MINUTE, FALSE, NULL); 
 
 INSERT INTO interets_utilisateurs (nom, description) VALUES
-('Sante Mentale', 'Conseils et ressources pour le bien-être psychologique'),
+('Sante Mentale', 'Conseils et ressources pour le bien-etre psychologique'),
 ('Nutrition', 'Informations et astuces pour une alimentation saine'),
 ('Activite Physique', 'Motivation et idées pour rester actif'),
 ('Gestion du Stress', 'Techniques pour gérer la pression et l''anxiete'),
