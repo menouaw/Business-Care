@@ -50,6 +50,7 @@ define('TABLE_PROVIDER_AVAILABILITY', 'prestataires_disponibilites');
 define('TABLE_EVENEMENTS', 'evenements');
 define('TABLE_EVENEMENT_INSCRIPTIONS', 'evenement_inscriptions');
 define('TABLE_NOTIFICATIONS', 'notifications');
+define('TABLE_SITES', 'sites');
 
 // devis
 define('QUOTE_STATUS_PENDING', 'en_attente');
