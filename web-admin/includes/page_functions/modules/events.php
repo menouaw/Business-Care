@@ -114,6 +114,8 @@ function eventsSave($data, $id = 0) {
     
     if (empty($data['titre'])) {
         $errors['titre'] = 'Le titre est obligatoire.';
+    } else {
+        $dbdata['titre'] = trim($data['titre']);
     }
     if (empty($data['type'])) {
          $errors['type'] = 'Le type est obligatoire.';
@@ -215,7 +217,7 @@ function eventsSave($data, $id = 0) {
             
             $newId = insertRow(TABLE_EVENEMENTS, $dbdata);
             if ($newId !== false) {
-                 logBusinessOperation('Creation evenement', 'Evenement ID: ' . $newId, $_SESSION['user_id'] ?? null);
+                 logBusinessOperation($_SESSION['user_id'] ?? null, 'Creation evenement', 'Evenement ID: ' . $newId);
                 committransaction();
                 return ['success' => true, 'message' => 'Evenement cree avec succes.', 'newId' => $newId];
             } else {
