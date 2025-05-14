@@ -199,18 +199,18 @@ function eventsSave($data, $id = 0) {
     }
 
     
-    begintransaction();
+    beginTransaction();
     try {
         if ($id > 0) {
             
             $success = updateRow(TABLE_EVENEMENTS, $dbdata, "id = :where_id", [':where_id' => $id]);
             if ($success) {
                  logBusinessOperation($_SESSION['user_id'] ?? null, 'Modification evenement', 'Evenement ID: ' . $id);
-                committransaction();
+                commitTransaction();
                 return ['success' => true, 'message' => 'Evenement mis a jour avec succes.'];
             } else {
                  logSystemActivity('Database Error', 'Failed to update event ID ' . $id . ': ' . getLasterror(), $_SESSION['user_id'] ?? null);
-                rollbacktransaction();
+                rollbackTransaction();
                 return ['success' => false, 'message' => 'Erreur lors de la mise a jour de l\'evenement.'];
             }
         } else {
@@ -218,16 +218,16 @@ function eventsSave($data, $id = 0) {
             $newId = insertRow(TABLE_EVENEMENTS, $dbdata);
             if ($newId !== false) {
                  logBusinessOperation($_SESSION['user_id'] ?? null, 'Creation evenement', 'Evenement ID: ' . $newId);
-                committransaction();
+                commitTransaction();
                 return ['success' => true, 'message' => 'Evenement cree avec succes.', 'newId' => $newId];
             } else {
                  logSystemActivity('Database Error', 'Failed to create event: ' . getLasterror(), $_SESSION['user_id'] ?? null);
-                rollbacktransaction();
+                rollbackTransaction();
                 return ['success' => false, 'message' => 'Erreur lors de la creation de l\'evenement.'];
             }
         }
     } catch (Exception $e) {
-        rollbacktransaction();
+        rollbackTransaction();
         logSystemActivity('Exception', 'Exception in eventsSave: ' . $e->getMessage(), $_SESSION['user_id'] ?? null);
         return ['success' => false, 'message' => 'Une erreur inattendue est survenue.'];
     }
