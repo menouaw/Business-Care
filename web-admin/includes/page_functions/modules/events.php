@@ -248,9 +248,8 @@ function eventsDelete($id) {
         $existingEvent = fetchOne(TABLE_EVENEMENTS, 'id = ?', '', [$id]);
         if (!$existingEvent) {
              rollbackTransaction();
-             logBusinessOperation('event_delete_attempt', 
-                "[ERROR] Tentative échouée de suppression evenement ID: $id - Non trouvé.",
-                $_SESSION['user_id'] ?? null);
+             logBusinessOperation($_SESSION['user_id'] ?? null, 
+                'event_delete_attempt', "[ERROR] Tentative échouée de suppression evenement ID: " . $id . " - Non trouvé.");
              return [
                  'success' => false,
                  'message' => "Evenement non trouvé." 
@@ -261,9 +260,8 @@ function eventsDelete($id) {
         
         if ($deletedRows > 0) {
             commitTransaction(); 
-            logBusinessOperation('event_delete', 
-                "[SUCCESS] Suppression evenement ID: $id (Titre: {$existingEvent['titre']})",
-                $_SESSION['user_id'] ?? null);
+            logBusinessOperation($_SESSION['user_id'] ?? null, 
+                'event_delete', "[SUCCESS] Suppression evenement ID: " . $id . " (Titre: " . ($existingEvent['titre'] ?? 'N/A') . ")");
             return [
                 'success' => true,
                 'message' => "L'evenement a ete supprime avec succes"
@@ -271,9 +269,8 @@ function eventsDelete($id) {
         } else {
             
             rollbackTransaction(); 
-            logBusinessOperation('event_delete_attempt', 
-                "[ERROR] Tentative échouée de suppression evenement ID: $id - Aucune ligne affectée par la suppression (BDD?).",
-                $_SESSION['user_id'] ?? null);
+            logBusinessOperation($_SESSION['user_id'] ?? null, 
+                'event_delete_attempt', "[ERROR] Tentative échouée de suppression evenement ID: " . $id . " - Aucune ligne affectée par la suppression (BDD?).");
             return [
                 'success' => false,
                 'message' => "Impossible de supprimer l'evenement (aucune ligne affectée)"

@@ -1,5 +1,4 @@
 <?php
-require_once '../../includes/init.php';
 require_once '../../includes/page_functions/modules/events.php';
 
 requireRole(ROLE_ADMIN);
