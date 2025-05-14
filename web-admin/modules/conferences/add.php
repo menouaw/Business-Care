@@ -43,25 +43,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $result = conferencesSave($dataToSave, 0); 
 
         if ($result['success']) {
-            flashMessage($result['message'] ?? 'Conférence ajoutée avec succès !', 'success');
-            redirectTo(WEBADMIN_URL . '/modules/conferences/view.php?id=' . $result['newId']);
+            flashMessage($result['message'], 'success');
+            
+            redirectTo(WEBADMIN_URL . '/modules/conferences/index.php');
         } else {
-            $errors = $result['errors'] ?? ['db_error' => 'Une erreur technique est survenue lors de l\'ajout.'];
-            logSystemActivity('conference_add_failure', '[ERROR] Échec ajout conférence: ' . implode(', ', array_values($errors)));
-             foreach ($errors as $field => $errorMsg) {
-                
-                if ($field === 'date_debut' && isset($result['errors']['date_debut'])) {
-                     flashMessage('Date et heure de début : ' . htmlspecialchars($result['errors']['date_debut']), 'danger');
-                } elseif ($field === 'date_fin' && isset($result['errors']['date_fin'])) {
-                     flashMessage('Date et heure de fin : ' . htmlspecialchars($result['errors']['date_fin']), 'danger');
-                } else if ($field !== 'db_error') { 
-                    flashMessage(htmlspecialchars($errorMsg), 'danger');
-                }
+            $errors = $result['errors'] ?? [];
+            
+            if (empty($errors) && isset($result['message'])) {
+                flashMessage(htmlspecialchars($result['message']), 'danger');
+            } else {
+                 foreach ($errors as $field => $errorMsg) {
+                    if ($field !== 'db_error' || count($errors) > 1) {
+                        flashMessage(htmlspecialchars($errorMsg), 'danger');
+                    }
+                 }
             }
-             if(isset($errors['db_error']) && count($errors) === 1) { 
-                  flashMessage(htmlspecialchars($errors['db_error']), 'danger');
-             }
-             
+            
              $formData['date_debut_formatted'] = $submittedData['date_debut_formatted'] ?? '';
              $formData['date_fin_formatted'] = $submittedData['date_fin_formatted'] ?? '';
         }
