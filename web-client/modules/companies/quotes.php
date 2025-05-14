@@ -186,18 +186,25 @@ include __DIR__ . '/../../templates/header.php';
                                 </option>
                             <?php endforeach; ?>
                         </select>
-                        <div class="form-text">Laissez ce champ sur "Demande Personnalisée" si aucun pack ne correspond.</div>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="notes" class="form-label">Vos besoins et demandes spécifiques <span class="text-danger">*</span></label>
-                        <textarea class="form-control" id="notes" name="notes" rows="6" required></textarea>
-                        <div class="form-text">Si vous n'avez pas choisi de pack, décrivez ici vos besoins (nombre salariés, prestations souhaitées...). Si vous avez choisi un pack, vous pouvez ajouter ici des questions ou précisions.</div>
+                    <div class="mb-3" id="nombre-salaries-container" style="display: none;">
+                        <label for="nombre_salaries" class="form-label">Nombre de salariés concernés pour ce pack</label>
+                        <input type="number" class="form-control" id="nombre_salaries" name="nombre_salaries" min="1" value="">
+                        <div class="form-text">Ce nombre sera utilisé pour calculer le coût total du pack sélectionné.</div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-paper-plane me-1"></i> Envoyer ma demande
-                    </button>
+                    <div id="pack-specific-action-btn-container" class="mb-3" style="display: none;">
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">Vos besoins et demandes spécifiques <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="notes" name="notes" rows="6" required></textarea>
+                            <div class="form-text">Si vous n'avez pas choisi de pack, décrivez ici vos besoins (nombre salariés, prestations souhaitées...). Si vous avez choisi un pack, vous pouvez ajouter ici des questions ou précisions.</div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-1"></i> Envoyer ma demande
+                        </button>
+                    </div>
                 </form>
 
             <?php else: 
