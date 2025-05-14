@@ -108,125 +108,126 @@ function eventsGetDetails($id) {
  * @return array Résultat ['success' => bool, 'message' => string|null, 'errors' => array|null, 'newId' => int|null]
  */
 function eventsSave($data, $id = 0) {
+    $dbdata = [];
     $errors = [];
-    $isNew = ($id == 0);
 
     
     if (empty($data['titre'])) {
-        $errors['titre'] = "Le titre est obligatoire.";
+        $errors['titre'] = 'Le titre est obligatoire.';
     }
-    if (empty($data['type']) || !in_array($data['type'], EVENEMENT_TYPES)) {
-        $errors['type'] = "Le type d'evenement selectionne est invalide.";
+    if (empty($data['type'])) {
+         $errors['type'] = 'Le type est obligatoire.';
+    } else if (!in_array($data['type'], EVENEMENT_TYPES)) {
+         $errors['type'] = 'Type d\'evenement invalide.';
     }
-    
-    if (empty($data['date_debut'])) {
-        $errors['date_debut'] = "La date de debut est obligatoire.";
-    } else {
-        try {
-            new DateTime($data['date_debut']);
-        } catch (Exception $e) {
-            $errors['date_debut'] = "Format de date et heure de debut invalide.";
-        }
-    }
-     if (!empty($data['date_fin'])) {
-        try {
-            new DateTime($data['date_fin']);
-             if (isset($data['date_debut']) && $data['date_fin'] < $data['date_debut']) {
-                $errors['date_fin'] = "La date de fin ne peut pas être antérieure à la date de début.";
-            }
-        } catch (Exception $e) {
-            $errors['date_fin'] = "Format de date et heure de fin invalide.";
-        }
-    }
-    
-    $data['site_id'] = isset($data['site_id']) && $data['site_id'] !== '' ? (int)$data['site_id'] : null;
-    
-    if ($data['site_id'] !== null) {
-        if (!fetchOne(TABLE_SITES, 'id = ?', '', [$data['site_id']])) {
-             $errors['site_id'] = "Le site selectionne est invalide.";
-        }
-    } else {
-        
-        
-    }
-
-     if (!empty($data['capacite_max']) && (!is_numeric($data['capacite_max']) || $data['capacite_max'] <= 0)) {
-         $errors['capacite_max'] = "La capacite maximale doit etre un nombre positif.";
+     if (empty($data['date_debut'])) {
+         $errors['date_debut'] = 'La date et heure de debut sont obligatoires.';
+     } else {
+          
+          try {
+              $dateDebut = new DateTime($data['date_debut']);
+              $dbdata['date_debut'] = $dateDebut->format('Y-m-d H:i:s');
+          } catch (Exception $e) {
+              $errors['date_debut'] = 'Format de date de debut invalide.';
+          }
      }
-    
-    
-    if (!empty($data['niveau_difficulte']) && !in_array($data['niveau_difficulte'], PRESTATION_DIFFICULTIES)) {
-         $errors['niveau_difficulte'] = "Le niveau de difficulte selectionne est invalide.";
+
+     
+     if (!empty($data['date_fin'])) {
+         try {
+              $dateFin = new DateTime($data['date_fin']);
+              $dbdata['date_fin'] = $dateFin->format('Y-m-d H:i:s');
+         } catch (Exception $e) {
+             $errors['date_fin'] = 'Format de date de fin invalide.';
+         }
+     } else {
+         $dbdata['date_fin'] = null;
+     }
+
+     
+     if (!empty($data['site_id'])) {
+          $dbdata['site_id'] = (int)$data['site_id'];
+          $dbdata['lieu'] = null; 
+     } else if (!empty($data['lieu'])) {
+          $dbdata['site_id'] = null; 
+          $dbdata['lieu'] = trim($data['lieu']);
+     } else {
+         
+         $dbdata['site_id'] = null;
+         $dbdata['lieu'] = null;
+     }
+
+    if (!empty($data['capacite_max'])) {
+        $capaciteMax = (int)$data['capacite_max'];
+        if ($capaciteMax <= 0) {
+            $errors['capacite_max'] = 'La capacite maximale doit etre un nombre positif.';
+        } else {
+            $dbdata['capacite_max'] = $capaciteMax;
+        }
+    } else {
+        $dbdata['capacite_max'] = null;
     }
-    
 
-    if (!empty($errors)) {
-        return ['success' => false, 'errors' => $errors];
+    
+    $allowedDifficulties = PRESTATION_DIFFICULTIES;
+    if (isset($data['niveau_difficulte']) && $data['niveau_difficulte'] !== '') {
+        if (!in_array($data['niveau_difficulte'], $allowedDifficulties)) {
+            $errors['niveau_difficulte'] = 'Niveau de difficulte invalide.';
+            
+        } else {
+            $dbdata['niveau_difficulte'] = $data['niveau_difficulte'];
+        }
+    } else {
+         
+         $dbdata['niveau_difficulte'] = null;
+    }
+
+    if (isset($data['organise_par_bc'])) {
+        $dbdata['organise_par_bc'] = ($data['organise_par_bc'] === '1' || $data['organise_par_bc'] === true) ? 1 : 0;
+    } else {
+         $dbdata['organise_par_bc'] = 0; 
+    }
+
+    $dbdata['description'] = trim($data['description'] ?? '');
+    $dbdata['materiel_necessaire'] = trim($data['materiel_necessaire'] ?? '');
+    $dbdata['prerequis'] = trim($data['prerequis'] ?? '');
+
+    if (count($errors) > 0) {
+        return ['success' => false, 'message' => 'Veuillez corriger les erreurs dans le formulaire.', 'errors' => $errors];
     }
 
     
-    $dbData = [
-        'titre' => $data['titre'],
-        'description' => $data['description'] ?? null,
-        'date_debut' => $data['date_debut'],
-        'date_fin' => $data['date_fin'] ?? null,
-        'lieu' => $data['lieu'] ?? null, 
-        'type' => $data['type'], 
-        'capacite_max' => $data['capacite_max'] ?? null,
-        'niveau_difficulte' => $data['niveau_difficulte'] ?? null,
-        'materiel_necessaire' => $data['materiel_necessaire'] ?? null,
-        'prerequis' => $data['prerequis'] ?? null,
-        'site_id' => $data['site_id'],
-        'organise_par_bc' => $data['organise_par_bc'] ?? true, 
-    ];
-
-    
+    begintransaction();
     try {
-        beginTransaction();
-
-        if (!$isNew) {
+        if ($id > 0) {
             
-            $existingEvent = fetchOne(TABLE_EVENEMENTS, 'id = ?', '', [$id]);
-            if (!$existingEvent) {
-                 throw new Exception("Evenement à mettre à jour non trouvé.");
-            }
-
-            $affectedRows = updateRow(TABLE_EVENEMENTS, $dbData, "id = :where_id", ['where_id' => $id]);
-            
-            
-            logBusinessOperation($_SESSION['user_id'], 'event_update', 
-                "[INFO] Mise à jour evenement ID: $id, Titre: {$dbData['titre']} (Lignes affectees: {$affectedRows})");
-            
-            $message = "L'evenement a ete mis a jour avec succes.";
-            commitTransaction();
-            return ['success' => true, 'message' => $message, 'newId' => $id]; 
-            
-        } 
-        else { 
-            
-            $newId = insertRow(TABLE_EVENEMENTS, $dbData);
-            
-            if ($newId) {
-                logBusinessOperation($_SESSION['user_id'], 'event_create', 
-                    "[SUCCESS] Création evenement ID: $newId, Titre: {$dbData['titre']}");
-                $message = "L'evenement a ete cree avec succes.";
-                commitTransaction();
-                return ['success' => true, 'message' => $message, 'newId' => $newId];
+            $success = updateRow(TABLE_EVENEMENTS, $dbdata, "id = :where_id", [':where_id' => $id]);
+            if ($success) {
+                 logBusinessOperation($_SESSION['user_id'] ?? null, 'Modification evenement', 'Evenement ID: ' . $id);
+                committransaction();
+                return ['success' => true, 'message' => 'Evenement mis a jour avec succes.'];
             } else {
-                 throw new Exception("L'insertion de l'evenement a échoué en base de données.");
+                 logSystemActivity('Database Error', 'Failed to update event ID ' . $id . ': ' . getLasterror(), $_SESSION['user_id'] ?? null);
+                rollbacktransaction();
+                return ['success' => false, 'message' => 'Erreur lors de la mise a jour de l\'evenement.'];
+            }
+        } else {
+            
+            $newId = insertRow(TABLE_EVENEMENTS, $dbdata);
+            if ($newId !== false) {
+                 logBusinessOperation('Creation evenement', 'Evenement ID: ' . $newId, $_SESSION['user_id'] ?? null);
+                committransaction();
+                return ['success' => true, 'message' => 'Evenement cree avec succes.', 'newId' => $newId];
+            } else {
+                 logSystemActivity('Database Error', 'Failed to create event: ' . getLasterror(), $_SESSION['user_id'] ?? null);
+                rollbacktransaction();
+                return ['success' => false, 'message' => 'Erreur lors de la creation de l\'evenement.'];
             }
         }
-        
     } catch (Exception $e) {
-        rollbackTransaction();
-        $action = $isNew ? 'création' : 'mise à jour';
-        $errorMessage = "Erreur lors de la {$action} de l'evenement : " . $e->getMessage();
-        logSystemActivity('event_save_error', "[ERROR] Erreur BDD dans eventsSave (Action: {$action}, ID: {$id}): " . $e->getMessage());
-        
-        return [
-            'success' => false,
-            'errors' => ['db_error' => $errorMessage]
-        ];
+        rollbacktransaction();
+        logSystemActivity('Exception', 'Exception in eventsSave: ' . $e->getMessage(), $_SESSION['user_id'] ?? null);
+        return ['success' => false, 'message' => 'Une erreur inattendue est survenue.'];
     }
 }
 
@@ -245,8 +246,9 @@ function eventsDelete($id) {
         $existingEvent = fetchOne(TABLE_EVENEMENTS, 'id = ?', '', [$id]);
         if (!$existingEvent) {
              rollbackTransaction();
-             logBusinessOperation($_SESSION['user_id'] ?? 0, 'event_delete_attempt', 
-                "[ERROR] Tentative échouée de suppression evenement ID: $id - Non trouvé.");
+             logBusinessOperation('event_delete_attempt', 
+                "[ERROR] Tentative échouée de suppression evenement ID: $id - Non trouvé.",
+                $_SESSION['user_id'] ?? null);
              return [
                  'success' => false,
                  'message' => "Evenement non trouvé." 
@@ -257,8 +259,9 @@ function eventsDelete($id) {
         
         if ($deletedRows > 0) {
             commitTransaction(); 
-            logBusinessOperation($_SESSION['user_id'] ?? 0, 'event_delete', 
-                "[SUCCESS] Suppression evenement ID: $id (Titre: {$existingEvent['titre']})");
+            logBusinessOperation('event_delete', 
+                "[SUCCESS] Suppression evenement ID: $id (Titre: {$existingEvent['titre']})",
+                $_SESSION['user_id'] ?? null);
             return [
                 'success' => true,
                 'message' => "L'evenement a ete supprime avec succes"
@@ -266,8 +269,9 @@ function eventsDelete($id) {
         } else {
             
             rollbackTransaction(); 
-            logBusinessOperation($_SESSION['user'], 'event_delete_attempt', 
-                "[ERROR] Tentative échouée de suppression evenement ID: $id - Aucune ligne affectée par la suppression (BDD?).");
+            logBusinessOperation('event_delete_attempt', 
+                "[ERROR] Tentative échouée de suppression evenement ID: $id - Aucune ligne affectée par la suppression (BDD?).",
+                $_SESSION['user_id'] ?? null);
             return [
                 'success' => false,
                 'message' => "Impossible de supprimer l'evenement (aucune ligne affectée)"
@@ -275,7 +279,7 @@ function eventsDelete($id) {
         }
     } catch (Exception $e) {
         rollbackTransaction(); 
-         logSystemActivity('error', "[ERROR] Erreur BDD dans eventsDelete (ID: {$id}): " . $e->getMessage());
+         logSystemActivity('error', "[ERROR] Erreur BDD dans eventsDelete (ID: {$id}): " . $e->getMessage(), $_SESSION['user_id'] ?? null);
          return [
             'success' => false,
             'message' => "Erreur de base de données lors de la suppression." . $e->getMessage()

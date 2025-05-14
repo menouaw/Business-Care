@@ -87,7 +87,7 @@ include '../../templates/header.php';
                             </div>
                              <div class="mb-3">
                                 <small class="text-muted d-block">Niveau de difficulte</small>
-                                <strong><?php echo htmlspecialchars(ucfirst($event['niveau_difficulte']) ?: 'Non renseigne'); ?></strong>
+                                <strong><?php echo htmlspecialchars($event['niveau_difficulte'] ? ucfirst($event['niveau_difficulte']) : 'Non renseigne'); ?></strong>
                             </div>
                             <div class="mb-3">
                                 <small class="text-muted d-block">Organise par BC</small>
