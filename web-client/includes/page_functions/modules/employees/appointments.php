@@ -39,7 +39,10 @@ function bookAppointmentSlot(int $salarie_id, int $slot_id, int $service_id_conf
     if ($salarie_id <= 0 || $slot_id <= 0 || $service_id_confirm <= 0) return false;
     beginTransaction();
     $slot = executeQuery("SELECT * FROM consultation_creneaux WHERE id = :slot_id AND prestation_id = :service_id FOR UPDATE", [':slot_id' => $slot_id, ':service_id' => $service_id_confirm])->fetch();
-    if (!$slot || $slot['is_booked']) { rollbackTransaction(); return false; }
+    if (!$slot || $slot['is_booked']) 
+    { 
+        rollbackTransaction(); return false; 
+    }
     $prestation = fetchOne(TABLE_PRESTATIONS, 'id = :id', [':id' => $service_id_confirm]);
     if (!$prestation) return false;
     updateRow('consultation_creneaux', ['is_booked' => 1], 'id = :slot_id AND is_booked = 0', [':slot_id' => $slot_id]);
