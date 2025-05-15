@@ -2,7 +2,7 @@
 
 require_once __DIR__ . '/../../../../includes/init.php';
 
-function getSalarieAppointments(int $salarie_id): array
+function getSalarieAppointments(int $salarie_id, string $orderBy = 'rdv.date_rdv DESC'): array
 {
     if ($salarie_id <= 0) return [];
     $sql = "SELECT rdv.id, rdv.date_rdv, rdv.statut, rdv.type_rdv, rdv.lieu,
@@ -12,7 +12,7 @@ function getSalarieAppointments(int $salarie_id): array
             LEFT JOIN " . TABLE_PRESTATIONS . " pres ON rdv.prestation_id = pres.id
             LEFT JOIN " . TABLE_USERS . " prat ON rdv.praticien_id = prat.id AND prat.role_id = :role_prestataire
             WHERE rdv.personne_id = :salarie_id
-            ORDER BY rdv.date_rdv DESC";
+            ORDER BY {$orderBy}";
     return executeQuery($sql, [':salarie_id' => $salarie_id, ':role_prestataire' => ROLE_PRESTATAIRE])->fetchAll();
 }
 
@@ -37,8 +37,9 @@ function getAppointmentDetailsForEmployee(int $salarie_id, int $rdv_id): array|f
 function bookAppointmentSlot(int $salarie_id, int $slot_id, int $service_id_confirm): bool
 {
     if ($salarie_id <= 0 || $slot_id <= 0 || $service_id_confirm <= 0) return false;
-    $slot = executeQuery("SELECT * FROM consultation_creneaux WHERE id = :slot_id AND prestation_id = :service_id", [':slot_id' => $slot_id, ':service_id' => $service_id_confirm])->fetch();
-    if (!$slot || $slot['is_booked']) return false;
+    beginTransaction();
+    $slot = executeQuery("SELECT * FROM consultation_creneaux WHERE id = :slot_id AND prestation_id = :service_id FOR UPDATE", [':slot_id' => $slot_id, ':service_id' => $service_id_confirm])->fetch();
+    if (!$slot || $slot['is_booked']) { rollbackTransaction(); return false; }
     $prestation = fetchOne(TABLE_PRESTATIONS, 'id = :id', [':id' => $service_id_confirm]);
     if (!$prestation) return false;
     updateRow('consultation_creneaux', ['is_booked' => 1], 'id = :slot_id AND is_booked = 0', [':slot_id' => $slot_id]);
@@ -57,18 +58,21 @@ function bookAppointmentSlot(int $salarie_id, int $slot_id, int $service_id_conf
         'consultation_creneau_id' => $slot_id
     ];
     $insertResult = insertRow(TABLE_APPOINTMENTS, $rdvData);
+    if ($insertResult === false) { rollbackTransaction(); return false; }
+    commitTransaction();
     return (bool)$insertResult;
 }
 
 function cancelEmployeeAppointment(int $salarie_id, int $rdv_id): bool
 {
     if ($salarie_id <= 0 || $rdv_id <= 0) return false;
-    $rdv = executeQuery("SELECT * FROM " . TABLE_APPOINTMENTS . " WHERE id = :rdv_id AND personne_id = :salarie_id", [':rdv_id' => $rdv_id, ':salarie_id' => $salarie_id])->fetch();
-    if (!$rdv || !in_array($rdv['statut'], ['planifie', 'confirme'])) return false;
+    beginTransaction();
+ $rdv = executeQuery("SELECT * FROM " . TABLE_APPOINTMENTS . " WHERE id = :rdv_id AND personne_id = :salarie_id FOR UPDATE", [':rdv_id' => $rdv_id, ':salarie_id' => $salarie_id])->fetch();    if (!$rdv || !in_array($rdv['statut'], ['planifie', 'confirme'])) return false;
     updateRow(TABLE_APPOINTMENTS, ['statut' => 'annule'], 'id = :rdv_id', [':rdv_id' => $rdv_id]);
     if (!empty($rdv['consultation_creneau_id'])) {
         updateRow('consultation_creneaux', ['is_booked' => 0], 'id = :creneau_id', [':creneau_id' => $rdv['consultation_creneau_id']]);
     }
+    commitTransaction();
     return true;
 }
 
