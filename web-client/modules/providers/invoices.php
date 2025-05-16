@@ -11,9 +11,18 @@ extract($viewData);
 include __DIR__ . '/../../templates/header.php';
 ?>
 
-<div class="container-fluid">
-    <div class="row">
-        <?php include __DIR__ . '/../../templates/sidebar.php'; ?>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes Factures</title>
+    <link rel="stylesheet" href="<?= ASSETS_URL ?>/css/style.css">
+</head>
+<body>
+    <header>
+        <h1>Mes Factures</h1>
+    </header>
 
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 pt-3">
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
