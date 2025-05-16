@@ -1,6 +1,5 @@
 <?php
 require_once __DIR__ . '/../../shared/web-client/config.php';
-require_once __DIR__ . '/../../shared/web-client/db.php';
 
 /**
  * Formate une date selon un format spécifié.
