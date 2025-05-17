@@ -101,18 +101,6 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link <?php echo strpos($_SERVER['SCRIPT_NAME'], '/modules/webinars/') !== false ? 'active' : ''; ?>" href="<?php echo WEBADMIN_URL; ?>/modules/webinars/">
-                    <i class="fas fa-desktop me-2"></i>
-                    Webinars
-                </a>
-            </li>
-             <li class="nav-item">
-                <a class="nav-link <?php echo strpos($_SERVER['SCRIPT_NAME'], '/modules/challenges/') !== false ? 'active' : ''; ?>" href="<?php echo WEBADMIN_URL; ?>/modules/challenges/">
-                    <i class="fas fa-trophy me-2"></i>
-                    Défis Sportifs
-                </a>
-            </li>
-            <li class="nav-item">
                 <a class="nav-link <?php echo strpos($_SERVER['SCRIPT_NAME'], '/modules/newsletter/') !== false ? 'active' : ''; ?>" href="<?php echo WEBADMIN_URL; ?>/modules/newsletter/">
                     <i class="fas fa-newspaper me-2"></i>
                     Newsletter
