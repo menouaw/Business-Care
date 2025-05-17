@@ -659,20 +659,6 @@ function getUserInterests(int $userId): array
     return $userInterestsData ?: [];
 }
 
-/**
- * Valide un jeton CSRF fourni contre celui en session.
- *
- * @param string|null $submittedToken Le jeton soumis.
- * @return bool True si le jeton est valide, false sinon.
- */
-function validateToken(?string $submittedToken): bool
-{
-    if (empty($_SESSION['csrf_token']) || $submittedToken === null) {
-        
-        return false;
-    }
-    return hash_equals($_SESSION['csrf_token'], $submittedToken);
-}
 
 /**
  * Effectue une requête POST à une URL avec un payload JSON.
