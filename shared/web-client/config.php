@@ -1,6 +1,6 @@
 <?php
 
-define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
+define('DB_HOST', getenv('DB_HOST') ?: 'db');
 define('DB_NAME', getenv('MYSQL_DATABASE') ?: 'business_care');
 define('DB_USER', getenv('MYSQL_USER') ?: 'business_care_user');
 define('DB_PASS', getenv('DB_PASSWORD') ?: 'root');
@@ -11,7 +11,7 @@ define('APP_NAME', 'Business Care');
 define('APP_VERSION', '0.4.0');
 
 
-define('ROOT_URL', 'http://localhost');
+define('ROOT_URL', 'http://192.168.213.22');
 define('WEBCLIENT_URL', ROOT_URL . '/client');
 
 define('SHARED_URL', ROOT_URL . '/../shared');
