@@ -708,3 +708,52 @@ function makeApiPostRequest(string $url, array $payload, array $customHeaders = 
         'error' => $curlError
     ];
 }
+
+/**
+ * Effectue une requête POST à une URL avec un payload JSON.
+ *
+ * @param string $url L'URL à laquelle envoyer la requête.
+ * @param array $payload Les données à envoyer sous forme de JSON.
+ * @param array $customHeaders Headers personnalisés optionnels.
+ * @return array Un tableau contenant 'body' (réponse JSON décodée ou corps brut en cas d'erreur), 
+ *               'http_code' (code de statut HTTP), et 'error' (message d'erreur cURL si présent).
+ * Makes a POST request to a URL with a JSON payload.
+ *
+ * @param string $url L'URL à laquelle envoyer la requête.
+ * @param array $payload Les données à envoyer sous forme de JSON.
+ * @param array $customHeaders Headers personnalisés optionnels.
+ * @return array Un tableau contenant 'body' (réponse JSON décodée ou corps brut en cas d'erreur), 
+ *               'http_code' (code de statut HTTP), et 'error' (message d'erreur cURL si présent).
+ */
+function makeApiPostRequest(string $url, array $payload, array $customHeaders = [])
+{
+    $ch = curl_init($url);
+    $jsonData = json_encode($payload);
+
+    $defaultHeaders = [
+        'Content-Type: application/json',
+        'Content-Length: ' . strlen($jsonData)
+    ];
+    
+    $headers = array_merge($defaultHeaders, $customHeaders);
+
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 30); 
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10); 
+
+    $responseBody = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
+    curl_close($ch);
+
+    $decodedBody = json_decode($responseBody, true);
+
+    return [
+        'body' => $decodedBody !== null ? $decodedBody : $responseBody,
+        'http_code' => $httpCode,
+        'error' => $curlError
+    ];
+}
