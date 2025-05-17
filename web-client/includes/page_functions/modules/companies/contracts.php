@@ -160,12 +160,14 @@ function getContractUsageStats(int $contract_id, int $company_id): array
 
     
     $sql_usage = "SELECT 
-                    SUM(CASE WHEN pr.type = 'consultation' AND pr.categorie IN ($medical_placeholders) THEN 1 ELSE 0 END) as medical_count,
-                    SUM(CASE WHEN pr.type != 'consultation' OR pr.categorie NOT IN ($medical_placeholders) THEN 1 ELSE 0 END) as other_count
-                  FROM rendez_vous rv
-                  JOIN prestations pr ON rv.prestation_id = pr.id
-                  WHERE rv.personne_id IN ($employee_placeholders) 
-                    AND rv.statut IN ('termine', 'confirme', 'planifie')";
+                        SUM(CASE WHEN pr.type = 'consultation' AND pr.categorie IN ({$placeholders_cat}) THEN 1 ELSE 0 END) as medical_count,
+                        SUM(CASE WHEN pr.type != 'consultation' OR pr.categorie NOT IN ({$placeholders_cat}) THEN 1 ELSE 0 END) as other_count
+                    FROM rendez_vous rv
+                    JOIN prestations pr ON rv.prestation_id = pr.id
+                    WHERE rv.personne_id IN ({$placeholders_emp})
+                      AND rv.statut IN ('termine', 'confirme', 'planifie')";
+
+
 
     $params = array_merge($medical_categories, $medical_categories, $employee_ids);
 
