@@ -59,7 +59,7 @@ function handleAdminLogin() {
                 ':expires_at' => $expiresAt
             ]);
 
-            logSecurityEvent($user['id'], '[SECURITY]:api_admin_login', '[SUCCESS] Connexion API réussie');
+            logSecurityEvent($user['id'], 'api_admin_login', '[SUCCESS] Connexion API réussie');
 
             
             $userDataResponse = [
