@@ -1,6 +1,6 @@
 <?php
 
-define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
+define('DB_HOST', getenv('DB_HOST') ?: 'db');
 define('DB_NAME', getenv('MYSQL_DATABASE') ?: 'business_care');
 define('DB_USER', getenv('MYSQL_USER') ?: 'business_care_user');
 define('DB_PASS', getenv('DB_PASSWORD') ?: 'root');
