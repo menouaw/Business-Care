@@ -197,8 +197,8 @@ function processFinancialDonation(int $userId, int $associationId, float $montan
             'quantity' => 1,
         ]],
         'mode' => 'payment',
-        'success_url' => WEBCLIENT_URL . '/modules/employees/donations.php?stripe_result=success&token=' . urlencode(generateToken('stripe_success')),
-        'cancel_url' => WEBCLIENT_URL . '/modules/employees/donations.php?stripe_result=cancel&token=' . urlencode(generateToken('stripe_cancel')),
+        'success_url' => WEBCLIENT_URL . '/modules/employees/donations.php?stripe_result=success&token=' . urlencode(ensureCsrfToken()),
+        'cancel_url' => WEBCLIENT_URL . '/modules/employees/donations.php?stripe_result=cancel&token=' . urlencode(ensureCsrfToken()),
         'metadata' => [
             'donation_user_id' => $userId,
             'donation_association_id' => $associationId,
@@ -222,9 +222,7 @@ function processFinancialDonation(int $userId, int $associationId, float $montan
  */
 function _validateDonationRequest(array $postData): ?array
 {
-    if (!validateToken($postData['csrf_token'] ?? '')) {
-        return ["Action invalide ou jeton de sécurité expiré."];
-    }
+    verifyPostedCsrfToken();
 
     $formData = sanitizeInput($postData);
     $errors = validateDonationData($formData);
@@ -321,7 +319,7 @@ function _handleStripeReturn(): bool
     $token = $_GET['token'];
     $tokenType = ($result === 'success') ? 'stripe_success' : 'stripe_cancel';
 
-    if (!validateToken($token)) {
+    if ($token !== ensureCsrfToken()) {
         flashMessage("URL de retour invalide ou expirée.", "danger");
         redirectTo(WEBCLIENT_URL . '/modules/employees/donations.php');
         exit;
@@ -444,6 +442,6 @@ function setupDonationsPage()
         'pageTitle' => $pageTitle,
         'donations' => $pageData['donations'],
         'associations' => $pageData['associations'],
-        'csrf_token' => generateToken()
+        'csrf_token' => ensureCsrfToken()
     ];
 }

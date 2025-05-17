@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../../../../includes/init.php'; 
+require_once __DIR__ . '/../../../../includes/init.php';
 
 /**
  * Récupère les statistiques principales pour le tableau de bord Salarié.
@@ -11,21 +11,21 @@ function getSalarieDashboardStats(int $salarie_id): array
 {
     if ($salarie_id <= 0) {
         return [
-            'prochains_rdv' => 0, 
+            'prochains_rdv' => 0,
             'notifications_non_lues' => 0,
             'pack_info' => null
         ];
     }
 
-    
+
     $employee = fetchOne('personnes', 'id = :id AND role_id = :role_id', [
-        ':id' => $salarie_id, 
+        ':id' => $salarie_id,
         ':role_id' => ROLE_SALARIE
     ]);
-    
+
     $pack_info = null;
     if ($employee && $employee['entreprise_id']) {
-        
+
         $contract = fetchOne(
             'contrats',
             'entreprise_id = :entreprise_id AND statut = :statut AND (date_fin IS NULL OR date_fin >= CURDATE())',
@@ -37,10 +37,10 @@ function getSalarieDashboardStats(int $salarie_id): array
         );
 
         if ($contract) {
-            
+
             $service = fetchOne('services', 'id = :id', [':id' => $contract['service_id']]);
             if ($service) {
-                
+
                 $usage_stats = [
                     'chatbot' => [
                         'used' => 0,
@@ -50,7 +50,7 @@ function getSalarieDashboardStats(int $salarie_id): array
                     'ateliers' => ['used' => 0, 'total' => $service['activites_incluses'] ?? 0]
                 ];
 
-                
+
                 $sql_consultations = "SELECT COUNT(*) FROM " . TABLE_APPOINTMENTS . "
                                     WHERE personne_id = :salarie_id 
                                     AND prestation_id IN (
@@ -65,7 +65,7 @@ function getSalarieDashboardStats(int $salarie_id): array
                 ]);
                 $usage_stats['consultations']['used'] = (int)$stmt_consultations->fetchColumn();
 
-                
+
                 $sql_ateliers = "SELECT (
                                     -- Comptage des rendez-vous ateliers
                                     (SELECT COUNT(*) FROM " . TABLE_APPOINTMENTS . "
@@ -98,15 +98,15 @@ function getSalarieDashboardStats(int $salarie_id): array
                     'date_debut' => $contract['date_debut'],
                     'date_fin' => $contract['date_fin'],
                     'usage_stats' => $usage_stats,
-                    'chatbot_questions_limite' => $service['chatbot_questions_limite'],
-                    'conseils_hebdo_personnalises' => $service['conseils_hebdo_personnalises'],
-                    'rdv_medicaux_supplementaires_prix' => $service['rdv_medicaux_supplementaires_prix']
+                    'chatbot_questions_limite' => $service['chatbot_questions_limite'] ?? null,
+                    'conseils_hebdo_personnalises' => $service['conseils_hebdo_personnalises'] ?? false,
+                    'rdv_medicaux_supplementaires_prix' => $service['rdv_medicaux_supplementaires_prix'] ?? null
                 ];
             }
         }
     }
-    
-    
+
+
     $sqlRdv = "SELECT COUNT(id) FROM " . TABLE_APPOINTMENTS . "
                WHERE personne_id = :salarie_id
                AND date_rdv > NOW()
@@ -114,7 +114,7 @@ function getSalarieDashboardStats(int $salarie_id): array
     $stmtRdv = executeQuery($sqlRdv, [':salarie_id' => $salarie_id]);
     $prochains_rdv = (int) $stmtRdv->fetchColumn();
 
-    
+
     $notifications_non_lues = getUnreadNotificationCount($salarie_id);
 
     return [
@@ -137,7 +137,7 @@ function getUpcomingAppointments(int $salarie_id, int $limit = 5): array
         return [];
     }
 
-    
+
     $sql = "SELECT rdv.id, rdv.date_rdv, rdv.statut,
                    pres.nom as prestation_nom,
                    CONCAT(prat.prenom, ' ', prat.nom) as praticien_nom
@@ -153,7 +153,7 @@ function getUpcomingAppointments(int $salarie_id, int $limit = 5): array
     $params = [
         ':salarie_id' => $salarie_id,
         ':limit' => $limit,
-        ':role_prestataire' => ROLE_PRESTATAIRE 
+        ':role_prestataire' => ROLE_PRESTATAIRE
     ];
 
     return executeQuery($sql, $params)->fetchAll();

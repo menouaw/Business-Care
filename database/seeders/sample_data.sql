@@ -1,6 +1,7 @@
 USE business_care;
 
 SET FOREIGN_KEY_CHECKS = 0;
+
 TRUNCATE TABLE facture_prestataire_lignes;
 TRUNCATE TABLE factures_prestataires;
 TRUNCATE TABLE habilitations;
@@ -36,6 +37,8 @@ TRUNCATE TABLE associations;
 TRUNCATE TABLE services;
 TRUNCATE TABLE roles;
 TRUNCATE TABLE interets_utilisateurs;
+TRUNCATE TABLE personne_interets;
+TRUNCATE TABLE association_projets;
 
 SET FOREIGN_KEY_CHECKS = 1;
 

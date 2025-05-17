@@ -39,9 +39,9 @@ function bookAppointmentSlot(int $salarie_id, int $slot_id, int $service_id_conf
     if ($salarie_id <= 0 || $slot_id <= 0 || $service_id_confirm <= 0) return false;
     beginTransaction();
     $slot = executeQuery("SELECT * FROM consultation_creneaux WHERE id = :slot_id AND prestation_id = :service_id FOR UPDATE", [':slot_id' => $slot_id, ':service_id' => $service_id_confirm])->fetch();
-    if (!$slot || $slot['is_booked']) 
-    { 
-        rollbackTransaction(); return false; 
+    if (!$slot || $slot['is_booked']) {
+        rollbackTransaction();
+        return false;
     }
     $prestation = fetchOne(TABLE_PRESTATIONS, 'id = :id', [':id' => $service_id_confirm]);
     if (!$prestation) return false;
@@ -61,7 +61,10 @@ function bookAppointmentSlot(int $salarie_id, int $slot_id, int $service_id_conf
         'consultation_creneau_id' => $slot_id
     ];
     $insertResult = insertRow(TABLE_APPOINTMENTS, $rdvData);
-    if ($insertResult === false) { rollbackTransaction(); return false; }
+    if ($insertResult === false) {
+        rollbackTransaction();
+        return false;
+    }
     commitTransaction();
     return (bool)$insertResult;
 }
@@ -70,7 +73,8 @@ function cancelEmployeeAppointment(int $salarie_id, int $rdv_id): bool
 {
     if ($salarie_id <= 0 || $rdv_id <= 0) return false;
     beginTransaction();
- $rdv = executeQuery("SELECT * FROM " . TABLE_APPOINTMENTS . " WHERE id = :rdv_id AND personne_id = :salarie_id FOR UPDATE", [':rdv_id' => $rdv_id, ':salarie_id' => $salarie_id])->fetch();    if (!$rdv || !in_array($rdv['statut'], ['planifie', 'confirme'])) return false;
+    $rdv = executeQuery("SELECT * FROM " . TABLE_APPOINTMENTS . " WHERE id = :rdv_id AND personne_id = :salarie_id FOR UPDATE", [':rdv_id' => $rdv_id, ':salarie_id' => $salarie_id])->fetch();
+    if (!$rdv || !in_array($rdv['statut'], ['planifie', 'confirme'])) return false;
     updateRow(TABLE_APPOINTMENTS, ['statut' => 'annule'], 'id = :rdv_id', [':rdv_id' => $rdv_id]);
     if (!empty($rdv['consultation_creneau_id'])) {
         updateRow('consultation_creneaux', ['is_booked' => 0], 'id = :creneau_id', [':creneau_id' => $rdv['consultation_creneau_id']]);
@@ -204,12 +208,7 @@ function _isBookingExceptionMessageAlreadyHandled(Exception $e): bool
  */
 function _handleBookingPostAction(int $salarie_id, array $postData): void
 {
-    $csrf_token_booking = $postData['csrf_token'] ?? '';
-    if (!validateToken($csrf_token_booking)) {
-        flashMessage("Jeton de sécurité invalide ou expiré pour la réservation. Veuillez réessayer.", "danger");
-        redirectTo(WEBCLIENT_URL . '/modules/employees/appointments.php');
-        exit;
-    }
+    verifyPostedCsrfToken(); // Handles token validation, flash message, and redirect on failure
 
     $slot_id = filter_var($postData['slot_id'] ?? null, FILTER_VALIDATE_INT);
     $service_id_confirm = filter_var($postData['service_id'] ?? null, FILTER_VALIDATE_INT);
@@ -249,12 +248,7 @@ function _handleCancelPostAction(int $salarie_id, array $postData): void
         $redirectUrl .= '?filter=' . urlencode($current_filter);
     }
 
-    $csrf_token_cancel = $postData['csrf_token'] ?? '';
-    if (!validateToken($csrf_token_cancel)) {
-        flashMessage("Erreur de sécurité (jeton invalide). Veuillez réessayer.", "danger");
-        redirectTo($redirectUrl);
-        exit;
-    }
+    verifyPostedCsrfToken(); // Handles token validation, flash message, and redirect on failure
 
     $rdv_id_to_cancel = filter_var($postData['id'] ?? null, FILTER_VALIDATE_INT);
     if (!$rdv_id_to_cancel) {
@@ -481,7 +475,7 @@ function setupAppointmentsPage(): array
     }
 
     $viewData['filter'] = $params['filter'];
-    $viewData['csrf_token'] = generateToken();
+    $viewData['csrf_token'] = ensureCsrfToken();
 
     return $viewData;
 }
