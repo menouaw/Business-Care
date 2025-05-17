@@ -413,10 +413,10 @@ INSERT INTO interets_utilisateurs (nom, description) VALUES
 ('Sante Mentale', 'Conseils et ressources pour le bien-etre psychologique'),
 ('Nutrition', 'Informations et astuces pour une alimentation saine'),
 ('Activite Physique', 'Motivation et idées pour rester actif'),
-('Gestion du Stress', 'Techniques pour gérer la pression et l''anxiete'),
+('Gestion du Stress', 'Techniques pour gérer la pression et l\'anxiete'),
 ('Sommeil', 'Améliorer la qualité et la quantité de sommeil'),
 ('Communication', 'Développer des compétences relationnelles efficaces'),
-('Developpement Personnel', 'Ressources pour la croissance et l''epanouissement personnel');
+('Developpement Personnel', 'Ressources pour la croissance et l\'epanouissement personnel');
 
 INSERT INTO prestataires_prestations (prestataire_id, prestation_id) VALUES
 (3, 1), (3, 9), (3, 7),
@@ -483,7 +483,7 @@ INSERT INTO factures (entreprise_id, devis_id, numero_facture, date_emission, da
 (28, 31, 'FACT-2024-024', '2024-03-05', '2024-04-04', 1800.00, 1500.00, 20.00, 'payee', 'prelevement', NOW() - INTERVAL 2 DAY),
 (29, 32, 'FACT-2024-025', '2024-07-01', '2024-07-31', 4500.00, 3750.00, 20.00, 'en_attente', 'virement', NULL),
 (2, 26, 'FACT-2024-033', '2024-06-12', '2024-07-27', 22500.00, 18750.00, 20.00, 'retard', 'prelevement', NULL),
-(2, 18, 'FACT-2024-034', '2024-05-30', '2024-06-29', 57000.00, 47500.00, 20.00, 'en_attente', NULL, NULL); 
+(2, 18, 'FACT-2024-034', '2024-05-30', '2024-06-29', 57000.00, 47500.00, 20.00, 'en_attente', NULL, NULL); -- <<<=== LIGNE AJOUTÉE ===>>>
 
 
 INSERT INTO devis_prestations (devis_id, prestation_id, quantite, prix_unitaire_devis, description_specifique) VALUES
@@ -529,9 +529,9 @@ INSERT INTO communaute_messages (communaute_id, personne_id, message) VALUES
 (2, 12, 'Nouveau record perso sur 10km ! :-)');
 
 INSERT INTO communaute_messages (communaute_id, personne_id, message) VALUES
-(1, 7, 'Des conseils pour tenir la posture de l''arbre plus longtemps ?'),
-(2, 10, 'Quelqu''un a une bonne appli pour suivre ses parcours de course ?'),
-(1, 17, 'Est-ce qu''il y a un cours de Yoga prévu la semaine prochaine sur le site Sante+ ?'),
+(1, 7, 'Des conseils pour tenir la posture de l\'arbre plus longtemps ?'),
+(2, 10, 'Quelqu\'un a une bonne appli pour suivre ses parcours de course ?'),
+(1, 17, 'Est-ce qu\'il y a un cours de Yoga prévu la semaine prochaine sur le site Sante+ ?'),
 (2, 20, 'Besoin de motivation pour sortir courir avec ce temps ! Des astuces ?');
 
 INSERT INTO support_tickets (entreprise_id, personne_id, sujet, message, statut) VALUES
