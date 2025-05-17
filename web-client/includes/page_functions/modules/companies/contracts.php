@@ -17,7 +17,7 @@ function getCompanyContracts(int $entreprise_id, int $current_page = 1, int $ite
     }
 
 
-    $countSql = "SELECT COUNT(*) as total 
+    $countSql = "SELECT COUNT(id) as total 
                  FROM contrats 
                  WHERE entreprise_id = :entreprise_id";
     $countStmt = executeQuery($countSql, [':entreprise_id' => $entreprise_id]);
@@ -73,7 +73,16 @@ function getContractDetails(int $contract_id, int $company_id): array|false
     }
 
     $sql = "SELECT 
-                c.*, 
+                c.id, 
+                c.entreprise_id, 
+                c.service_id, 
+                c.date_debut, 
+                c.date_fin, 
+                c.nombre_salaries, 
+                c.statut, 
+                c.conditions_particulieres, 
+                c.created_at, 
+                c.updated_at,
                 s.type as service_nom 
             FROM 
                 contrats c
@@ -157,17 +166,11 @@ function getContractUsageStats(int $contract_id, int $company_id): array
                     FROM rendez_vous rv
                     JOIN prestations pr ON rv.prestation_id = pr.id
                     WHERE rv.personne_id IN ({$placeholders_emp})
-                      -- Optionnel: Filtrer par date si le contrat a une période définie
-                      -- AND rv.date_rdv >= :contract_start_date 
-                      -- AND rv.date_rdv <= :contract_end_date
                       AND rv.statut IN ('termine', 'confirme', 'planifie')";
 
 
 
     $params = array_merge($medical_categories, $medical_categories, $employee_ids);
-
-
-
 
     try {
         $stmt_usage = executeQuery($sql_usage, $params);

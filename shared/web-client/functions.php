@@ -69,7 +69,7 @@ function sanitizeInput($input)
  */
 function _formatTimeDifferenceUnit(int $value, string $unit): string
 {
-    
+
     $plural = ($value > 1 && $unit !== 'mois') ? 's' : '';
     return 'il y a ' . $value . ' ' . $unit . $plural;
 }
@@ -102,7 +102,7 @@ function timeAgo($time)
 
         if ($d >= 1) {
             $t = round($d);
-            
+
             return _formatTimeDifferenceUnit($t, $str);
         }
     }
@@ -187,11 +187,11 @@ function displayFlashMessages()
 }
 
 /**
- * Génère un jeton CSRF pour la protection des formulaires
+ * Assure qu'un jeton CSRF existe dans la session, en crée un si nécessaire.
  * 
  * @return string Jeton CSRF
  */
-function generateToken()
+function ensureCsrfToken()
 {
     if (!isset($_SESSION['csrf_token'])) {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
@@ -200,17 +200,25 @@ function generateToken()
 }
 
 /**
- * Valide un jeton CSRF
- * 
- * @param string $token Jeton à valider
- * @return bool Indique si le jeton est valide
+ * Vérifie le jeton CSRF pour les requêtes POST.
+ * En cas d'échec, affiche un message flash et redirige.
  */
-function validateToken($token)
+function verifyPostedCsrfToken()
 {
-    if (!isset($_SESSION['csrf_token']) || $_SESSION['csrf_token'] !== $token) {
-        return false;
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if (
+            !isset($_POST['csrf_token']) ||
+            empty($_SESSION['csrf_token']) ||
+            !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])
+        ) {
+
+            flashMessage("Erreur de sécurité (jeton invalide). Veuillez réessayer.", "danger");
+            // Attempt to redirect to the referrer, or a default page if referrer is not set
+            $redirectUrl = $_SERVER['HTTP_REFERER'] ?? (defined('WEBCLIENT_URL') ? WEBCLIENT_URL . '/index.php' : 'index.php');
+            redirectTo($redirectUrl);
+            exit; // Important to stop script execution after redirect
+        }
     }
-    return true;
 }
 
 /**
@@ -426,7 +434,7 @@ function _renderPaginationLastPages(int $currentPage, int $totalPages, string $u
 function renderPagination($pagination, $urlPattern)
 {
     if (!is_array($pagination) || !isset($pagination['totalPages'], $pagination['currentPage'])) {
-        
+
         return '';
     }
 
@@ -579,7 +587,7 @@ function createNotification(int $user_id, string $title, string $message, string
         if ($lastId) {
             return (int)$lastId;
         } else {
-            
+
             return false;
         }
     }

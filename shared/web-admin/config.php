@@ -11,7 +11,7 @@ define('APP_NAME', 'Business Care');
 define('APP_VERSION', '0.8.0');
 
 // urls
-define('ROOT_URL', getenv('ROOT_URL') ?: 'http://192.168.213.22');
+define('ROOT_URL', getenv('ROOT_URL') ?: 'http://localhost');
 define('WEBADMIN_URL', ROOT_URL . '/admin');
 
 define('SHARED_URL', ROOT_URL . '/shared');
