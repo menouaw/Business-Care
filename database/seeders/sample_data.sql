@@ -144,10 +144,6 @@ INSERT INTO prestations (nom, description, prix, duree, type, categorie, niveau_
 ('Formation Management Bienveillant', 'Diriger ses equipes avec empathie et efficacite', 400.00, 360, 'atelier', 'Formation', 'intermediaire', 12, 'Support de cours', 'etre manager'),
 ('Conference Impact du Numerique sur le Bien-etre', 'Comprendre les enjeux de l''hyperconnexion', 250.00, 75, 'conference', 'Sante mentale', 'debutant', 100, 'Aucun', 'Aucun'),
 ('Atelier Auto-massage Do-In', 'Techniques simples pour soulager les tensions', 90.00, 60, 'atelier', 'Bien-etre physique', 'debutant', 15, 'Aucun', 'Aucun'),
-('Seance d''Hypnose Relaxation', 'Atteindre un etat de relaxation profonde par l''hypnose', 100.00, 60, 'consultation', 'Bien-etre mental', NULL, 1, 'Fauteuil confortable', 'Aucun'),
-('Formation Management Bienveillant', 'Diriger ses equipes avec empathie et efficacite', 400.00, 360, 'atelier', 'Formation', 'intermediaire', 12, 'Support de cours', 'etre manager'),
-('Conference Impact du Numerique sur le Bien-etre', 'Comprendre les enjeux de l''hyperconnexion', 250.00, 75, 'conference', 'Sante mentale', 'debutant', 100, 'Aucun', 'Aucun'),
-('Atelier Auto-massage Do-In', 'Techniques simples pour soulager les tensions', 90.00, 60, 'atelier', 'Bien-etre physique', 'debutant', 15, 'Aucun', 'Aucun'),
 ('Consultation Orientation Scolaire/Professionnelle', 'Aide a la definition d''un projet d''avenir', 120.00, 90, 'consultation', 'Developpement personnel', NULL, 1, 'Aucun', 'Jeunes/Adultes en questionnement'),
 ('Webinar Initiation a l''Investissement Financier', 'Comprendre les bases pour gerer son epargne', 150.00, 90, 'webinar', 'Formation', 'debutant', 50, 'Ordinateur, connexion internet', 'Aucun'),
 ('Atelier Prise de Parole en Public', 'Gagner en aisance et en impact a l''oral', 250.00, 180, 'atelier', 'Formation', 'intermediaire', 12, 'Camera (optionnel)', 'Aucun'),
@@ -155,13 +151,10 @@ INSERT INTO prestations (nom, description, prix, duree, type, categorie, niveau_
 ('Conference Addictions (ecrans, jeux...)', 'Comprendre et prevenir les dependances comportementales', 280.00, 90, 'conference', 'Sante mentale', 'debutant', 90, 'Aucun', 'Aucun'),
 ('Atelier Jardinage Urbain Anti-Stress', 'Cultiver des plantes pour se detendre', 130.00, 120, 'atelier', 'Bien-etre mental', 'debutant', 10, 'Petits pots, terreau, graines', 'Aucun'),
 ('Seance de Musicotherapie Receptive', 'ecoute musicale guidee pour la relaxation', 60.00, 45, 'consultation', 'Bien-etre mental', NULL, 1, 'Casque audio', 'Aucun'),
-('Atelier Jardinage Urbain Anti-Stress', 'Cultiver des plantes pour se detendre', 130.00, 120, 'atelier', 'Bien-etre mental', 'debutant', 10, 'Petits pots, terreau, graines', 'Aucun'),
-('Seance de Musicotherapie Receptive', 'ecoute musicale guidee pour la relaxation', 60.00, 45, 'consultation', 'Bien-etre mental', NULL, 1, 'Casque audio', 'Aucun'),
 ('Formation Risques Psycho-Sociaux (RPS)', 'Identifier et prevenir les RPS en entreprise', 450.00, 420, 'atelier', 'Formation', 'intermediaire', 15, 'Support de cours', 'Managers/RH'),
 ('Webinar Decouverte de l''Art-therapie', 'Explorer son potentiel creatif pour le bien-etre', 160.00, 90, 'webinar', 'Bien-etre mental', 'debutant', 40, 'Feuilles, crayons/peinture', 'Aucun'),
-('Webinar Decouverte de l''Art-therapie', 'Explorer son potentiel creatif pour le bien-etre', 160.00, 90, 'webinar', 'Bien-etre mental', 'debutant', 40, 'Feuilles, crayons/peinture', 'Aucun'),
 ('Consultation Conseil en Image Professionnelle', 'Valoriser son image au travail', 140.00, 75, 'consultation', 'Developpement personnel', NULL, 1, 'Aucun', 'Aucun'),
-('Atelier Initiation Tai Chi Chuan', 'Art martial doux favorisant equilibre et serenite', 100.00, 60, 'atelier', 'Bien-etre physique', 'debutant', 15, 'Tenue souple', 'Aucun');
+('Atelier Initiation Tai Chi Chuan', 'Art martial doux pour l''equilibre et la serenite', 100.00, 60, 'atelier', 'Bien-etre physique', 'debutant', 15, 'Tenue souple', 'Aucun');
 
 INSERT INTO personnes (nom, prenom, email, mot_de_passe, telephone, date_naissance, genre, photo_url, role_id, entreprise_id, site_id, statut, derniere_connexion) VALUES
 ('Admin', 'System', 'admin@businesscare.fr', '$2y$10$CGP1gfg0khtXjAZcJFC6iO3oYisjwlPfkm8tQ8Q/OxWpFdR7tOiqO', '0000000000', '1990-01-01', 'Autre', '/assets/images/icons/default-user.png', 1, NULL, NULL, 'actif', NOW()), 
@@ -210,14 +203,10 @@ INSERT INTO personnes (nom, prenom, email, mot_de_passe, telephone, date_naissan
 ('Representant', 'TechSolutions', 'rep.techsolutions@businesscare.fr', '$2y$10$CGP1gfg0khtXjAZcJFC6iO3oYisjwlPfkm8tQ8Q/OxWpFdR7tOiqO', '0000000002', '1975-05-10', 'Autre', '/assets/images/icons/default-user.png', 4, 1, 1, 'actif', NOW()),
 ('Representant', 'RetailExpress', 'rep.retailexpress@businesscare.fr', '$2y$10$CGP1gfg0khtXjAZcJFC6iO3oYisjwlPfkm8tQ8Q/OxWpFdR7tOiqO', '0000000003', '1982-09-15', 'Autre', '/assets/images/icons/default-user.png', 4, 5, 6, 'suspendu', NOW());
 
-INSERT INTO services (
-    id, type, description, actif, ordre, tarif_annuel_par_salarie, prix_base_indicatif,
-    activites_incluses, rdv_medicaux_inclus, chatbot_questions_limite,
-    max_effectif_inferieur_egal, rdv_medicaux_supplementaires_prix, conseils_hebdo_personnalises
-) VALUES
-(1, 'Starter Pack', 'Pour les petites équipes (jusqu\'à 30 salariés)', TRUE, 10, 180.00, 100.00, 2, 1, 6, 30, 75.00, FALSE),
-(2, 'Basic Pack', 'Solution équilibrée (jusqu\'à 250 salariés)', TRUE, 20, 150.00, 500.00, 3, 2, 20, 250, 75.00, FALSE),
-(3, 'Premium Pack', 'Offre complète pour grandes entreprises (à partir de 251 salariés)', TRUE, 30, 100.00, 1000.00, 4, 3, NULL, NULL, 50.00, TRUE);
+INSERT INTO services (id, type, description, actif, ordre, tarif_annuel_par_salarie, prix_base_indicatif) VALUES
+(1, 'Starter Pack', 'Pour les petites equipes (jusqu''a 30 salaries)', TRUE, 10, 180.00, 100.00),
+(2, 'Basic Pack', 'Solution equilibree (jusqu''a 250 salaries)', TRUE, 20, 150.00, 500.00),
+(3, 'Premium Pack', 'Offre complete pour grandes entreprises (251+ salaries)', TRUE, 30, 100.00, 1000.00);
 
 INSERT INTO contrats (entreprise_id, service_id, date_debut, date_fin, nombre_salaries, statut, conditions_particulieres) VALUES
 (1, 3, '2024-01-01', '2025-12-31', 150, 'actif', 'Acces a toutes les prestations premium'),
@@ -319,65 +308,48 @@ INSERT INTO evaluations (personne_id, prestation_id, note, commentaire, date_eva
 (40, 39, 4, 'Musicotherapie, une belle decouverte.', '2024-06-05'),
 (42, 41, 5, 'Initiation Tai Chi, professeur patient et pedagogue.', '2024-06-07');
 
-INSERT INTO evenements (titre, description, date_debut, date_fin, lieu, type, capacite_max, niveau_difficulte, materiel_necessaire, prerequis, site_id, organise_par_bc) VALUES
-('Conference Bien-etre Paris', 'Conference interactive sur site', NOW() + INTERVAL 1 WEEK, NOW() + INTERVAL 1 WEEK + INTERVAL 2 HOUR, 'Salle Paris A', 'conference', 100, 'intermediaire', 'Aucun', 'Aucun', 1, TRUE),
-('Webinar Gestion du Stress', 'Formation en ligne accessible a tous', NOW() + INTERVAL 2 WEEK, NOW() + INTERVAL 2 WEEK + INTERVAL 90 MINUTE, 'En ligne', 'webinar', 50, 'debutant', 'PC', 'Aucun', NULL, TRUE),
-('Atelier Ergonomie Sante+', 'Amenager son espace de travail', NOW() + INTERVAL 3 WEEK, NOW() + INTERVAL 3 WEEK + INTERVAL 2 HOUR, 'Centre Sante+ Salle B', 'atelier', 30, 'debutant', 'Aucun', 'Aucun', 2, FALSE),
-('Defi Sportif Inter-Entreprises', 'Competition amicale de course a pied', NOW() + INTERVAL 4 WEEK, NOW() + INTERVAL 4 WEEK + INTERVAL 3 HOUR, 'Parc de la Tete d''Or, Lyon', 'defi_sportif', 200, 'intermediaire', 'Tenue de sport', 'Inscription prealable', NULL, TRUE),
-('Atelier Initiation Sophrologie', 'Decouverte des techniques de base', NOW() + INTERVAL 5 WEEK, NOW() + INTERVAL 5 WEEK + INTERVAL 60 MINUTE, 'Salle Zen Bien-etre Corp Troyes', 'atelier', 15, 'debutant', 'Aucun', 'Aucun', 4, FALSE),
-('Conference Nutrition et Performance', 'Optimiser son alimentation pour le travail', NOW() + INTERVAL 6 WEEK, NOW() + INTERVAL 6 WEEK + INTERVAL 90 MINUTE, 'Auditorium Tech Solutions', 'conference', 150, 'debutant', 'Aucun', 'Aucun', 1, TRUE),
-('Webinar Communication Assertive', 'Mieux s''exprimer au quotidien', NOW() + INTERVAL 7 WEEK, NOW() + INTERVAL 7 WEEK + INTERVAL 1 HOUR, 'En ligne', 'webinar', 80, 'intermediaire', 'PC, Micro', 'Aucun', NULL, TRUE),
-('Atelier Yoga du Rire', 'Se detendre et booster son moral', NOW() + INTERVAL 8 WEEK, NOW() + INTERVAL 8 WEEK + INTERVAL 45 MINUTE, 'Espace Detente Retail Express Lyon', 'atelier', 25, 'debutant', 'Aucun', 'Aucun', 7, FALSE),
-('Conference Gestion des Emotions', 'Comprendre et maitriser ses emotions', NOW() + INTERVAL 9 WEEK, NOW() + INTERVAL 9 WEEK + INTERVAL 2 HOUR, 'Amphitheatre EduForma Paris', 'conference', 120, 'intermediaire', 'Aucun', 'Aucun', 10, TRUE),
-('Defi Bien-etre : Semaine sans ecran', 'Challenge collectif pour deconnecter', NOW() + INTERVAL 10 WEEK, NOW() + INTERVAL 11 WEEK, 'A distance', 'defi_sportif', NULL, 'debutant', 'Volonte', 'Engagement', NULL, TRUE),
-('Atelier Prevention TMS', 'Gestes et postures pour eviter les troubles musculo-squelettiques', NOW() + INTERVAL 11 WEEK, NOW() + INTERVAL 11 WEEK + INTERVAL 90 MINUTE, 'Salle Formation BuildInnov Toulouse', 'atelier', 20, 'debutant', 'Aucun', 'Aucun', 11, FALSE),
-('Webinar Sommeil Reparateur', 'Conseils pratiques pour mieux dormir', NOW() + INTERVAL 12 WEEK, NOW() + INTERVAL 12 WEEK + INTERVAL 1 HOUR, 'En ligne', 'webinar', 100, 'debutant', 'PC', 'Aucun', NULL, TRUE),
-('Conference Sante Mentale au Travail', 'Briser les tabous et promouvoir le bien-etre psychologique', NOW() + INTERVAL 13 WEEK, NOW() + INTERVAL 13 WEEK + INTERVAL 2 HOUR, 'Centre de Conference Marseille', 'conference', 180, 'avance', 'Aucun', 'Aucun', NULL, TRUE),
-('Atelier Meditation Pleine Conscience Avance', 'Approfondir sa pratique', NOW() + INTERVAL 14 WEEK, NOW() + INTERVAL 14 WEEK + INTERVAL 75 MINUTE, 'Salle Calme Sante Plus Paris', 'atelier', 10, 'avance', 'Coussin (optionnel)', 'Pratique reguliere', 2, FALSE),
-('Webinar Gestion de Projet Agile', 'Introduction aux methodes agiles', NOW() + INTERVAL 15 WEEK, NOW() + INTERVAL 15 WEEK + INTERVAL 2 HOUR, 'En ligne', 'webinar', 60, 'intermediaire', 'PC', 'Notions gestion projet', NULL, TRUE),
-('Defi Sportif : Challenge Velotaf', 'Promouvoir le velo pour aller au travail', NOW() + INTERVAL 16 WEEK, NOW() + INTERVAL 17 WEEK, 'Trajets domicile-travail', 'defi_sportif', NULL, 'debutant', 'Velo', 'Habiter a distance cyclable', NULL, TRUE),
-('Atelier Cuisine Vegetarienne', 'Decouvrir des recettes savoureuses et equilibrees', NOW() + INTERVAL 17 WEEK, NOW() + INTERVAL 17 WEEK + INTERVAL 2 HOUR, 'Cuisine partagee Bien-etre Corp Paris', 'atelier', 12, 'debutant', 'Ingredients fournis', 'Aucun', 3, FALSE),
-('Conference Leadership Positif', 'Inspirer et motiver ses equipes', NOW() + INTERVAL 18 WEEK, NOW() + INTERVAL 18 WEEK + INTERVAL 90 MINUTE, 'Siege Social Finance Conseil Paris', 'conference', 50, 'avance', 'Aucun', 'Managers', 5, TRUE),
-('Webinar Ergonomie a Domicile', 'Amenager son poste de teletravail', NOW() + INTERVAL 19 WEEK, NOW() + INTERVAL 19 WEEK + INTERVAL 1 HOUR, 'En ligne', 'webinar', 150, 'debutant', 'PC, Webcam (optionnel)', 'Aucun', NULL, TRUE),
-('Atelier Auto-Hypnose', 'Apprendre a utiliser l''auto-hypnose pour le bien-etre', NOW() + INTERVAL 20 WEEK, NOW() + INTERVAL 20 WEEK + INTERVAL 2 HOUR, 'Salle Detente Tech Solutions Paris', 'atelier', 15, 'intermediaire', 'Fauteuil confortable', 'Aucun', 1, FALSE),
-('Conference Securite Informatique PME', 'Proteger son entreprise des cybermenaces', NOW() + INTERVAL 21 WEEK, NOW() + INTERVAL 21 WEEK + INTERVAL 2 HOUR, 'CCI Lyon Metropole', 'conference', 70, 'intermediaire', 'Aucun', 'Dirigeants/Responsables IT', NULL, TRUE),
-('Webinar Developpement Durable en Entreprise', 'Initiatives et bonnes pratiques RSE', NOW() + INTERVAL 22 WEEK, NOW() + INTERVAL 22 WEEK + INTERVAL 1 HOUR, 'En ligne', 'webinar', 90, 'debutant', 'PC', 'Aucun', NULL, TRUE),
-('Atelier Gestion Financiere Personnelle', 'Mieux gerer son budget et son epargne', NOW() + INTERVAL 23 WEEK, NOW() + INTERVAL 23 WEEK + INTERVAL 2 HOUR, 'Salle Formation Sante Plus Paris', 'atelier', 25, 'debutant', 'Calculatrice (optionnel)', 'Aucun', 2, FALSE),
-('Conference Neurosciences et Apprentissage', 'Comment le cerveau apprend', NOW() + INTERVAL 24 WEEK, NOW() + INTERVAL 24 WEEK + INTERVAL 90 MINUTE, 'Universite Lyon 2', 'conference', 200, 'avance', 'Aucun', 'Aucun', NULL, TRUE);
+INSERT INTO evenements (titre, description, date_debut, date_fin, lieu, type, capacite_max, niveau_difficulte, materiel_necessaire, prerequis, site_id) VALUES
+('Conference Bien-etre Paris', 'Conference interactive sur site', NOW() + INTERVAL 1 WEEK, NOW() + INTERVAL 1 WEEK + INTERVAL 2 HOUR, 'Salle Paris A', 'conference', 100, 'intermediaire', 'Aucun', 'Aucun', 1),
+('Webinar Gestion du Stress', 'Formation en ligne accessible a tous', NOW() + INTERVAL 2 WEEK, NOW() + INTERVAL 2 WEEK + INTERVAL 90 MINUTE, 'En ligne', 'webinar', 50, 'debutant', 'PC', 'Aucun', NULL),
+('Atelier Ergonomie Sante+', 'Amenager son espace de travail', NOW() + INTERVAL 3 WEEK, NOW() + INTERVAL 3 WEEK + INTERVAL 2 HOUR, 'Centre Sante+ Salle B', 'atelier', 30, 'debutant', 'Aucun', 'Aucun', 2),
+('Defi Sportif Inter-Entreprises', 'Competition amicale de course a pied', NOW() + INTERVAL 4 WEEK, NOW() + INTERVAL 4 WEEK + INTERVAL 3 HOUR, 'Parc de la Tete d''Or, Lyon', 'defi_sportif', 200, 'intermediaire', 'Tenue de sport', 'Inscription prealable', NULL),
+('Atelier Initiation Sophrologie', 'Decouverte des techniques de base', NOW() + INTERVAL 5 WEEK, NOW() + INTERVAL 5 WEEK + INTERVAL 60 MINUTE, 'Salle Zen Bien-etre Corp Troyes', 'atelier', 15, 'debutant', 'Aucun', 'Aucun', 4),
+('Conference Nutrition et Performance', 'Optimiser son alimentation pour le travail', NOW() + INTERVAL 6 WEEK, NOW() + INTERVAL 6 WEEK + INTERVAL 90 MINUTE, 'Auditorium Tech Solutions', 'conference', 150, 'debutant', 'Aucun', 'Aucun', 1),
+('Webinar Communication Assertive', 'Mieux s''exprimer au quotidien', NOW() + INTERVAL 7 WEEK, NOW() + INTERVAL 7 WEEK + INTERVAL 1 HOUR, 'En ligne', 'webinar', 80, 'intermediaire', 'PC, Micro', 'Aucun', NULL),
+('Atelier Yoga du Rire', 'Se detendre et booster son moral', NOW() + INTERVAL 8 WEEK, NOW() + INTERVAL 8 WEEK + INTERVAL 45 MINUTE, 'Espace Detente Retail Express Lyon', 'atelier', 25, 'debutant', 'Aucun', 'Aucun', 7),
+('Conference Gestion des Emotions', 'Comprendre et maitriser ses emotions', NOW() + INTERVAL 9 WEEK, NOW() + INTERVAL 9 WEEK + INTERVAL 2 HOUR, 'Amphitheatre EduForma Paris', 'conference', 120, 'intermediaire', 'Aucun', 'Aucun', 10),
+('Defi Bien-etre : Semaine sans ecran', 'Challenge collectif pour deconnecter', NOW() + INTERVAL 10 WEEK, NOW() + INTERVAL 11 WEEK, 'A distance', 'defi_sportif', NULL, 'debutant', 'Volonte', 'Engagement', NULL),
+('Atelier Prevention TMS', 'Gestes et postures pour eviter les troubles musculo-squelettiques', NOW() + INTERVAL 11 WEEK, NOW() + INTERVAL 11 WEEK + INTERVAL 90 MINUTE, 'Salle Formation BuildInnov Toulouse', 'atelier', 20, 'debutant', 'Aucun', 'Aucun', 11),
+('Webinar Sommeil Reparateur', 'Conseils pratiques pour mieux dormir', NOW() + INTERVAL 12 WEEK, NOW() + INTERVAL 12 WEEK + INTERVAL 1 HOUR, 'En ligne', 'webinar', 100, 'debutant', 'PC', 'Aucun', NULL),
+('Conference Sante Mentale au Travail', 'Briser les tabous et promouvoir le bien-etre psychologique', NOW() + INTERVAL 13 WEEK, NOW() + INTERVAL 13 WEEK + INTERVAL 2 HOUR, 'Centre de Conference Marseille', 'conference', 180, 'avance', 'Aucun', 'Aucun', NULL),
+('Atelier Meditation Pleine Conscience Avance', 'Approfondir sa pratique', NOW() + INTERVAL 14 WEEK, NOW() + INTERVAL 14 WEEK + INTERVAL 75 MINUTE, 'Salle Calme Sante Plus Paris', 'atelier', 10, 'avance', 'Coussin (optionnel)', 'Pratique reguliere', 2),
+('Webinar Gestion de Projet Agile', 'Introduction aux methodes agiles', NOW() + INTERVAL 15 WEEK, NOW() + INTERVAL 15 WEEK + INTERVAL 2 HOUR, 'En ligne', 'webinar', 60, 'intermediaire', 'PC', 'Notions gestion projet', NULL),
+('Defi Sportif : Challenge Velotaf', 'Promouvoir le velo pour aller au travail', NOW() + INTERVAL 16 WEEK, NOW() + INTERVAL 17 WEEK, 'Trajets domicile-travail', 'defi_sportif', NULL, 'debutant', 'Velo', 'Habiter a distance cyclable', NULL),
+('Atelier Cuisine Vegetarienne', 'Decouvrir des recettes savoureuses et equilibrees', NOW() + INTERVAL 17 WEEK, NOW() + INTERVAL 17 WEEK + INTERVAL 2 HOUR, 'Cuisine partagee Bien-etre Corp Paris', 'atelier', 12, 'debutant', 'Ingredients fournis', 'Aucun', 3),
+('Conference Leadership Positif', 'Inspirer et motiver ses equipes', NOW() + INTERVAL 18 WEEK, NOW() + INTERVAL 18 WEEK + INTERVAL 90 MINUTE, 'Siege Social Finance Conseil Paris', 'conference', 50, 'avance', 'Aucun', 'Managers', 5),
+('Webinar Ergonomie a Domicile', 'Amenager son poste de teletravail', NOW() + INTERVAL 19 WEEK, NOW() + INTERVAL 19 WEEK + INTERVAL 1 HOUR, 'En ligne', 'webinar', 150, 'debutant', 'PC, Webcam (optionnel)', 'Aucun', NULL),
+('Atelier Auto-Hypnose', 'Apprendre a utiliser l''auto-hypnose pour le bien-etre', NOW() + INTERVAL 20 WEEK, NOW() + INTERVAL 20 WEEK + INTERVAL 2 HOUR, 'Salle Detente Tech Solutions Paris', 'atelier', 15, 'intermediaire', 'Fauteuil confortable', 'Aucun', 1),
+('Conference Securite Informatique PME', 'Proteger son entreprise des cybermenaces', NOW() + INTERVAL 21 WEEK, NOW() + INTERVAL 21 WEEK + INTERVAL 2 HOUR, 'CCI Lyon Metropole', 'conference', 70, 'intermediaire', 'Aucun', 'Dirigeants/Responsables IT', NULL),
+('Webinar Developpement Durable en Entreprise', 'Initiatives et bonnes pratiques RSE', NOW() + INTERVAL 22 WEEK, NOW() + INTERVAL 22 WEEK + INTERVAL 1 HOUR, 'En ligne', 'webinar', 90, 'debutant', 'PC', 'Aucun', NULL),
+('Atelier Gestion Financiere Personnelle', 'Mieux gerer son budget et son epargne', NOW() + INTERVAL 23 WEEK, NOW() + INTERVAL 23 WEEK + INTERVAL 2 HOUR, 'Salle Formation Sante Plus Paris', 'atelier', 25, 'debutant', 'Calculatrice (optionnel)', 'Aucun', 2),
+('Conference Neurosciences et Apprentissage', 'Comment le cerveau apprend', NOW() + INTERVAL 24 WEEK, NOW() + INTERVAL 24 WEEK + INTERVAL 90 MINUTE, 'Universite Lyon 2', 'conference', 200, 'avance', 'Aucun', 'Aucun', NULL),
+('Defi Solidaire : Collecte de Dons', 'Mobilisation pour une association partenaire', NOW() + INTERVAL 25 WEEK, NOW() + INTERVAL 26 WEEK, 'Multi-sites / En ligne', 'defi_sportif', NULL, 'debutant', 'Generosite', 'Aucun', NULL),
+('Atelier Communication Interculturelle', 'Comprendre et s''adapter aux differences culturelles', NOW() + INTERVAL 26 WEEK, NOW() + INTERVAL 26 WEEK + INTERVAL 3 HOUR, 'Centre International de Conference Paris', 'atelier', 30, 'intermediaire', 'Aucun', 'Travail international (optionnel)', NULL);
 
 INSERT INTO communautes (nom, description, type, niveau, capacite_max) VALUES
 ('Yoga & Meditation', 'Groupe de pratique du yoga et de la meditation', 'bien_etre', 'debutant', 20), 
 ('Running Club', 'Club de course a pied pour tous niveaux', 'sport', 'intermediaire', 30); 
 
-INSERT INTO associations (id, nom, resume, histoire) VALUES
-(101, 'Solidarite Sante', 'Aide aux personnes en difficulte d acces aux soins.', 'Fondee en 2010, Solidarite Sante oeuvre pour l acces aux soins pour tous, en France et a l international.'),
-(102, 'Enfance & Avenir', 'Soutien a l education et a l epanouissement des enfants defavorises.', 'Depuis 2005, l association accompagne des centaines d enfants vers la reussite scolaire et sociale.'),
-(103, 'Planete Verte', 'Protection de l environnement et sensibilisation ecologique.', 'Planete Verte mobilise citoyens et entreprises pour preserver la biodiversite et lutter contre la pollution.'),
-(104, 'Culture Partagee', 'Promotion de la culture pour tous.', 'Depuis 2012, Culture Partagee organise des evenements culturels accessibles a tous.'),
-(105, 'Sport & Sante', 'Encourager la pratique sportive pour la sante.', 'Sport & Sante accompagne les jeunes et les seniors dans la pratique d une activite physique reguliere.');
-
-INSERT INTO association_projets (association_id, titre, description) VALUES
-(101, 'Collecte de materiel medical', 'Organisation de collectes pour redistribuer du materiel medical a ceux qui en ont besoin.'),
-(101, 'Ateliers de prevention sante', 'Sessions d information et de prevention dans les quartiers defavorises.'),
-(101, 'Soutien psychologique gratuit', 'Mise en place d une ligne d ecoute et de consultations gratuites.'),
-(102, 'Parrainage scolaire', 'Mise en relation d enfants avec des parrains pour un suivi educatif.'),
-(102, 'Distribution de fournitures', 'Collecte et distribution de fournitures scolaires dans les ecoles rurales.'),
-(102, 'Organisation de colonies de vacances', 'Sejours educatifs et ludiques pour enfants defavorises.'),
-(103, 'Reboisement local', 'Plantation d arbres dans les zones urbaines et rurales.'),
-(103, 'Nettoyage de plages', 'Actions de nettoyage et de sensibilisation sur les plages.'),
-(103, 'Ateliers zero dechet', 'Ateliers pratiques pour apprendre a reduire ses dechets au quotidien.'),
-(104, 'Festival annuel', 'Organisation d un festival culturel chaque ete.'),
-(104, 'Ateliers theatre', 'Ateliers de theatre pour enfants et adultes.'),
-(104, 'Expositions itinerantes', 'Expositions d art dans differents quartiers.'),
-(105, 'Cours de gym seniors', 'Seances de gymnastique adaptees aux seniors.'),
-(105, 'Tournois inter-quartiers', 'Organisation de tournois sportifs pour tous.'),
-(105, 'Programme nutrition', 'Accompagnement nutritionnel pour sportifs amateurs.');
+INSERT INTO associations (id, nom) VALUES
+(1, 'Association Bienfaiteurs'),
+(2, 'Aide et Partage'),
+(3, 'Sourire pour Tous');
 
 INSERT INTO dons (personne_id, association_id, montant, type, description, date_don, statut) VALUES
-(5, 101, 50.00, 'financier', 'Don pour le programme de bien-etre', '2024-03-01', 'valide'),
-(6, 102, NULL, 'materiel', 'Don de materiel informatique (ecran)', '2024-03-15', 'valide'),
-(7, 103, 100.00, 'financier', 'Soutien au programme de sante mentale', '2024-03-20', 'valide'),
-(2, 101, 25.00, 'financier', 'Petit don pour Salarie Test', '2024-05-12', 'valide');
+(5, 1, 50.00, 'financier', 'Don pour le programme de bien-etre', '2024-03-01', 'valide'),
+(6, 2, NULL, 'materiel', 'Don de materiel informatique (ecran)', '2024-03-15', 'valide'),
+(7, 3, 100.00, 'financier', 'Soutien au programme de sante mentale', '2024-03-20', 'valide'),
+(2, 1, 25.00, 'financier', 'Petit don pour Salarie Test', '2024-05-12', 'valide');
 
 INSERT INTO logs (personne_id, action, details, ip_address, created_at) VALUES
 (5, 'login', 'Connexion reussie', '192.168.1.10', NOW() - INTERVAL 5 DAY),
@@ -398,43 +370,44 @@ INSERT INTO conseils (titre, icone, resume, categorie, contenu) VALUES
 ('Hydratation : pourquoi et comment ?', '', 'L''importance vitale de boire de l''eau et des astuces simples pour y parvenir.', 'Nutrition',
 'Notre corps est compose majoritairement d''eau (environ 60 %). Une bonne hydratation est vitale pour le fonctionnement de nos organes, notre niveau d''energie, notre clarte mentale et la sante de notre peau.\n\nPourquoi est-ce si important ?\n- Transporte les nutriments essentiels aux cellules.\n- Elimine les toxines et les dechets metaboliques.\n- Regule la temperature corporelle (transpiration).\n- Lubrifie les articulations.\n- Aide a la concentration et previent les maux de tete.\n\nComment boire suffisamment ?\n- Gourde a portee de main : Gardez une bouteille ou une gourde d''eau sur votre bureau et remplissez-la regulierement.\n- Boire avant la soif : N''attendez pas d''avoir soif, c''est deja un signe de deshydratation legere.\n- Varier les plaisirs : Alternez avec des tisanes non sucrees, de l''eau infusee (citron, menthe, concombre) pour changer.\n- Aliments riches en eau : Consommez des fruits et legumes comme le concombre, la pasteque, l''orange, la salade.\n- Adapter selon les besoins : Augmentez votre apport en cas d''activite physique, de forte chaleur ou de fievre.\nObjectif moyen : environ 1,5 a 2 L d''eau pure par jour, a adapter individuellement.'),
 ('Communication non violente (CNV) : introduction', '', 'Les bases pour communiquer avec plus d''empathie, de clarte et d''efficacite.', 'Communication',
-'La Communication Non Violente (CNV) est une approche developpee par Marshall Rosenberg qui aide a creer des relations basees sur le respect mutuel et la cooperation.\n\nElle repose sur 4 etapes cles pour exprimer ce qui se passe en nous et entendre l''autre avec empathie :\n1. Observation (O) : Decrire les faits concrets et specifiques que nous observons, sans jugement ni interpretation. (Ex. : "Quand je vois des dossiers non classes sur le bureau commun...")\n2. Sentiment (S) : Exprimer l''emotion ressenti face a cette observation. Utiliser "Je me sens..." (Ex. : "...je me sens un peu frustre(e)...")\n3. Besoin (B) : Identifier le besoin fondamental (autonomie, respect, clarte, ordre, soutien...) qui est satisfait ou insatisfait et qui est a l''origine du sentiment. (Ex. : "...car j''ai besoin d''ordre et de clarte dans notre espace de travail partage.")\n4. Demande (D) : Formuler une demande concrete, positive, realisable et negociable, visant a satisfaire le besoin identifie. Preferer une demande a une exigence. (Ex. : "Serais-tu d''accord pour que nous prenions 5 minutes ensemble pour decider comment organiser cet espace ?")\n\nEcoute empathique : La CNV s''applique a l''ecoute. Tentez de deviner les sentiments et besoins de l''autre derriere ses mots, meme s''ils sont exprimes maladroitement.\n\nPratiquer la CNV demande de l''entrainement mais ameliore significativement la qualite des relations professionnelles et personnelles.');
+'La Communication Non Violente (CNV) est une approche developpee par Marshall Rosenberg qui aide a creer des relations basees sur le respect mutuel et la cooperation.\n\nElle repose sur 4 etapes cles pour exprimer ce qui se passe en nous et entendre l''autre avec empathie :\n1. Observation (O) : Decrire les faits concrets et specifiques que nous observons, sans jugement ni interpretation. (Ex. : "Quand je vois des dossiers non classes sur le bureau commun...")\n2. Sentiment (S) : Exprimer l''emotion ressenti face a cette observation. Utiliser "Je me sens..." (Ex. : "...je me sens un peu frustre(e)...")\n3. Besoin (B) : Identifier le besoin fondamental (autonomie, respect, clarte, ordre, soutien...) qui est satisfait ou insatisfait et qui est a l''origine du sentiment. (Ex. : "...car j''ai besoin d''ordre et de clarte dans notre espace de travail partage.")
+4. Demande (D) : Formuler une demande concrete, positive, realisable et negociable, visant a satisfaire le besoin identifie. Preferer une demande a une exigence. (Ex. : "Serais-tu d''accord pour que nous prenions 5 minutes ensemble pour decider comment organiser cet espace ?")\n\nEcoute empathique : La CNV s''applique a l''ecoute. Tentez de deviner les sentiments et besoins de l''autre derriere ses mots, meme s''ils sont exprimes maladroitement.\n\nPratiquer la CNV demande de l''entrainement mais ameliore significativement la qualite des relations professionnelles et personnelles.');
 
 INSERT INTO consultation_creneaux (prestation_id, praticien_id, start_time, end_time, is_booked, site_id) VALUES
-(2, 3, NOW() + INTERVAL 20 DAY + INTERVAL '10:00' HOUR_MINUTE, NOW() + INTERVAL 20 DAY + INTERVAL '11:00' HOUR_MINUTE, FALSE, NULL), 
-(3, 3, NOW() + INTERVAL 20 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 20 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), 
-(5, 3, NOW() + INTERVAL 20 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 20 DAY + INTERVAL '15:00' HOUR_MINUTE, FALSE, NULL), 
-(6, 3, NOW() + INTERVAL 21 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 21 DAY + INTERVAL '11:00' HOUR_MINUTE, FALSE, NULL), 
-(8, 3, NOW() + INTERVAL 21 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 21 DAY + INTERVAL '13:30' HOUR_MINUTE, FALSE, NULL), 
-(10, 3, NOW() + INTERVAL 21 DAY + INTERVAL '14:30' HOUR_MINUTE, NOW() + INTERVAL 21 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), 
-(12, 3, NOW() + INTERVAL 22 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 22 DAY + INTERVAL '11:00' HOUR_MINUTE, FALSE, NULL), 
-(13, 3, NOW() + INTERVAL 22 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 22 DAY + INTERVAL '12:30' HOUR_MINUTE, FALSE, NULL), 
-(14, 3, NOW() + INTERVAL 22 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 22 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), 
-(15, 3, NOW() + INTERVAL 23 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '09:50' HOUR_MINUTE, FALSE, NULL), 
-(16, 3, NOW() + INTERVAL 23 DAY + INTERVAL '10:00' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '11:15' HOUR_MINUTE, FALSE, NULL), 
-(17, 3, NOW() + INTERVAL 23 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), 
-(18, 3, NOW() + INTERVAL 23 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '15:00' HOUR_MINUTE, FALSE, NULL), 
-(19, 3, NOW() + INTERVAL 24 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 24 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), 
-(20, 3, NOW() + INTERVAL 24 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 24 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), 
-(22, 3, NOW() + INTERVAL 25 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 25 DAY + INTERVAL '09:50' HOUR_MINUTE, FALSE, NULL), 
-(23, 3, NOW() + INTERVAL 25 DAY + INTERVAL '10:00' HOUR_MINUTE, NOW() + INTERVAL 25 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), 
-(24, 3, NOW() + INTERVAL 25 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 25 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), 
-(25, 3, NOW() + INTERVAL 26 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 26 DAY + INTERVAL '10:00' HOUR_MINUTE, FALSE, NULL), 
-(26, 3, NOW() + INTERVAL 26 DAY + INTERVAL '10:30' HOUR_MINUTE, NOW() + INTERVAL 26 DAY + INTERVAL '12:30' HOUR_MINUTE, FALSE, NULL), 
-(27, 3, NOW() + INTERVAL 26 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 26 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), 
-(28, 3, NOW() + INTERVAL 27 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 27 DAY + INTERVAL '10:00' HOUR_MINUTE, FALSE, NULL), 
-(29, 3, NOW() + INTERVAL 27 DAY + INTERVAL '10:30' HOUR_MINUTE, NOW() + INTERVAL 27 DAY + INTERVAL '16:30' HOUR_MINUTE, FALSE, NULL), 
-(30, 3, NOW() + INTERVAL 28 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 28 DAY + INTERVAL '10:15' HOUR_MINUTE, FALSE, NULL), 
-(31, 3, NOW() + INTERVAL 28 DAY + INTERVAL '10:30' HOUR_MINUTE, NOW() + INTERVAL 28 DAY + INTERVAL '11:30' HOUR_MINUTE, FALSE, NULL), 
-(32, 3, NOW() + INTERVAL 28 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 28 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), 
-(33, 3, NOW() + INTERVAL 29 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 29 DAY + INTERVAL '10:30' HOUR_MINUTE, FALSE, NULL), 
-(34, 3, NOW() + INTERVAL 29 DAY + INTERVAL '11:00' HOUR_MINUTE, NOW() + INTERVAL 29 DAY + INTERVAL '14:00' HOUR_MINUTE, FALSE, NULL), 
-(35, 3, NOW() + INTERVAL 29 DAY + INTERVAL '15:00' HOUR_MINUTE, NOW() + INTERVAL 29 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), 
-(36, 3, NOW() + INTERVAL 30 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 30 DAY + INTERVAL '10:30' HOUR_MINUTE, FALSE, NULL), 
-(37, 3, NOW() + INTERVAL 30 DAY + INTERVAL '11:00' HOUR_MINUTE, NOW() + INTERVAL 30 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), 
-(38, 3, NOW() + INTERVAL 30 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 30 DAY + INTERVAL '14:45' HOUR_MINUTE, FALSE, NULL), 
-(39, 3, NOW() + INTERVAL 31 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 31 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), 
-(40, 3, NOW() + INTERVAL 32 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 32 DAY + INTERVAL '10:30' HOUR_MINUTE, FALSE, NULL); 
+(2, 3, NOW() + INTERVAL 20 DAY + INTERVAL '10:00' HOUR_MINUTE, NOW() + INTERVAL 20 DAY + INTERVAL '11:00' HOUR_MINUTE, FALSE, NULL), -- Yoga (60 min)
+(3, 3, NOW() + INTERVAL 20 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 20 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), -- Webinar Stress (90 min)
+(5, 3, NOW() + INTERVAL 20 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 20 DAY + INTERVAL '15:00' HOUR_MINUTE, FALSE, NULL), -- Meditation (60 min)
+(6, 3, NOW() + INTERVAL 21 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 21 DAY + INTERVAL '11:00' HOUR_MINUTE, FALSE, NULL), -- Ergonomie (120 min)
+(8, 3, NOW() + INTERVAL 21 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 21 DAY + INTERVAL '13:30' HOUR_MINUTE, FALSE, NULL), -- Com Assertive (120 min)
+(10, 3, NOW() + INTERVAL 21 DAY + INTERVAL '14:30' HOUR_MINUTE, NOW() + INTERVAL 21 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), -- Conf Sommeil (90 min)
+(12, 3, NOW() + INTERVAL 22 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 22 DAY + INTERVAL '11:00' HOUR_MINUTE, FALSE, NULL), -- Gest Temps (120 min)
+(13, 3, NOW() + INTERVAL 22 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 22 DAY + INTERVAL '12:30' HOUR_MINUTE, FALSE, NULL), -- Pilates (60 min)
+(14, 3, NOW() + INTERVAL 22 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 22 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), -- Webinar Cyber (90 min)
+(15, 3, NOW() + INTERVAL 23 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '09:50' HOUR_MINUTE, FALSE, NULL), -- Arret Tabac (50 min)
+(16, 3, NOW() + INTERVAL 23 DAY + INTERVAL '10:00' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '11:15' HOUR_MINUTE, FALSE, NULL), -- Conf Nutri Sport (75 min)
+(17, 3, NOW() + INTERVAL 23 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), -- Cuisine Saine (90 min)
+(18, 3, NOW() + INTERVAL 23 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '15:00' HOUR_MINUTE, FALSE, NULL), -- Coaching Pro (60 min)
+(19, 3, NOW() + INTERVAL 24 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 24 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), -- Secourisme (240 min)
+(20, 3, NOW() + INTERVAL 24 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 24 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), -- Webinar CNV (120 min)
+(22, 3, NOW() + INTERVAL 25 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 25 DAY + INTERVAL '09:50' HOUR_MINUTE, FALSE, NULL), -- Reflexologie (50 min)
+(23, 3, NOW() + INTERVAL 25 DAY + INTERVAL '10:00' HOUR_MINUTE, NOW() + INTERVAL 25 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), -- Gest Conflits (180 min)
+(24, 3, NOW() + INTERVAL 25 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 25 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), -- Conf Equilibre (90 min)
+(25, 3, NOW() + INTERVAL 26 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 26 DAY + INTERVAL '10:00' HOUR_MINUTE, FALSE, NULL), -- Dietetique (60 min)
+(26, 3, NOW() + INTERVAL 26 DAY + INTERVAL '10:30' HOUR_MINUTE, NOW() + INTERVAL 26 DAY + INTERVAL '12:30' HOUR_MINUTE, FALSE, NULL), -- Creativite (120 min)
+(27, 3, NOW() + INTERVAL 26 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 26 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), -- Webinar Burnout (90 min)
+(28, 3, NOW() + INTERVAL 27 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 27 DAY + INTERVAL '10:00' HOUR_MINUTE, FALSE, NULL), -- Hypnose Relax (60 min)
+(29, 3, NOW() + INTERVAL 27 DAY + INTERVAL '10:30' HOUR_MINUTE, NOW() + INTERVAL 27 DAY + INTERVAL '16:30' HOUR_MINUTE, FALSE, NULL), -- Management Bien (360 min)
+(30, 3, NOW() + INTERVAL 28 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 28 DAY + INTERVAL '10:15' HOUR_MINUTE, FALSE, NULL), -- Conf Numerique (75 min)
+(31, 3, NOW() + INTERVAL 28 DAY + INTERVAL '10:30' HOUR_MINUTE, NOW() + INTERVAL 28 DAY + INTERVAL '11:30' HOUR_MINUTE, FALSE, NULL), -- Auto-massage (60 min)
+(32, 3, NOW() + INTERVAL 28 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 28 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), -- Orientation (90 min)
+(33, 3, NOW() + INTERVAL 29 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 29 DAY + INTERVAL '10:30' HOUR_MINUTE, FALSE, NULL), -- Webinar Invest (90 min)
+(34, 3, NOW() + INTERVAL 29 DAY + INTERVAL '11:00' HOUR_MINUTE, NOW() + INTERVAL 29 DAY + INTERVAL '14:00' HOUR_MINUTE, FALSE, NULL), -- Prise Parole (180 min)
+(35, 3, NOW() + INTERVAL 29 DAY + INTERVAL '15:00' HOUR_MINUTE, NOW() + INTERVAL 29 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), -- Sexologie (60 min)
+(36, 3, NOW() + INTERVAL 30 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 30 DAY + INTERVAL '10:30' HOUR_MINUTE, FALSE, NULL), -- Conf Addictions (90 min)
+(37, 3, NOW() + INTERVAL 30 DAY + INTERVAL '11:00' HOUR_MINUTE, NOW() + INTERVAL 30 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), -- Jardinage (120 min)
+(38, 3, NOW() + INTERVAL 30 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 30 DAY + INTERVAL '14:45' HOUR_MINUTE, FALSE, NULL), -- Musicotherapie (45 min)
+(39, 3, NOW() + INTERVAL 31 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 31 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), -- Formation RPS (420 min)
+(40, 3, NOW() + INTERVAL 32 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 32 DAY + INTERVAL '10:30' HOUR_MINUTE, FALSE, NULL); -- Webinar Art (90 min)
 
 INSERT INTO interets_utilisateurs (nom, description) VALUES
 ('Sante Mentale', 'Conseils et ressources pour le bien-etre psychologique'),
@@ -556,12 +529,9 @@ INSERT INTO communaute_messages (communaute_id, personne_id, message) VALUES
 (2, 12, 'Nouveau record perso sur 10km ! :-)');
 
 INSERT INTO communaute_messages (communaute_id, personne_id, message) VALUES
-(1, 7, 'Des conseils pour tenir la posture de l''arbre plus longtemps ?'),
-(2, 10, 'Quelqu''un a une bonne appli pour suivre ses parcours de course ?'),
-(1, 17, 'Est-ce qu''il y a un cours de Yoga prévu la semaine prochaine sur le site Sante+ ?'),
-(1, 7, 'Des conseils pour tenir la posture de l''arbre plus longtemps ?'),
-(2, 10, 'Quelqu''un a une bonne appli pour suivre ses parcours de course ?'),
-(1, 17, 'Est-ce qu''il y a un cours de Yoga prévu la semaine prochaine sur le site Sante+ ?'),
+(1, 7, 'Des conseils pour tenir la posture de l\'arbre plus longtemps ?'),
+(2, 10, 'Quelqu\'un a une bonne appli pour suivre ses parcours de course ?'),
+(1, 17, 'Est-ce qu\'il y a un cours de Yoga prévu la semaine prochaine sur le site Sante+ ?'),
 (2, 20, 'Besoin de motivation pour sortir courir avec ce temps ! Des astuces ?');
 
 INSERT INTO support_tickets (entreprise_id, personne_id, sujet, message, statut) VALUES
@@ -591,13 +561,7 @@ INSERT INTO communaute_messages (communaute_id, personne_id, message) VALUES
 (2, 12, 'Nouveau record perso sur 10km ! :-)');
 
 INSERT INTO communaute_messages (communaute_id, personne_id, message) VALUES
-(1, 7, 'Des conseils pour tenir la posture de l''arbre plus longtemps ?'),
-(2, 10, 'Quelqu''un a une bonne appli pour suivre ses parcours de course ?'),
-(1, 17, 'Est-ce qu''il y a un cours de Yoga prévu la semaine prochaine sur le site Sante+ ?'),
-(1, 7, 'Des conseils pour tenir la posture de l''arbre plus longtemps ?'),
-(2, 10, 'Quelqu''un a une bonne appli pour suivre ses parcours de course ?'),
-(1, 17, 'Est-ce qu''il y a un cours de Yoga prévu la semaine prochaine sur le site Sante+ ?'),
+(1, 7, 'Des conseils pour tenir la posture de l\'arbre plus longtemps ?'),
+(2, 10, 'Quelqu\'un a une bonne appli pour suivre ses parcours de course ?'),
+(1, 17, 'Est-ce qu\'il y a un cours de Yoga prévu la semaine prochaine sur le site Sante+ ?'),
 (2, 20, 'Besoin de motivation pour sortir courir avec ce temps ! Des astuces ?');
-
-
-
