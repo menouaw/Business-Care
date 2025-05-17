@@ -11,7 +11,7 @@ define('APP_NAME', getenv('APP_NAME') ?: 'Business Care');
 define('APP_VERSION', getenv('APP_VERSION') ?: '0.4.0');
 
 
-define('ROOT_URL', 'http://192.168.213.22');
+define('ROOT_URL', getenv('ROOT_URL') ?: 'http://localhost');
 define('WEBCLIENT_URL', ROOT_URL . '/client');
 
 define('SHARED_URL', ROOT_URL . '/../shared');
@@ -67,14 +67,11 @@ define('SESSION_LIFETIME', getenv('SESSION_LIFETIME') ? (int)getenv('SESSION_LIF
 date_default_timezone_set('Europe/Paris');
 
 
-// Stripe keys from .env (simple definitions)
 define('STRIPE_SECRET_KEY', getenv('STRIPE_SECRET_KEY') ?: ($_ENV['STRIPE_SECRET_KEY'] ?? null));
 define('STRIPE_PUBLIC_KEY', getenv('STRIPE_PUBLIC_KEY') ?: ($_ENV['STRIPE_PUBLIC_KEY'] ?? null));
 define('STRIPE_WEBHOOK_SECRET', getenv('STRIPE_WEBHOOK_SECRET') ?: ($_ENV['STRIPE_WEBHOOK_SECRET'] ?? null));
 
-// Initialize Stripe API key (unconditionally)
-// Assumes STRIPE_SECRET_KEY is loaded from .env and Stripe SDK is available via Composer
-if (class_exists('\Stripe\Stripe')) { // On garde la vérification de l'existence de la classe pour éviter une erreur fatale si le SDK est manquant
+if (class_exists('\Stripe\Stripe')) {
     \Stripe\Stripe::setApiKey(STRIPE_SECRET_KEY); 
 }
 
