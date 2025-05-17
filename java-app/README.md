@@ -1,7 +1,7 @@
 # Application de Reporting Business Care
 
 ## Objectif
-Application Java générant des rapports d'activité périodiques en PDF pour les responsables de Business Care, consommant les données via API REST et produisant des visualisations exploitables.
+Application Java générant des rapports d'activité périodiques en PDF **et JSON** pour les responsables de Business Care, consommant les données via API REST et produisant des visualisations exploitables.
 
 ## Structure du Rapport
 Le rapport comprend :
@@ -52,6 +52,12 @@ Variables d'environnement :
 - `API_PASSWORD` : Mot de passe admin (défaut : `admin123`)
 
 ## Exécution
+
+Pour lancer le rapport json: 
+```bash
+mvn exec:java -Dexec.mainClass=com.businesscare.reporting.jsonmain.JsonReportLauncher
+```
+
 Standard :
 ```bash
 java -jar target/reporting-app.jar
@@ -88,9 +94,10 @@ Utilise ces endpoints :
 2. **Authentification :** Établissement d'une session API
 3. **Collecte de données :** Récupération des données métier depuis l'API
 4. **Traitement :** Calcul des métriques statistiques
-5. **Génération de graphiques :** Création de 8 graphiques de visualisation
-6. **Assemblage PDF :** Compilation en document structuré
-7. **Sortie :** Sauvegarde du rapport dans le répertoire configuré
+5. **Génération JSON :** Création du fichier de données JSON
+6. **Génération de graphiques :** Création de 8 graphiques de visualisation
+7. **Assemblage PDF :** Compilation en document structuré
+8. **Sortie :** Sauvegarde des rapports dans le répertoire configuré
 
 ## Conteneurisation
 - Dockerfile multi-étapes :
