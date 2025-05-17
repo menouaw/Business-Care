@@ -403,7 +403,6 @@ function setupEventsPage()
             'date_debut ASC',
             0,
             0,
-            [],
             ['id', 'titre', 'description', 'date_debut', 'date_fin', 'lieu', 'type', 'capacite_max', 'niveau_difficulte', 'organise_par_bc']
         );
 

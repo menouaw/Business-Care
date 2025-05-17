@@ -39,23 +39,14 @@ public class ChartGenerator {
     private static final String TITLE_EVENT_TYPE_BAR = "Nombre d'évènements par type";
     private static final String TITLE_PRESTATION_TYPE = "Répartition des prestations par type";
     private static final String TITLE_PRESTATION_CATEGORY = "Répartition des prestations par Catégorie";
-    
-    private static final String TITLE_TOP_EVENTS = "Top 5 évènements par popularité (inscriptions)";
-    private static final String TITLE_EVENT_FREQUENCY = "Fréquence des évènements (total inscriptions par titre)";
-    private static final String TITLE_TOP_PRESTATIONS = "Top 5 prestations par fréquence";
-    private static final String TITLE_PRESTATION_FREQUENCY = "Fréquence des prestations par nom";
 
     private static final String AXIS_SECTOR = "Secteur d'activité";
     private static final String AXIS_SIZE = "Taille de l'entreprise";
     private static final String AXIS_CLIENT_COUNT = "Nombre de clients";
     private static final String AXIS_EVENT_TYPE = "Type d'évènement";
     private static final String AXIS_EVENT_COUNT = "Nombre";
-    private static final String AXIS_PRESTATION_TYPE = "Type de prestation";
     private static final String AXIS_PRESTATION_CATEGORY = "Catégorie de prestation";
     private static final String AXIS_PRESTATION_COUNT = "Nombre";
-    private static final String AXIS_EVENT_TITLE = "Titre de l'évènement";
-    private static final String AXIS_INSCRIPTION_COUNT = "Nombre d'inscriptions";
-    private static final String AXIS_PRESTATION_NAME = "Nom de la prestation";
 
     private static final String SERIES_CLIENTS = "Clients";
     private static final String SERIES_REVENUE_TOP5 = "Revenu des 5 premiers clients";
@@ -73,7 +64,6 @@ public class ChartGenerator {
     private static final Color COLOR_BAR_CLIENT_SIZE = new Color(155, 187, 89); 
     private static final Color COLOR_BAR_EVENT_TYPE = new Color(128, 100, 162); 
     private static final Color COLOR_BAR_PRESTATION_CAT = new Color(75, 172, 198); 
-    private static final Color COLOR_BAR_PRESTATION_FREQ = new Color(247, 150, 70); 
     private static final Font FONT_PIE_LABEL = new Font("SansSerif", Font.PLAIN, 10);
     private static final Font FONT_TITLE = new Font("SansSerif", Font.BOLD, 14);
     private static final Font FONT_AXIS_LABEL = new Font("SansSerif", Font.PLAIN, 12);

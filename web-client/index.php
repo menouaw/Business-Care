@@ -114,8 +114,8 @@ include_once __DIR__ . '/templates/header.php';
                         $buttonClass = 'btn btn-outline-primary';
                         $badge = '';
 
-                        // Initialisation par défaut (pourrait être pour des cartes qui ne sont ni Starter, Basic, ni Premium)
-                        // Ou on peut laisser une des conditions définir la "norme"
+                        
+                        
                         $headerCardClass = 'bg-secondary text-white';
 
                         $pricingText = "Prix sur devis";
@@ -125,8 +125,8 @@ include_once __DIR__ . '/templates/header.php';
                             'Interface intuitive'
                         ];
 
-                        if ($service['id'] == 1) { // Starter Pack
-                            $headerCardClass = 'bg-dark-grey-pack-header text-white'; // MODIFICATION: Fond gris foncé, texte blanc
+                        if ($service['id'] == 1) { 
+                            $headerCardClass = 'bg-dark-grey-pack-header text-white'; 
                             $pricingText = "À partir de 20€ <small class=\"text-muted\">/ salarié / an</small>";
                             $features = [
                                 'Conseils hebdomadaires',
@@ -134,8 +134,8 @@ include_once __DIR__ . '/templates/header.php';
                                 'Accès webinars collectifs',
                                 '2 RDV médicaux / salarié'
                             ];
-                        } elseif ($service['id'] == 2) { // Basic Pack
-                            $headerCardClass = 'bg-light-grey-pack-header text-dark'; // Reste gris clair, texte foncé
+                        } elseif ($service['id'] == 2) { 
+                            $headerCardClass = 'bg-light-grey-pack-header text-dark'; 
                             $pricingText = "À partir de 35€ <small class=\"text-muted\">/ salarié / an</small>";
                             $features = [
                                 'Avantages Starter',
@@ -144,8 +144,8 @@ include_once __DIR__ . '/templates/header.php';
                                 '4 RDV médicaux / salarié',
                                 'Programme personnalisé'
                             ];
-                        } elseif ($service['id'] == 3) { // Premium Pack
-                            $headerCardClass = 'bg-dark-grey-pack-header text-white'; // MODIFICATION: Fond gris foncé, texte blanc
+                        } elseif ($service['id'] == 3) { 
+                            $headerCardClass = 'bg-dark-grey-pack-header text-white'; 
                             $pricingText = "À partir de 50€ <small class=\"text-muted\">/ salarié / an</small>";
                             $features = [
                                 'Avantages Basic',
@@ -156,8 +156,8 @@ include_once __DIR__ . '/templates/header.php';
                                 'Service sur mesure'
                             ];
                         } else {
-                            // Fallback pour d'autres services non spécifiquement stylés
-                            $headerCardClass = 'bg-secondary text-white'; // Beige par défaut
+                            
+                            $headerCardClass = 'bg-secondary text-white'; 
                         }
 
 

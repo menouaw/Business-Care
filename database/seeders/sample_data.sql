@@ -140,21 +140,29 @@ INSERT INTO prestations (nom, description, prix, duree, type, categorie, niveau_
 ('Consultation Dietetique Personnalisee', 'Plan alimentaire adapte a vos besoins specifiques', 95.00, 60, 'consultation', 'Nutrition', NULL, 1, 'Aucun', 'Bilan sanguin recent (optionnel)'),
 ('Atelier Creativite et Innovation', 'Liberer son potentiel creatif au travail', 180.00, 120, 'atelier', 'Developpement personnel', 'debutant', 20, 'Materiel de dessin/ecriture', 'Aucun'),
 ('Webinar Prevention Burn-out', 'Reconnaître les signes et prevenir l''epuisement professionnel', 210.00, 90, 'webinar', 'Sante mentale', 'debutant', 80, 'Ordinateur, connexion internet', 'Aucun'),
-('Seance d''Hypnose Relaxation', 'Atteindre un etat de relaxation profonde par l''hypnose', 100.00, 60, 'consultation', 'Bien-être mental', NULL, 1, 'Fauteuil confortable', 'Aucun'),
-('Formation Management Bienveillant', 'Diriger ses equipes avec empathie et efficacite', 400.00, 360, 'atelier', 'Formation', 'intermediaire', 12, 'Support de cours', 'Être manager'),
-('Conference Impact du Numerique sur le Bien-être', 'Comprendre les enjeux de l''hyperconnexion', 250.00, 75, 'conference', 'Sante mentale', 'debutant', 100, 'Aucun', 'Aucun'),
-('Atelier Auto-massage Do-In', 'Techniques simples pour soulager les tensions', 90.00, 60, 'atelier', 'Bien-être physique', 'debutant', 15, 'Aucun', 'Aucun'),
+('Seance d''Hypnose Relaxation', 'Atteindre un etat de relaxation profonde par l''hypnose', 100.00, 60, 'consultation', 'Bien-etre mental', NULL, 1, 'Fauteuil confortable', 'Aucun'),
+('Formation Management Bienveillant', 'Diriger ses equipes avec empathie et efficacite', 400.00, 360, 'atelier', 'Formation', 'intermediaire', 12, 'Support de cours', 'etre manager'),
+('Conference Impact du Numerique sur le Bien-etre', 'Comprendre les enjeux de l''hyperconnexion', 250.00, 75, 'conference', 'Sante mentale', 'debutant', 100, 'Aucun', 'Aucun'),
+('Atelier Auto-massage Do-In', 'Techniques simples pour soulager les tensions', 90.00, 60, 'atelier', 'Bien-etre physique', 'debutant', 15, 'Aucun', 'Aucun'),
+('Seance d''Hypnose Relaxation', 'Atteindre un etat de relaxation profonde par l''hypnose', 100.00, 60, 'consultation', 'Bien-etre mental', NULL, 1, 'Fauteuil confortable', 'Aucun'),
+('Formation Management Bienveillant', 'Diriger ses equipes avec empathie et efficacite', 400.00, 360, 'atelier', 'Formation', 'intermediaire', 12, 'Support de cours', 'etre manager'),
+('Conference Impact du Numerique sur le Bien-etre', 'Comprendre les enjeux de l''hyperconnexion', 250.00, 75, 'conference', 'Sante mentale', 'debutant', 100, 'Aucun', 'Aucun'),
+('Atelier Auto-massage Do-In', 'Techniques simples pour soulager les tensions', 90.00, 60, 'atelier', 'Bien-etre physique', 'debutant', 15, 'Aucun', 'Aucun'),
 ('Consultation Orientation Scolaire/Professionnelle', 'Aide a la definition d''un projet d''avenir', 120.00, 90, 'consultation', 'Developpement personnel', NULL, 1, 'Aucun', 'Jeunes/Adultes en questionnement'),
 ('Webinar Initiation a l''Investissement Financier', 'Comprendre les bases pour gerer son epargne', 150.00, 90, 'webinar', 'Formation', 'debutant', 50, 'Ordinateur, connexion internet', 'Aucun'),
 ('Atelier Prise de Parole en Public', 'Gagner en aisance et en impact a l''oral', 250.00, 180, 'atelier', 'Formation', 'intermediaire', 12, 'Camera (optionnel)', 'Aucun'),
 ('Consultation Sexologie', 'Aborder les questions liees a la sexualite', 90.00, 60, 'consultation', 'Sante', NULL, 1, 'Aucun', 'Aucun'),
 ('Conference Addictions (ecrans, jeux...)', 'Comprendre et prevenir les dependances comportementales', 280.00, 90, 'conference', 'Sante mentale', 'debutant', 90, 'Aucun', 'Aucun'),
-('Atelier Jardinage Urbain Anti-Stress', 'Cultiver des plantes pour se detendre', 130.00, 120, 'atelier', 'Bien-être mental', 'debutant', 10, 'Petits pots, terreau, graines', 'Aucun'),
-('Seance de Musicotherapie Receptive', 'ecoute musicale guidee pour la relaxation', 60.00, 45, 'consultation', 'Bien-être mental', NULL, 1, 'Casque audio', 'Aucun'),
+('Atelier Jardinage Urbain Anti-Stress', 'Cultiver des plantes pour se detendre', 130.00, 120, 'atelier', 'Bien-etre mental', 'debutant', 10, 'Petits pots, terreau, graines', 'Aucun'),
+('Seance de Musicotherapie Receptive', 'ecoute musicale guidee pour la relaxation', 60.00, 45, 'consultation', 'Bien-etre mental', NULL, 1, 'Casque audio', 'Aucun'),
+('Atelier Jardinage Urbain Anti-Stress', 'Cultiver des plantes pour se detendre', 130.00, 120, 'atelier', 'Bien-etre mental', 'debutant', 10, 'Petits pots, terreau, graines', 'Aucun'),
+('Seance de Musicotherapie Receptive', 'ecoute musicale guidee pour la relaxation', 60.00, 45, 'consultation', 'Bien-etre mental', NULL, 1, 'Casque audio', 'Aucun'),
 ('Formation Risques Psycho-Sociaux (RPS)', 'Identifier et prevenir les RPS en entreprise', 450.00, 420, 'atelier', 'Formation', 'intermediaire', 15, 'Support de cours', 'Managers/RH'),
-('Webinar Decouverte de l''Art-therapie', 'Explorer son potentiel creatif pour le bien-être', 160.00, 90, 'webinar', 'Bien-être mental', 'debutant', 40, 'Feuilles, crayons/peinture', 'Aucun'),
+('Webinar Decouverte de l''Art-therapie', 'Explorer son potentiel creatif pour le bien-etre', 160.00, 90, 'webinar', 'Bien-etre mental', 'debutant', 40, 'Feuilles, crayons/peinture', 'Aucun'),
+('Webinar Decouverte de l''Art-therapie', 'Explorer son potentiel creatif pour le bien-etre', 160.00, 90, 'webinar', 'Bien-etre mental', 'debutant', 40, 'Feuilles, crayons/peinture', 'Aucun'),
 ('Consultation Conseil en Image Professionnelle', 'Valoriser son image au travail', 140.00, 75, 'consultation', 'Developpement personnel', NULL, 1, 'Aucun', 'Aucun'),
-('Atelier Initiation Tai Chi Chuan', 'Art martial doux pour l''equilibre et la serenite', 100.00, 60, 'atelier', 'Bien-être physique', 'debutant', 15, 'Tenue souple', 'Aucun');
+('Atelier Initiation Tai Chi Chuan', 'Art martial doux pour l''equilibre et la serenite', 100.00, 60, 'atelier', 'Bien-etre physique', 'debutant', 15, 'Tenue souple', 'Aucun');
+('Atelier Initiation Tai Chi Chuan', 'Art martial doux pour l''equilibre et la serenite', 100.00, 60, 'atelier', 'Bien-etre physique', 'debutant', 15, 'Tenue souple', 'Aucun');
 
 INSERT INTO personnes (nom, prenom, email, mot_de_passe, telephone, date_naissance, genre, photo_url, role_id, entreprise_id, site_id, statut, derniere_connexion) VALUES
 ('Admin', 'System', 'admin@businesscare.fr', '$2y$10$CGP1gfg0khtXjAZcJFC6iO3oYisjwlPfkm8tQ8Q/OxWpFdR7tOiqO', '0000000000', '1990-01-01', 'Autre', '/assets/images/icons/default-user.png', 1, NULL, NULL, 'actif', NOW()), 
@@ -381,63 +389,107 @@ INSERT INTO logs (personne_id, action, details, ip_address, created_at) VALUES
 
 INSERT INTO conseils (titre, icone, resume, categorie, contenu) VALUES
 ('Gestion du stress au travail', '', 'Apprenez des techniques pour mieux gerer la pression et preserver votre equilibre.', 'Stress',
-'Le stress chronique peut avoir des effets nefaste sur votre sante physique et mentale.\n\nVoici quelques techniques simples :\n1. Respiration profonde : Inspirez lentement par le nez, retenez quelques secondes, expirez lentement par la bouche. Repetez 5 fois pour calmer le systeme nerveux.\n2. Pause active : Levez-vous et marchez quelques minutes toutes les heures. Changer d''environnement aide a clarifier les idees.\n3. Priorisation : Utilisez la matrice d''Eisenhower (urgent/important) pour organiser vos taches et vous concentrer sur l''essentiel.\n4. Communication : Exprimez vos difficulte a votre manager ou a un collegue de confiance. Ne restez pas isole.\n5. Deconnexion : Definissez des limites claires entre travail et vie personnelle. Essayez de vous deconnecter (notifications, emails) en dehors des heures de bureau.\n\nN''oubliez pas de faire des pauses regulières, meme courtes, pour deconnecter et recharger vos batteries.'),
+'Le stress chronique peut avoir des effets nefaste sur votre sante physique et mentale.'n'nVoici quelques techniques simples :'n1. Respiration profonde : Inspirez lentement par le nez, retenez quelques secondes, expirez lentement par la bouche. Repetez 5 fois pour calmer le systeme nerveux.'n2. Pause active : Levez-vous et marchez quelques minutes toutes les heures. Changer d''environnement aide a clarifier les idees.'n3. Priorisation : Utilisez la matrice d''Eisenhower (urgent/important) pour organiser vos taches et vous concentrer sur l''essentiel.'n4. Communication : Exprimez vos difficulte a votre manager ou a un collegue de confiance. Ne restez pas isole.'n5. Deconnexion : Definissez des limites claires entre travail et vie personnelle. Essayez de vous deconnecter (notifications, emails) en dehors des heures de bureau.'n'nN''oubliez pas de faire des pauses regulières, meme courtes, pour deconnecter et recharger vos batteries.'),
+'Le stress chronique peut avoir des effets nefaste sur votre sante physique et mentale.'n'nVoici quelques techniques simples :'n1. Respiration profonde : Inspirez lentement par le nez, retenez quelques secondes, expirez lentement par la bouche. Repetez 5 fois pour calmer le systeme nerveux.'n2. Pause active : Levez-vous et marchez quelques minutes toutes les heures. Changer d''environnement aide a clarifier les idees.'n3. Priorisation : Utilisez la matrice d''Eisenhower (urgent/important) pour organiser vos taches et vous concentrer sur l''essentiel.'n4. Communication : Exprimez vos difficulte a votre manager ou a un collegue de confiance. Ne restez pas isole.'n5. Deconnexion : Definissez des limites claires entre travail et vie personnelle. Essayez de vous deconnecter (notifications, emails) en dehors des heures de bureau.'n'nN''oubliez pas de faire des pauses regulières, meme courtes, pour deconnecter et recharger vos batteries.'),
 ('Ameliorer son sommeil', '', 'Des conseils pratiques pour retrouver un sommeil reparateur et une meilleure energie.', 'Sommeil',
-'Un bon sommeil est crucial pour la concentration, l''humeur et la sante generale.\n\nConseils :\n- Regularite : Couchez-vous et levez-vous a heures regulieres, meme le week-end, pour stabiliser votre horloge biologique.\n- Environnement : Creez un environnement propice au sommeil : chambre sombre, calme et fraiche (idealement entre 18-20°C).\n- Ecrans : Evitez les ecrans (telephone, tablette, ordinateur) au moins 30 a 60 minutes avant le coucher. La lumiere bleue perturbe la production de melatonine.\n- Alimentation et hydratation : Limitez la cafeine et l''alcool, surtout en fin de journee. Evitez les repas lourds ou de trop boire juste avant de dormir.\n- Relaxation : Pratiquez une activite relaxante avant de dormir (lecture apaisante, musique douce, bain chaud, meditation legere).'),
+'Un bon sommeil est crucial pour la concentration, l''humeur et la sante generale.'n'nConseils :'n- Regularite : Couchez-vous et levez-vous a heures regulieres, meme le week-end, pour stabiliser votre horloge biologique.'n- Environnement : Creez un environnement propice au sommeil : chambre sombre, calme et fraiche (idealement entre 18-20°C).'n- Ecrans : Evitez les ecrans (telephone, tablette, ordinateur) au moins 30 a 60 minutes avant le coucher. La lumiere bleue perturbe la production de melatonine.'n- Alimentation et hydratation : Limitez la cafeine et l''alcool, surtout en fin de journee. Evitez les repas lourds ou de trop boire juste avant de dormir.'n- Relaxation : Pratiquez une activite relaxante avant de dormir (lecture apaisante, musique douce, bain chaud, meditation legere).'),
+'Un bon sommeil est crucial pour la concentration, l''humeur et la sante generale.'n'nConseils :'n- Regularite : Couchez-vous et levez-vous a heures regulieres, meme le week-end, pour stabiliser votre horloge biologique.'n- Environnement : Creez un environnement propice au sommeil : chambre sombre, calme et fraiche (idealement entre 18-20°C).'n- Ecrans : Evitez les ecrans (telephone, tablette, ordinateur) au moins 30 a 60 minutes avant le coucher. La lumiere bleue perturbe la production de melatonine.'n- Alimentation et hydratation : Limitez la cafeine et l''alcool, surtout en fin de journee. Evitez les repas lourds ou de trop boire juste avant de dormir.'n- Relaxation : Pratiquez une activite relaxante avant de dormir (lecture apaisante, musique douce, bain chaud, meditation legere).'),
 ('Alimentation equilibree au bureau', '', 'Comment bien manger au travail pour maintenir votre energie et votre concentration.', 'Nutrition',
-'Manger sainement au bureau est possible et essentiel ! Cela booste votre energie, votre concentration et votre bien-etre general.\n\nIdees :\n- Preparation : Preparez vos dejeuners la veille : salades composees, soupes, plats maison rechauffes. C''est plus sain et economique.\n- Snacks sains : Anticipez les petites faims avec des fruits frais, yaourts nature, oléagineux (amandes, noix), legumes croquants (carottes, concombre).\n- Hydratation : Buvez de l''eau regulierement tout au long de la journee (visez 1,5 L). Une gourde sur le bureau aide !\n- Eviter les pieges : Limitez les distributeurs automatiques (souvent riches en sucre/sel) et les fast-foods trop frequents.\n- Pleine conscience : Prenez le temps de manger assis, loin de votre ecran. Machez lentement et savourez votre repas pour une meilleure digestion et sante.\n\nRecette rapide : Salade Quinoa-Poulet-Avocat\nIngrédients : Quinoa cuit, blanc de poulet grille coupe en des, 1/2 avocat en tranches, tomates cerises coupees en deux, quelques feuilles d''epinards frais, vinaigrette legere (huile d''olive, jus de citron, sel, poivre).\nMelangez le tout dans une boite hermetique. Simple, sain et delicieux !'),
+'Manger sainement au bureau est possible et essentiel ! Cela booste votre energie, votre concentration et votre bien-etre general.'n'nIdees :'n- Preparation : Preparez vos dejeuners la veille : salades composees, soupes, plats maison rechauffes. C''est plus sain et economique.'n- Snacks sains : Anticipez les petites faims avec des fruits frais, yaourts nature, oléagineux (amandes, noix), legumes croquants (carottes, concombre).'n- Hydratation : Buvez de l''eau regulierement tout au long de la journee (visez 1,5 L). Une gourde sur le bureau aide !'n- Eviter les pieges : Limitez les distributeurs automatiques (souvent riches en sucre/sel) et les fast-foods trop frequents.'n- Pleine conscience : Prenez le temps de manger assis, loin de votre ecran. Machez lentement et savourez votre repas pour une meilleure digestion et sante.'n'nRecette rapide : Salade Quinoa-Poulet-Avocat'nIngrédients : Quinoa cuit, blanc de poulet grille coupe en des, 1/2 avocat en tranches, tomates cerises coupees en deux, quelques feuilles d''epinards frais, vinaigrette legere (huile d''olive, jus de citron, sel, poivre).'nMelangez le tout dans une boite hermetique. Simple, sain et delicieux !'),
+'Manger sainement au bureau est possible et essentiel ! Cela booste votre energie, votre concentration et votre bien-etre general.'n'nIdees :'n- Preparation : Preparez vos dejeuners la veille : salades composees, soupes, plats maison rechauffes. C''est plus sain et economique.'n- Snacks sains : Anticipez les petites faims avec des fruits frais, yaourts nature, oléagineux (amandes, noix), legumes croquants (carottes, concombre).'n- Hydratation : Buvez de l''eau regulierement tout au long de la journee (visez 1,5 L). Une gourde sur le bureau aide !'n- Eviter les pieges : Limitez les distributeurs automatiques (souvent riches en sucre/sel) et les fast-foods trop frequents.'n- Pleine conscience : Prenez le temps de manger assis, loin de votre ecran. Machez lentement et savourez votre repas pour une meilleure digestion et sante.'n'nRecette rapide : Salade Quinoa-Poulet-Avocat'nIngrédients : Quinoa cuit, blanc de poulet grille coupe en des, 1/2 avocat en tranches, tomates cerises coupees en deux, quelques feuilles d''epinards frais, vinaigrette legere (huile d''olive, jus de citron, sel, poivre).'nMelangez le tout dans une boite hermetique. Simple, sain et delicieux !'),
 ('5 minutes de meditation guidee', '', 'Une courte pause meditative pour recentrer votre esprit et apaiser le mental.', 'Stress',
-'Installez-vous confortablement (chaise ou sol), fermez les yeux ou fixez un point devant vous avec un regard doux.\nPortez votre attention sur votre respiration. Sentez l''air entrer par le nez et sortir. Observez le mouvement de votre ventre ou de votre poitrine.\nQuand des pensees, emotions ou sensations arrivent, c''est normal. Observez-les sans jugement, comme des nuages passant dans le ciel, puis ramenez doucement votre attention a votre souffle.\nRestez ainsi pendant 5 minutes. Si cela semble long au debut, commencez par 2 ou 3 minutes.\nTerminez en reprenant conscience de votre corps et de la piece autour de vous. Sentez le calme qui s''est installe.\nCette simple pratique reguliere peut reduire significativement le stress et ameliorer la concentration.'),
+'Installez-vous confortablement (chaise ou sol), fermez les yeux ou fixez un point devant vous avec un regard doux.'nPortez votre attention sur votre respiration. Sentez l''air entrer par le nez et sortir. Observez le mouvement de votre ventre ou de votre poitrine.'nQuand des pensees, emotions ou sensations arrivent, c''est normal. Observez-les sans jugement, comme des nuages passant dans le ciel, puis ramenez doucement votre attention a votre souffle.'nRestez ainsi pendant 5 minutes. Si cela semble long au debut, commencez par 2 ou 3 minutes.'nTerminez en reprenant conscience de votre corps et de la piece autour de vous. Sentez le calme qui s''est installe.'nCette simple pratique reguliere peut reduire significativement le stress et ameliorer la concentration.'),
+'Installez-vous confortablement (chaise ou sol), fermez les yeux ou fixez un point devant vous avec un regard doux.'nPortez votre attention sur votre respiration. Sentez l''air entrer par le nez et sortir. Observez le mouvement de votre ventre ou de votre poitrine.'nQuand des pensees, emotions ou sensations arrivent, c''est normal. Observez-les sans jugement, comme des nuages passant dans le ciel, puis ramenez doucement votre attention a votre souffle.'nRestez ainsi pendant 5 minutes. Si cela semble long au debut, commencez par 2 ou 3 minutes.'nTerminez en reprenant conscience de votre corps et de la piece autour de vous. Sentez le calme qui s''est installe.'nCette simple pratique reguliere peut reduire significativement le stress et ameliorer la concentration.'),
 ('Hydratation : pourquoi et comment ?', '', 'L''importance vitale de boire de l''eau et des astuces simples pour y parvenir.', 'Nutrition',
-'Notre corps est compose majoritairement d''eau (environ 60 %). Une bonne hydratation est vitale pour le fonctionnement de nos organes, notre niveau d''energie, notre clarte mentale et la sante de notre peau.\n\nPourquoi est-ce si important ?\n- Transporte les nutriments essentiels aux cellules.\n- Elimine les toxines et les dechets metaboliques.\n- Regule la temperature corporelle (transpiration).\n- Lubrifie les articulations.\n- Aide a la concentration et previent les maux de tete.\n\nComment boire suffisamment ?\n- Gourde a portee de main : Gardez une bouteille ou une gourde d''eau sur votre bureau et remplissez-la regulierement.\n- Boire avant la soif : N''attendez pas d''avoir soif, c''est deja un signe de deshydratation legere.\n- Varier les plaisirs : Alternez avec des tisanes non sucrees, de l''eau infusee (citron, menthe, concombre) pour changer.\n- Aliments riches en eau : Consommez des fruits et legumes comme le concombre, la pasteque, l''orange, la salade.\n- Adapter selon les besoins : Augmentez votre apport en cas d''activite physique, de forte chaleur ou de fievre.\nObjectif moyen : environ 1,5 a 2 L d''eau pure par jour, a adapter individuellement.'),
+'Notre corps est compose majoritairement d''eau (environ 60 %). Une bonne hydratation est vitale pour le fonctionnement de nos organes, notre niveau d''energie, notre clarte mentale et la sante de notre peau.'n'nPourquoi est-ce si important ?'n- Transporte les nutriments essentiels aux cellules.'n- Elimine les toxines et les dechets metaboliques.'n- Regule la temperature corporelle (transpiration).'n- Lubrifie les articulations.'n- Aide a la concentration et previent les maux de tete.'n'nComment boire suffisamment ?'n- Gourde a portee de main : Gardez une bouteille ou une gourde d''eau sur votre bureau et remplissez-la regulierement.'n- Boire avant la soif : N''attendez pas d''avoir soif, c''est deja un signe de deshydratation legere.'n- Varier les plaisirs : Alternez avec des tisanes non sucrees, de l''eau infusee (citron, menthe, concombre) pour changer.'n- Aliments riches en eau : Consommez des fruits et legumes comme le concombre, la pasteque, l''orange, la salade.'n- Adapter selon les besoins : Augmentez votre apport en cas d''activite physique, de forte chaleur ou de fievre.'nObjectif moyen : environ 1,5 a 2 L d''eau pure par jour, a adapter individuellement.'),
+'Notre corps est compose majoritairement d''eau (environ 60 %). Une bonne hydratation est vitale pour le fonctionnement de nos organes, notre niveau d''energie, notre clarte mentale et la sante de notre peau.'n'nPourquoi est-ce si important ?'n- Transporte les nutriments essentiels aux cellules.'n- Elimine les toxines et les dechets metaboliques.'n- Regule la temperature corporelle (transpiration).'n- Lubrifie les articulations.'n- Aide a la concentration et previent les maux de tete.'n'nComment boire suffisamment ?'n- Gourde a portee de main : Gardez une bouteille ou une gourde d''eau sur votre bureau et remplissez-la regulierement.'n- Boire avant la soif : N''attendez pas d''avoir soif, c''est deja un signe de deshydratation legere.'n- Varier les plaisirs : Alternez avec des tisanes non sucrees, de l''eau infusee (citron, menthe, concombre) pour changer.'n- Aliments riches en eau : Consommez des fruits et legumes comme le concombre, la pasteque, l''orange, la salade.'n- Adapter selon les besoins : Augmentez votre apport en cas d''activite physique, de forte chaleur ou de fievre.'nObjectif moyen : environ 1,5 a 2 L d''eau pure par jour, a adapter individuellement.'),
 ('Communication non violente (CNV) : introduction', '', 'Les bases pour communiquer avec plus d''empathie, de clarte et d''efficacite.', 'Communication',
-'La Communication Non Violente (CNV) est une approche developpee par Marshall Rosenberg qui aide a creer des relations basees sur le respect mutuel et la cooperation.\n\nElle repose sur 4 etapes cles pour exprimer ce qui se passe en nous et entendre l''autre avec empathie :\n1. Observation (O) : Decrire les faits concrets et specifiques que nous observons, sans jugement ni interpretation. (Ex. : "Quand je vois des dossiers non classes sur le bureau commun...")\n2. Sentiment (S) : Exprimer l''emotion ressenti face a cette observation. Utiliser "Je me sens..." (Ex. : "...je me sens un peu frustre(e)...")\n3. Besoin (B) : Identifier le besoin fondamental (autonomie, respect, clarte, ordre, soutien...) qui est satisfait ou insatisfait et qui est a l''origine du sentiment. (Ex. : "...car j''ai besoin d''ordre et de clarte dans notre espace de travail partage.")
-4. Demande (D) : Formuler une demande concrete, positive, realisable et negociable, visant a satisfaire le besoin identifie. Preferer une demande a une exigence. (Ex. : "Serais-tu d''accord pour que nous prenions 5 minutes ensemble pour decider comment organiser cet espace ?")\n\nEcoute empathique : La CNV s''applique a l''ecoute. Tentez de deviner les sentiments et besoins de l''autre derriere ses mots, meme s''ils sont exprimes maladroitement.\n\nPratiquer la CNV demande de l''entrainement mais ameliore significativement la qualite des relations professionnelles et personnelles.');
+'La Communication Non Violente (CNV) est une approche developpee par Marshall Rosenberg qui aide a creer des relations basees sur le respect mutuel et la cooperation.'n'nElle repose sur 4 etapes cles pour exprimer ce qui se passe en nous et entendre l''autre avec empathie :'n1. Observation (O) : Decrire les faits concrets et specifiques que nous observons, sans jugement ni interpretation. (Ex. : "Quand je vois des dossiers non classes sur le bureau commun...")'n2. Sentiment (S) : Exprimer l''emotion ressenti face a cette observation. Utiliser "Je me sens..." (Ex. : "...je me sens un peu frustre(e)...")'n3. Besoin (B) : Identifier le besoin fondamental (autonomie, respect, clarte, ordre, soutien...) qui est satisfait ou insatisfait et qui est a l''origine du sentiment. (Ex. : "...car j''ai besoin d''ordre et de clarte dans notre espace de travail partage.")
+4. Demande (D) : Formuler une demande concrete, positive, realisable et negociable, visant a satisfaire le besoin identifie. Preferer une demande a une exigence. (Ex. : "Serais-tu d''accord pour que nous prenions 5 minutes ensemble pour decider comment organiser cet espace ?")'n'nEcoute empathique : La CNV s''applique a l''ecoute. Tentez de deviner les sentiments et besoins de l''autre derriere ses mots, meme s''ils sont exprimes maladroitement.'n'nPratiquer la CNV demande de l''entrainement mais ameliore significativement la qualite des relations professionnelles et personnelles.');
+'La Communication Non Violente (CNV) est une approche developpee par Marshall Rosenberg qui aide a creer des relations basees sur le respect mutuel et la cooperation.'n'nElle repose sur 4 etapes cles pour exprimer ce qui se passe en nous et entendre l''autre avec empathie :'n1. Observation (O) : Decrire les faits concrets et specifiques que nous observons, sans jugement ni interpretation. (Ex. : "Quand je vois des dossiers non classes sur le bureau commun...")'n2. Sentiment (S) : Exprimer l''emotion ressenti face a cette observation. Utiliser "Je me sens..." (Ex. : "...je me sens un peu frustre(e)...")'n3. Besoin (B) : Identifier le besoin fondamental (autonomie, respect, clarte, ordre, soutien...) qui est satisfait ou insatisfait et qui est a l''origine du sentiment. (Ex. : "...car j''ai besoin d''ordre et de clarte dans notre espace de travail partage.")
+4. Demande (D) : Formuler une demande concrete, positive, realisable et negociable, visant a satisfaire le besoin identifie. Preferer une demande a une exigence. (Ex. : "Serais-tu d''accord pour que nous prenions 5 minutes ensemble pour decider comment organiser cet espace ?")'n'nEcoute empathique : La CNV s''applique a l''ecoute. Tentez de deviner les sentiments et besoins de l''autre derriere ses mots, meme s''ils sont exprimes maladroitement.'n'nPratiquer la CNV demande de l''entrainement mais ameliore significativement la qualite des relations professionnelles et personnelles.');
 
 INSERT INTO consultation_creneaux (prestation_id, praticien_id, start_time, end_time, is_booked, site_id) VALUES
-(2, 3, NOW() + INTERVAL 20 DAY + INTERVAL '10:00' HOUR_MINUTE, NOW() + INTERVAL 20 DAY + INTERVAL '11:00' HOUR_MINUTE, FALSE, NULL), -- Yoga (60 min)
-(3, 3, NOW() + INTERVAL 20 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 20 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), -- Webinar Stress (90 min)
-(5, 3, NOW() + INTERVAL 20 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 20 DAY + INTERVAL '15:00' HOUR_MINUTE, FALSE, NULL), -- Meditation (60 min)
-(6, 3, NOW() + INTERVAL 21 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 21 DAY + INTERVAL '11:00' HOUR_MINUTE, FALSE, NULL), -- Ergonomie (120 min)
-(8, 3, NOW() + INTERVAL 21 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 21 DAY + INTERVAL '13:30' HOUR_MINUTE, FALSE, NULL), -- Com Assertive (120 min)
-(10, 3, NOW() + INTERVAL 21 DAY + INTERVAL '14:30' HOUR_MINUTE, NOW() + INTERVAL 21 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), -- Conf Sommeil (90 min)
-(12, 3, NOW() + INTERVAL 22 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 22 DAY + INTERVAL '11:00' HOUR_MINUTE, FALSE, NULL), -- Gest Temps (120 min)
-(13, 3, NOW() + INTERVAL 22 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 22 DAY + INTERVAL '12:30' HOUR_MINUTE, FALSE, NULL), -- Pilates (60 min)
-(14, 3, NOW() + INTERVAL 22 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 22 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), -- Webinar Cyber (90 min)
-(15, 3, NOW() + INTERVAL 23 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '09:50' HOUR_MINUTE, FALSE, NULL), -- Arret Tabac (50 min)
-(16, 3, NOW() + INTERVAL 23 DAY + INTERVAL '10:00' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '11:15' HOUR_MINUTE, FALSE, NULL), -- Conf Nutri Sport (75 min)
-(17, 3, NOW() + INTERVAL 23 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), -- Cuisine Saine (90 min)
-(18, 3, NOW() + INTERVAL 23 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '15:00' HOUR_MINUTE, FALSE, NULL), -- Coaching Pro (60 min)
-(19, 3, NOW() + INTERVAL 24 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 24 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), -- Secourisme (240 min)
-(20, 3, NOW() + INTERVAL 24 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 24 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), -- Webinar CNV (120 min)
-(22, 3, NOW() + INTERVAL 25 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 25 DAY + INTERVAL '09:50' HOUR_MINUTE, FALSE, NULL), -- Reflexologie (50 min)
-(23, 3, NOW() + INTERVAL 25 DAY + INTERVAL '10:00' HOUR_MINUTE, NOW() + INTERVAL 25 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), -- Gest Conflits (180 min)
-(24, 3, NOW() + INTERVAL 25 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 25 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), -- Conf Equilibre (90 min)
-(25, 3, NOW() + INTERVAL 26 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 26 DAY + INTERVAL '10:00' HOUR_MINUTE, FALSE, NULL), -- Dietetique (60 min)
-(26, 3, NOW() + INTERVAL 26 DAY + INTERVAL '10:30' HOUR_MINUTE, NOW() + INTERVAL 26 DAY + INTERVAL '12:30' HOUR_MINUTE, FALSE, NULL), -- Creativite (120 min)
-(27, 3, NOW() + INTERVAL 26 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 26 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), -- Webinar Burnout (90 min)
-(28, 3, NOW() + INTERVAL 27 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 27 DAY + INTERVAL '10:00' HOUR_MINUTE, FALSE, NULL), -- Hypnose Relax (60 min)
-(29, 3, NOW() + INTERVAL 27 DAY + INTERVAL '10:30' HOUR_MINUTE, NOW() + INTERVAL 27 DAY + INTERVAL '16:30' HOUR_MINUTE, FALSE, NULL), -- Management Bien (360 min)
-(30, 3, NOW() + INTERVAL 28 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 28 DAY + INTERVAL '10:15' HOUR_MINUTE, FALSE, NULL), -- Conf Numerique (75 min)
-(31, 3, NOW() + INTERVAL 28 DAY + INTERVAL '10:30' HOUR_MINUTE, NOW() + INTERVAL 28 DAY + INTERVAL '11:30' HOUR_MINUTE, FALSE, NULL), -- Auto-massage (60 min)
-(32, 3, NOW() + INTERVAL 28 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 28 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), -- Orientation (90 min)
-(33, 3, NOW() + INTERVAL 29 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 29 DAY + INTERVAL '10:30' HOUR_MINUTE, FALSE, NULL), -- Webinar Invest (90 min)
-(34, 3, NOW() + INTERVAL 29 DAY + INTERVAL '11:00' HOUR_MINUTE, NOW() + INTERVAL 29 DAY + INTERVAL '14:00' HOUR_MINUTE, FALSE, NULL), -- Prise Parole (180 min)
-(35, 3, NOW() + INTERVAL 29 DAY + INTERVAL '15:00' HOUR_MINUTE, NOW() + INTERVAL 29 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), -- Sexologie (60 min)
-(36, 3, NOW() + INTERVAL 30 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 30 DAY + INTERVAL '10:30' HOUR_MINUTE, FALSE, NULL), -- Conf Addictions (90 min)
-(37, 3, NOW() + INTERVAL 30 DAY + INTERVAL '11:00' HOUR_MINUTE, NOW() + INTERVAL 30 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), -- Jardinage (120 min)
-(38, 3, NOW() + INTERVAL 30 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 30 DAY + INTERVAL '14:45' HOUR_MINUTE, FALSE, NULL), -- Musicotherapie (45 min)
-(39, 3, NOW() + INTERVAL 31 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 31 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), -- Formation RPS (420 min)
-(40, 3, NOW() + INTERVAL 32 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 32 DAY + INTERVAL '10:30' HOUR_MINUTE, FALSE, NULL); -- Webinar Art (90 min)
+(2, 3, NOW() + INTERVAL 20 DAY + INTERVAL '10:00' HOUR_MINUTE, NOW() + INTERVAL 20 DAY + INTERVAL '11:00' HOUR_MINUTE, FALSE, NULL), 
+(3, 3, NOW() + INTERVAL 20 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 20 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), 
+(5, 3, NOW() + INTERVAL 20 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 20 DAY + INTERVAL '15:00' HOUR_MINUTE, FALSE, NULL), 
+(6, 3, NOW() + INTERVAL 21 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 21 DAY + INTERVAL '11:00' HOUR_MINUTE, FALSE, NULL), 
+(8, 3, NOW() + INTERVAL 21 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 21 DAY + INTERVAL '13:30' HOUR_MINUTE, FALSE, NULL), 
+(10, 3, NOW() + INTERVAL 21 DAY + INTERVAL '14:30' HOUR_MINUTE, NOW() + INTERVAL 21 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), 
+(12, 3, NOW() + INTERVAL 22 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 22 DAY + INTERVAL '11:00' HOUR_MINUTE, FALSE, NULL), 
+(13, 3, NOW() + INTERVAL 22 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 22 DAY + INTERVAL '12:30' HOUR_MINUTE, FALSE, NULL), 
+(14, 3, NOW() + INTERVAL 22 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 22 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), 
+(15, 3, NOW() + INTERVAL 23 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '09:50' HOUR_MINUTE, FALSE, NULL), 
+(16, 3, NOW() + INTERVAL 23 DAY + INTERVAL '10:00' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '11:15' HOUR_MINUTE, FALSE, NULL), 
+(17, 3, NOW() + INTERVAL 23 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), 
+(18, 3, NOW() + INTERVAL 23 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '15:00' HOUR_MINUTE, FALSE, NULL), 
+(19, 3, NOW() + INTERVAL 24 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 24 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), 
+(20, 3, NOW() + INTERVAL 24 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 24 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), 
+(22, 3, NOW() + INTERVAL 25 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 25 DAY + INTERVAL '09:50' HOUR_MINUTE, FALSE, NULL), 
+(23, 3, NOW() + INTERVAL 25 DAY + INTERVAL '10:00' HOUR_MINUTE, NOW() + INTERVAL 25 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), 
+(24, 3, NOW() + INTERVAL 25 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 25 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), 
+(25, 3, NOW() + INTERVAL 26 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 26 DAY + INTERVAL '10:00' HOUR_MINUTE, FALSE, NULL), 
+(26, 3, NOW() + INTERVAL 26 DAY + INTERVAL '10:30' HOUR_MINUTE, NOW() + INTERVAL 26 DAY + INTERVAL '12:30' HOUR_MINUTE, FALSE, NULL), 
+(27, 3, NOW() + INTERVAL 26 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 26 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), 
+(28, 3, NOW() + INTERVAL 27 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 27 DAY + INTERVAL '10:00' HOUR_MINUTE, FALSE, NULL), 
+(29, 3, NOW() + INTERVAL 27 DAY + INTERVAL '10:30' HOUR_MINUTE, NOW() + INTERVAL 27 DAY + INTERVAL '16:30' HOUR_MINUTE, FALSE, NULL), 
+(30, 3, NOW() + INTERVAL 28 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 28 DAY + INTERVAL '10:15' HOUR_MINUTE, FALSE, NULL), 
+(31, 3, NOW() + INTERVAL 28 DAY + INTERVAL '10:30' HOUR_MINUTE, NOW() + INTERVAL 28 DAY + INTERVAL '11:30' HOUR_MINUTE, FALSE, NULL), 
+(32, 3, NOW() + INTERVAL 28 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 28 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), 
+(33, 3, NOW() + INTERVAL 29 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 29 DAY + INTERVAL '10:30' HOUR_MINUTE, FALSE, NULL), 
+(34, 3, NOW() + INTERVAL 29 DAY + INTERVAL '11:00' HOUR_MINUTE, NOW() + INTERVAL 29 DAY + INTERVAL '14:00' HOUR_MINUTE, FALSE, NULL), 
+(35, 3, NOW() + INTERVAL 29 DAY + INTERVAL '15:00' HOUR_MINUTE, NOW() + INTERVAL 29 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), 
+(36, 3, NOW() + INTERVAL 30 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 30 DAY + INTERVAL '10:30' HOUR_MINUTE, FALSE, NULL), 
+(37, 3, NOW() + INTERVAL 30 DAY + INTERVAL '11:00' HOUR_MINUTE, NOW() + INTERVAL 30 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), 
+(38, 3, NOW() + INTERVAL 30 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 30 DAY + INTERVAL '14:45' HOUR_MINUTE, FALSE, NULL), 
+(39, 3, NOW() + INTERVAL 31 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 31 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), 
+(40, 3, NOW() + INTERVAL 32 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 32 DAY + INTERVAL '10:30' HOUR_MINUTE, FALSE, NULL); 
+(2, 3, NOW() + INTERVAL 20 DAY + INTERVAL '10:00' HOUR_MINUTE, NOW() + INTERVAL 20 DAY + INTERVAL '11:00' HOUR_MINUTE, FALSE, NULL), 
+(3, 3, NOW() + INTERVAL 20 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 20 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), 
+(5, 3, NOW() + INTERVAL 20 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 20 DAY + INTERVAL '15:00' HOUR_MINUTE, FALSE, NULL), 
+(6, 3, NOW() + INTERVAL 21 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 21 DAY + INTERVAL '11:00' HOUR_MINUTE, FALSE, NULL), 
+(8, 3, NOW() + INTERVAL 21 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 21 DAY + INTERVAL '13:30' HOUR_MINUTE, FALSE, NULL), 
+(10, 3, NOW() + INTERVAL 21 DAY + INTERVAL '14:30' HOUR_MINUTE, NOW() + INTERVAL 21 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), 
+(12, 3, NOW() + INTERVAL 22 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 22 DAY + INTERVAL '11:00' HOUR_MINUTE, FALSE, NULL), 
+(13, 3, NOW() + INTERVAL 22 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 22 DAY + INTERVAL '12:30' HOUR_MINUTE, FALSE, NULL), 
+(14, 3, NOW() + INTERVAL 22 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 22 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), 
+(15, 3, NOW() + INTERVAL 23 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '09:50' HOUR_MINUTE, FALSE, NULL), 
+(16, 3, NOW() + INTERVAL 23 DAY + INTERVAL '10:00' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '11:15' HOUR_MINUTE, FALSE, NULL), 
+(17, 3, NOW() + INTERVAL 23 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), 
+(18, 3, NOW() + INTERVAL 23 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '15:00' HOUR_MINUTE, FALSE, NULL), 
+(19, 3, NOW() + INTERVAL 24 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 24 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), 
+(20, 3, NOW() + INTERVAL 24 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 24 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), 
+(22, 3, NOW() + INTERVAL 25 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 25 DAY + INTERVAL '09:50' HOUR_MINUTE, FALSE, NULL), 
+(23, 3, NOW() + INTERVAL 25 DAY + INTERVAL '10:00' HOUR_MINUTE, NOW() + INTERVAL 25 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), 
+(24, 3, NOW() + INTERVAL 25 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 25 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), 
+(25, 3, NOW() + INTERVAL 26 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 26 DAY + INTERVAL '10:00' HOUR_MINUTE, FALSE, NULL), 
+(26, 3, NOW() + INTERVAL 26 DAY + INTERVAL '10:30' HOUR_MINUTE, NOW() + INTERVAL 26 DAY + INTERVAL '12:30' HOUR_MINUTE, FALSE, NULL), 
+(27, 3, NOW() + INTERVAL 26 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 26 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), 
+(28, 3, NOW() + INTERVAL 27 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 27 DAY + INTERVAL '10:00' HOUR_MINUTE, FALSE, NULL), 
+(29, 3, NOW() + INTERVAL 27 DAY + INTERVAL '10:30' HOUR_MINUTE, NOW() + INTERVAL 27 DAY + INTERVAL '16:30' HOUR_MINUTE, FALSE, NULL), 
+(30, 3, NOW() + INTERVAL 28 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 28 DAY + INTERVAL '10:15' HOUR_MINUTE, FALSE, NULL), 
+(31, 3, NOW() + INTERVAL 28 DAY + INTERVAL '10:30' HOUR_MINUTE, NOW() + INTERVAL 28 DAY + INTERVAL '11:30' HOUR_MINUTE, FALSE, NULL), 
+(32, 3, NOW() + INTERVAL 28 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 28 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), 
+(33, 3, NOW() + INTERVAL 29 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 29 DAY + INTERVAL '10:30' HOUR_MINUTE, FALSE, NULL), 
+(34, 3, NOW() + INTERVAL 29 DAY + INTERVAL '11:00' HOUR_MINUTE, NOW() + INTERVAL 29 DAY + INTERVAL '14:00' HOUR_MINUTE, FALSE, NULL), 
+(35, 3, NOW() + INTERVAL 29 DAY + INTERVAL '15:00' HOUR_MINUTE, NOW() + INTERVAL 29 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), 
+(36, 3, NOW() + INTERVAL 30 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 30 DAY + INTERVAL '10:30' HOUR_MINUTE, FALSE, NULL), 
+(37, 3, NOW() + INTERVAL 30 DAY + INTERVAL '11:00' HOUR_MINUTE, NOW() + INTERVAL 30 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), 
+(38, 3, NOW() + INTERVAL 30 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 30 DAY + INTERVAL '14:45' HOUR_MINUTE, FALSE, NULL), 
+(39, 3, NOW() + INTERVAL 31 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 31 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), 
+(40, 3, NOW() + INTERVAL 32 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 32 DAY + INTERVAL '10:30' HOUR_MINUTE, FALSE, NULL); 
 
 INSERT INTO interets_utilisateurs (nom, description) VALUES
-('Sante Mentale', 'Conseils et ressources pour le bien-être psychologique'),
+('Sante Mentale', 'Conseils et ressources pour le bien-etre psychologique'),
+('Sante Mentale', 'Conseils et ressources pour le bien-etre psychologique'),
 ('Nutrition', 'Informations et astuces pour une alimentation saine'),
 ('Activite Physique', 'Motivation et idées pour rester actif'),
-('Gestion du Stress', 'Techniques pour gérer la pression et l\'anxiete'),
+('Gestion du Stress', 'Techniques pour gérer la pression et l''anxiete'),
+('Gestion du Stress', 'Techniques pour gérer la pression et l''anxiete'),
 ('Sommeil', 'Améliorer la qualité et la quantité de sommeil'),
 ('Communication', 'Développer des compétences relationnelles efficaces'),
-('Developpement Personnel', 'Ressources pour la croissance et l\'epanouissement personnel');
+('Developpement Personnel', 'Ressources pour la croissance et l''epanouissement personnel');
+('Developpement Personnel', 'Ressources pour la croissance et l''epanouissement personnel');
 
 INSERT INTO prestataires_prestations (prestataire_id, prestation_id) VALUES
 (3, 1), (3, 9), (3, 7),
@@ -504,7 +556,8 @@ INSERT INTO factures (entreprise_id, devis_id, numero_facture, date_emission, da
 (28, 31, 'FACT-2024-024', '2024-03-05', '2024-04-04', 1800.00, 1500.00, 20.00, 'payee', 'prelevement', NOW() - INTERVAL 2 DAY),
 (29, 32, 'FACT-2024-025', '2024-07-01', '2024-07-31', 4500.00, 3750.00, 20.00, 'en_attente', 'virement', NULL),
 (2, 26, 'FACT-2024-033', '2024-06-12', '2024-07-27', 22500.00, 18750.00, 20.00, 'retard', 'prelevement', NULL),
-(2, 18, 'FACT-2024-034', '2024-05-30', '2024-06-29', 57000.00, 47500.00, 20.00, 'en_attente', NULL, NULL); -- <<<=== LIGNE AJOUTÉE ===>>>
+(2, 18, 'FACT-2024-034', '2024-05-30', '2024-06-29', 57000.00, 47500.00, 20.00, 'en_attente', NULL, NULL); 
+(2, 18, 'FACT-2024-034', '2024-05-30', '2024-06-29', 57000.00, 47500.00, 20.00, 'en_attente', NULL, NULL); 
 
 
 INSERT INTO devis_prestations (devis_id, prestation_id, quantite, prix_unitaire_devis, description_specifique) VALUES
@@ -550,9 +603,12 @@ INSERT INTO communaute_messages (communaute_id, personne_id, message) VALUES
 (2, 12, 'Nouveau record perso sur 10km ! :-)');
 
 INSERT INTO communaute_messages (communaute_id, personne_id, message) VALUES
-(1, 7, 'Des conseils pour tenir la posture de l\'arbre plus longtemps ?'),
-(2, 10, 'Quelqu\'un a une bonne appli pour suivre ses parcours de course ?'),
-(1, 17, 'Est-ce qu\'il y a un cours de Yoga prévu la semaine prochaine sur le site Sante+ ?'),
+(1, 7, 'Des conseils pour tenir la posture de l''arbre plus longtemps ?'),
+(2, 10, 'Quelqu''un a une bonne appli pour suivre ses parcours de course ?'),
+(1, 17, 'Est-ce qu''il y a un cours de Yoga prévu la semaine prochaine sur le site Sante+ ?'),
+(1, 7, 'Des conseils pour tenir la posture de l''arbre plus longtemps ?'),
+(2, 10, 'Quelqu''un a une bonne appli pour suivre ses parcours de course ?'),
+(1, 17, 'Est-ce qu''il y a un cours de Yoga prévu la semaine prochaine sur le site Sante+ ?'),
 (2, 20, 'Besoin de motivation pour sortir courir avec ce temps ! Des astuces ?');
 
 INSERT INTO support_tickets (entreprise_id, personne_id, sujet, message, statut) VALUES
@@ -582,8 +638,13 @@ INSERT INTO communaute_messages (communaute_id, personne_id, message) VALUES
 (2, 12, 'Nouveau record perso sur 10km ! :-)');
 
 INSERT INTO communaute_messages (communaute_id, personne_id, message) VALUES
-(1, 7, 'Des conseils pour tenir la posture de l\'arbre plus longtemps ?'),
-(2, 10, 'Quelqu\'un a une bonne appli pour suivre ses parcours de course ?'),
-(1, 17, 'Est-ce qu\'il y a un cours de Yoga prévu la semaine prochaine sur le site Sante+ ?'),
+(1, 7, 'Des conseils pour tenir la posture de l''arbre plus longtemps ?'),
+(2, 10, 'Quelqu''un a une bonne appli pour suivre ses parcours de course ?'),
+(1, 17, 'Est-ce qu''il y a un cours de Yoga prévu la semaine prochaine sur le site Sante+ ?'),
+(1, 7, 'Des conseils pour tenir la posture de l''arbre plus longtemps ?'),
+(2, 10, 'Quelqu''un a une bonne appli pour suivre ses parcours de course ?'),
+(1, 17, 'Est-ce qu''il y a un cours de Yoga prévu la semaine prochaine sur le site Sante+ ?'),
 (2, 20, 'Besoin de motivation pour sortir courir avec ce temps ! Des astuces ?');
+
+
 

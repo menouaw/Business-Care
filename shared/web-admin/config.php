@@ -50,6 +50,7 @@ define('TABLE_PROVIDER_AVAILABILITY', 'prestataires_disponibilites');
 define('TABLE_EVENEMENTS', 'evenements');
 define('TABLE_EVENEMENT_INSCRIPTIONS', 'evenement_inscriptions');
 define('TABLE_NOTIFICATIONS', 'notifications');
+define('TABLE_SITES', 'sites');
 
 // devis
 define('QUOTE_STATUS_PENDING', 'en_attente');
@@ -165,3 +166,5 @@ define('MAIN_TUTORIAL_MODULES', [
     '/modules/contracts/',
     '/modules/companies/'
 ]);
+
+define('EVENEMENT_TYPES', ['conférence', 'webinar', 'atelier', 'defi_sportif', 'autre']);
