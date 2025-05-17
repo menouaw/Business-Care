@@ -105,4 +105,17 @@ document.addEventListener('DOMContentLoaded', function () {
         
         calculateAndDisplayTotal();
     }
+
+    const chatTextarea = document.querySelector('textarea[name="user_message"]');
+    if (chatTextarea) {
+        chatTextarea.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault(); 
+                const form = chatTextarea.closest('form');
+                if (form) {
+                    form.submit();
+                }
+            }
+        });
+    }
 });

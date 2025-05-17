@@ -494,8 +494,6 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     height: 3rem;
 }
 
-/* convert all px in rem */
-
 .chatbot-container { 
     height: 60vh;
     overflow-y: auto;
