@@ -211,7 +211,7 @@ $userNotifications = [];
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     <?php if (isset($_SESSION['user_photo']) && !empty($_SESSION['user_photo'])): ?>
-                                        <img src="<?= $_SESSION['user_photo'] ?>" alt="<?= $_SESSION['user_name'] ?>" class="rounded-circle avatar-sm">
+                                        <img src="<?= $_SESSION['user_photo'] ?>?v=<?= time() ?>" alt="<?= $_SESSION['user_name'] ?>" class="rounded-circle avatar-sm">
                                     <?php else: ?>
                                         <i class="fas fa-user-circle"></i>
                                     <?php endif; ?>
@@ -257,6 +257,7 @@ $userNotifications = [];
 
     <main role="main" class="flex-shrink-0 <?= $mainClass ?? '' ?>">
     </main>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

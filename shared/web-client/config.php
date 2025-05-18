@@ -67,10 +67,16 @@ define('SESSION_LIFETIME', getenv('SESSION_LIFETIME') ? (int)getenv('SESSION_LIF
 date_default_timezone_set('Europe/Paris');
 
 
+// Stripe keys from .env (simple definitions)
 define('STRIPE_SECRET_KEY', getenv('STRIPE_SECRET_KEY') ?: ($_ENV['STRIPE_SECRET_KEY'] ?? null));
 define('STRIPE_PUBLIC_KEY', getenv('STRIPE_PUBLIC_KEY') ?: ($_ENV['STRIPE_PUBLIC_KEY'] ?? null));
 define('STRIPE_WEBHOOK_SECRET', getenv('STRIPE_WEBHOOK_SECRET') ?: ($_ENV['STRIPE_WEBHOOK_SECRET'] ?? null));
 
+// Initialize Stripe API key (unconditionally)
+// Assumes STRIPE_SECRET_KEY is loaded from .env and Stripe SDK is available via Composer
+if (class_exists('\Stripe\Stripe')) { // On garde la vérification de l'existence de la classe pour éviter une erreur fatale si le SDK est manquant
+    \Stripe\Stripe::setApiKey(STRIPE_SECRET_KEY); 
+}
 
 define('STRIPE_JS_URL', 'https://js.stripe.com/v3/');
 

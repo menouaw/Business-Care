@@ -166,84 +166,6 @@ function updateEmployeePassword(int $user_id, string $current_password, string $
 }
 
 /**
- * Met à jour la photo de profil de l'employé.
- *
- * @param int $user_id L'ID de l'employé.
- * @param array $fileData Données du fichier $_FILES.
- * @return array Résultat [success => bool, message => string, new_photo_url => ?string].
- */
-function updateEmployeeProfilePhoto(int $user_id, array $fileData): array
-{
-
-    if (empty($fileData) || $fileData['error'] !== UPLOAD_ERR_OK) {
-        return ['success' => false, 'message' => "Aucun fichier reçu ou erreur upload.", 'new_photo_url' => null];
-    }
-
-    $imageInfo = getimagesize($fileData['tmp_name']);
-    $validImage = false;
-
-
-    if ($imageInfo !== false && in_array($imageInfo['mime'] ?? '', ['image/jpeg', 'image/png', 'image/gif'])) {
-
-        if (function_exists('exif_imagetype')) {
-            $imageType = @exif_imagetype($fileData['tmp_name']);
-            if ($imageType !== false && in_array($imageType, [IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_GIF])) {
-                $validImage = true;
-            }
-        } else {
-
-
-            $validImage = true;
-        }
-    }
-
-    if (!$validImage) {
-        return ['success' => false, 'message' => "Fichier invalide ou type d'image non supporté (JPG, PNG, GIF uniquement).", 'new_photo_url' => null];
-    }
-
-    if ($fileData['size'] > (2 * 1024 * 1024)) {
-        return ['success' => false, 'message' => 'Fichier trop volumineux (max 2 Mo).', 'new_photo_url' => null];
-    }
-
-    $uploadDir = realpath(__DIR__ . '/../../../../../uploads/photos');
-    if (!$uploadDir || !is_dir($uploadDir)) {
-        return ['success' => false, 'message' => "Erreur config serveur upload.", 'new_photo_url' => null];
-    }
-
-    $fileExtension = strtolower(pathinfo($fileData['name'], PATHINFO_EXTENSION));
-    $newFileName = 'user_' . $user_id . '_' . time() . '.' . $fileExtension;
-    $destinationPath = $uploadDir . DIRECTORY_SEPARATOR . $newFileName;
-    $relativePath = UPLOAD_URL . 'photos/' . $newFileName;
-
-    $tmpFilePath = $fileData['tmp_name'] ?? '[tmp_name not set]';
-
-    if (move_uploaded_file($tmpFilePath, $destinationPath)) {
-
-
-        $currentUser = fetchOne(TABLE_USERS, 'id = :id', [':id' => $user_id], 'photo_url');
-        if ($currentUser && !empty($currentUser['photo_url'])) {
-            $oldRelativePath = $currentUser['photo_url'];
-            $oldFileName = basename($oldRelativePath);
-            $oldFullPath = $uploadDir . DIRECTORY_SEPARATOR . $oldFileName;
-            if (file_exists($oldFullPath) && is_file($oldFullPath)) {
-                @unlink($oldFullPath);
-            }
-        }
-
-        $updated = updateRow(TABLE_USERS, ['photo_url' => $relativePath], 'id = :id', [':id' => $user_id]);
-        if ($updated > 0) {
-            $_SESSION['user_photo'] = $relativePath;
-            return ['success' => true, 'message' => 'Photo de profil mise à jour.', 'new_photo_url' => $relativePath];
-        } else {
-            @unlink($destinationPath);
-            return ['success' => false, 'message' => 'Erreur MAJ base de données.', 'new_photo_url' => null];
-        }
-    } else {
-        return ['success' => false, 'message' => 'Impossible de sauvegarder le fichier.', 'new_photo_url' => null];
-    }
-}
-
-/**
  * Met à jour les intérêts bien-être sélectionnés par l'employé.
  *
  * @param int $user_id L'ID de l'employé.
@@ -320,13 +242,7 @@ function setupEmployeeSettingsPage(): array
                 case 'update_password':
                     $result = updateEmployeePassword($user_id, $formData['current_password'] ?? '', $formData['new_password'] ?? '');
                     break;
-                case 'update_photo':
-                    $result = updateEmployeeProfilePhoto($user_id, $_FILES['profile_photo'] ?? []);
 
-                    if ($result['success'] && isset($result['new_photo_url'])) {
-                        $_SESSION['flash_new_photo_url'] = $result['new_photo_url'];
-                    }
-                    break;
                 case 'update_preferences':
                     $result = handleUpdateEmployeePreferences($user_id, $formData);
                     break;
@@ -372,7 +288,7 @@ function setupEmployeeSettingsPage(): array
     }
 
 
-    $csrfToken = generateToken();
+    $csrfToken = $_SESSION['csrf_token'] ?? '';
 
     return [
         'pageTitle' => "Mes Paramètres",
