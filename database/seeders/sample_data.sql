@@ -154,7 +154,7 @@ INSERT INTO prestations (nom, description, prix, duree, type, categorie, niveau_
 ('Formation Risques Psycho-Sociaux (RPS)', 'Identifier et prevenir les RPS en entreprise', 450.00, 420, 'atelier', 'Formation', 'intermediaire', 15, 'Support de cours', 'Managers/RH'),
 ('Webinar Decouverte de l''Art-therapie', 'Explorer son potentiel creatif pour le bien-etre', 160.00, 90, 'webinar', 'Bien-etre mental', 'debutant', 40, 'Feuilles, crayons/peinture', 'Aucun'),
 ('Consultation Conseil en Image Professionnelle', 'Valoriser son image au travail', 140.00, 75, 'consultation', 'Developpement personnel', NULL, 1, 'Aucun', 'Aucun'),
-('Atelier Initiation Tai Chi Chuan', 'Art martial doux pour l''equilibre et la serenite', 100.00, 60, 'atelier', 'Bien-etre physique', 'debutant', 15, 'Tenue souple', 'Aucun');
+('Atelier Initiation Tai Chi Chuan', 'Art martial doux favorisant equilibre et serenite', 100.00, 60, 'atelier', 'Bien-etre physique', 'debutant', 15, 'Tenue souple', 'Aucun');
 
 INSERT INTO personnes (nom, prenom, email, mot_de_passe, telephone, date_naissance, genre, photo_url, role_id, entreprise_id, site_id, statut, derniere_connexion) VALUES
 ('Admin', 'System', 'admin@businesscare.fr', '$2y$10$CGP1gfg0khtXjAZcJFC6iO3oYisjwlPfkm8tQ8Q/OxWpFdR7tOiqO', '0000000000', '1990-01-01', 'Autre', '/assets/images/icons/default-user.png', 1, NULL, NULL, 'actif', NOW()), 
@@ -413,10 +413,10 @@ INSERT INTO interets_utilisateurs (nom, description) VALUES
 ('Sante Mentale', 'Conseils et ressources pour le bien-etre psychologique'),
 ('Nutrition', 'Informations et astuces pour une alimentation saine'),
 ('Activite Physique', 'Motivation et idées pour rester actif'),
-('Gestion du Stress', 'Techniques pour gérer la pression et l\'anxiete'),
+('Gestion du Stress', 'Techniques pour gérer la pression et l''anxiete'),
 ('Sommeil', 'Améliorer la qualité et la quantité de sommeil'),
 ('Communication', 'Développer des compétences relationnelles efficaces'),
-('Developpement Personnel', 'Ressources pour la croissance et l\'epanouissement personnel');
+('Developpement Personnel', 'Ressources pour la croissance et l''epanouissement personnel');
 
 INSERT INTO prestataires_prestations (prestataire_id, prestation_id) VALUES
 (3, 1), (3, 9), (3, 7),
@@ -483,7 +483,7 @@ INSERT INTO factures (entreprise_id, devis_id, numero_facture, date_emission, da
 (28, 31, 'FACT-2024-024', '2024-03-05', '2024-04-04', 1800.00, 1500.00, 20.00, 'payee', 'prelevement', NOW() - INTERVAL 2 DAY),
 (29, 32, 'FACT-2024-025', '2024-07-01', '2024-07-31', 4500.00, 3750.00, 20.00, 'en_attente', 'virement', NULL),
 (2, 26, 'FACT-2024-033', '2024-06-12', '2024-07-27', 22500.00, 18750.00, 20.00, 'retard', 'prelevement', NULL),
-(2, 18, 'FACT-2024-034', '2024-05-30', '2024-06-29', 57000.00, 47500.00, 20.00, 'en_attente', NULL, NULL); -- <<<=== LIGNE AJOUTÉE ===>>>
+(2, 18, 'FACT-2024-034', '2024-05-30', '2024-06-29', 57000.00, 47500.00, 20.00, 'en_attente', NULL, NULL); 
 
 
 INSERT INTO devis_prestations (devis_id, prestation_id, quantite, prix_unitaire_devis, description_specifique) VALUES
