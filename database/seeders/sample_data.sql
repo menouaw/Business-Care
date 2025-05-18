@@ -370,44 +370,43 @@ INSERT INTO conseils (titre, icone, resume, categorie, contenu) VALUES
 ('Hydratation : pourquoi et comment ?', '', 'L''importance vitale de boire de l''eau et des astuces simples pour y parvenir.', 'Nutrition',
 'Notre corps est compose majoritairement d''eau (environ 60 %). Une bonne hydratation est vitale pour le fonctionnement de nos organes, notre niveau d''energie, notre clarte mentale et la sante de notre peau.\n\nPourquoi est-ce si important ?\n- Transporte les nutriments essentiels aux cellules.\n- Elimine les toxines et les dechets metaboliques.\n- Regule la temperature corporelle (transpiration).\n- Lubrifie les articulations.\n- Aide a la concentration et previent les maux de tete.\n\nComment boire suffisamment ?\n- Gourde a portee de main : Gardez une bouteille ou une gourde d''eau sur votre bureau et remplissez-la regulierement.\n- Boire avant la soif : N''attendez pas d''avoir soif, c''est deja un signe de deshydratation legere.\n- Varier les plaisirs : Alternez avec des tisanes non sucrees, de l''eau infusee (citron, menthe, concombre) pour changer.\n- Aliments riches en eau : Consommez des fruits et legumes comme le concombre, la pasteque, l''orange, la salade.\n- Adapter selon les besoins : Augmentez votre apport en cas d''activite physique, de forte chaleur ou de fievre.\nObjectif moyen : environ 1,5 a 2 L d''eau pure par jour, a adapter individuellement.'),
 ('Communication non violente (CNV) : introduction', '', 'Les bases pour communiquer avec plus d''empathie, de clarte et d''efficacite.', 'Communication',
-'La Communication Non Violente (CNV) est une approche developpee par Marshall Rosenberg qui aide a creer des relations basees sur le respect mutuel et la cooperation.\n\nElle repose sur 4 etapes cles pour exprimer ce qui se passe en nous et entendre l''autre avec empathie :\n1. Observation (O) : Decrire les faits concrets et specifiques que nous observons, sans jugement ni interpretation. (Ex. : "Quand je vois des dossiers non classes sur le bureau commun...")\n2. Sentiment (S) : Exprimer l''emotion ressenti face a cette observation. Utiliser "Je me sens..." (Ex. : "...je me sens un peu frustre(e)...")\n3. Besoin (B) : Identifier le besoin fondamental (autonomie, respect, clarte, ordre, soutien...) qui est satisfait ou insatisfait et qui est a l''origine du sentiment. (Ex. : "...car j''ai besoin d''ordre et de clarte dans notre espace de travail partage.")
-4. Demande (D) : Formuler une demande concrete, positive, realisable et negociable, visant a satisfaire le besoin identifie. Preferer une demande a une exigence. (Ex. : "Serais-tu d''accord pour que nous prenions 5 minutes ensemble pour decider comment organiser cet espace ?")\n\nEcoute empathique : La CNV s''applique a l''ecoute. Tentez de deviner les sentiments et besoins de l''autre derriere ses mots, meme s''ils sont exprimes maladroitement.\n\nPratiquer la CNV demande de l''entrainement mais ameliore significativement la qualite des relations professionnelles et personnelles.');
+'La Communication Non Violente (CNV) est une approche developpee par Marshall Rosenberg qui aide a creer des relations basees sur le respect mutuel et la cooperation.\n\nElle repose sur 4 etapes cles pour exprimer ce qui se passe en nous et entendre l''autre avec empathie :\n1. Observation (O) : Decrire les faits concrets et specifiques que nous observons, sans jugement ni interpretation. (Ex. : "Quand je vois des dossiers non classes sur le bureau commun...")\n2. Sentiment (S) : Exprimer l''emotion ressenti face a cette observation. Utiliser "Je me sens..." (Ex. : "...je me sens un peu frustre(e)...")\n3. Besoin (B) : Identifier le besoin fondamental (autonomie, respect, clarte, ordre, soutien...) qui est satisfait ou insatisfait et qui est a l''origine du sentiment. (Ex. : "...car j''ai besoin d''ordre et de clarte dans notre espace de travail partage.")\n4. Demande (D) : Formuler une demande concrete, positive, realisable et negociable, visant a satisfaire le besoin identifie. Preferer une demande a une exigence. (Ex. : "Serais-tu d''accord pour que nous prenions 5 minutes ensemble pour decider comment organiser cet espace ?")\n\nEcoute empathique : La CNV s''applique a l''ecoute. Tentez de deviner les sentiments et besoins de l''autre derriere ses mots, meme s''ils sont exprimes maladroitement.\n\nPratiquer la CNV demande de l''entrainement mais ameliore significativement la qualite des relations professionnelles et personnelles.');
 
 INSERT INTO consultation_creneaux (prestation_id, praticien_id, start_time, end_time, is_booked, site_id) VALUES
-(2, 3, NOW() + INTERVAL 20 DAY + INTERVAL '10:00' HOUR_MINUTE, NOW() + INTERVAL 20 DAY + INTERVAL '11:00' HOUR_MINUTE, FALSE, NULL), -- Yoga (60 min)
-(3, 3, NOW() + INTERVAL 20 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 20 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), -- Webinar Stress (90 min)
-(5, 3, NOW() + INTERVAL 20 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 20 DAY + INTERVAL '15:00' HOUR_MINUTE, FALSE, NULL), -- Meditation (60 min)
-(6, 3, NOW() + INTERVAL 21 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 21 DAY + INTERVAL '11:00' HOUR_MINUTE, FALSE, NULL), -- Ergonomie (120 min)
-(8, 3, NOW() + INTERVAL 21 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 21 DAY + INTERVAL '13:30' HOUR_MINUTE, FALSE, NULL), -- Com Assertive (120 min)
-(10, 3, NOW() + INTERVAL 21 DAY + INTERVAL '14:30' HOUR_MINUTE, NOW() + INTERVAL 21 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), -- Conf Sommeil (90 min)
-(12, 3, NOW() + INTERVAL 22 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 22 DAY + INTERVAL '11:00' HOUR_MINUTE, FALSE, NULL), -- Gest Temps (120 min)
-(13, 3, NOW() + INTERVAL 22 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 22 DAY + INTERVAL '12:30' HOUR_MINUTE, FALSE, NULL), -- Pilates (60 min)
-(14, 3, NOW() + INTERVAL 22 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 22 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), -- Webinar Cyber (90 min)
-(15, 3, NOW() + INTERVAL 23 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '09:50' HOUR_MINUTE, FALSE, NULL), -- Arret Tabac (50 min)
-(16, 3, NOW() + INTERVAL 23 DAY + INTERVAL '10:00' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '11:15' HOUR_MINUTE, FALSE, NULL), -- Conf Nutri Sport (75 min)
-(17, 3, NOW() + INTERVAL 23 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), -- Cuisine Saine (90 min)
-(18, 3, NOW() + INTERVAL 23 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '15:00' HOUR_MINUTE, FALSE, NULL), -- Coaching Pro (60 min)
-(19, 3, NOW() + INTERVAL 24 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 24 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), -- Secourisme (240 min)
-(20, 3, NOW() + INTERVAL 24 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 24 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), -- Webinar CNV (120 min)
-(22, 3, NOW() + INTERVAL 25 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 25 DAY + INTERVAL '09:50' HOUR_MINUTE, FALSE, NULL), -- Reflexologie (50 min)
-(23, 3, NOW() + INTERVAL 25 DAY + INTERVAL '10:00' HOUR_MINUTE, NOW() + INTERVAL 25 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), -- Gest Conflits (180 min)
-(24, 3, NOW() + INTERVAL 25 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 25 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), -- Conf Equilibre (90 min)
-(25, 3, NOW() + INTERVAL 26 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 26 DAY + INTERVAL '10:00' HOUR_MINUTE, FALSE, NULL), -- Dietetique (60 min)
-(26, 3, NOW() + INTERVAL 26 DAY + INTERVAL '10:30' HOUR_MINUTE, NOW() + INTERVAL 26 DAY + INTERVAL '12:30' HOUR_MINUTE, FALSE, NULL), -- Creativite (120 min)
-(27, 3, NOW() + INTERVAL 26 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 26 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), -- Webinar Burnout (90 min)
-(28, 3, NOW() + INTERVAL 27 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 27 DAY + INTERVAL '10:00' HOUR_MINUTE, FALSE, NULL), -- Hypnose Relax (60 min)
-(29, 3, NOW() + INTERVAL 27 DAY + INTERVAL '10:30' HOUR_MINUTE, NOW() + INTERVAL 27 DAY + INTERVAL '16:30' HOUR_MINUTE, FALSE, NULL), -- Management Bien (360 min)
-(30, 3, NOW() + INTERVAL 28 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 28 DAY + INTERVAL '10:15' HOUR_MINUTE, FALSE, NULL), -- Conf Numerique (75 min)
-(31, 3, NOW() + INTERVAL 28 DAY + INTERVAL '10:30' HOUR_MINUTE, NOW() + INTERVAL 28 DAY + INTERVAL '11:30' HOUR_MINUTE, FALSE, NULL), -- Auto-massage (60 min)
-(32, 3, NOW() + INTERVAL 28 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 28 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), -- Orientation (90 min)
-(33, 3, NOW() + INTERVAL 29 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 29 DAY + INTERVAL '10:30' HOUR_MINUTE, FALSE, NULL), -- Webinar Invest (90 min)
-(34, 3, NOW() + INTERVAL 29 DAY + INTERVAL '11:00' HOUR_MINUTE, NOW() + INTERVAL 29 DAY + INTERVAL '14:00' HOUR_MINUTE, FALSE, NULL), -- Prise Parole (180 min)
-(35, 3, NOW() + INTERVAL 29 DAY + INTERVAL '15:00' HOUR_MINUTE, NOW() + INTERVAL 29 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), -- Sexologie (60 min)
-(36, 3, NOW() + INTERVAL 30 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 30 DAY + INTERVAL '10:30' HOUR_MINUTE, FALSE, NULL), -- Conf Addictions (90 min)
-(37, 3, NOW() + INTERVAL 30 DAY + INTERVAL '11:00' HOUR_MINUTE, NOW() + INTERVAL 30 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), -- Jardinage (120 min)
-(38, 3, NOW() + INTERVAL 30 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 30 DAY + INTERVAL '14:45' HOUR_MINUTE, FALSE, NULL), -- Musicotherapie (45 min)
-(39, 3, NOW() + INTERVAL 31 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 31 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), -- Formation RPS (420 min)
-(40, 3, NOW() + INTERVAL 32 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 32 DAY + INTERVAL '10:30' HOUR_MINUTE, FALSE, NULL); -- Webinar Art (90 min)
+(2, 3, NOW() + INTERVAL 20 DAY + INTERVAL '10:00' HOUR_MINUTE, NOW() + INTERVAL 20 DAY + INTERVAL '11:00' HOUR_MINUTE, FALSE, NULL), 
+(3, 3, NOW() + INTERVAL 20 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 20 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), 
+(5, 3, NOW() + INTERVAL 20 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 20 DAY + INTERVAL '15:00' HOUR_MINUTE, FALSE, NULL), 
+(6, 3, NOW() + INTERVAL 21 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 21 DAY + INTERVAL '11:00' HOUR_MINUTE, FALSE, NULL), 
+(8, 3, NOW() + INTERVAL 21 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 21 DAY + INTERVAL '13:30' HOUR_MINUTE, FALSE, NULL), 
+(10, 3, NOW() + INTERVAL 21 DAY + INTERVAL '14:30' HOUR_MINUTE, NOW() + INTERVAL 21 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), 
+(12, 3, NOW() + INTERVAL 22 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 22 DAY + INTERVAL '11:00' HOUR_MINUTE, FALSE, NULL), 
+(13, 3, NOW() + INTERVAL 22 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 22 DAY + INTERVAL '12:30' HOUR_MINUTE, FALSE, NULL), 
+(14, 3, NOW() + INTERVAL 22 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 22 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), 
+(15, 3, NOW() + INTERVAL 23 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '09:50' HOUR_MINUTE, FALSE, NULL), 
+(16, 3, NOW() + INTERVAL 23 DAY + INTERVAL '10:00' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '11:15' HOUR_MINUTE, FALSE, NULL), 
+(17, 3, NOW() + INTERVAL 23 DAY + INTERVAL '11:30' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), 
+(18, 3, NOW() + INTERVAL 23 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 23 DAY + INTERVAL '15:00' HOUR_MINUTE, FALSE, NULL), 
+(19, 3, NOW() + INTERVAL 24 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 24 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), 
+(20, 3, NOW() + INTERVAL 24 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 24 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), 
+(22, 3, NOW() + INTERVAL 25 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 25 DAY + INTERVAL '09:50' HOUR_MINUTE, FALSE, NULL), 
+(23, 3, NOW() + INTERVAL 25 DAY + INTERVAL '10:00' HOUR_MINUTE, NOW() + INTERVAL 25 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), 
+(24, 3, NOW() + INTERVAL 25 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 25 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), 
+(25, 3, NOW() + INTERVAL 26 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 26 DAY + INTERVAL '10:00' HOUR_MINUTE, FALSE, NULL), 
+(26, 3, NOW() + INTERVAL 26 DAY + INTERVAL '10:30' HOUR_MINUTE, NOW() + INTERVAL 26 DAY + INTERVAL '12:30' HOUR_MINUTE, FALSE, NULL), 
+(27, 3, NOW() + INTERVAL 26 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 26 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), 
+(28, 3, NOW() + INTERVAL 27 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 27 DAY + INTERVAL '10:00' HOUR_MINUTE, FALSE, NULL), 
+(29, 3, NOW() + INTERVAL 27 DAY + INTERVAL '10:30' HOUR_MINUTE, NOW() + INTERVAL 27 DAY + INTERVAL '16:30' HOUR_MINUTE, FALSE, NULL), 
+(30, 3, NOW() + INTERVAL 28 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 28 DAY + INTERVAL '10:15' HOUR_MINUTE, FALSE, NULL), 
+(31, 3, NOW() + INTERVAL 28 DAY + INTERVAL '10:30' HOUR_MINUTE, NOW() + INTERVAL 28 DAY + INTERVAL '11:30' HOUR_MINUTE, FALSE, NULL), 
+(32, 3, NOW() + INTERVAL 28 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 28 DAY + INTERVAL '15:30' HOUR_MINUTE, FALSE, NULL), 
+(33, 3, NOW() + INTERVAL 29 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 29 DAY + INTERVAL '10:30' HOUR_MINUTE, FALSE, NULL), 
+(34, 3, NOW() + INTERVAL 29 DAY + INTERVAL '11:00' HOUR_MINUTE, NOW() + INTERVAL 29 DAY + INTERVAL '14:00' HOUR_MINUTE, FALSE, NULL), 
+(35, 3, NOW() + INTERVAL 29 DAY + INTERVAL '15:00' HOUR_MINUTE, NOW() + INTERVAL 29 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), 
+(36, 3, NOW() + INTERVAL 30 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 30 DAY + INTERVAL '10:30' HOUR_MINUTE, FALSE, NULL), 
+(37, 3, NOW() + INTERVAL 30 DAY + INTERVAL '11:00' HOUR_MINUTE, NOW() + INTERVAL 30 DAY + INTERVAL '13:00' HOUR_MINUTE, FALSE, NULL), 
+(38, 3, NOW() + INTERVAL 30 DAY + INTERVAL '14:00' HOUR_MINUTE, NOW() + INTERVAL 30 DAY + INTERVAL '14:45' HOUR_MINUTE, FALSE, NULL), 
+(39, 3, NOW() + INTERVAL 31 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 31 DAY + INTERVAL '16:00' HOUR_MINUTE, FALSE, NULL), 
+(40, 3, NOW() + INTERVAL 32 DAY + INTERVAL '09:00' HOUR_MINUTE, NOW() + INTERVAL 32 DAY + INTERVAL '10:30' HOUR_MINUTE, FALSE, NULL); 
 
 INSERT INTO interets_utilisateurs (nom, description) VALUES
 ('Sante Mentale', 'Conseils et ressources pour le bien-etre psychologique'),
