@@ -213,10 +213,10 @@ function verifyPostedCsrfToken()
         ) {
 
             flashMessage("Erreur de sécurité (jeton invalide). Veuillez réessayer.", "danger");
-            // Attempt to redirect to the referrer, or a default page if referrer is not set
+            
             $redirectUrl = $_SERVER['HTTP_REFERER'] ?? (defined('WEBCLIENT_URL') ? WEBCLIENT_URL . '/index.php' : 'index.php');
             redirectTo($redirectUrl);
-            exit; // Important to stop script execution after redirect
+            exit; 
         }
     }
 }
@@ -657,4 +657,19 @@ function getUserInterests(int $userId): array
     $stmt = executeQuery($sqlInterests, $userInterestIds);
     $userInterestsData = $stmt->fetchAll(PDO::FETCH_COLUMN);
     return $userInterestsData ?: [];
+}
+
+/**
+ * Valide un jeton CSRF fourni contre celui en session.
+ *
+ * @param string|null $submittedToken Le jeton soumis.
+ * @return bool True si le jeton est valide, false sinon.
+ */
+function validateToken(?string $submittedToken): bool
+{
+    if (empty($_SESSION['csrf_token']) || $submittedToken === null) {
+        
+        return false;
+    }
+    return hash_equals($_SESSION['csrf_token'], $submittedToken);
 }

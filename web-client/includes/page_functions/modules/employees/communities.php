@@ -170,7 +170,7 @@ function setupCommunitiesPage(): array
     handleCommunityActions($salarie_id);
 
     $view_id = filter_input(INPUT_GET, 'view_id', FILTER_VALIDATE_INT);
-    $csrfToken = generateToken();
+    $csrfToken = $_SESSION['csrf_token'] ?? '';
 
 
     $isDetailViewRequested = ($view_id !== null && $view_id > 0);
