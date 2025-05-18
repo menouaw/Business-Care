@@ -74,7 +74,7 @@ include __DIR__ . '/../../templates/header.php';
                                 <i class="fas fa-arrow-left"></i>
                             </a>
                             <?php
-                            $csrfToken = $csrf_token ?? generateToken();
+                            $csrfToken = $csrf_token ?? ($_SESSION['csrf_token'] ?? '');
 
                             if ($isMember):
                             ?>
