@@ -107,7 +107,7 @@ function processPasswordResetForm($formData = null)
 
     if (resetPassword($email)) {
         $result['success'] = true;
-        $result['message'] = 'Si cette adresse email est associée à un compte, vous recevrez un email avec les instructions pour réinitialiser votre mot de passe.';
+        $result['message'] = 'Si cette adresse email est associée à un compte.';
         logSystemActivity('password_reset_requested', "Demande de réinitialisation pour: $email");
     } else {
 

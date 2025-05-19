@@ -204,9 +204,10 @@ INSERT INTO personnes (nom, prenom, email, mot_de_passe, telephone, date_naissan
 ('Representant', 'RetailExpress', 'rep.retailexpress@businesscare.fr', '$2y$10$CGP1gfg0khtXjAZcJFC6iO3oYisjwlPfkm8tQ8Q/OxWpFdR7tOiqO', '0000000003', '1982-09-15', 'Autre', '/assets/images/icons/default-user.png', 4, 5, 6, 'suspendu', NOW());
 
 INSERT INTO services (id, type, description, actif, ordre, max_effectif_inferieur_egal, activites_incluses, rdv_medicaux_inclus, chatbot_questions_limite, rdv_medicaux_supplementaires_prix, conseils_hebdo_personnalises, tarif_annuel_par_salarie, prix_base_indicatif) VALUES
-(1, 'Starter Pack', 'Pack Essentiel: jusqu''a 30 salaries. Ideal pour demarrer.', TRUE, 10, 30, 2, 1, 6, 75.00, FALSE, 180.00, 100.00),
-(2, 'Basic Pack', 'Pack Avantage: jusqu''a 250 salaries. La solution equilibree.', TRUE, 20, 250, 3, 2, 20, 75.00, FALSE, 150.00, 500.00),
-(3, 'Premium Pack', 'Pack Excellence: a partir de 251 salaries. L''offre complete et personnalisee.', TRUE, 30, NULL, 4, 3, NULL, 50.00, TRUE, 100.00, 1000.00);
+(1, 'Starter Pack', 'Pack Essentiel: jusqu''à 30 salariés. Idéal pour démarrer.', TRUE, 10, 30, 2, 1, 6, 0.75, FALSE, 180.00, 100.00),
+(2, 'Basic Pack', 'Pack Avantage: jusqu''à 250 salariés. La solution équilibrée.', TRUE, 20, 250, 3, 2, 20, 0.75, FALSE, 150.00, 500.00),
+(3, 'Premium Pack', 'Pack Excellence: à partir de 251 salariés. L''offre complète et personnalisée.', TRUE, 30, NULL, 4, 3, NULL, 0.50, TRUE, 100.00, 1000.00);
+
 
 INSERT INTO contrats (entreprise_id, service_id, date_debut, date_fin, nombre_salaries, statut, conditions_particulieres) VALUES
 (1, 3, '2024-01-01', '2025-12-31', 150, 'actif', 'Acces a toutes les prestations premium'),
@@ -325,15 +326,15 @@ INSERT INTO evenements (titre, description, date_debut, date_fin, lieu, type, ca
 ('Atelier Meditation Pleine Conscience Avance', 'Approfondir sa pratique', NOW() + INTERVAL 14 WEEK, NOW() + INTERVAL 14 WEEK + INTERVAL 75 MINUTE, 'Salle Calme Sante Plus Paris', 'atelier', 10, 'avance', 'Coussin (optionnel)', 'Pratique reguliere', 2, FALSE),
 ('Webinar Gestion de Projet Agile', 'Introduction aux methodes agiles', NOW() + INTERVAL 15 WEEK, NOW() + INTERVAL 15 WEEK + INTERVAL 2 HOUR, 'En ligne', 'webinar', 60, 'intermediaire', 'PC', 'Notions gestion projet', NULL, FALSE),
 ('Defi Sportif : Challenge Velotaf', 'Promouvoir le velo pour aller au travail', NOW() + INTERVAL 16 WEEK, NOW() + INTERVAL 17 WEEK, 'Trajets domicile-travail', 'defi_sportif', NULL, 'debutant', 'Velo', 'Habiter a distance cyclable', NULL, FALSE),
-('Atelier Cuisine Vegetarienne', 'Decouvrir des recettes savoureuses et equilibrees', NOW() + INTERVAL 17 WEEK, NOW() + INTERVAL 17 WEEK + INTERVAL 2 HOUR, 'Cuisine partagee Bien-etre Corp Paris', 'atelier', 12, 'debutant', 'Ingredients fournis', 'Aucun', 3, FALSE),
+('Atelier Cuisine Vegetarienne', 'Decouvrir des recettes savoureuses et equilibrees', NOW() + INTERVAL 17 WEEK, NOW() + INTERVAL 17 WEEK + INTERVAL 2 HOUR, 'Cuisine partagee Bien-etre Corp Paris', 'atelier', 12, 'debutant', 'Ingredients fournis', 'Aucun', 3, TRUE),
 ('Conference Leadership Positif', 'Inspirer et motiver ses equipes', NOW() + INTERVAL 18 WEEK, NOW() + INTERVAL 18 WEEK + INTERVAL 90 MINUTE, 'Siege Social Finance Conseil Paris', 'conference', 50, 'avance', 'Aucun', 'Managers', 5, FALSE),
 ('Webinar Ergonomie a Domicile', 'Amenager son poste de teletravail', NOW() + INTERVAL 19 WEEK, NOW() + INTERVAL 19 WEEK + INTERVAL 1 HOUR, 'En ligne', 'webinar', 150, 'debutant', 'PC, Webcam (optionnel)', 'Aucun', NULL, FALSE),
 ('Atelier Auto-Hypnose', 'Apprendre a utiliser l''auto-hypnose pour le bien-etre', NOW() + INTERVAL 20 WEEK, NOW() + INTERVAL 20 WEEK + INTERVAL 2 HOUR, 'Salle Detente Tech Solutions Paris', 'atelier', 15, 'intermediaire', 'Fauteuil confortable', 'Aucun', 1, FALSE),
 ('Conference Securite Informatique PME', 'Proteger son entreprise des cybermenaces', NOW() + INTERVAL 21 WEEK, NOW() + INTERVAL 21 WEEK + INTERVAL 2 HOUR, 'CCI Lyon Metropole', 'conference', 70, 'intermediaire', 'Aucun', 'Dirigeants/Responsables IT', NULL, FALSE),
 ('Webinar Developpement Durable en Entreprise', 'Initiatives et bonnes pratiques RSE', NOW() + INTERVAL 22 WEEK, NOW() + INTERVAL 22 WEEK + INTERVAL 1 HOUR, 'En ligne', 'webinar', 90, 'debutant', 'PC', 'Aucun', NULL, FALSE),
 ('Atelier Gestion Financiere Personnelle', 'Mieux gerer son budget et son epargne', NOW() + INTERVAL 23 WEEK, NOW() + INTERVAL 23 WEEK + INTERVAL 2 HOUR, 'Salle Formation Sante Plus Paris', 'atelier', 25, 'debutant', 'Calculatrice (optionnel)', 'Aucun', 2, FALSE),
-('Conference Neurosciences et Apprentissage', 'Comment le cerveau apprend', NOW() + INTERVAL 24 WEEK, NOW() + INTERVAL 24 WEEK + INTERVAL 90 MINUTE, 'Universite Lyon 2', 'conference', 200, 'avance', 'Aucun', 'Aucun', NULL, FALSE),
-('Defi Solidaire : Collecte de Dons', 'Mobilisation pour une association partenaire', NOW() + INTERVAL 25 WEEK, NOW() + INTERVAL 26 WEEK, 'Multi-sites / En ligne', 'defi_sportif', NULL, 'debutant', 'Generosite', 'Aucun', NULL, FALSE),
+('Conference Neurosciences et Apprentissage', 'Comment le cerveau apprend', NOW() + INTERVAL 24 WEEK, NOW() + INTERVAL 24 WEEK + INTERVAL 90 MINUTE, 'Universite Lyon 2', 'conference', 200, 'avance', 'Aucun', 'Aucun', NULL, TRUE),
+('Defi Solidaire : Collecte de Dons', 'Mobilisation pour une association partenaire', NOW() + INTERVAL 25 WEEK, NOW() + INTERVAL 26 WEEK, 'Multi-sites / En ligne', 'defi_sportif', NULL, 'debutant', 'Generosite', 'Aucun', NULL, TRUE),
 ('Atelier Communication Interculturelle', 'Comprendre et s''adapter aux differences culturelles', NOW() + INTERVAL 26 WEEK, NOW() + INTERVAL 26 WEEK + INTERVAL 3 HOUR, 'Centre International de Conference Paris', 'atelier', 30, 'intermediaire', 'Aucun', 'Travail international (optionnel)', NULL, FALSE);
 
 INSERT INTO communautes (nom, description, type, niveau, capacite_max) VALUES

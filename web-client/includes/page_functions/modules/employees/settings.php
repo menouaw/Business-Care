@@ -17,26 +17,6 @@ function getEmployeeDetailsForSettings(int $user_id): array|false
     return fetchOne(TABLE_USERS, 'id = :id', [":id" => $user_id], 'id, nom, prenom, email, telephone, date_naissance, genre, photo_url');
 }
 
-/**
- * Récupère les préférences d'un employé.
- *
- * @param int $user_id L'ID de l'employé.
- * @return array Les préférences (peut être vide si aucune n'est définie).
- */
-function getEmployeePreferences(int $user_id): array
-{
-    if ($user_id <= 0) {
-        return [];
-    }
-
-    $prefs = fetchOne(TABLE_USER_PREFERENCES, 'personne_id = :id', [':id' => $user_id]);
-
-    return [
-        'langue' => $prefs['langue'] ?? 'fr',
-        'notif_email' => $prefs['notif_email'] ?? true,
-        'theme' => $prefs['theme'] ?? 'clair'
-    ];
-}
 
 /**
  * Met à jour le profil de l'employé (informations de base).
@@ -94,29 +74,6 @@ function handleUpdateEmployeePreferences(int $user_id, array $formData): array
 {
     if ($user_id <= 0) return ['success' => false, 'message' => 'Utilisateur invalide.'];
 
-    $langue = $formData['langue'] ?? 'fr';
-    $notif_email = isset($formData['notif_email']) ? 1 : 0;
-    $theme = $formData['theme'] ?? 'clair';
-
-
-    if (!in_array($langue, ['fr', 'en'])) $langue = 'fr';
-    if (!in_array($theme, ['clair', 'sombre'])) $theme = 'clair';
-
-    $dataToUpdate = [
-        'langue' => $langue,
-        'notif_email' => $notif_email,
-        'theme' => $theme
-    ];
-
-    $existingPrefs = fetchOne(TABLE_USER_PREFERENCES, 'personne_id = :id', [':id' => $user_id]);
-
-    if ($existingPrefs) {
-        $updated = updateRow(TABLE_USER_PREFERENCES, $dataToUpdate, 'personne_id = :id', [':id' => $user_id]);
-    } else {
-        $dataToUpdate['personne_id'] = $user_id;
-        $updated = insertRow(TABLE_USER_PREFERENCES, $dataToUpdate);
-    }
-    $_SESSION['user_language'] = $langue;
     return ['success' => true, 'message' => 'Préférences mises à jour.'];
 }
 

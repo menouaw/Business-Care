@@ -109,31 +109,7 @@ include __DIR__ . '/../../templates/header.php';
                     </div>
 
                     
-                    <div class="card shadow-sm mb-4">
-                        <div class="card-header">
-                            <h5 class="mb-0">Préférences Générales</h5>
-                        </div>
-                        <div class="card-body">
-                            <form action="settings.php" method="post" id="preferences-form">
-                                <input type="hidden" name="action" value="update_preferences">
-                                <input type="hidden" name="csrf_token" value="<?= $csrf_token_preferences ?>">
-
-                                <div class="mb-3">
-                                    <label for="langue" class="form-label">Langue</label>
-                                    <select class="form-select" id="langue" name="langue">
-                                        <option value="fr" <?= ($preferences['langue'] ?? 'fr') === 'fr' ? 'selected' : '' ?>>Français</option>
-                                        <option value="en" <?= ($preferences['langue'] ?? 'fr') === 'en' ? 'selected' : '' ?>>English</option>
-                                    </select>
-                                </div>
-
-                                <div class="form-check mb-3">
-                                    <input class="form-check-input" type="checkbox" id="notif_email" name="notif_email" value="1" <?= !empty($preferences['notif_email']) ? 'checked' : '' ?>>
-                                    <label class="form-check-label" for="notif_email">
-                                        Recevoir les notifications importantes par email
-                                    </label>
-                                </div>
-
-                                <button type="submit" class="btn btn-info">Enregistrer les préférences</button>
+                  
                             </form>
                         </div>
                     </div>

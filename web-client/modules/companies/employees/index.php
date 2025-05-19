@@ -10,7 +10,6 @@ $entreprise_id = $_SESSION['user_entreprise'] ?? 0;
 $current_page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($_POST['employee_id'])) {
-    verifyCsrfToken();
     $action = $_POST['action'];
     $employee_id = (int)$_POST['employee_id'];
     $redirectUrl = WEBCLIENT_URL . '/modules/companies/employees/index.php?page=' . $current_page;
@@ -112,14 +111,14 @@ include __DIR__ . '/../../../templates/header.php';
 
                                         <?php if ($employee['statut'] === 'actif'): ?>
                                             <form method="post" action="<?php echo WEBCLIENT_URL; ?>/modules/companies/employees/index.php?page=<?= $current_page ?>" class="d-inline">
-                                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(generateCsrfToken()); ?>">
+                                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(ensureCsrfToken()); ?>">
                                                 <input type="hidden" name="action" value="delete">
                                                 <input type="hidden" name="employee_id" value="<?= $employee['id'] ?>">
                                                 <button type="submit" class="btn btn-sm btn-outline-danger" title="Désactiver" onclick="return confirm('Êtes-vous sûr de vouloir désactiver ce salarié ?');"><i class="fas fa-user-slash"></i></button>
                                             </form>
                                         <?php else: ?>
                                             <form method="post" action="<?php echo WEBCLIENT_URL; ?>/modules/companies/employees/index.php?page=<?= $current_page ?>" class="d-inline">
-                                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(generateCsrfToken()); ?>">
+                                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(ensureCsrfToken()); ?>">
                                                 <input type="hidden" name="action" value="reactivate">
                                                 <input type="hidden" name="employee_id" value="<?= $employee['id'] ?>">
                                                 <button type="submit" class="btn btn-sm btn-outline-success" title="Réactiver" onclick="return confirm('Êtes-vous sûr de vouloir réactiver ce salarié ?');"><i class="fas fa-user-check"></i></button>

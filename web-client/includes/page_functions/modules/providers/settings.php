@@ -19,25 +19,7 @@ function getProviderDetailsForSettings(int $provider_id): array|false
     return fetchOne(TABLE_USERS, 'id = :id AND role_id = :role_id', [":id" => $provider_id, ":role_id" => ROLE_PRESTATAIRE], 'id, nom, prenom, email, telephone, date_naissance, genre');
 }
 
-/**
- * Récupère les préférences d'un prestataire.
- *
- * @param int $provider_id L'ID du prestataire.
- * @return array Les préférences (peut être vide si aucune n'est définie).
- */
-function getProviderPreferences(int $provider_id): array
-{
-    if ($provider_id <= 0) {
-        return [];
-    }
 
-    $prefs = fetchOne(TABLE_USER_PREFERENCES, 'personne_id = :id', [':id' => $provider_id]);
-
-    return [
-        'langue' => $prefs['langue'] ?? 'fr',
-        'notif_email' => $prefs['notif_email'] ?? true,
-    ];
-}
 
 /**
  * Met à jour le profil du prestataire (informations de base).
@@ -83,38 +65,7 @@ function handleUpdateProviderProfile(int $provider_id, array $formData): array
     }
 }
 
-/**
- * Met à jour les préférences du prestataire.
- *
- * @param int $provider_id L'ID du prestataire.
- * @param array $formData Données du formulaire POST.
- * @return array Résultat [success => bool, message => string].
- */
-function handleUpdateProviderPreferences(int $provider_id, array $formData): array
-{
-    if ($provider_id <= 0) return ['success' => false, 'message' => 'Utilisateur invalide.'];
 
-    $langue = $formData['langue'] ?? 'fr';
-    $notif_email = isset($formData['notif_email']) ? 1 : 0;
-
-    if (!in_array($langue, ['fr', 'en'])) $langue = 'fr';
-
-    $dataToUpdate = [
-        'langue' => $langue,
-        'notif_email' => $notif_email,
-    ];
-
-    $existingPrefs = fetchOne(TABLE_USER_PREFERENCES, 'personne_id = :id', [':id' => $provider_id]);
-
-    if ($existingPrefs) {
-        updateRow(TABLE_USER_PREFERENCES, $dataToUpdate, 'personne_id = :id', [':id' => $provider_id]);
-    } else {
-        $dataToUpdate['personne_id'] = $provider_id;
-        insertRow(TABLE_USER_PREFERENCES, $dataToUpdate);
-    }
-    $_SESSION['user_language'] = $langue;
-    return ['success' => true, 'message' => 'Préférences mises à jour.'];
-}
 
 /**
  * Met à jour le mot de passe du prestataire.
@@ -208,7 +159,7 @@ function setupProviderSettingsPage(): array
 
 
     $providerDetails = getProviderDetailsForSettings($provider_id);
-    $providerPreferences = getProviderPreferences($provider_id);
+
 
     if (!$providerDetails) {
 
@@ -226,8 +177,6 @@ function setupProviderSettingsPage(): array
     return [
         'pageTitle' => "Mes Paramètres Prestataire",
         'provider' => $providerDetails,
-        'preferences' => $providerPreferences,
-
         'csrf_token_profile' => $csrfToken,
         'csrf_token_password' => $csrfToken,
         'csrf_token_preferences' => $csrfToken

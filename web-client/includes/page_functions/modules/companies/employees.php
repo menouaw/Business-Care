@@ -360,7 +360,7 @@ function _checkExistingEmployeeByEmail(string $email): bool
 function _handleSuccessfulEmployeeAddition(array $dataToInsert, int $newEmployeeId, int $entreprise_id): void
 {
     logSecurityEvent($_SESSION['user_id'] ?? null, 'employee_add', '[SUCCESS] Ajout salarié ID: ' . $newEmployeeId . ' pour entreprise ID: ' . $entreprise_id);
-    flashMessage("Salarié " . htmlspecialchars($dataToInsert['prenom'] . ' ' . $dataToInsert['nom']) . " ajouté avec succès. Un email d'activation devrait être envoyé.", "success");
+    flashMessage("Salarié " . htmlspecialchars($dataToInsert['prenom'] . ' ' . $dataToInsert['nom']) . " ajouté avec succès.", "success");
 
     $actor_id = $_SESSION['user_id'] ?? null;
     if ($actor_id && function_exists('createNotification')) {
