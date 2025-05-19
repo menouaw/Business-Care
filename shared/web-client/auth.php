@@ -18,7 +18,6 @@ function login($email, $password, $rememberMe = false)
         $_SESSION['user_photo'] = $user['photo_url'];
         $_SESSION['last_activity'] = time();
 
-        loadUserPreferences($user['id']);
 
         if ($rememberMe) {
             $token = createRememberMeToken($user['id']);
@@ -235,7 +234,6 @@ function validateRememberMeToken($token)
             $_SESSION['user_photo'] = $user['photo_url'];
             $_SESSION['last_activity'] = time();
 
-            loadUserPreferences($user['id']);
 
             logSecurityEvent($user['id'], 'auto_login', '[SUCCESS] Connexion automatique via jeton "Se souvenir de moi"');
             return true;

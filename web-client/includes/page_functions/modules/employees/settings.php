@@ -216,7 +216,6 @@ function setupEmployeeSettingsPage(): array
 
 
     $employeeDetails = getEmployeeDetailsForSettings($user_id);
-    $employeePreferences = getEmployeePreferences($user_id);
 
 
     $allInterests = fetchAll('interets_utilisateurs', '', 'nom ASC');
