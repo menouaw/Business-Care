@@ -129,7 +129,7 @@ include '../../templates/header.php';
                                 <select class="form-select" id="taille_entreprise" name="taille_entreprise">
                                     <option value="">-- Sélectionner une taille --</option>
                                     <?php foreach (COMPANY_SIZES as $size): ?>
-                                    <option value="<?php echo $size; ?>" <?php echo ($company['taille_entreprise'] == $size) ? 'selected' : ''; ?>>
+                                    <option value="<?php echo $size; ?>" <?php echo (isset($company['taille_entreprise']) && $company['taille_entreprise'] == $size) ? 'selected' : ''; ?>>
                                         <?php echo htmlspecialchars($size); ?>
                                     </option>
                                     <?php endforeach; ?>

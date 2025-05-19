@@ -187,7 +187,7 @@ function displayFlashMessages()
         $alertClass = $alertTypes[$type] ?? 'alert-info';
 
         $htmlOutput .= '<div class="alert ' . htmlspecialchars($alertClass, ENT_QUOTES, 'UTF-8') . ' alert-dismissible fade show" role="alert">'
-            . htmlspecialchars($message)
+            . htmlspecialchars($message, ENT_QUOTES, 'UTF-8')
             . '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>'
             . '</div>';
     }
