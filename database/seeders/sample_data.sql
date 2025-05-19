@@ -566,3 +566,7 @@ INSERT INTO communaute_messages (communaute_id, personne_id, message) VALUES
 (1, 17, 'Est-ce qu''il y a un cours de Yoga prévu la semaine prochaine sur le site Sante+ ?'),
 (2, 20, 'Besoin de motivation pour sortir courir avec ce temps ! Des astuces ?');
 
+INSERT INTO association_projets (association_id, titre, description) VALUES
+(1, 'Collecte de vêtements', 'Organisation d''une collecte de vêtements pour les personnes démunies.'),
+(2, 'Ateliers d'alphabétisation', 'Sessions d''apprentissage de la lecture et de l\'écriture pour adultes.'),
+(3, 'Journée solidaire', 'Événement pour sensibiliser et soutenir les familles en difficulté.');

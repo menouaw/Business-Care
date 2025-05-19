@@ -81,9 +81,9 @@ include __DIR__ . '/../../templates/header.php';
                                             </button>
                                         <?php else: ?>
                                             <?php
-                                            $btn_class = 'btn-primary'; // Couleur par défaut
+                                            $btn_class = 'btn-primary'; 
                                             if ($event['organise_par_bc']) {
-                                                $btn_class = 'btn-success'; // Couleur verte si organisé par BC
+                                                $btn_class = 'btn-success'; 
                                             }
                                             ?>
                                             <a href="?action=register&id=<?= $event['id'] ?>" class="btn <?= $btn_class ?> btn-sm">
@@ -155,9 +155,9 @@ include __DIR__ . '/../../templates/header.php';
                                             </button>
                                         <?php else: ?>
                                             <?php
-                                            $btn_class = 'btn-primary'; // Couleur par défaut
+                                            $btn_class = 'btn-primary'; 
                                             if ($event['organise_par_bc']) {
-                                                $btn_class = 'btn-success'; // Couleur verte si organisé par BC
+                                                $btn_class = 'btn-success'; 
                                             }
                                             ?>
                                             <a href="?action=register&id=<?= $event['id'] ?>" class="btn <?= $btn_class ?> btn-sm">

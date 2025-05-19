@@ -25,7 +25,8 @@ function getAppointmentDetailsForEmployee(int $salarie_id, int $rdv_id): array|f
 {
     if ($salarie_id <= 0 || $rdv_id <= 0) return false;
     
-    $sql = "SELECT rdv.*, pres.nom as prestation_nom, pres.description as prestation_description,
+    $sql = "SELECT rdv.id, rdv.date_rdv, rdv.statut, rdv.type_rdv, rdv.lieu,
+                   pres.nom as prestation_nom, pres.description as prestation_description,
                    CONCAT(prat.prenom, ' ', prat.nom) as praticien_nom, prat.email as praticien_email, prat.telephone as praticien_tel,
                    s.nom as site_nom, CONCAT(s.adresse, ', ', s.code_postal, ' ', s.ville) as site_adresse
             FROM " . TABLE_APPOINTMENTS . " rdv
@@ -48,7 +49,7 @@ function bookAppointmentSlot(int $salarie_id, int $slot_id, int $service_id_conf
     if ($salarie_id <= 0 || $slot_id <= 0 || $service_id_confirm <= 0) return false;
     
     beginTransaction();
-    $slot = executeQuery("SELECT * FROM consultation_creneaux WHERE id = :slot_id AND prestation_id = :service_id FOR UPDATE", [
+    $slot = executeQuery("SELECT id, prestation_id, praticien_id, start_time, site_id, is_booked FROM consultation_creneaux WHERE id = :slot_id AND prestation_id = :service_id FOR UPDATE", [
         ':slot_id' => $slot_id, 
         ':service_id' => $service_id_confirm
     ])->fetch();
@@ -91,7 +92,7 @@ function cancelEmployeeAppointment(int $salarie_id, int $rdv_id): bool
     if ($salarie_id <= 0 || $rdv_id <= 0) return false;
     
     beginTransaction();
-    $rdv = executeQuery("SELECT * FROM " . TABLE_APPOINTMENTS . " WHERE id = :rdv_id AND personne_id = :salarie_id FOR UPDATE", [
+    $rdv = executeQuery("SELECT id, statut, consultation_creneau_id FROM " . TABLE_APPOINTMENTS . " WHERE id = :rdv_id AND personne_id = :salarie_id FOR UPDATE", [
         ':rdv_id' => $rdv_id, 
         ':salarie_id' => $salarie_id
     ])->fetch();

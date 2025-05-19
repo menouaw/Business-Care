@@ -67,7 +67,7 @@ function getSalarieDashboardStats(int $salarie_id): array
 
 
                 $sql_ateliers = "SELECT (
-                                    -- Comptage des rendez-vous ateliers
+                                    
                                     (SELECT COUNT(*) FROM " . TABLE_APPOINTMENTS . "
                                     WHERE personne_id = :salarie_id_rdv 
                                     AND prestation_id IN (
@@ -77,7 +77,7 @@ function getSalarieDashboardStats(int $salarie_id): array
                                     AND statut IN ('termine', 'confirme')
                                     AND date_rdv >= :date_debut_rdv)
                                     +
-                                    -- Comptage des événements organisés par BC
+                                    
                                     (SELECT COUNT(*) FROM evenement_inscriptions ei
                                     JOIN evenements e ON ei.evenement_id = e.id
                                     WHERE ei.personne_id = :salarie_id_event

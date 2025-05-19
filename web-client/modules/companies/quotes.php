@@ -178,7 +178,7 @@ include __DIR__ . '/../../templates/header.php';
                                             <h5 class="card-title mb-0"><?= htmlspecialchars($pack['type']) ?></h5>
                                         </div>
                                         <div class="card-body d-flex flex-column">
-                                            
+                                            <!-- Optionnel : Récupérer une description plus courte si elle existe ou générer un résumé -->
                                             <!-- <?php if (!empty($pack['description'])): ?>
                                                 <p class="card-text flex-grow-1"><small><?= htmlspecialchars($pack['description']) ?></small></p>
                                             <?php endif; ?> -->
@@ -251,14 +251,6 @@ include __DIR__ . '/../../templates/header.php';
 
                     <div class="mb-4">
                         <h5>Choisissez votre type de devis :</h5>
-                        <div class="form-check mb-2">
-                            <input class="form-check-input quote-type-selector" type="radio" name="quote_type_choice"
-                                id="pack-custom" value="personalize_option" data-pack-price="0" data-pack-name="Sur mesure">
-                            <label class="form-check-label" for="pack-custom">
-                                <strong>Devis Personnalisé (sur mesure)</strong>
-                                <small class="text-muted">(Construisez votre devis avec des prestations à la carte)</small>
-                            </label>
-                        </div>
                         <?php foreach ($detailedServicePacks as $pack): ?>
                             <div class="form-check mb-2">
                                 <input class="form-check-input quote-type-selector" type="radio" name="quote_type_choice"

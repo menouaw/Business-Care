@@ -17,7 +17,7 @@ if ($salarie_id_session > 0) {
     exit;
 }
 
-// Récupère les stats du pack pour le salarié connecté
+
 $stats = getSalarieDashboardStats($salarie_id_session);
 $rdv_utilises = $stats['pack_info']['usage_stats']['consultations']['used'] ?? 0;
 $rdv_max = $stats['pack_info']['usage_stats']['consultations']['total'] ?? 0;
