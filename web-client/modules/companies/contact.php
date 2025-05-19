@@ -108,7 +108,7 @@ if (isset($_SESSION['user_role'])) {
                         <div class="card-body">
                             <form method="POST" action="<?= WEBCLIENT_URL ?>/modules/companies/contact.php">
                                 <input type="hidden" name="send_message" value="1">
-                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken()); ?>">
+                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(ensureCsrfToken()); ?>">
 
                                 <div class="mb-3">
                                     <label for="user_info" class="form-label">Vos informations</label>

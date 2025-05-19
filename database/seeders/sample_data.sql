@@ -204,9 +204,9 @@ INSERT INTO personnes (nom, prenom, email, mot_de_passe, telephone, date_naissan
 ('Representant', 'RetailExpress', 'rep.retailexpress@businesscare.fr', '$2y$10$CGP1gfg0khtXjAZcJFC6iO3oYisjwlPfkm8tQ8Q/OxWpFdR7tOiqO', '0000000003', '1982-09-15', 'Autre', '/assets/images/icons/default-user.png', 4, 5, 6, 'suspendu', NOW());
 
 INSERT INTO services (id, type, description, actif, ordre, max_effectif_inferieur_egal, activites_incluses, rdv_medicaux_inclus, chatbot_questions_limite, rdv_medicaux_supplementaires_prix, conseils_hebdo_personnalises, tarif_annuel_par_salarie, prix_base_indicatif) VALUES
-(1, 'Starter Pack', 'Pack Essentiel: jusqu\'a 30 salaries. Ideal pour demarrer.', TRUE, 10, 30, 2, 1, 6, 75.00, FALSE, 180.00, 100.00),
-(2, 'Basic Pack', 'Pack Avantage: jusqu\'a 250 salaries. La solution equilibree.', TRUE, 20, 250, 3, 2, 20, 75.00, FALSE, 150.00, 500.00),
-(3, 'Premium Pack', 'Pack Excellence: a partir de 251 salaries. L\'offre complete et personnalisee.', TRUE, 30, NULL, 4, 3, NULL, 50.00, TRUE, 100.00, 1000.00);
+(1, 'Starter Pack', 'Pack Essentiel: jusqu''a 30 salaries. Ideal pour demarrer.', TRUE, 10, 30, 2, 1, 6, 75.00, FALSE, 180.00, 100.00),
+(2, 'Basic Pack', 'Pack Avantage: jusqu''a 250 salaries. La solution equilibree.', TRUE, 20, 250, 3, 2, 20, 75.00, FALSE, 150.00, 500.00),
+(3, 'Premium Pack', 'Pack Excellence: a partir de 251 salaries. L''offre complete et personnalisee.', TRUE, 30, NULL, 4, 3, NULL, 50.00, TRUE, 100.00, 1000.00);
 
 INSERT INTO contrats (entreprise_id, service_id, date_debut, date_fin, nombre_salaries, statut, conditions_particulieres) VALUES
 (1, 3, '2024-01-01', '2025-12-31', 150, 'actif', 'Acces a toutes les prestations premium'),
@@ -528,9 +528,9 @@ INSERT INTO communaute_messages (communaute_id, personne_id, message) VALUES
 (2, 12, 'Nouveau record perso sur 10km ! :-)');
 
 INSERT INTO communaute_messages (communaute_id, personne_id, message) VALUES
-(1, 7, 'Des conseils pour tenir la posture de l\'arbre plus longtemps ?'),
-(2, 10, 'Quelqu\'un a une bonne appli pour suivre ses parcours de course ?'),
-(1, 17, 'Est-ce qu\'il y a un cours de Yoga prévu la semaine prochaine sur le site Sante+ ?'),
+(1, 7, 'Des conseils pour tenir la posture de l''arbre plus longtemps ?'),
+(2, 10, 'Quelqu''un a une bonne appli pour suivre ses parcours de course ?'),
+(1, 17, 'Est-ce qu''il y a un cours de Yoga prévu la semaine prochaine sur le site Sante+ ?'),
 (2, 20, 'Besoin de motivation pour sortir courir avec ce temps ! Des astuces ?');
 
 INSERT INTO support_tickets (entreprise_id, personne_id, sujet, message, statut) VALUES
@@ -560,7 +560,8 @@ INSERT INTO communaute_messages (communaute_id, personne_id, message) VALUES
 (2, 12, 'Nouveau record perso sur 10km ! :-)');
 
 INSERT INTO communaute_messages (communaute_id, personne_id, message) VALUES
-(1, 7, 'Des conseils pour tenir la posture de l\'arbre plus longtemps ?'),
-(2, 10, 'Quelqu\'un a une bonne appli pour suivre ses parcours de course ?'),
-(1, 17, 'Est-ce qu\'il y a un cours de Yoga prévu la semaine prochaine sur le site Sante+ ?'),
+(1, 7, 'Des conseils pour tenir la posture de l''arbre plus longtemps ?'),
+(2, 10, 'Quelqu''un a une bonne appli pour suivre ses parcours de course ?'),
+(1, 17, 'Est-ce qu''il y a un cours de Yoga prévu la semaine prochaine sur le site Sante+ ?'),
 (2, 20, 'Besoin de motivation pour sortir courir avec ce temps ! Des astuces ?');
+
