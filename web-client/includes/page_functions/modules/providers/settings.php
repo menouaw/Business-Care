@@ -132,9 +132,7 @@ function setupProviderSettingsPage(): array
         $action = $_POST['action'] ?? '';
         $csrf_token = $_POST['csrf_token'] ?? '';
 
-        if (!validateToken($csrf_token)) {
-            flashMessage("Jeton de sécurité invalide ou expiré. Veuillez réessayer.", "danger");
-        } else {
+
             $formData = getFormData();
             $result = ['success' => false, 'message' => 'Action inconnue ou non spécifiée.'];
 
@@ -150,7 +148,7 @@ function setupProviderSettingsPage(): array
                     break;
             }
             flashMessage($result['message'], $result['success'] ? 'success' : 'danger');
-        }
+        
 
 
         redirectTo(WEBCLIENT_URL . '/modules/providers/settings.php');

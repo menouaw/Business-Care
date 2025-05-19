@@ -204,8 +204,8 @@ INSERT INTO personnes (nom, prenom, email, mot_de_passe, telephone, date_naissan
 ('Representant', 'RetailExpress', 'rep.retailexpress@businesscare.fr', '$2y$10$CGP1gfg0khtXjAZcJFC6iO3oYisjwlPfkm8tQ8Q/OxWpFdR7tOiqO', '0000000003', '1982-09-15', 'Autre', '/assets/images/icons/default-user.png', 4, 5, 6, 'suspendu', NOW());
 
 INSERT INTO services (id, type, description, actif, ordre, max_effectif_inferieur_egal, activites_incluses, rdv_medicaux_inclus, chatbot_questions_limite, rdv_medicaux_supplementaires_prix, conseils_hebdo_personnalises, tarif_annuel_par_salarie, prix_base_indicatif) VALUES
-(1, 'Starter Pack', 'Pack Essentiel: jusqu''à 30 salariés. Idéal pour démarrer.', TRUE, 10, 30, 2, 1, 6, 0.75, FALSE, 180.00, 100.00),
-(2, 'Basic Pack', 'Pack Avantage: jusqu''à 250 salariés. La solution équilibrée.', TRUE, 20, 250, 3, 2, 20, 0.75, FALSE, 150.00, 500.00),
+(1, 'Starter Pack', 'Pack Essentiel: jusqu''à 30 salariés. Idéal pour démarrer.', TRUE, 10, 30, 2, 1, 6, 75.00, FALSE, 180.00, 100.00),
+(2, 'Basic Pack', 'Pack Avantage: jusqu''à 250 salariés. La solution équilibrée.', TRUE, 20, 250, 3, 2, 20, 75.00, FALSE, 150.00, 500.00),
 (3, 'Premium Pack', 'Pack Excellence: à partir de 251 salariés. L''offre complète et personnalisée.', TRUE, 30, NULL, 4, 3, NULL, 0.50, TRUE, 100.00, 1000.00);
 
 

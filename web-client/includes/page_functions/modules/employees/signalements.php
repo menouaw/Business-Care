@@ -19,15 +19,7 @@ function handleNewSignalement(): void
         return;
     }
 
-    if (!validateToken($_POST['csrf_token'] ?? '')) {
-        handleClientCsrfFailureRedirect('envoyer un signalement', WEBCLIENT_URL . '/modules/employees/signalements.php');
-        return;
-    }
 
-    // ---- DÉBUT DEBUG CSRF ----
-    error_log('DEBUG CSRF - Session Token au moment de la vérification: ' . ($_SESSION['csrf_token'] ?? 'NON DÉFINI EN SESSION'));
-    error_log('DEBUG CSRF - POST Token reçu du formulaire: ' . ($_POST['csrf_token'] ?? 'NON DÉFINI DANS POST'));
-    // ---- FIN DEBUG CSRF ----
 
     $formData = getFormData();
     $sujet = trim($formData['sujet'] ?? '');

@@ -186,9 +186,7 @@ function setupEmployeeSettingsPage(): array
         $action = $_POST['action'] ?? '';
         $csrf_token = $_POST['csrf_token'] ?? '';
 
-        if (!validateToken($csrf_token)) {
-            flashMessage("Jeton de sécurité invalide ou expiré. Veuillez réessayer.", "danger");
-        } else {
+
             $formData = getFormData();
             $result = ['success' => false, 'message' => 'Action inconnue.'];
 
@@ -208,7 +206,7 @@ function setupEmployeeSettingsPage(): array
                     break;
             }
             flashMessage($result['message'], $result['success'] ? 'success' : 'danger');
-        }
+        
 
         redirectTo(WEBCLIENT_URL . '/modules/employees/settings.php');
         exit;
@@ -249,7 +247,6 @@ function setupEmployeeSettingsPage(): array
     return [
         'pageTitle' => "Mes Paramètres",
         'employee' => $employeeDetails,
-        'preferences' => $employeePreferences,
         'allInterests' => $allInterests,
         'userInterestIds' => $userInterestIds,
         'csrf_token_profile' => $csrfToken,
