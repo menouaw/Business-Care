@@ -145,6 +145,8 @@ CREATE TABLE devis (
     date_validite DATE,
     montant_total DECIMAL(10,2) NOT NULL,
     montant_ht DECIMAL(10,2),
+    nombre_salaries_estimes INT,
+    notes_negociation TEXT DEFAULT NULL,
     tva DECIMAL(5,2),
     statut ENUM('en_attente', 'accepte', 'refuse', 'expire') DEFAULT 'en_attente',
     conditions_paiement TEXT,
