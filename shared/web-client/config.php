@@ -7,8 +7,8 @@ define('DB_PASS', getenv('DB_PASSWORD') ?: 'root');
 define('DB_CHARSET', 'utf8mb4');
 
 
-define('APP_NAME', 'Business Care');
-define('APP_VERSION', '0.4.0');
+define('APP_NAME', getenv('APP_NAME') ?: 'Business Care');
+define('APP_VERSION', getenv('APP_VERSION') ?: '0.4.0');
 
 
 define('ROOT_URL', 'http://192.168.213.22');
@@ -51,28 +51,29 @@ define('EVENT_TYPES', ['conference', 'webinar', 'atelier', 'defi_sportif', 'cons
 define('USER_STATUSES', ['actif', 'inactif', 'suspendu', 'supprime']);
 
 
-define('MAX_APPOINTMENTS_PER_DAY', 8);
-define('DASHBOARD_ITEMS_LIMIT', 5);
-define('MIN_PASSWORD_LENGTH', 8);
+define('MAX_APPOINTMENTS_PER_DAY', getenv('MAX_APPOINTMENTS_PER_DAY') ? (int)getenv('MAX_APPOINTMENTS_PER_DAY') : 8);
+define('DASHBOARD_ITEMS_LIMIT', getenv('DASHBOARD_ITEMS_LIMIT') ? (int)getenv('DASHBOARD_ITEMS_LIMIT') : 5);
+define('MIN_PASSWORD_LENGTH', getenv('MIN_PASSWORD_LENGTH') ? (int)getenv('MIN_PASSWORD_LENGTH') : 8);
 
-define('DEFAULT_DATE_FORMAT', 'd/m/Y H:i');
-define('DEFAULT_CURRENCY', '€');
-define('DEFAULT_CURRENCY_CODE', 'eur');
-define('DEFAULT_ITEMS_PER_PAGE', 5);
+define('DEFAULT_DATE_FORMAT', getenv('DEFAULT_DATE_FORMAT') ?: 'd/m/Y H:i');
+define('DEFAULT_CURRENCY', getenv('DEFAULT_CURRENCY') ?: '€');
+define('DEFAULT_CURRENCY_CODE', getenv('DEFAULT_CURRENCY_CODE') ?: 'eur');
+define('DEFAULT_ITEMS_PER_PAGE', getenv('DEFAULT_ITEMS_PER_PAGE') ? (int)getenv('DEFAULT_ITEMS_PER_PAGE') : 5);
 
 
-define('SESSION_LIFETIME', 1800);
+define('SESSION_LIFETIME', getenv('SESSION_LIFETIME') ? (int)getenv('SESSION_LIFETIME') : 1800);
 
 
 date_default_timezone_set('Europe/Paris');
-
-
 
 
 define('STRIPE_SECRET_KEY', getenv('STRIPE_SECRET_KEY') ?: ($_ENV['STRIPE_SECRET_KEY'] ?? null));
 define('STRIPE_PUBLIC_KEY', getenv('STRIPE_PUBLIC_KEY') ?: ($_ENV['STRIPE_PUBLIC_KEY'] ?? null));
 define('STRIPE_WEBHOOK_SECRET', getenv('STRIPE_WEBHOOK_SECRET') ?: ($_ENV['STRIPE_WEBHOOK_SECRET'] ?? null));
 
+if (class_exists('\Stripe\Stripe')) {
+    \Stripe\Stripe::setApiKey(STRIPE_SECRET_KEY); 
+}
 
 define('STRIPE_JS_URL', 'https://js.stripe.com/v3/');
 
@@ -87,7 +88,7 @@ define('INVOICE_PAYMENT_MODES', ['virement', 'carte', 'prelevement']);
 define('INVOICE_PREFIX', 'F');
 
 
-define('TVA_RATE', 0.20);
+define('TVA_RATE', getenv('TVA_RATE') ? (float)getenv('TVA_RATE') : 0.20);
 
 
 

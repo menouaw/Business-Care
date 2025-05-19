@@ -18,16 +18,11 @@ function getAvailableProvidersForEmployee(int $employee_id): array
         return [];
     }
 
-
     $employee = fetchOne('personnes', 'id = :id AND role_id = :role_id', [':id' => $employee_id, ':role_id' => ROLE_SALARIE]);
     if (!$employee || !$employee['entreprise_id']) {
-
         return [];
     }
     $entreprise_id = $employee['entreprise_id'];
-
-
-
 
     $contract = fetchOne(
         'contrats',
@@ -37,11 +32,9 @@ function getAvailableProvidersForEmployee(int $employee_id): array
     );
 
     if (!$contract) {
-
         return [];
     }
     $contract_id = $contract['id'];
-
 
     $allowed_prestation_ids_stmt = executeQuery(
         "SELECT prestation_id FROM contrats_prestations WHERE contrat_id = :contract_id",
@@ -50,10 +43,8 @@ function getAvailableProvidersForEmployee(int $employee_id): array
     $allowed_prestation_ids = $allowed_prestation_ids_stmt ? $allowed_prestation_ids_stmt->fetchAll(PDO::FETCH_COLUMN) : [];
 
     if (empty($allowed_prestation_ids)) {
-
         return [];
     }
-
 
     $placeholders = implode(',', array_fill(0, count($allowed_prestation_ids), '?'));
 
@@ -94,23 +85,12 @@ function getProviderProfileDetailsForEmployee(int $provider_id, int $employee_id
         return null;
     }
 
-
-
     $available_providers = getAvailableProvidersForEmployee($employee_id);
-    $is_accessible = false;
-    foreach ($available_providers as $prov) {
-        if ($prov['id'] == $provider_id) {
-            $is_accessible = true;
-            break;
-        }
-    }
+    $is_accessible = array_search($provider_id, array_column($available_providers, 'id')) !== false;
 
     if (!$is_accessible) {
-
-
         return null;
     }
-
 
     $provider_details = fetchOne('personnes', 'id = :id AND role_id = :role_id AND statut = :statut', [
         ':id' => $provider_id,
@@ -119,10 +99,8 @@ function getProviderProfileDetailsForEmployee(int $provider_id, int $employee_id
     ]);
 
     if (!$provider_details) {
-
         return null;
     }
-
 
     $sql_specialties = "SELECT pr.nom, pr.description 
                         FROM prestations pr
@@ -131,7 +109,6 @@ function getProviderProfileDetailsForEmployee(int $provider_id, int $employee_id
                         ORDER BY pr.nom ASC";
     $stmt_specialties = executeQuery($sql_specialties, [':provider_id' => $provider_id]);
     $provider_details['specialties'] = $stmt_specialties ? $stmt_specialties->fetchAll(PDO::FETCH_ASSOC) : [];
-
 
     $sql_habilitations = "SELECT type, nom_document, organisme_emission, date_obtention, date_expiration
                           FROM habilitations
@@ -142,8 +119,6 @@ function getProviderProfileDetailsForEmployee(int $provider_id, int $employee_id
         ':statut_verifiee' => 'verifiee'
     ]);
     $provider_details['habilitations'] = $stmt_habilitations ? $stmt_habilitations->fetchAll(PDO::FETCH_ASSOC) : [];
-
-
 
     $sql_avg_rating = "SELECT AVG(e.note) as average_rating, COUNT(e.id) as total_ratings
                        FROM evaluations e
@@ -156,8 +131,6 @@ function getProviderProfileDetailsForEmployee(int $provider_id, int $employee_id
     $rating_data = $stmt_avg_rating ? $stmt_avg_rating->fetch(PDO::FETCH_ASSOC) : ['average_rating' => null, 'total_ratings' => 0];
     $provider_details['average_rating'] = $rating_data['average_rating'] ? round($rating_data['average_rating'], 1) : null;
     $provider_details['total_ratings'] = (int)$rating_data['total_ratings'];
-
-
 
     return $provider_details;
 }
@@ -179,13 +152,11 @@ function getEmployeeBookablePrestationsForProvider(int $employee_id, int $provid
         return [];
     }
 
-
     $employee = fetchOne('personnes', 'id = :id AND role_id = :role_id', [':id' => $employee_id, ':role_id' => ROLE_SALARIE]);
     if (!$employee || !$employee['entreprise_id']) {
         return [];
     }
     $entreprise_id = $employee['entreprise_id'];
-
 
     $contract = fetchOne(
         'contrats',
@@ -198,7 +169,6 @@ function getEmployeeBookablePrestationsForProvider(int $employee_id, int $provid
     }
     $contract_id = $contract['id'];
 
-
     $allowed_prestation_ids_stmt = executeQuery(
         "SELECT prestation_id FROM contrats_prestations WHERE contrat_id = :contract_id",
         [':contract_id' => $contract_id]
@@ -208,11 +178,7 @@ function getEmployeeBookablePrestationsForProvider(int $employee_id, int $provid
         return [];
     }
 
-
     $allowed_placeholders = implode(',', array_fill(0, count($allowed_prestation_ids), '?'));
-
-
-
 
     $bookable_types = ['consultation'];
     $type_placeholders = implode(',', array_fill(0, count($bookable_types), '?'));
@@ -224,7 +190,6 @@ function getEmployeeBookablePrestationsForProvider(int $employee_id, int $provid
               AND pr.id IN ({$allowed_placeholders})
               AND pr.type IN ({$type_placeholders})
             ORDER BY pr.nom ASC";
-
 
     $final_params = array_merge(
         [$provider_id],

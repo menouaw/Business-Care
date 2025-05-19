@@ -17,7 +17,7 @@ function getCompanyContracts(int $entreprise_id, int $current_page = 1, int $ite
     }
 
 
-    $countSql = "SELECT COUNT(*) as total 
+    $countSql = "SELECT COUNT(id) as total 
                  FROM contrats 
                  WHERE entreprise_id = :entreprise_id";
     $countStmt = executeQuery($countSql, [':entreprise_id' => $entreprise_id]);
@@ -73,7 +73,16 @@ function getContractDetails(int $contract_id, int $company_id): array|false
     }
 
     $sql = "SELECT 
-                c.*, 
+                c.id, 
+                c.entreprise_id, 
+                c.service_id, 
+                c.date_debut, 
+                c.date_fin, 
+                c.nombre_salaries, 
+                c.statut, 
+                c.conditions_particulieres, 
+                c.created_at, 
+                c.updated_at,
                 s.type as service_nom 
             FROM 
                 contrats c
@@ -114,29 +123,26 @@ function getContractUsageStats(int $contract_id, int $company_id): array
     $stats = [
         'medical_consultations_count' => 0,
         'other_prestations_count' => 0,
-
     ];
 
     if ($contract_id <= 0 || $company_id <= 0) {
         return $stats;
     }
 
-
     $contract_check = fetchOne('contrats', 'id = :contract_id AND entreprise_id = :company_id', [
         ':contract_id' => $contract_id,
         ':company_id' => $company_id
     ]);
     if (!$contract_check) {
-
         return $stats;
     }
 
-
     $medical_categories = ['Sante mentale', 'Nutrition', 'Sante', 'Bien-etre mental'];
-    $placeholders_cat = implode(',', array_fill(0, count($medical_categories), '?'));
 
+    
+    $medical_placeholders = implode(',', array_fill(0, count($medical_categories), '?'));
 
-
+    
     $sql_employees = "SELECT p.id 
                       FROM personnes p
                       LEFT JOIN sites s ON p.site_id = s.id
@@ -148,26 +154,22 @@ function getContractUsageStats(int $contract_id, int $company_id): array
     if (empty($employee_ids)) {
         return $stats;
     }
-    $placeholders_emp = implode(',', array_fill(0, count($employee_ids), '?'));
 
+    
+    $employee_placeholders = implode(',', array_fill(0, count($employee_ids), '?'));
 
+    
     $sql_usage = "SELECT 
                         SUM(CASE WHEN pr.type = 'consultation' AND pr.categorie IN ({$placeholders_cat}) THEN 1 ELSE 0 END) as medical_count,
                         SUM(CASE WHEN pr.type != 'consultation' OR pr.categorie NOT IN ({$placeholders_cat}) THEN 1 ELSE 0 END) as other_count
                     FROM rendez_vous rv
                     JOIN prestations pr ON rv.prestation_id = pr.id
                     WHERE rv.personne_id IN ({$placeholders_emp})
-                      -- Optionnel: Filtrer par date si le contrat a une période définie
-                      -- AND rv.date_rdv >= :contract_start_date 
-                      -- AND rv.date_rdv <= :contract_end_date
                       AND rv.statut IN ('termine', 'confirme', 'planifie')";
 
 
 
     $params = array_merge($medical_categories, $medical_categories, $employee_ids);
-
-
-
 
     try {
         $stmt_usage = executeQuery($sql_usage, $params);
@@ -178,6 +180,7 @@ function getContractUsageStats(int $contract_id, int $company_id): array
             $stats['other_prestations_count'] = (int)$usage_counts['other_count'];
         }
     } catch (PDOException $e) {
+        
     }
 
     return $stats;

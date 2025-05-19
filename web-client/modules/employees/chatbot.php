@@ -105,9 +105,6 @@ include __DIR__ . '/../../templates/header.php';
                 });
             </script>
 
-            <?php
-            include __DIR__ . '/../../templates/footer.php';
-            ?>
         </main>
     </div>
 </div>

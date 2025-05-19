@@ -14,14 +14,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_habilitation'])) 
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_habilitation'])) {
-    verifyCsrfToken();
+    verifyPostedCsrfToken();
     $habilitation_id_to_delete = filter_input(INPUT_POST, 'habilitation_id', FILTER_VALIDATE_INT);
     if ($habilitation_id_to_delete) {
-        if (deleteProviderHabilitation($habilitation_id_to_delete, $provider_id)) {
-            flashMessage("Habilitation supprimée avec succès.", "success");
-        } else {
-            flashMessage("Erreur lors de la suppression de l'habilitation.", "danger");
-        }
+        deleteProviderHabilitation($habilitation_id_to_delete, $provider_id);
     } else {
         flashMessage("ID d'habilitation invalide pour la suppression.", "danger");
     }
@@ -107,7 +103,7 @@ include __DIR__ . '/../../templates/header.php';
                                                     <form method="POST" action="<?= WEBCLIENT_URL ?>/modules/providers/habilitations.php" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette habilitation en attente ?');">
                                                         <input type="hidden" name="delete_habilitation" value="1">
                                                         <input type="hidden" name="habilitation_id" value="<?= $hab['id'] ?>">
-                                                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken()) ?>">
+                                                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(ensureCsrfToken()) ?>">
                                                         <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer">
                                                             <i class="fas fa-trash-alt"></i>
                                                         </button>
@@ -141,7 +137,7 @@ include __DIR__ . '/../../templates/header.php';
                         <form method="POST" action="<?= WEBCLIENT_URL ?>/modules/providers/habilitations.php" enctype="multipart/form-data">
                             <div class="modal-body">
                                 <input type="hidden" name="add_habilitation" value="1">
-                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken()) ?>">
+                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(ensureCsrfToken()) ?>">
 
                                 <div class="mb-3">
                                     <label for="type" class="form-label">Type <span class="text-danger">*</span></label>

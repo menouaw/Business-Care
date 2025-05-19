@@ -1,29 +1,29 @@
-document.addEventListener('DOMContentLoaded', function() {
-    
+document.addEventListener('DOMContentLoaded', function () {
+
     const testimonialCarousel = document.getElementById('testimonialCarousel');
     if (testimonialCarousel) {
         try {
-            
-            testimonialCarousel.addEventListener('mouseenter', function() {
+
+            testimonialCarousel.addEventListener('mouseenter', function () {
                 const instance = bootstrap.Carousel.getInstance(testimonialCarousel);
                 if (instance) {
                     instance.pause();
                 }
             });
 
-            
-            testimonialCarousel.addEventListener('mouseleave', function() {
+
+            testimonialCarousel.addEventListener('mouseleave', function () {
                 const instance = bootstrap.Carousel.getInstance(testimonialCarousel);
                 if (instance) {
                     instance.cycle();
                 }
             });
         } catch (error) {
-            
+
             console.error("Error initializing carousel listeners:", error);
         }
     }
-    
+
     const quoteForm = document.getElementById('quote-request-form');
     const personalizeSection = document.getElementById('personalize-section');
     const quoteTotalDisplayElement = document.getElementById('quote-total-display');
@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const grandTotal = selectedPackPrice + extrasTotal;
 
             selectedPackInfoElement.innerHTML = `<small>Base: ${selectedPackName}</small>`;
-            
+
             quoteTotalDisplayElement.textContent = grandTotal.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
         }
 
@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', function() {
         quantityInputs.forEach(input => input.disabled = false);
 
         quoteTypeSelectors.forEach(radio => {
-            radio.addEventListener('change', function(event) {
+            radio.addEventListener('change', function (event) {
                 const choice = event.target.value;
                 const selectedRadio = event.target;
 
@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', function() {
             selectedPackPrice = 0;
             selectedPackName = "Sur mesure";
         }
-        
+
         calculateAndDisplayTotal();
     }
 

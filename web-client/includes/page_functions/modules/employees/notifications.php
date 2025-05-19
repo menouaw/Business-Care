@@ -13,7 +13,6 @@ require_once __DIR__ . '/../../../../../shared/web-client/db.php';
  */
 function setupEmployeeNotificationsPage()
 {
-
     requireRole(ROLE_SALARIE);
 
     $salarie_id = $_SESSION['user_id'] ?? 0;
@@ -25,63 +24,34 @@ function setupEmployeeNotificationsPage()
 
     $pageTitle = "Mes Notifications";
 
-
-
-    try {
-        updateRow(
-            'notifications',
-            ['lu' => 1],
-            "personne_id = :user_id AND lu = 0",
-            [':user_id' => $salarie_id]
-        );
-    } catch (Exception $e) {
-        error_log("Erreur lors du marquage des notifications comme lues pour user $salarie_id: " . $e->getMessage());
-    }
-
+    updateRow(
+        'notifications',
+        ['lu' => 1],
+        "personne_id = :user_id AND lu = 0",
+        [':user_id' => $salarie_id]
+    );
 
     $itemsPerPage = 10;
-    $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-    if ($currentPage < 1) {
-        $currentPage = 1;
-    }
+    $currentPage = max(1, (int)($_GET['page'] ?? 1));
     $offset = ($currentPage - 1) * $itemsPerPage;
 
-    $notifications = [];
-    $pagination = [];
-    $totalItems = 0;
+    $totalItems = countTableRows('notifications', "personne_id = :user_id", [':user_id' => $salarie_id]);
+    $notifications = $totalItems > 0 ? fetchAll(
+        'notifications',
+        "personne_id = :user_id",
+        'created_at DESC',
+        $itemsPerPage,
+        $offset,
+        [':user_id' => $salarie_id]
+    ) : [];
 
-    try {
-
-        $totalItems = countTableRows('notifications', "personne_id = :user_id", [':user_id' => $salarie_id]);
-
-
-        if ($totalItems > 0) {
-            $notifications = fetchAll(
-                'notifications',
-                "personne_id = :user_id",
-                'created_at DESC',
-                $itemsPerPage,
-                $offset,
-                [':user_id' => $salarie_id]
-            );
-        }
-
-
-        $totalPages = ceil($totalItems / $itemsPerPage);
-        $pagination = [
-            'currentPage' => $currentPage,
-            'totalPages' => $totalPages,
-            'totalItems' => $totalItems,
-            'itemsPerPage' => $itemsPerPage
-        ];
-    } catch (Exception $e) {
-        error_log("Erreur lors de la récupération des notifications pour user $salarie_id: " . $e->getMessage());
-        flashMessage("Impossible de charger les notifications.", "danger");
-        $notifications = [];
-        $pagination = [];
-    }
-
-
+    $totalPages = ceil($totalItems / $itemsPerPage);
+    $pagination = [
+        'currentPage' => $currentPage,
+        'totalPages' => $totalPages,
+        'totalItems' => $totalItems,
+        'itemsPerPage' => $itemsPerPage
+    ];
 
     return [
         'pageTitle' => $pageTitle,

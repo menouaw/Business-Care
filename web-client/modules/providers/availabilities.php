@@ -5,6 +5,7 @@ require_once __DIR__ . '/../../includes/page_functions/modules/providers/availab
 requireRole(ROLE_PRESTATAIRE);
 
 $provider_id = $_SESSION['user_id'] ?? 0;
+$csrfToken = ensureCsrfToken();
 $pageTitle = "Mes Disponibilités";
 $is_editing = false;
 $availability_to_edit = null;
@@ -12,6 +13,7 @@ $availability_to_edit = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_availability'])) {
     handleAvailabilityAddRequest($provider_id);
+} else if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 
@@ -21,7 +23,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_availability']
 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_availability'])) {
-    verifyCsrfToken();
+    verifyPostedCsrfToken();
+
     $availability_id_to_delete = filter_input(INPUT_POST, 'availability_id', FILTER_VALIDATE_INT);
     if ($availability_id_to_delete) {
         deleteProviderAvailability($availability_id_to_delete, $provider_id);
@@ -116,7 +119,7 @@ include __DIR__ . '/../../templates/header.php';
                         <form id="editAvailabilityForm" method="POST" action="<?= WEBCLIENT_URL ?>/modules/providers/availabilities.php">
                             <input type="hidden" name="update_availability" value="1">
                             <input type="hidden" name="availability_id" value="<?= htmlspecialchars($availability_to_edit['id']) ?>">
-                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken()) ?>">
+                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
 
                             <div class="mb-3">
                                 <label for="type_edit" class="form-label">Type <span class="text-danger">*</span></label>
@@ -261,7 +264,7 @@ include __DIR__ . '/../../templates/header.php';
                                             <form method="POST" action="<?= WEBCLIENT_URL ?>/modules/providers/availabilities.php" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette entrée ?');">
                                                 <input type="hidden" name="delete_availability" value="1">
                                                 <input type="hidden" name="availability_id" value="<?= $av['id'] ?>">
-                                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken()) ?>">
+                                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
                                                 <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer">
                                                     <i class="fas fa-trash-alt"></i>
                                                 </button>
@@ -285,7 +288,7 @@ include __DIR__ . '/../../templates/header.php';
                             <form id="availabilityForm" method="POST" action="<?= WEBCLIENT_URL ?>/modules/providers/availabilities.php">
                                 <div class="modal-body">
                                     <input type="hidden" name="add_availability" value="1">
-                                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken()) ?>">
+                                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
 
                                     <div class="mb-3">
                                         <label for="type" class="form-label">Type <span class="text-danger">*</span></label>

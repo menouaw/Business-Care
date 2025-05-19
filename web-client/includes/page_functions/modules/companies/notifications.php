@@ -15,10 +15,12 @@ function getNotificationsForUser(int $user_id, int $limit = 50, bool $show_read 
     if ($user_id <= 0) {
         return [];
     }
+
     $where = 'personne_id = :user_id';
     if (!$show_read) {
         $where .= ' AND lu = 0';
     }
+
     $params = [':user_id' => $user_id];
     $orderBy = 'created_at DESC';
 
@@ -37,12 +39,14 @@ function markNotificationAsRead(int $notification_id, int $user_id): bool
     if ($notification_id <= 0 || $user_id <= 0) {
         return false;
     }
+
     $updated = updateRow(
         'notifications',
         ['lu' => 1, 'date_lecture' => date('Y-m-d H:i:s')],
         'id = :id AND personne_id = :user_id AND lu = 0',
         [':id' => $notification_id, ':user_id' => $user_id]
     );
+
     return $updated > 0;
 }
 
@@ -57,6 +61,7 @@ function markAllNotificationsAsRead(int $user_id): int
     if ($user_id <= 0) {
         return 0;
     }
+
     return updateRow(
         'notifications',
         ['lu' => 1, 'date_lecture' => date('Y-m-d H:i:s')],

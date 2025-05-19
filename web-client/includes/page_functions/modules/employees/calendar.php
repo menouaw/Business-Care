@@ -59,13 +59,6 @@ function getSalarieCalendarData(int $salarie_id, int $year, int $month): array
         ];
     }
 
-
-
-
-
-
-
-
     return $calendar_data_by_day;
 }
 

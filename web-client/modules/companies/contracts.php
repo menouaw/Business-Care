@@ -111,7 +111,7 @@ include __DIR__ . '/../../templates/header.php';
                     </div>
                 </div>
 
-                <!-- Section Statistiques d'Utilisation Anonymisées -->
+                
                 <div class="card mt-4">
                     <div class="card-header">
                         Statistiques d'Utilisation (Anonymisées)
@@ -130,12 +130,12 @@ include __DIR__ . '/../../templates/header.php';
                                     <?= htmlspecialchars($usage_stats['other_prestations_count'] ?? 0) ?>
                                 </span>
                             </li>
-                            <!-- Ajoutez ici d'autres statistiques si getContractUsageStats est étendue -->
+                            
                         </ul>
                         <div class="form-text mt-2">Ces statistiques sont agrégées et ne contiennent aucune information nominative sur les salariés ayant utilisé les services.</div>
                     </div>
                 </div>
-                <!-- Fin Section Statistiques -->
+                
 
             <?php else: ?>
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">

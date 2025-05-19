@@ -1,6 +1,5 @@
 <?php
 require_once __DIR__ . '/../../shared/web-client/config.php';
-require_once __DIR__ . '/../../shared/web-client/db.php';
 
 /**
  * Formate une date selon un format spécifié.
@@ -70,7 +69,7 @@ function sanitizeInput($input)
  */
 function _formatTimeDifferenceUnit(int $value, string $unit): string
 {
-    
+
     $plural = ($value > 1 && $unit !== 'mois') ? 's' : '';
     return 'il y a ' . $value . ' ' . $unit . $plural;
 }
@@ -103,7 +102,7 @@ function timeAgo($time)
 
         if ($d >= 1) {
             $t = round($d);
-            
+
             return _formatTimeDifferenceUnit($t, $str);
         }
     }
@@ -188,11 +187,11 @@ function displayFlashMessages()
 }
 
 /**
- * Génère un jeton CSRF pour la protection des formulaires
+ * Assure qu'un jeton CSRF existe dans la session, en crée un si nécessaire.
  * 
  * @return string Jeton CSRF
  */
-function generateToken()
+function ensureCsrfToken()
 {
     if (!isset($_SESSION['csrf_token'])) {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
@@ -201,17 +200,25 @@ function generateToken()
 }
 
 /**
- * Valide un jeton CSRF
- * 
- * @param string $token Jeton à valider
- * @return bool Indique si le jeton est valide
+ * Vérifie le jeton CSRF pour les requêtes POST.
+ * En cas d'échec, affiche un message flash et redirige.
  */
-function validateToken($token)
+function verifyPostedCsrfToken()
 {
-    if (!isset($_SESSION['csrf_token']) || $_SESSION['csrf_token'] !== $token) {
-        return false;
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if (
+            !isset($_POST['csrf_token']) ||
+            empty($_SESSION['csrf_token']) ||
+            !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])
+        ) {
+
+            flashMessage("Erreur de sécurité (jeton invalide). Veuillez réessayer.", "danger");
+            
+            $redirectUrl = $_SERVER['HTTP_REFERER'] ?? (defined('WEBCLIENT_URL') ? WEBCLIENT_URL . '/index.php' : 'index.php');
+            redirectTo($redirectUrl);
+            exit; 
+        }
     }
-    return true;
 }
 
 /**
@@ -427,7 +434,7 @@ function _renderPaginationLastPages(int $currentPage, int $totalPages, string $u
 function renderPagination($pagination, $urlPattern)
 {
     if (!is_array($pagination) || !isset($pagination['totalPages'], $pagination['currentPage'])) {
-        
+
         return '';
     }
 
@@ -580,7 +587,7 @@ function createNotification(int $user_id, string $title, string $message, string
         if ($lastId) {
             return (int)$lastId;
         } else {
-            
+
             return false;
         }
     }
@@ -652,16 +659,8 @@ function getUserInterests(int $userId): array
     return $userInterestsData ?: [];
 }
 
-
 /**
  * Effectue une requête POST à une URL avec un payload JSON.
- *
- * @param string $url L'URL à laquelle envoyer la requête.
- * @param array $payload Les données à envoyer sous forme de JSON.
- * @param array $customHeaders Headers personnalisés optionnels.
- * @return array Un tableau contenant 'body' (réponse JSON décodée ou corps brut en cas d'erreur), 
- *               'http_code' (code de statut HTTP), et 'error' (message d'erreur cURL si présent).
- * Makes a POST request to a URL with a JSON payload.
  *
  * @param string $url L'URL à laquelle envoyer la requête.
  * @param array $payload Les données à envoyer sous forme de JSON.

@@ -161,11 +161,9 @@ function handleQuoteRequestPost(): void
         exit;
     }
 
-
     $selected_pack_id = filter_input(INPUT_POST, 'selected_pack_id', FILTER_VALIDATE_INT);
     $quantities_input = $_POST['quantities'] ?? [];
     $notes = filter_input(INPUT_POST, 'notes', FILTER_SANITIZE_SPECIAL_CHARS);
-
 
     $extras = [];
     if (is_array($quantities_input)) {
@@ -179,7 +177,6 @@ function handleQuoteRequestPost(): void
         }
     }
 
-
     if (empty($selected_pack_id) && empty($extras)) {
         flashMessage('Veuillez sélectionner un pack ou ajouter au moins une prestation supplémentaire.', 'warning');
         redirectTo(WEBCLIENT_URL . '/modules/companies/quotes.php?action=request');
@@ -189,148 +186,132 @@ function handleQuoteRequestPost(): void
     $pdo = getDBConnection();
     $pdo->beginTransaction();
 
-    try {
+    $pack_montant_ht = 0;
+    $pack_service_id = null;
+    if ($selected_pack_id > 0) {
+        $sql_pack = "SELECT tarif_annuel_par_salarie FROM services WHERE id = :id AND actif = 1";
+        $stmt_pack = executeQuery($sql_pack, [':id' => $selected_pack_id], $pdo);
+        $pack_data = $stmt_pack->fetch();
 
-        $pack_montant_ht = 0;
-        $pack_service_id = null;
-        if ($selected_pack_id > 0) {
-            $sql_pack = "SELECT tarif_annuel_par_salarie FROM services WHERE id = :id AND actif = 1";
-            $stmt_pack = executeQuery($sql_pack, [':id' => $selected_pack_id], $pdo);
-            $pack_data = $stmt_pack->fetch();
-
-            if ($pack_data) {
-
-
-                $pack_montant_ht = (float)($pack_data['tarif_annuel_par_salarie'] ?? 0);
-                $pack_service_id = $selected_pack_id;
-            } else {
-
-                throw new Exception("Le pack sélectionné n'est pas valide ou n'est plus disponible.");
-            }
+        if ($pack_data) {
+            $pack_montant_ht = (float)($pack_data['tarif_annuel_par_salarie'] ?? 0);
+            $pack_service_id = $selected_pack_id;
+        } else {
+            $pdo->rollBack();
+            flashMessage("Le pack sélectionné n'est pas valide ou n'est plus disponible.", 'danger');
+            redirectTo(WEBCLIENT_URL . '/modules/companies/quotes.php?action=request');
+            exit;
         }
+    }
 
+    $extras_montant_ht = 0;
+    $extras_details_for_db = [];
+    if (!empty($extras)) {
+        $prestation_ids = array_keys($extras);
+        $placeholders = rtrim(str_repeat('?,', count($prestation_ids)), ',');
+        $sql_prices = "SELECT id, prix FROM prestations WHERE id IN ($placeholders)";
+        $stmt_prices = executeQuery($sql_prices, $prestation_ids, $pdo);
+        $prestation_prices = $stmt_prices->fetchAll(PDO::FETCH_KEY_PAIR);
 
-        $extras_montant_ht = 0;
-        $extras_details_for_db = [];
-        if (!empty($extras)) {
-            $prestation_ids = array_keys($extras);
-            $placeholders = rtrim(str_repeat('?,', count($prestation_ids)), ',');
-            $sql_prices = "SELECT id, prix FROM prestations WHERE id IN ($placeholders)";
-            $stmt_prices = executeQuery($sql_prices, $prestation_ids, $pdo);
-            $prestation_prices = $stmt_prices->fetchAll(PDO::FETCH_KEY_PAIR);
-
-            foreach ($extras as $prestation_id => $qty) {
-                if (isset($prestation_prices[$prestation_id])) {
-                    $prix_unitaire = (float)$prestation_prices[$prestation_id];
-                    $extras_montant_ht += $prix_unitaire * $qty;
-                    $extras_details_for_db[] = [
-                        'prestation_id' => $prestation_id,
-                        'quantite' => $qty,
-                        'prix_unitaire_devis' => $prix_unitaire
-                    ];
-                } else {
-
-                    error_log("[WARNING] handleQuoteRequestPost: Prestation ID {$prestation_id} (extra) demandée mais non trouvée.");
-                }
-            }
-        }
-
-
-        $total_montant_ht = $pack_montant_ht + $extras_montant_ht;
-        $tva_rate = defined('TVA_RATE') ? TVA_RATE : 0.20;
-        $tva_percent = $tva_rate * 100;
-        $total_montant_ttc = $total_montant_ht * (1 + $tva_rate);
-        $statut = QUOTE_STATUS_PENDING;
-
-
-        $insertDataDevis = [
-            'entreprise_id' => $entreprise_id,
-            'service_id' => $pack_service_id,
-            'date_creation' => date('Y-m-d H:i:s'),
-            'statut' => $statut,
-            'montant_total' => $total_montant_ttc,
-            'montant_ht' => $total_montant_ht,
-            'tva' => $tva_percent,
-            'created_at' => date('Y-m-d H:i:s'),
-            'updated_at' => date('Y-m-d H:i:s')
-
-        ];
-
-
-        
-        
-        $insertSuccess = insertRow('devis', $insertDataDevis); 
-
-        
-        if (!$insertSuccess) { 
-            throw new Exception("Échec de la création de l\'enregistrement principal du devis.");
-        }
-
-        
-        $newQuoteId = $pdo->lastInsertId();
-
-        
-        if (!$newQuoteId || $newQuoteId <= 0) {
-            error_log("[ERROR] handleQuoteRequestPost: Impossible de récupérer l'ID du devis après insertion réussie.");
-            throw new Exception("Impossible de récupérer l\'ID du devis nouvellement créé.");
-        }
-
-
-        if (!empty($extras_details_for_db)) {
-            foreach ($extras_details_for_db as $ligne) {
-                $insertDataLigne = [
-                    'devis_id' => $newQuoteId, 
-                    'prestation_id' => $ligne['prestation_id'],
-                    'quantite' => $ligne['quantite'],
-                    'prix_unitaire_devis' => $ligne['prix_unitaire_devis'],
+        foreach ($extras as $prestation_id => $qty) {
+            if (isset($prestation_prices[$prestation_id])) {
+                $prix_unitaire = (float)$prestation_prices[$prestation_id];
+                $extras_montant_ht += $prix_unitaire * $qty;
+                $extras_details_for_db[] = [
+                    'prestation_id' => $prestation_id,
+                    'quantite' => $qty,
+                    'prix_unitaire_devis' => $prix_unitaire
                 ];
-
-                
-                $insertLineSuccess = insertRow('devis_prestations', $insertDataLigne);
-                if (!$insertLineSuccess) {
-                    
-                    throw new Exception("Échec de l\'insertion d\'une ligne de prestation supplémentaire pour le devis ID {$newQuoteId}. Prestation ID: {$ligne['prestation_id']}");
-                }
-            }
-        }
-
-
-        $pdo->commit();
-
-
-        $user_id = $_SESSION['user_id'] ?? null;
-        if ($user_id) {
-            $quote_link = WEBCLIENT_URL . '/modules/companies/quotes.php?action=view&id=' . $newQuoteId;
-            $notif_title = 'Demande de devis enregistrée';
-            $notif_message = "Votre demande de devis (N°{$newQuoteId}) a bien été enregistrée.";
-            if ($pack_service_id && !empty($extras_details_for_db)) {
-                $notif_message .= " Elle inclut un pack de base et des prestations supplémentaires.";
-            } elseif ($pack_service_id) {
-                $notif_message .= " Elle est basée sur un pack standard.";
             } else {
-                $notif_message .= " Elle est basée sur des prestations personnalisées.";
+                error_log("[WARNING] handleQuoteRequestPost: Prestation ID {$prestation_id} (extra) demandée mais non trouvée.");
             }
-            $notif_message .= " Elle est en attente de validation.";
-
-            createNotification(
-                $user_id,
-                $notif_title,
-                $notif_message,
-                'info',
-                $quote_link
-            );
         }
+    }
 
-        flashMessage('Votre demande de devis (N°' . $newQuoteId . ') a été envoyée avec succès et est en cours de traitement.', 'success');
-        redirectTo(WEBCLIENT_URL . '/modules/companies/quotes.php');
-        exit;
-    } catch (Exception $e) {
+    $total_montant_ht = $pack_montant_ht + $extras_montant_ht;
+    $tva_rate = defined('TVA_RATE') ? TVA_RATE : 0.20;
+    $tva_percent = $tva_rate * 100;
+    $total_montant_ttc = $total_montant_ht * (1 + $tva_rate);
+    $statut = QUOTE_STATUS_PENDING;
+
+    $insertDataDevis = [
+        'entreprise_id' => $entreprise_id,
+        'service_id' => $pack_service_id,
+        'date_creation' => date('Y-m-d H:i:s'),
+        'statut' => $statut,
+        'montant_total' => $total_montant_ttc,
+        'montant_ht' => $total_montant_ht,
+        'tva' => $tva_percent,
+        'created_at' => date('Y-m-d H:i:s'),
+        'updated_at' => date('Y-m-d H:i:s')
+    ];
+
+    $insertSuccess = insertRow('devis', $insertDataDevis);
+
+    if (!$insertSuccess) {
         $pdo->rollBack();
-        error_log('[ERROR] handleQuoteRequestPost: ' . $e->getMessage());
-        flashMessage('Une erreur est survenue lors de l\'enregistrement de votre demande de devis. ' . $e->getMessage(), 'danger');
+        flashMessage("Échec de la création de l'enregistrement principal du devis.", 'danger');
         redirectTo(WEBCLIENT_URL . '/modules/companies/quotes.php?action=request');
         exit;
     }
+
+    $newQuoteId = $pdo->lastInsertId();
+
+    if (!$newQuoteId || $newQuoteId <= 0) {
+        $pdo->rollBack();
+        error_log("[ERROR] handleQuoteRequestPost: Impossible de récupérer l'ID du devis après insertion réussie.");
+        flashMessage("Impossible de récupérer l'ID du devis nouvellement créé.", 'danger');
+        redirectTo(WEBCLIENT_URL . '/modules/companies/quotes.php?action=request');
+        exit;
+    }
+
+    if (!empty($extras_details_for_db)) {
+        foreach ($extras_details_for_db as $ligne) {
+            $insertDataLigne = [
+                'devis_id' => $newQuoteId,
+                'prestation_id' => $ligne['prestation_id'],
+                'quantite' => $ligne['quantite'],
+                'prix_unitaire_devis' => $ligne['prix_unitaire_devis'],
+            ];
+
+            $insertLineSuccess = insertRow('devis_prestations', $insertDataLigne);
+            if (!$insertLineSuccess) {
+                $pdo->rollBack();
+                flashMessage("Échec de l'insertion d'une ligne de prestation supplémentaire pour le devis ID {$newQuoteId}.", 'danger');
+                redirectTo(WEBCLIENT_URL . '/modules/companies/quotes.php?action=request');
+                exit;
+            }
+        }
+    }
+
+    $pdo->commit();
+
+    $user_id = $_SESSION['user_id'] ?? null;
+    if ($user_id) {
+        $quote_link = WEBCLIENT_URL . '/modules/companies/quotes.php?action=view&id=' . $newQuoteId;
+        $notif_title = 'Demande de devis enregistrée';
+        $notif_message = "Votre demande de devis (N°{$newQuoteId}) a bien été enregistrée.";
+        if ($pack_service_id && !empty($extras_details_for_db)) {
+            $notif_message .= " Elle inclut un pack de base et des prestations supplémentaires.";
+        } elseif ($pack_service_id) {
+            $notif_message .= " Elle est basée sur un pack standard.";
+        } else {
+            $notif_message .= " Elle est basée sur des prestations personnalisées.";
+        }
+        $notif_message .= " Elle est en attente de validation.";
+
+        createNotification(
+            $user_id,
+            $notif_title,
+            $notif_message,
+            'info',
+            $quote_link
+        );
+    }
+
+    flashMessage('Votre demande de devis (N°' . $newQuoteId . ') a été envoyée avec succès et est en cours de traitement.', 'success');
+    redirectTo(WEBCLIENT_URL . '/modules/companies/quotes.php');
+    exit;
 }
 
 /**

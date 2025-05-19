@@ -30,22 +30,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
     exit;
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_photo'])) {
-    verifyCsrfToken();
-
-    if (isset($_FILES['profile_photo'])) {
-        $result = updateUserProfilePhoto($user_id, $_FILES['profile_photo']);
-        if ($result['success'] && $result['new_photo_url']) {
-            $_SESSION['user_photo'] = $result['new_photo_url'];
-        }
-        flashMessage($result['message'], $result['success'] ? 'success' : 'danger');
-    } else {
-        flashMessage("Aucun fichier photo n'a été envoyé.", "warning");
-    }
-    redirectTo(WEBCLIENT_URL . '/modules/companies/settings.php');
-    exit;
-}
-
 $company_details = getCompanyDetailsForSettings($entreprise_id);
 $user_info = getUserInfo($user_id);
 
@@ -123,22 +107,6 @@ include __DIR__ . '/../../templates/header.php';
                                 <p class="text-danger">Impossible de charger vos informations utilisateur.</p>
                             <?php endif; ?>
                         </div>
-                        <div class="col-md-3 text-center">
-                            <h5>Photo de Profil</h5>
-                            <img src="<?= htmlspecialchars($_SESSION['user_photo'] ?? ASSETS_URL . '/images/user_default.png') ?>" alt="Photo de profil" class="img-thumbnail rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: contain;">
-
-                            <form method="POST" action="<?= WEBCLIENT_URL ?>/modules/companies/settings.php" enctype="multipart/form-data">
-                                <input type="hidden" name="change_photo" value="1">
-                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken()); ?>">
-
-                                <div class="mb-3">
-                                    <label for="profile_photo" class="form-label">Changer la photo</label>
-                                    <input class="form-control form-control-sm" type="file" id="profile_photo" name="profile_photo" accept="image/jpeg, image/png, image/gif" required>
-                                    <div class="form-text">Taille max 2Mo. Formats: JPG, PNG, GIF.</div>
-                                </div>
-                                <button type="submit" class="btn btn-secondary btn-sm"><i class="fas fa-upload me-1"></i> Mettre à jour la photo</button>
-                            </form>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -151,7 +119,7 @@ include __DIR__ . '/../../templates/header.php';
                 <div class="card-body">
                     <form method="POST" action="<?= WEBCLIENT_URL ?>/modules/companies/settings.php">
                         <input type="hidden" name="change_password" value="1">
-                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken()); ?>">
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(ensureCsrfToken()); ?>"> 
 
                         <div class="mb-3">
                             <label for="current_password" class="form-label">Mot de passe actuel <span class="text-danger">*</span></label>

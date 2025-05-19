@@ -1,6 +1,7 @@
 USE business_care;
 
 SET FOREIGN_KEY_CHECKS = 0;
+
 TRUNCATE TABLE facture_prestataire_lignes;
 TRUNCATE TABLE factures_prestataires;
 TRUNCATE TABLE habilitations;
@@ -36,6 +37,8 @@ TRUNCATE TABLE associations;
 TRUNCATE TABLE services;
 TRUNCATE TABLE roles;
 TRUNCATE TABLE interets_utilisateurs;
+TRUNCATE TABLE personne_interets;
+TRUNCATE TABLE association_projets;
 
 SET FOREIGN_KEY_CHECKS = 1;
 
@@ -200,10 +203,11 @@ INSERT INTO personnes (nom, prenom, email, mot_de_passe, telephone, date_naissan
 ('Representant', 'TechSolutions', 'rep.techsolutions@businesscare.fr', '$2y$10$CGP1gfg0khtXjAZcJFC6iO3oYisjwlPfkm8tQ8Q/OxWpFdR7tOiqO', '0000000002', '1975-05-10', 'Autre', '/assets/images/icons/default-user.png', 4, 1, 1, 'actif', NOW()),
 ('Representant', 'RetailExpress', 'rep.retailexpress@businesscare.fr', '$2y$10$CGP1gfg0khtXjAZcJFC6iO3oYisjwlPfkm8tQ8Q/OxWpFdR7tOiqO', '0000000003', '1982-09-15', 'Autre', '/assets/images/icons/default-user.png', 4, 5, 6, 'suspendu', NOW());
 
-INSERT INTO services (id, type, description, actif, ordre, tarif_annuel_par_salarie, prix_base_indicatif) VALUES
-(1, 'Starter Pack', 'Pour les petites equipes (jusqu''a 30 salaries)', TRUE, 10, 180.00, 100.00),
-(2, 'Basic Pack', 'Solution equilibree (jusqu''a 250 salaries)', TRUE, 20, 150.00, 500.00),
-(3, 'Premium Pack', 'Offre complete pour grandes entreprises (251+ salaries)', TRUE, 30, 100.00, 1000.00);
+INSERT INTO services (id, type, description, actif, ordre, max_effectif_inferieur_egal, activites_incluses, rdv_medicaux_inclus, chatbot_questions_limite, rdv_medicaux_supplementaires_prix, conseils_hebdo_personnalises, tarif_annuel_par_salarie, prix_base_indicatif) VALUES
+(1, 'Starter Pack', 'Pack Essentiel: jusqu''à 30 salariés. Idéal pour démarrer.', TRUE, 10, 30, 2, 1, 6, 75.00, FALSE, 180.00, 100.00),
+(2, 'Basic Pack', 'Pack Avantage: jusqu''à 250 salariés. La solution équilibrée.', TRUE, 20, 250, 3, 2, 20, 75.00, FALSE, 150.00, 500.00),
+(3, 'Premium Pack', 'Pack Excellence: à partir de 251 salariés. L''offre complète et personnalisée.', TRUE, 30, NULL, 4, 3, NULL, 0.50, TRUE, 100.00, 1000.00);
+
 
 INSERT INTO contrats (entreprise_id, service_id, date_debut, date_fin, nombre_salaries, statut, conditions_particulieres) VALUES
 (1, 3, '2024-01-01', '2025-12-31', 150, 'actif', 'Acces a toutes les prestations premium'),
@@ -410,10 +414,10 @@ INSERT INTO interets_utilisateurs (nom, description) VALUES
 ('Sante Mentale', 'Conseils et ressources pour le bien-etre psychologique'),
 ('Nutrition', 'Informations et astuces pour une alimentation saine'),
 ('Activite Physique', 'Motivation et idées pour rester actif'),
-('Gestion du Stress', 'Techniques pour gérer la pression et l\'anxiete'),
+('Gestion du Stress', 'Techniques pour gérer la pression et l''anxiete'),
 ('Sommeil', 'Améliorer la qualité et la quantité de sommeil'),
 ('Communication', 'Développer des compétences relationnelles efficaces'),
-('Developpement Personnel', 'Ressources pour la croissance et l\'epanouissement personnel');
+('Developpement Personnel', 'Ressources pour la croissance et l''epanouissement personnel');
 
 INSERT INTO prestataires_prestations (prestataire_id, prestation_id) VALUES
 (3, 1), (3, 9), (3, 7),
@@ -480,7 +484,7 @@ INSERT INTO factures (entreprise_id, devis_id, numero_facture, date_emission, da
 (28, 31, 'FACT-2024-024', '2024-03-05', '2024-04-04', 1800.00, 1500.00, 20.00, 'payee', 'prelevement', NOW() - INTERVAL 2 DAY),
 (29, 32, 'FACT-2024-025', '2024-07-01', '2024-07-31', 4500.00, 3750.00, 20.00, 'en_attente', 'virement', NULL),
 (2, 26, 'FACT-2024-033', '2024-06-12', '2024-07-27', 22500.00, 18750.00, 20.00, 'retard', 'prelevement', NULL),
-(2, 18, 'FACT-2024-034', '2024-05-30', '2024-06-29', 57000.00, 47500.00, 20.00, 'en_attente', NULL, NULL); -- <<<=== LIGNE AJOUTÉE ===>>>
+(2, 18, 'FACT-2024-034', '2024-05-30', '2024-06-29', 57000.00, 47500.00, 20.00, 'en_attente', NULL, NULL); 
 
 
 INSERT INTO devis_prestations (devis_id, prestation_id, quantite, prix_unitaire_devis, description_specifique) VALUES
@@ -558,7 +562,12 @@ INSERT INTO communaute_messages (communaute_id, personne_id, message) VALUES
 (2, 12, 'Nouveau record perso sur 10km ! :-)');
 
 INSERT INTO communaute_messages (communaute_id, personne_id, message) VALUES
-(1, 7, 'Des conseils pour tenir la posture de l\'arbre plus longtemps ?'),
-(2, 10, 'Quelqu\'un a une bonne appli pour suivre ses parcours de course ?'),
-(1, 17, 'Est-ce qu\'il y a un cours de Yoga prévu la semaine prochaine sur le site Sante+ ?'),
+(1, 7, 'Des conseils pour tenir la posture de l''arbre plus longtemps ?'),
+(2, 10, 'Quelqu''un a une bonne appli pour suivre ses parcours de course ?'),
+(1, 17, 'Est-ce qu''il y a un cours de Yoga prévu la semaine prochaine sur le site Sante+ ?'),
 (2, 20, 'Besoin de motivation pour sortir courir avec ce temps ! Des astuces ?');
+
+INSERT INTO association_projets (association_id, titre, description) VALUES
+(1, 'Collecte de vêtements', 'Organisation d''une collecte de vêtements pour les personnes démunies.'),
+(2, 'Ateliers d'alphabétisation', 'Sessions d''apprentissage de la lecture et de l\'écriture pour adultes.'),
+(3, 'Journée solidaire', 'Événement pour sensibiliser et soutenir les familles en difficulté.');

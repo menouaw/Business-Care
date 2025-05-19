@@ -525,4 +525,11 @@ CREATE TABLE personne_interets (
     FOREIGN KEY (personne_id) REFERENCES personnes(id) ON DELETE CASCADE,
     FOREIGN KEY (interet_id) REFERENCES interets_utilisateurs(id) ON DELETE CASCADE
 );
-
+CREATE TABLE association_projets (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    association_id INT NOT NULL,
+    titre VARCHAR(255) NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (association_id) REFERENCES associations(id) ON DELETE CASCADE
+);

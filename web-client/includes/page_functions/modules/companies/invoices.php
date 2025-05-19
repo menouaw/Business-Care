@@ -15,8 +15,6 @@ function getCompanyInvoices(int $entreprise_id): array
         return [];
     }
 
-
-
     $sql = "SELECT 
                 id, 
                 numero_facture, 
@@ -25,7 +23,6 @@ function getCompanyInvoices(int $entreprise_id): array
                 montant_total, 
                 statut,
                 date_paiement
-                
             FROM 
                 factures 
             WHERE 
@@ -33,11 +30,7 @@ function getCompanyInvoices(int $entreprise_id): array
             ORDER BY 
                 date_emission DESC";
 
-    $stmt = executeQuery($sql, [
-        ':entreprise_id' => $entreprise_id
-    ]);
-
-    return $stmt->fetchAll();
+    return executeQuery($sql, [':entreprise_id' => $entreprise_id])->fetchAll();
 }
 
 /**
@@ -52,8 +45,6 @@ function getInvoiceDetails(int $invoice_id, int $company_id): array|false
     if ($invoice_id <= 0 || $company_id <= 0) {
         return false;
     }
-
-
 
     return fetchOne('factures', 'id = :invoice_id AND entreprise_id = :company_id', [
         ':invoice_id' => $invoice_id,
@@ -70,90 +61,63 @@ function getInvoiceDetails(int $invoice_id, int $company_id): array|false
  */
 function generateInvoicePdf(array $invoiceData): bool
 {
-
-
-
-
     global $WEBCLIENT_URL;
     $invoice_id = $invoiceData['id'] ?? 0;
 
-    ob_start();
-    try {
+    $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+    $pdf->setPrintHeader(false);
+    $pdf->setPrintFooter(false);
+    $pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+    $pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+    $pdf->AddPage();
 
-        /*
-        ini_set('display_errors', 1);
-        error_reporting(E_ALL);
-        */
+    $pdf->SetFont('helvetica', 'B', 16);
+    $pdf->Cell(0, 10, 'FACTURE', 0, 1, 'C');
+    $pdf->Ln(10);
 
+    $pdf->SetFont('helvetica', 'B', 10);
+    $pdf->Cell(40, 6, 'Numéro de Facture:', 0, 0);
+    $pdf->SetFont('helvetica', '', 10);
+    $pdf->Cell(0, 6, htmlspecialchars($invoiceData['numero_facture'] ?? $invoiceData['id']), 0, 1);
 
-        $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+    $pdf->SetFont('helvetica', 'B', 10);
+    $pdf->Cell(40, 6, "Date d'Émission:", 0, 0);
+    $pdf->SetFont('helvetica', '', 10);
+    $pdf->Cell(0, 6, htmlspecialchars(date('d/m/Y', strtotime($invoiceData['date_emission']))), 0, 1);
 
-        $pdf->setPrintHeader(false);
-        $pdf->setPrintFooter(false);
-        $pdf->SetMargins(defined('PDF_MARGIN_LEFT') ? PDF_MARGIN_LEFT : 15, defined('PDF_MARGIN_TOP') ? PDF_MARGIN_TOP : 15, defined('PDF_MARGIN_RIGHT') ? PDF_MARGIN_RIGHT : 15);
-        $pdf->SetAutoPageBreak(TRUE, defined('PDF_MARGIN_BOTTOM') ? PDF_MARGIN_BOTTOM : 15);
-        $pdf->AddPage();
+    $pdf->SetFont('helvetica', 'B', 10);
+    $pdf->Cell(40, 6, "Date d'Échéance:", 0, 0);
+    $pdf->SetFont('helvetica', '', 10);
+    $pdf->Cell(0, 6, $invoiceData['date_echeance'] ? htmlspecialchars(date('d/m/Y', strtotime($invoiceData['date_echeance']))) : 'N/A', 0, 1);
 
+    $pdf->Ln(5);
 
-        $pdf->SetFont('helvetica', '', 10);
+    $currency = DEFAULT_CURRENCY ?? 'EUR';
 
-        $pdf->SetFont('helvetica', 'B', 16);
-        $pdf->Cell(0, 10, 'FACTURE', 0, 1, 'C');
-        $pdf->Ln(10);
+    $pdf->SetFont('helvetica', 'B', 10);
+    $pdf->Cell(40, 6, 'Montant HT:', 0, 0);
+    $pdf->SetFont('helvetica', '', 10);
+    $pdf->Cell(0, 6, htmlspecialchars(number_format($invoiceData['montant_ht'] ?? 0, 2, ',', ' ')) . ' ' . $currency, 0, 1);
 
-        $pdf->SetFont('helvetica', 'B', 10);
-        $pdf->Cell(40, 6, 'Numéro de Facture:', 0, 0);
-        $pdf->SetFont('helvetica', '', 10);
-        $pdf->Cell(0, 6, htmlspecialchars($invoiceData['numero_facture'] ?? $invoiceData['id']), 0, 1);
+    $pdf->SetFont('helvetica', 'B', 10);
+    $pdf->Cell(40, 6, 'TVA (' . htmlspecialchars($invoiceData['tva'] ?? '0') . '%):', 0, 0);
+    $pdf->SetFont('helvetica', '', 10);
+    $pdf->Cell(0, 6, htmlspecialchars(number_format(($invoiceData['montant_total'] ?? 0) - ($invoiceData['montant_ht'] ?? 0), 2, ',', ' ')) . ' ' . $currency, 0, 1);
 
-        $pdf->SetFont('helvetica', 'B', 10);
-        $pdf->Cell(40, 6, "Date d'Émission:", 0, 0);
-        $pdf->SetFont('helvetica', '', 10);
-        $pdf->Cell(0, 6, htmlspecialchars(date('d/m/Y', strtotime($invoiceData['date_emission']))), 0, 1);
+    $pdf->SetFont('helvetica', 'B', 10);
+    $pdf->Cell(40, 6, 'Montant Total TTC:', 0, 0);
+    $pdf->SetFont('helvetica', 'B', 10);
+    $pdf->Cell(0, 6, htmlspecialchars(number_format($invoiceData['montant_total'] ?? 0, 2, ',', ' ')) . ' ' . $currency, 0, 1);
 
-        $pdf->SetFont('helvetica', 'B', 10);
-        $pdf->Cell(40, 6, "Date d'Échéance:", 0, 0);
-        $pdf->SetFont('helvetica', '', 10);
-        $pdf->Cell(0, 6, $invoiceData['date_echeance'] ? htmlspecialchars(date('d/m/Y', strtotime($invoiceData['date_echeance']))) : 'N/A', 0, 1);
+    $pdf->Ln(5);
 
-        $pdf->Ln(5);
+    $pdf->SetFont('helvetica', 'B', 10);
+    $pdf->Cell(40, 6, 'Statut:', 0, 0);
+    $pdf->SetFont('helvetica', '', 10);
+    $pdf->Cell(0, 6, htmlspecialchars(ucfirst($invoiceData['statut'])), 0, 1);
 
-        $currency = defined('DEFAULT_CURRENCY') ? DEFAULT_CURRENCY : 'EUR';
-
-        $pdf->SetFont('helvetica', 'B', 10);
-        $pdf->Cell(40, 6, 'Montant HT:', 0, 0);
-        $pdf->SetFont('helvetica', '', 10);
-        $pdf->Cell(0, 6, htmlspecialchars(number_format($invoiceData['montant_ht'] ?? 0, 2, ',', ' ')) . ' ' . $currency, 0, 1);
-
-        $pdf->SetFont('helvetica', 'B', 10);
-        $pdf->Cell(40, 6, 'TVA (' . htmlspecialchars($invoiceData['tva'] ?? '0') . '%):', 0, 0);
-        $pdf->SetFont('helvetica', '', 10);
-        $pdf->Cell(0, 6, htmlspecialchars(number_format(($invoiceData['montant_total'] ?? 0) - ($invoiceData['montant_ht'] ?? 0), 2, ',', ' ')) . ' ' . $currency, 0, 1);
-
-        $pdf->SetFont('helvetica', 'B', 10);
-        $pdf->Cell(40, 6, 'Montant Total TTC:', 0, 0);
-        $pdf->SetFont('helvetica', 'B', 10);
-        $pdf->Cell(0, 6, htmlspecialchars(number_format($invoiceData['montant_total'] ?? 0, 2, ',', ' ')) . ' ' . $currency, 0, 1);
-
-        $pdf->Ln(5);
-
-        $pdf->SetFont('helvetica', 'B', 10);
-        $pdf->Cell(40, 6, 'Statut:', 0, 0);
-        $pdf->SetFont('helvetica', '', 10);
-        $pdf->Cell(0, 6, htmlspecialchars(ucfirst($invoiceData['statut'])), 0, 1);
-
-
-        ob_end_clean();
-        $pdf->Output('invoice_' . ($invoiceData['numero_facture'] ?? $invoiceData['id']) . '.pdf', 'D');
-        exit;
-    } catch (Exception $e) {
-    }
-
-
-    if (ob_get_level()) {
-        ob_end_clean();
-    }
-    return false;
+    $pdf->Output('invoice_' . ($invoiceData['numero_facture'] ?? $invoiceData['id']) . '.pdf', 'D');
+    exit;
 }
 
 
@@ -166,12 +130,10 @@ function generateInvoicePdf(array $invoiceData): bool
  */
 function getInvoiceStatusBadgeClass(string $status): string
 {
-    $status = strtolower($status);
-    return match ($status) {
+    return match (strtolower($status)) {
         INVOICE_STATUS_PAID => 'success',
         INVOICE_STATUS_PENDING => 'warning',
-        INVOICE_STATUS_LATE => 'danger',
-        INVOICE_STATUS_UNPAID => 'danger',
+        INVOICE_STATUS_LATE, INVOICE_STATUS_UNPAID => 'danger',
         INVOICE_STATUS_CANCELLED => 'secondary',
         default => 'light',
     };
@@ -185,17 +147,13 @@ function getInvoiceStatusBadgeClass(string $status): string
 function generateInvoiceNumber(): string
 {
     $date = date('Ymd');
-    $prefix = defined('INVOICE_PREFIX') ? INVOICE_PREFIX : 'F';
-
+    $prefix = INVOICE_PREFIX ?? 'F';
 
     $sql = "SELECT MAX(CAST(SUBSTRING_INDEX(numero_facture, '-', -1) AS UNSIGNED)) AS last_id
             FROM factures
             WHERE numero_facture LIKE :pattern";
 
-    $stmt = executeQuery($sql, ['pattern' => "{$prefix}-{$date}-%"]);
-    $result = $stmt->fetch();
-
-    $lastId = $result['last_id'] ?? 0;
+    $lastId = executeQuery($sql, ['pattern' => "{$prefix}-{$date}-%"])->fetch()['last_id'] ?? 0;
     $nextId = str_pad($lastId + 1, 4, '0', STR_PAD_LEFT);
 
     return "{$prefix}-{$date}-{$nextId}";
@@ -215,19 +173,15 @@ function generateInvoiceNumber(): string
  */
 function createStripeCheckoutSessionForInvoice(array $invoice, string $success_url, string $cancel_url, int $entreprise_id): ?\Stripe\Checkout\Session
 {
-
-
-
-
     try {
-        $currency = strtolower(defined('DEFAULT_CURRENCY_CODE') ? DEFAULT_CURRENCY_CODE : 'eur');
+        $currency = strtolower(DEFAULT_CURRENCY_CODE ?? 'eur');
         $amount_cents = (int) round(($invoice['montant_total'] ?? 0) * 100);
 
         if ($amount_cents <= 0) {
             throw new \Exception("Le montant de la facture est invalide pour le paiement.");
         }
 
-        $checkout_session = \Stripe\Checkout\Session::create([
+        return \Stripe\Checkout\Session::create([
             'payment_method_types' => ['card'],
             'line_items' => [[
                 'price_data' => [
@@ -248,15 +202,10 @@ function createStripeCheckoutSessionForInvoice(array $invoice, string $success_u
                 'company_id' => $entreprise_id,
             ],
         ]);
-
-        return $checkout_session;
-    } catch (\Stripe\Exception\ApiErrorException $e) {
+    } catch (\Stripe\Exception\ApiErrorException | \Exception $e) {
         flashMessage("Erreur lors de l'initialisation du paiement : " . htmlspecialchars($e->getMessage()), "danger");
-    } catch (\Exception $e) {
-        flashMessage("Une erreur technique est survenue lors de la préparation du paiement.", "danger");
+        return null;
     }
-
-    return null;
 }
 
 /**
@@ -269,11 +218,8 @@ function createStripeCheckoutSessionForInvoice(array $invoice, string $success_u
  */
 function handleInvoiceCheckoutSession(int $invoice_id, int $entreprise_id): void
 {
-
-
     $invoice = getInvoiceDetails($invoice_id, $entreprise_id);
     $payable_statuses = [INVOICE_STATUS_PENDING, INVOICE_STATUS_LATE, INVOICE_STATUS_UNPAID];
-
 
     if (!$invoice || !in_array($invoice['statut'], $payable_statuses)) {
         flashMessage("Facture non trouvée, déjà payée, ou non payable.", "warning");
@@ -281,33 +227,24 @@ function handleInvoiceCheckoutSession(int $invoice_id, int $entreprise_id): void
         exit;
     }
 
-
     if (!defined('STRIPE_SECRET_KEY') || empty(STRIPE_SECRET_KEY)) {
         flashMessage("La configuration pour le paiement en ligne est incomplète. Veuillez contacter le support.", "danger");
         redirectTo(WEBCLIENT_URL . '/modules/companies/invoices.php?action=view&id=' . $invoice_id);
         exit;
     }
 
-
-
     \Stripe\Stripe::setApiKey(STRIPE_SECRET_KEY);
-
 
     $success_url = WEBCLIENT_URL . '/modules/companies/invoices.php?payment=success&session_id={CHECKOUT_SESSION_ID}';
     $cancel_url = WEBCLIENT_URL . '/modules/companies/invoices.php?payment=cancelled';
 
-
     $checkout_session = createStripeCheckoutSessionForInvoice($invoice, $success_url, $cancel_url, $entreprise_id);
 
-
     if ($checkout_session !== null && isset($checkout_session->url)) {
-
         header("HTTP/1.1 303 See Other");
         header("Location: " . $checkout_session->url);
         exit;
     } else {
-
-
         redirectTo(WEBCLIENT_URL . '/modules/companies/invoices.php');
         exit;
     }
@@ -323,8 +260,6 @@ function handleInvoiceCheckoutSession(int $invoice_id, int $entreprise_id): void
  */
 function handleInvoiceDownload(int $invoice_id, int $entreprise_id): void
 {
-
-
     $invoice = getInvoiceDetails($invoice_id, $entreprise_id);
     if (!$invoice) {
         flashMessage("Facture non trouvée ou accès refusé pour la génération PDF.", "warning");
@@ -332,10 +267,7 @@ function handleInvoiceDownload(int $invoice_id, int $entreprise_id): void
         exit;
     }
 
-    $pdfGenerated = generateInvoicePdf($invoice);
-
-
-    if ($pdfGenerated === false) {
+    if (!generateInvoicePdf($invoice)) {
         flashMessage("Une erreur est survenue lors de la génération du fichier PDF. Veuillez réessayer ou contacter le support.", "danger");
         redirectTo(WEBCLIENT_URL . '/modules/companies/invoices.php');
         exit;
@@ -383,15 +315,10 @@ function handleStripeReturn(): void
 
     if ($payment_status) { 
         if ($payment_status === 'success') {
-            
             flashMessage("Votre tentative de paiement a été initiée. Le statut de la facture sera mis à jour après confirmation.", "info");
         } elseif ($payment_status === 'cancelled') {
             flashMessage("Le processus de paiement a été annulé.", "warning");
         }
-        
-        
         redirectTo(WEBCLIENT_URL . '/modules/companies/invoices.php');
-        
     }
-    
 }

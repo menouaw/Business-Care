@@ -18,7 +18,6 @@ function login($email, $password, $rememberMe = false)
         $_SESSION['user_photo'] = $user['photo_url'];
         $_SESSION['last_activity'] = time();
 
-        loadUserPreferences($user['id']);
 
         if ($rememberMe) {
             $token = createRememberMeToken($user['id']);
@@ -191,24 +190,7 @@ function resetPassword($email)
     }
 }
 
-/**
- * Charge et initialise les préférences de l'utilisateur dans la session.
- *
- * La fonction récupère les préférences depuis la table "preferences_utilisateurs" via fetchOne. 
- * Si des préférences sont trouvées, la langue définie dans le champ "langue" est enregistrée dans la session sous "user_language".
- *
- * @param int $userId L'identifiant unique de l'utilisateur.
- *
- * @return void
- */
-function loadUserPreferences($userId)
-{
-    $result = fetchOne('preferences_utilisateurs', "personne_id = $userId");
 
-    if ($result) {
-        $_SESSION['user_language'] = $result['langue'];
-    }
-}
 
 /**
  * Crée et stocke un jeton "Se souvenir de moi" unique pour l'utilisateur.
@@ -252,7 +234,6 @@ function validateRememberMeToken($token)
             $_SESSION['user_photo'] = $user['photo_url'];
             $_SESSION['last_activity'] = time();
 
-            loadUserPreferences($user['id']);
 
             logSecurityEvent($user['id'], 'auto_login', '[SUCCESS] Connexion automatique via jeton "Se souvenir de moi"');
             return true;

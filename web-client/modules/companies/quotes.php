@@ -244,7 +244,7 @@ include __DIR__ . '/../../templates/header.php';
                 </div>
                 <hr>
                 <form method="POST" action="<?= WEBCLIENT_URL ?>/modules/companies/quotes.php" id="quote-request-form">
-                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken()); ?>">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(ensureCsrfToken()); ?>">
                     <input type="hidden" name="request_type" id="request_type_hidden" value="">
                     <input type="hidden" name="selected_pack_id" id="selected_pack_id_hidden" value="">
                     <input type="hidden" name="submit_quote_request" value="1">

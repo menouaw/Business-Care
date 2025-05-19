@@ -24,32 +24,20 @@ function getProviderAppointments(int $provider_id, string $filter_status = 'upco
                  WHERE rv.praticien_id = :provider_id";
 
     $params = [':provider_id' => $provider_id];
-    $where_status = '';
-
-
-    switch ($filter_status) {
-        case 'upcoming':
-            $where_status = " AND rv.statut IN ('planifie', 'confirme') AND rv.date_rdv >= CURDATE()";
-            break;
-        case 'past':
-
-            $where_status = " AND (rv.statut = 'termine' OR rv.date_rdv < CURDATE())";
-            break;
-        case 'canceled':
-            $where_status = " AND rv.statut = 'annule'";
-            break;
-    }
-
+    $where_status = match ($filter_status) {
+        'upcoming' => " AND rv.statut IN ('planifie', 'confirme') AND rv.date_rdv >= CURDATE()",
+        'past' => " AND (rv.statut = 'termine' OR rv.date_rdv < CURDATE())",
+        'canceled' => " AND rv.statut = 'annule'",
+        default => ''
+    };
 
     $sql_count = "SELECT COUNT(*) " . $base_sql . $where_status;
     $stmt_count = executeQuery($sql_count, $params);
-    $total_appointments = $stmt_count ? (int)$stmt_count->fetchColumn() : 0;
-    $result['total'] = $total_appointments;
+    $result['total'] = $stmt_count ? (int)$stmt_count->fetchColumn() : 0;
 
-    if ($total_appointments === 0) {
+    if ($result['total'] === 0) {
         return $result;
     }
-
 
     $sql = "SELECT 
                 rv.id, 
@@ -68,7 +56,6 @@ function getProviderAppointments(int $provider_id, string $filter_status = 'upco
         " ORDER BY rv.date_rdv DESC 
              LIMIT :limit OFFSET :offset";
 
-
     $params[':limit'] = (int)$limit;
     $params[':offset'] = (int)$offset;
 
@@ -86,18 +73,13 @@ function getProviderAppointments(int $provider_id, string $filter_status = 'upco
  */
 function getAppointmentStatusBadgeClass(?string $status): string
 {
-    switch (strtolower($status ?? '')) {
-        case 'confirme':
-            return 'success';
-        case 'planifie':
-            return 'info';
-        case 'termine':
-            return 'secondary';
-        case 'annule':
-            return 'danger';
-        default:
-            return 'light';
-    }
+    return match (strtolower($status ?? '')) {
+        'confirme' => 'success',
+        'planifie' => 'info',
+        'termine' => 'secondary',
+        'annule' => 'danger',
+        default => 'light'
+    };
 }
 
 /**
@@ -108,14 +90,12 @@ function getAppointmentStatusBadgeClass(?string $status): string
  */
 function formatAppointmentStatus(?string $status): string
 {
-    
     return match (strtolower($status ?? '')) {
         'confirme' => 'Confirmé',
         'planifie' => 'Planifié',
         'termine' => 'Terminé',
         'annule' => 'Annulé',
-        
-        default => 'Inconnu' 
+        default => 'Inconnu'
     };
 }
 
@@ -130,28 +110,20 @@ function setupProviderAppointmentsPageData(int $provider_id): array
 {
     $pageTitle = "Mes Rendez-vous";
 
-
     $allowed_filters = ['upcoming', 'past', 'canceled', 'all'];
     $filter_status = filter_input(INPUT_GET, 'filter', FILTER_SANITIZE_SPECIAL_CHARS);
     if (!$filter_status || !in_array($filter_status, $allowed_filters)) {
         $filter_status = 'upcoming';
     }
 
-
     $items_per_page = 15;
     $current_page = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT, ['options' => ['default' => 1, 'min_range' => 1]]);
     $offset = ($current_page - 1) * $items_per_page;
 
-
-    $appointments_data = [];
-    $total_appointments = 0;
-    if ($provider_id > 0) {
-        $appointments_data = getProviderAppointments($provider_id, $filter_status, $items_per_page, $offset);
-        $total_appointments = $appointments_data['total'] ?? 0;
-    }
+    $appointments_data = $provider_id > 0 ? getProviderAppointments($provider_id, $filter_status, $items_per_page, $offset) : [];
+    $total_appointments = $appointments_data['total'] ?? 0;
     $appointments = $appointments_data['appointments'] ?? [];
     $total_pages = ceil($total_appointments / $items_per_page);
-
 
     return [
         'pageTitle' => $pageTitle,
@@ -160,7 +132,5 @@ function setupProviderAppointmentsPageData(int $provider_id): array
         'total_appointments' => $total_appointments,
         'current_page' => $current_page,
         'total_pages' => $total_pages,
-
-
     ];
 }

@@ -17,7 +17,7 @@ if ($entreprise_id <= 0) {
 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    verifyCsrfToken();
+    verifyPostedCsrfToken();
 
     $nom = filter_input(INPUT_POST, 'nom', FILTER_SANITIZE_SPECIAL_CHARS);
     $prenom = filter_input(INPUT_POST, 'prenom', FILTER_SANITIZE_SPECIAL_CHARS);
@@ -68,7 +68,7 @@ include __DIR__ . '/../../../templates/header.php';
             <?php echo displayFlashMessages(); ?>
 
             <form method="POST" action="<?= WEBCLIENT_URL ?>/modules/companies/employees/add.php">
-                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken()) ?>">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(ensureCsrfToken()) ?>">
 
                 <div class="row g-3">
                     <div class="col-md-6">

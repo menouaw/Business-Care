@@ -30,7 +30,7 @@ include __DIR__ . '/../../templates/header.php';
 
             <div class="row">
 
-                <div class="col-lg-8">
+                <div class="col-lg-12">
 
                     
                     <div class="card shadow-sm mb-4">
@@ -109,76 +109,13 @@ include __DIR__ . '/../../templates/header.php';
                     </div>
 
                     
-                    <div class="card shadow-sm mb-4">
-                        <div class="card-header">
-                            <h5 class="mb-0">Préférences Générales</h5>
-                        </div>
-                        <div class="card-body">
-                            <form action="settings.php" method="post" id="preferences-form">
-                                <input type="hidden" name="action" value="update_preferences">
-                                <input type="hidden" name="csrf_token" value="<?= $csrf_token_preferences ?>">
-
-                                <div class="mb-3">
-                                    <label for="langue" class="form-label">Langue</label>
-                                    <select class="form-select" id="langue" name="langue">
-                                        <option value="fr" <?= ($preferences['langue'] ?? 'fr') === 'fr' ? 'selected' : '' ?>>Français</option>
-                                        <option value="en" <?= ($preferences['langue'] ?? 'fr') === 'en' ? 'selected' : '' ?>>English</option>
-                                    </select>
-                                </div>
-
-                                <div class="form-check mb-3">
-                                    <input class="form-check-input" type="checkbox" id="notif_email" name="notif_email" value="1" <?= !empty($preferences['notif_email']) ? 'checked' : '' ?>>
-                                    <label class="form-check-label" for="notif_email">
-                                        Recevoir les notifications importantes par email
-                                    </label>
-                                </div>
-
-                                <button type="submit" class="btn btn-info">Enregistrer les préférences</button>
+                  
                             </form>
                         </div>
                     </div>
 
                 </div>
 
-                
-                <div class="col-lg-4">
-                    <div class="card shadow-sm mb-4">
-                        <div class="card-header">
-                            <h5 class="mb-0">Photo de Profil</h5>
-                        </div>
-                        <div class="card-body text-center">
-                            <img src="<?= htmlspecialchars($provider['photo_url'] ?? '/assets/images/icons/default-user.png') ?>"
-                                alt="Photo de profil" class="img-thumbnail rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;"
-                                id="profile-photo-preview">
-
-                            <?php 
-                            ?>
-                            <?php if ($flash_new_photo_url): ?>
-                                <script>
-                                    document.addEventListener('DOMContentLoaded', function() {
-                                        const imgPreview = document.getElementById('profile-photo-preview');
-                                        if (imgPreview) {
-                                            imgPreview.src = '<?= htmlspecialchars($flash_new_photo_url) ?>';
-                                        }
-                                    });
-                                </script>
-                            <?php endif; ?>
-
-                            <form action="settings.php" method="post" enctype="multipart/form-data" id="photo-form">
-                                <input type="hidden" name="action" value="update_photo">
-                                <input type="hidden" name="csrf_token" value="<?= $csrf_token_photo ?>">
-                                <div class="mb-3">
-                                    <label for="profile_photo" class="form-label">Changer la photo (JPG, PNG, GIF - Max 2Mo)</label>
-                                    <input class="form-control" type="file" id="profile_photo" name="profile_photo" accept="image/jpeg,image/png,image/gif">
-                                </div>
-                                <button type="submit" class="btn btn-outline-primary">
-                                    <i class="fas fa-upload me-1"></i> Mettre à jour la photo
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-
-                </div>
             </div>
 
         </main>

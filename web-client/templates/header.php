@@ -37,7 +37,9 @@ $userNotifications = [];
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Text:ital@0;1&family=Markazi+Text:wght@400..700&family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="<?= ASSETS_URL ?>/css/client.css">
 </head>
@@ -209,7 +211,7 @@ $userNotifications = [];
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     <?php if (isset($_SESSION['user_photo']) && !empty($_SESSION['user_photo'])): ?>
-                                        <img src="<?= $_SESSION['user_photo'] ?>" alt="<?= $_SESSION['user_name'] ?>" class="rounded-circle avatar-sm">
+                                        <img src="<?= $_SESSION['user_photo'] ?>?v=<?= time() ?>" alt="<?= $_SESSION['user_name'] ?>" class="rounded-circle avatar-sm">
                                     <?php else: ?>
                                         <i class="fas fa-user-circle"></i>
                                     <?php endif; ?>
@@ -255,6 +257,7 @@ $userNotifications = [];
 
     <main role="main" class="flex-shrink-0 <?= $mainClass ?? '' ?>">
     </main>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

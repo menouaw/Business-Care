@@ -25,11 +25,8 @@ function getCompanyEmployees(int $entreprise_id, int $current_page = 1, int $ite
         ':role_salarie' => ROLE_SALARIE
     ];
 
-
     $countSql = "SELECT COUNT(p.id) as total " . $baseSqlWhere;
-    $countStmt = executeQuery($countSql, $params);
-    $total_count = $countStmt->fetchColumn() ?: 0;
-
+    $total_count = executeQuery($countSql, $params)->fetchColumn() ?: 0;
 
     $offset = max(0, ($current_page - 1) * $items_per_page);
     $limit = max(1, $items_per_page);
@@ -48,13 +45,10 @@ function getCompanyEmployees(int $entreprise_id, int $current_page = 1, int $ite
                 p.nom ASC, p.prenom ASC
             LIMIT :limit OFFSET :offset";
 
-
     $params[':limit'] = $limit;
     $params[':offset'] = $offset;
 
-    $stmt = executeQuery($sql, $params);
-    $employees = $stmt->fetchAll();
-
+    $employees = executeQuery($sql, $params)->fetchAll();
 
     return [
         'employees' => $employees,
@@ -79,7 +73,6 @@ function _changeEmployeeStatus(int $employee_id, int $company_id, string $newSta
         return false;
     }
 
-
     $employee = fetchOne('personnes', 'id = :id AND entreprise_id = :company_id AND role_id = :role_salarie', [
         ':id' => $employee_id,
         ':company_id' => $company_id,
@@ -87,10 +80,8 @@ function _changeEmployeeStatus(int $employee_id, int $company_id, string $newSta
     ]);
 
     if (!$employee) {
-
         return false;
     }
-
 
     $updatedRows = updateRow(
         'personnes',
@@ -99,20 +90,16 @@ function _changeEmployeeStatus(int $employee_id, int $company_id, string $newSta
         [':id' => $employee_id]
     );
 
-
     if ($updatedRows > 0) {
         $actor_id = $_SESSION['user_id'] ?? null;
         if ($actor_id && function_exists('createNotification')) {
             $employee_name = htmlspecialchars($employee['prenom'] . ' ' . $employee['nom']);
-
             $message = sprintf("Le salarié %s (ID: %d) a été %s.", $employee_name, $employee_id, $notificationVerb);
             $link = WEBCLIENT_URL . '/modules/companies/employees/index.php';
-
             createNotification($actor_id, $notificationTitle, $message, $notificationType, $link);
         }
         return true;
     }
-
 
     return false;
 }
@@ -194,8 +181,7 @@ function getCompanySites(int $company_id): array
     }
 
     $sql = "SELECT id, nom FROM sites WHERE entreprise_id = :company_id ORDER BY nom ASC";
-    $stmt = executeQuery($sql, [':company_id' => $company_id]);
-    return $stmt->fetchAll();
+    return executeQuery($sql, [':company_id' => $company_id])->fetchAll();
 }
 
 /**
@@ -209,7 +195,6 @@ function getCompanySites(int $company_id): array
 function _validateUpdateEmployeeInput(int $employee_id, int $company_id, array $data): bool
 {
     if ($employee_id <= 0 || $company_id <= 0 || empty($data)) {
-
         return false;
     }
     return true;
@@ -231,8 +216,6 @@ function _filterUpdateData(array $data): array
         'genre',
         'photo_url', 
         'site_id'
-        
-        
     ];
 
     $filtered_data = [];
@@ -360,7 +343,7 @@ function _checkExistingEmployeeByEmail(string $email): bool
 function _handleSuccessfulEmployeeAddition(array $dataToInsert, int $newEmployeeId, int $entreprise_id): void
 {
     logSecurityEvent($_SESSION['user_id'] ?? null, 'employee_add', '[SUCCESS] Ajout salarié ID: ' . $newEmployeeId . ' pour entreprise ID: ' . $entreprise_id);
-    flashMessage("Salarié " . htmlspecialchars($dataToInsert['prenom'] . ' ' . $dataToInsert['nom']) . " ajouté avec succès. Un email d'activation devrait être envoyé.", "success");
+    flashMessage("Salarié " . htmlspecialchars($dataToInsert['prenom'] . ' ' . $dataToInsert['nom']) . " ajouté avec succès.", "success");
 
     $actor_id = $_SESSION['user_id'] ?? null;
     if ($actor_id && function_exists('createNotification')) {
@@ -390,7 +373,6 @@ function _attemptEmployeeInsertion(array $dataToInsert, int $entreprise_id, arra
                 commitTransaction();
                 return $newEmployeeId;
             } else {
-
                 rollbackTransaction();
                 flashMessage("Une erreur est survenue lors de la récupération de l'ID du nouveau salarié.", "danger");
                 return false;
@@ -403,7 +385,6 @@ function _attemptEmployeeInsertion(array $dataToInsert, int $entreprise_id, arra
         }
     } catch (Exception $e) {
         rollbackTransaction();
-
         flashMessage("Une erreur exceptionnelle est survenue lors de l'ajout du salarié.", "danger");
         return false;
     }
@@ -448,7 +429,6 @@ function addEmployee($entreprise_id, $employeeData)
         _handleSuccessfulEmployeeAddition($dataToInsert, $newEmployeeId, $entreprise_id);
         return $newEmployeeId;
     }
-
 
     return false;
 }

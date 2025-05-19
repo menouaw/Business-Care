@@ -6,13 +6,6 @@ function getSalarieAppointments(int $salarie_id, string $orderBy = 'rdv.date_rdv
 {
     if ($salarie_id <= 0) return [];
     
-    
-    $allowedOrderBy = ['rdv.date_rdv DESC', 'rdv.date_rdv ASC'];
-    if (!in_array($orderBy, $allowedOrderBy)) {
-        
-        $orderBy = 'rdv.date_rdv DESC';
-    }
-
     $sql = "SELECT rdv.id, rdv.date_rdv, rdv.statut, rdv.type_rdv, rdv.lieu,
                    pres.nom as prestation_nom,
                    CONCAT(prat.prenom, ' ', prat.nom) as praticien_nom
@@ -20,15 +13,20 @@ function getSalarieAppointments(int $salarie_id, string $orderBy = 'rdv.date_rdv
             LEFT JOIN " . TABLE_PRESTATIONS . " pres ON rdv.prestation_id = pres.id
             LEFT JOIN " . TABLE_USERS . " prat ON rdv.praticien_id = prat.id AND prat.role_id = :role_prestataire
             WHERE rdv.personne_id = :salarie_id
-            ORDER BY ". $orderBy;
-            
-    return executeQuery($sql, [':salarie_id' => $salarie_id, ':role_prestataire' => ROLE_PRESTATAIRE])->fetchAll();
+            ORDER BY {$orderBy}";
+    
+    return executeQuery($sql, [
+        ':salarie_id' => $salarie_id, 
+        ':role_prestataire' => ROLE_PRESTATAIRE
+    ])->fetchAll();
 }
 
 function getAppointmentDetailsForEmployee(int $salarie_id, int $rdv_id): array|false
 {
     if ($salarie_id <= 0 || $rdv_id <= 0) return false;
-    $sql = "SELECT rdv.*, pres.nom as prestation_nom, pres.description as prestation_description,
+    
+    $sql = "SELECT rdv.id, rdv.date_rdv, rdv.statut, rdv.type_rdv, rdv.lieu,
+                   pres.nom as prestation_nom, pres.description as prestation_description,
                    CONCAT(prat.prenom, ' ', prat.nom) as praticien_nom, prat.email as praticien_email, prat.telephone as praticien_tel,
                    s.nom as site_nom, CONCAT(s.adresse, ', ', s.code_postal, ' ', s.ville) as site_adresse
             FROM " . TABLE_APPOINTMENTS . " rdv
@@ -38,46 +36,76 @@ function getAppointmentDetailsForEmployee(int $salarie_id, int $rdv_id): array|f
             LEFT JOIN sites s ON cc.site_id = s.id
             WHERE rdv.id = :rdv_id AND rdv.personne_id = :salarie_id
             LIMIT 1";
-    $params = [':rdv_id' => $rdv_id, ':salarie_id' => $salarie_id, ':role_prestataire' => ROLE_PRESTATAIRE];
-    $stmt = executeQuery($sql, $params);
-    return $stmt->fetch();
+    
+    return executeQuery($sql, [
+        ':rdv_id' => $rdv_id, 
+        ':salarie_id' => $salarie_id, 
+        ':role_prestataire' => ROLE_PRESTATAIRE
+    ])->fetch();
 }
 
 function bookAppointmentSlot(int $salarie_id, int $slot_id, int $service_id_confirm): bool
 {
     if ($salarie_id <= 0 || $slot_id <= 0 || $service_id_confirm <= 0) return false;
-    $slot = executeQuery("SELECT * FROM consultation_creneaux WHERE id = :slot_id AND prestation_id = :service_id", [':slot_id' => $slot_id, ':service_id' => $service_id_confirm])->fetch();
-    if (!$slot || $slot['is_booked']) return false;
+    
+    beginTransaction();
+    $slot = executeQuery("SELECT id, prestation_id, praticien_id, start_time, site_id, is_booked FROM consultation_creneaux WHERE id = :slot_id AND prestation_id = :service_id FOR UPDATE", [
+        ':slot_id' => $slot_id, 
+        ':service_id' => $service_id_confirm
+    ])->fetch();
+    
+    if (!$slot || $slot['is_booked']) {
+        rollbackTransaction();
+        return false;
+    }
+    
     $prestation = fetchOne(TABLE_PRESTATIONS, 'id = :id', [':id' => $service_id_confirm]);
     if (!$prestation) return false;
+    
     updateRow('consultation_creneaux', ['is_booked' => 1], 'id = :slot_id AND is_booked = 0', [':slot_id' => $slot_id]);
-    $duree = $prestation['duree'] ?? 60;
-    $type_rdv = $prestation['type'] ?? 'consultation';
+    
     $rdvData = [
         'personne_id' => $salarie_id,
         'prestation_id' => $slot['prestation_id'],
         'praticien_id' => $slot['praticien_id'],
         'date_rdv' => $slot['start_time'],
-        'duree' => $duree,
+        'duree' => $prestation['duree'] ?? 60,
         'lieu' => $slot['site_id'] ? 'Site ID: ' . $slot['site_id'] : null,
-        'type_rdv' => $type_rdv,
+        'type_rdv' => $prestation['type'] ?? 'consultation',
         'statut' => 'confirme',
         'notes' => 'Réservé via plateforme web.',
         'consultation_creneau_id' => $slot_id
     ];
+    
     $insertResult = insertRow(TABLE_APPOINTMENTS, $rdvData);
+    if ($insertResult === false) {
+        rollbackTransaction();
+        return false;
+    }
+    
+    commitTransaction();
     return (bool)$insertResult;
 }
 
 function cancelEmployeeAppointment(int $salarie_id, int $rdv_id): bool
 {
     if ($salarie_id <= 0 || $rdv_id <= 0) return false;
-    $rdv = executeQuery("SELECT * FROM " . TABLE_APPOINTMENTS . " WHERE id = :rdv_id AND personne_id = :salarie_id", [':rdv_id' => $rdv_id, ':salarie_id' => $salarie_id])->fetch();
+    
+    beginTransaction();
+    $rdv = executeQuery("SELECT id, statut, consultation_creneau_id FROM " . TABLE_APPOINTMENTS . " WHERE id = :rdv_id AND personne_id = :salarie_id FOR UPDATE", [
+        ':rdv_id' => $rdv_id, 
+        ':salarie_id' => $salarie_id
+    ])->fetch();
+    
     if (!$rdv || !in_array($rdv['statut'], ['planifie', 'confirme'])) return false;
+    
     updateRow(TABLE_APPOINTMENTS, ['statut' => 'annule'], 'id = :rdv_id', [':rdv_id' => $rdv_id]);
+    
     if (!empty($rdv['consultation_creneau_id'])) {
         updateRow('consultation_creneaux', ['is_booked' => 0], 'id = :creneau_id', [':creneau_id' => $rdv['consultation_creneau_id']]);
     }
+    
+    commitTransaction();
     return true;
 }
 
@@ -101,15 +129,13 @@ function getAvailableSlotsForService(int $service_id, string $startDate, string 
 {
     if ($service_id <= 0) return [];
 
-    $sql = "SELECT
-                cc.id, cc.start_time, cc.end_time, cc.praticien_id,
-                CONCAT(p.prenom, ' ', p.nom) as praticien_nom
+    $sql = "SELECT cc.id, cc.start_time, cc.end_time, cc.praticien_id,
+                   CONCAT(p.prenom, ' ', p.nom) as praticien_nom
             FROM consultation_creneaux cc
             LEFT JOIN " . TABLE_USERS . " p ON cc.praticien_id = p.id AND p.role_id = :role_prestataire
             WHERE cc.prestation_id = :service_id
               AND cc.is_booked = 0
-              AND cc.start_time >= :start_date
-              AND cc.start_time <= :end_date
+              AND cc.start_time BETWEEN :start_date AND :end_date
             ORDER BY cc.start_time ASC";
 
     return executeQuery($sql, [
@@ -130,8 +156,10 @@ function getAvailableSlotsForService(int $service_id, string $startDate, string 
  */
 function _getAndValidateSlotForBooking(int $slot_id, int $service_id_confirm): ?array
 {
-    $sqlCheckSlot = "SELECT * FROM consultation_creneaux WHERE id = :slot_id AND prestation_id = :service_id FOR UPDATE";
-    $slot = executeQuery($sqlCheckSlot, [':slot_id' => $slot_id, ':service_id' => $service_id_confirm])->fetch();
+    $slot = executeQuery(
+        "SELECT * FROM consultation_creneaux WHERE id = :slot_id AND prestation_id = :service_id FOR UPDATE",
+        [':slot_id' => $slot_id, ':service_id' => $service_id_confirm]
+    )->fetch();
 
     if (!$slot) {
         flashMessage("Le créneau sélectionné n'existe pas ou ne correspond pas à la prestation choisie.", "warning");
@@ -154,7 +182,7 @@ function _getAndValidateSlotForBooking(int $slot_id, int $service_id_confirm): ?
  */
 function _determineAppointmentType(array $prestation): string
 {
-    return isset($prestation['type']) && in_array($prestation['type'], APPOINTMENT_TYPES) ? $prestation['type'] : 'consultation';
+    return $prestation['type'] ?? 'consultation';
 }
 
 /**
@@ -206,12 +234,7 @@ function _isBookingExceptionMessageAlreadyHandled(Exception $e): bool
  */
 function _handleBookingPostAction(int $salarie_id, array $postData): void
 {
-    $csrf_token_booking = $postData['csrf_token'] ?? '';
-    if (!validateToken($csrf_token_booking)) {
-        flashMessage("Jeton de sécurité invalide ou expiré pour la réservation. Veuillez réessayer.", "danger");
-        redirectTo(WEBCLIENT_URL . '/modules/employees/appointments.php');
-        exit;
-    }
+    verifyPostedCsrfToken();
 
     $slot_id = filter_var($postData['slot_id'] ?? null, FILTER_VALIDATE_INT);
     $service_id_confirm = filter_var($postData['service_id'] ?? null, FILTER_VALIDATE_INT);
@@ -225,10 +248,8 @@ function _handleBookingPostAction(int $salarie_id, array $postData): void
     $bookingSuccess = bookAppointmentSlot($salarie_id, $slot_id, $service_id_confirm);
 
     if ($bookingSuccess) {
-        if (empty($_SESSION['flash_messages'])) {
-            flashMessage("Votre rendez-vous a bien été réservé !", "success");
-        }
-    } elseif (empty($_SESSION['flash_messages'])) {
+        flashMessage("Votre rendez-vous a bien été réservé !", "success");
+    } else {
         flashMessage("Erreur lors de la réservation. Le créneau n'est peut-être plus disponible ou une erreur technique est survenue.", "danger");
     }
 
@@ -251,12 +272,7 @@ function _handleCancelPostAction(int $salarie_id, array $postData): void
         $redirectUrl .= '?filter=' . urlencode($current_filter);
     }
 
-    $csrf_token_cancel = $postData['csrf_token'] ?? '';
-    if (!validateToken($csrf_token_cancel)) {
-        flashMessage("Erreur de sécurité (jeton invalide). Veuillez réessayer.", "danger");
-        redirectTo($redirectUrl);
-        exit;
-    }
+    verifyPostedCsrfToken();
 
     $rdv_id_to_cancel = filter_var($postData['id'] ?? null, FILTER_VALIDATE_INT);
     if (!$rdv_id_to_cancel) {
@@ -268,7 +284,7 @@ function _handleCancelPostAction(int $salarie_id, array $postData): void
     $cancelSuccess = cancelEmployeeAppointment($salarie_id, $rdv_id_to_cancel);
     if ($cancelSuccess) {
         flashMessage("Votre rendez-vous a bien été annulé.", "success");
-    } elseif (empty($_SESSION['flash_messages'])) {
+    } else {
         flashMessage("L'annulation du rendez-vous a échoué pour une raison inconnue.", "danger");
     }
 
@@ -304,10 +320,7 @@ function handleAppointmentPostAndGetActions(int $salarie_id)
  */
 function _getAppointmentListData(int $salarie_id, string $filter): array
 {
-    $orderBy = 'rdv.date_rdv ASC';
-    if (in_array($filter, ['past', 'cancelled', 'all'])) {
-        $orderBy = 'rdv.date_rdv DESC';
-    }
+    $orderBy = in_array($filter, ['past', 'cancelled', 'all']) ? 'rdv.date_rdv DESC' : 'rdv.date_rdv ASC';
     $allAppointments = getSalarieAppointments($salarie_id, $orderBy);
 
     $upcoming = [];
@@ -441,7 +454,7 @@ function _getAppointmentRequestParams(): array
 
     $requestedFilter = filter_input(INPUT_GET, 'filter', FILTER_SANITIZE_SPECIAL_CHARS);
     $validFilters = ['upcoming', 'past', 'cancelled', 'all'];
-    $filter = (in_array($requestedFilter, $validFilters, true)) ? $requestedFilter : 'upcoming';
+    $filter = in_array($requestedFilter, $validFilters, true) ? $requestedFilter : 'upcoming';
 
     return compact('id', 'action', 'bookingStep', 'service_id', 'page', 'filter');
 }
@@ -483,7 +496,7 @@ function setupAppointmentsPage(): array
     }
 
     $viewData['filter'] = $params['filter'];
-    $viewData['csrf_token'] = generateToken();
+    $viewData['csrf_token'] = ensureCsrfToken();
 
     return $viewData;
 }

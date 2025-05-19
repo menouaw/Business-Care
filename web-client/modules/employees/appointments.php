@@ -10,16 +10,14 @@ requireRole(ROLE_SALARIE);
 $salarie_id_session = $_SESSION['user_id'] ?? 0;
 if ($salarie_id_session > 0) {
     handleAppointmentPostAndGetActions($salarie_id_session);
-    
-    
 } else {
-    
+
     flashMessage("Session invalide ou expirée. Veuillez vous reconnecter.", "danger");
     redirectTo(WEBCLIENT_URL . '/auth/login.php');
     exit;
 }
 
-// Récupère les stats du pack pour le salarié connecté
+
 $stats = getSalarieDashboardStats($salarie_id_session);
 $rdv_utilises = $stats['pack_info']['usage_stats']['consultations']['used'] ?? 0;
 $rdv_max = $stats['pack_info']['usage_stats']['consultations']['total'] ?? 0;
@@ -162,7 +160,7 @@ include __DIR__ . '/../../templates/header.php';
                         <?php else: ?>
                             <form method="POST" action="<?= WEBCLIENT_URL ?>/modules/employees/appointments.php">
                                 <input type="hidden" name="service_id" value="<?= htmlspecialchars($viewData['service_id'] ?? '') ?>">
-                                <input type="hidden" name="csrf_token" value="<?= generateToken(); ?>">
+                                <input type="hidden" name="csrf_token" value="<?= ensureCsrfToken(); ?>">
                                 <div class="list-group">
                                     <?php foreach ($viewData['availableSlots'] as $slot): ?>
                                         <label class="list-group-item list-group-item-action">
@@ -263,7 +261,7 @@ include __DIR__ . '/../../templates/header.php';
 
                         <?php
 
-                        $csrfToken = generateToken();
+                        $csrfToken = ensureCsrfToken();
                         ?>
 
                         <?php if ($filter === 'all' || $filter === 'upcoming'): ?>
@@ -401,4 +399,3 @@ include __DIR__ . '/../../templates/header.php';
         </main>
     </div>
 </div>
-

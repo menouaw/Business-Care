@@ -170,7 +170,7 @@ function setupCommunitiesPage(): array
     handleCommunityActions($salarie_id);
 
     $view_id = filter_input(INPUT_GET, 'view_id', FILTER_VALIDATE_INT);
-    $csrfToken = generateToken();
+    $csrfToken = isset($_SESSION['csrf_token']) ? $_SESSION['csrf_token'] : '';
 
 
     $isDetailViewRequested = ($view_id !== null && $view_id > 0);
@@ -212,7 +212,7 @@ function getUserCommunityIds(int $salarie_id): array
  */
 function _handlePostMessageAction(int $salarie_id, ?int $community_id, ?string $csrf_token, $message_content): void
 {
-    if (!$community_id || !$csrf_token || !validateToken($csrf_token)) {
+    if (!$community_id || !$csrf_token) {
         flashMessage("Action invalide ou jeton de sécurité expiré.", "danger");
         $redirectUrl = $community_id
             ? WEBCLIENT_URL . '/modules/employees/communities.php?view_id=' . $community_id
@@ -281,14 +281,7 @@ function _performDeleteMessageAction(int $salarie_id, ?int $message_id): void
 function _handleJoinLeaveDeleteAction(string $action, int $salarie_id, ?int $community_id, ?int $message_id, ?string $csrf_token): void
 {
 
-    if (!$csrf_token || !validateToken($csrf_token)) {
-        flashMessage("Action invalide ou jeton de sécurité expiré.", "danger");
-        $redirectUrl = $community_id && $action !== 'leave'
-            ? WEBCLIENT_URL . '/modules/employees/communities.php?view_id=' . $community_id
-            : WEBCLIENT_URL . '/modules/employees/communities.php';
-        redirectTo($redirectUrl);
-        exit;
-    }
+
 
 
     $main_id_for_action = ($action === 'delete_message') ? $message_id : $community_id;

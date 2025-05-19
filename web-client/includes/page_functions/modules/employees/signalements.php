@@ -19,10 +19,6 @@ function handleNewSignalement(): void
         return;
     }
 
-    if (!validateToken($_POST['csrf_token'] ?? '')) {
-        handleClientCsrfFailureRedirect('envoyer un signalement', WEBCLIENT_URL . '/modules/employees/signalements.php');
-        return;
-    }
 
 
     $formData = getFormData();
@@ -79,6 +75,6 @@ function setupSignalementPage(): array
 
     return [
         'pageTitle' => "Faire un Signalement Anonyme",
-        'csrf_token' => generateToken()
+        'csrf_token' => ensureCsrfToken()
     ];
 }
