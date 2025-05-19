@@ -71,11 +71,11 @@ include '../../templates/header.php';
                                 <option value="">-- Sélectionner une entreprise --</option>
                                 <?php foreach ($entreprises as $entreprise): ?>
                                 <option value="<?php echo $entreprise['id']; ?>" <?php echo ($contractData['entreprise_id'] == $entreprise['id']) ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars($entreprise['nom']); ?>
+                                    <?php echo htmlspecialchars($entreprise['nom'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
                                 </option>
                                 <?php endforeach; ?>
                             </select>
-                             <?php if (isset($errors['entreprise_id'])) { echo '<div class="invalid-feedback">'.htmlspecialchars($errors['entreprise_id']).'</div>'; } ?>
+                             <?php if (isset($errors['entreprise_id'])) { echo '<div class="invalid-feedback">'.htmlspecialchars($errors['entreprise_id'], ENT_QUOTES, 'UTF-8').'</div>'; } ?>
                         </div>
 
                         <div class="mb-3">
@@ -84,31 +84,31 @@ include '../../templates/header.php';
                                 <option value="">-- Sélectionner un service --</option>
                                 <?php foreach ($services as $service): ?>
                                 <option value="<?php echo $service['id']; ?>" <?php echo ($contractData['service_id'] == $service['id']) ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars($service['nom']); ?>
+                                    <?php echo htmlspecialchars($service['type'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
                                 </option>
                                 <?php endforeach; ?>
                             </select>
-                             <?php if (isset($errors['service_id'])) { echo '<div class="invalid-feedback">'.htmlspecialchars($errors['service_id']).'</div>'; } ?>
+                             <?php if (isset($errors['service_id'])) { echo '<div class="invalid-feedback">'.htmlspecialchars($errors['service_id'], ENT_QUOTES, 'UTF-8').'</div>'; } ?>
                         </div>
 
                          <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="date_debut" class="form-label">Date de début <span class="text-danger">*</span></label>
-                                <input type="date" class="form-control <?php echo isset($errors['date_debut']) ? 'is-invalid' : ''; ?>" id="date_debut" name="date_debut" value="<?php echo htmlspecialchars($contractData['date_debut']); ?>" required>
-                                 <?php if (isset($errors['date_debut'])) { echo '<div class="invalid-feedback">'.htmlspecialchars($errors['date_debut']).'</div>'; } ?>
+                                <input type="date" class="form-control <?php echo isset($errors['date_debut']) ? 'is-invalid' : ''; ?>" id="date_debut" name="date_debut" value="<?php echo htmlspecialchars($contractData['date_debut'] ?? '', ENT_QUOTES, 'UTF-8'); ?>" required>
+                                 <?php if (isset($errors['date_debut'])) { echo '<div class="invalid-feedback">'.htmlspecialchars($errors['date_debut'], ENT_QUOTES, 'UTF-8').'</div>'; } ?>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="date_fin" class="form-label">Date de fin</label>
-                                <input type="date" class="form-control <?php echo isset($errors['date_fin']) ? 'is-invalid' : ''; ?>" id="date_fin" name="date_fin" value="<?php echo htmlspecialchars($contractData['date_fin']); ?>">
-                                 <?php if (isset($errors['date_fin'])) { echo '<div class="invalid-feedback">'.htmlspecialchars($errors['date_fin']).'</div>'; } ?>
+                                <input type="date" class="form-control <?php echo isset($errors['date_fin']) ? 'is-invalid' : ''; ?>" id="date_fin" name="date_fin" value="<?php echo htmlspecialchars($contractData['date_fin'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+                                 <?php if (isset($errors['date_fin'])) { echo '<div class="invalid-feedback">'.htmlspecialchars($errors['date_fin'], ENT_QUOTES, 'UTF-8').'</div>'; } ?>
                             </div>
                         </div>
                         
                          <div class="row">
                              <div class="col-md-6 mb-3">
                                 <label for="nombre_salaries" class="form-label">Nombre de salariés couverts</label>
-                                <input type="number" min="0" class="form-control <?php echo isset($errors['nombre_salaries']) ? 'is-invalid' : ''; ?>" id="nombre_salaries" name="nombre_salaries" placeholder="50" value="<?php echo htmlspecialchars($contractData['nombre_salaries']); ?>">
-                                <?php if (isset($errors['nombre_salaries'])) { echo '<div class="invalid-feedback">'.htmlspecialchars($errors['nombre_salaries']).'</div>'; } ?>
+                                <input type="number" min="0" class="form-control <?php echo isset($errors['nombre_salaries']) ? 'is-invalid' : ''; ?>" id="nombre_salaries" name="nombre_salaries" placeholder="50" value="<?php echo htmlspecialchars($contractData['nombre_salaries'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+                                <?php if (isset($errors['nombre_salaries'])) { echo '<div class="invalid-feedback">'.htmlspecialchars($errors['nombre_salaries'], ENT_QUOTES, 'UTF-8').'</div>'; } ?>
                             </div>
                         </div>
 
@@ -121,12 +121,12 @@ include '../../templates/header.php';
                                     </option>
                                 <?php endforeach; ?>
                             </select>
-                             <?php if (isset($errors['statut'])) { echo '<div class="invalid-feedback">'.htmlspecialchars($errors['statut']).'</div>'; } ?>
+                             <?php if (isset($errors['statut'])) { echo '<div class="invalid-feedback">'.htmlspecialchars($errors['statut'], ENT_QUOTES, 'UTF-8').'</div>'; } ?>
                         </div>
 
                         <div class="mb-3">
                             <label for="conditions_particulieres" class="form-label">Conditions particulières</label>
-                            <textarea class="form-control" id="conditions_particulieres" name="conditions_particulieres" rows="3"><?php echo htmlspecialchars($contractData['conditions_particulieres']); ?></textarea>
+                            <textarea class="form-control" id="conditions_particulieres" name="conditions_particulieres" rows="3"><?php echo htmlspecialchars($contractData['conditions_particulieres'] ?? '', ENT_QUOTES, 'UTF-8'); ?></textarea>
                         </div>
 
                         <hr>
