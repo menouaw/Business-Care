@@ -52,7 +52,7 @@ include __DIR__ . '/../../templates/header.php';
                                     <?php endif; ?>
                                     <?php if ($event['organise_par_bc']): ?>
                                     <div class="mb-2">
-                                        <span class="badge bg-primary">Organisé par BC</span>
+                                        <button class="btn btn-info btn-sm disabled" style="font-size: 0.75em; padding: 0.15rem 0.4rem;">Organisé par BC</button>
                                     </div>
                                     <?php endif; ?>
                                     <?php if ($event['capacite_max']): ?>
@@ -80,7 +80,13 @@ include __DIR__ . '/../../templates/header.php';
                                                 <i class="fas fa-ban"></i> Complet
                                             </button>
                                         <?php else: ?>
-                                            <a href="?action=register&id=<?= $event['id'] ?>" class="btn btn-primary btn-sm">
+                                            <?php
+                                            $btn_class = 'btn-primary'; // Couleur par défaut
+                                            if ($event['organise_par_bc']) {
+                                                $btn_class = 'btn-success'; // Couleur verte si organisé par BC
+                                            }
+                                            ?>
+                                            <a href="?action=register&id=<?= $event['id'] ?>" class="btn <?= $btn_class ?> btn-sm">
                                                 <i class="fas fa-plus"></i> S'inscrire
                                             </a>
                                         <?php endif; ?>
@@ -120,7 +126,7 @@ include __DIR__ . '/../../templates/header.php';
                                     <?php endif; ?>
                                     <?php if ($event['organise_par_bc']): ?>
                                     <div class="mb-2">
-                                        <span class="badge bg-primary">Organisé par BC</span>
+                                        <button class="btn btn-info btn-sm disabled" style="font-size: 0.75em; padding: 0.15rem 0.4rem;">Organisé par BC</button>
                                     </div>
                                     <?php endif; ?>
                                     <?php if ($event['capacite_max']): ?>
@@ -148,7 +154,13 @@ include __DIR__ . '/../../templates/header.php';
                                                 <i class="fas fa-ban"></i> Complet
                                             </button>
                                         <?php else: ?>
-                                            <a href="?action=register&id=<?= $event['id'] ?>" class="btn btn-primary btn-sm">
+                                            <?php
+                                            $btn_class = 'btn-primary'; // Couleur par défaut
+                                            if ($event['organise_par_bc']) {
+                                                $btn_class = 'btn-success'; // Couleur verte si organisé par BC
+                                            }
+                                            ?>
+                                            <a href="?action=register&id=<?= $event['id'] ?>" class="btn <?= $btn_class ?> btn-sm">
                                                 <i class="fas fa-plus"></i> S'inscrire
                                             </a>
                                         <?php endif; ?>

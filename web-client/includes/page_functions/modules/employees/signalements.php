@@ -24,6 +24,10 @@ function handleNewSignalement(): void
         return;
     }
 
+    // ---- DÉBUT DEBUG CSRF ----
+    error_log('DEBUG CSRF - Session Token au moment de la vérification: ' . ($_SESSION['csrf_token'] ?? 'NON DÉFINI EN SESSION'));
+    error_log('DEBUG CSRF - POST Token reçu du formulaire: ' . ($_POST['csrf_token'] ?? 'NON DÉFINI DANS POST'));
+    // ---- FIN DEBUG CSRF ----
 
     $formData = getFormData();
     $sujet = trim($formData['sujet'] ?? '');
@@ -79,6 +83,6 @@ function setupSignalementPage(): array
 
     return [
         'pageTitle' => "Faire un Signalement Anonyme",
-        'csrf_token' => generateToken()
+        'csrf_token' => ensureCsrfToken()
     ];
 }

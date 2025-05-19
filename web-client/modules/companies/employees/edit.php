@@ -89,7 +89,7 @@ include __DIR__ . '/../../../templates/header.php';
 
             <form method="POST" action="<?= WEBCLIENT_URL ?>/modules/companies/employees/edit.php?id=<?= $employee_id ?>">
                 <input type="hidden" name="employee_id" value="<?= (int)$employee_details['id'] ?>">
-                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken()) ?>">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(ensureCsrfToken()) ?>">
 
                 <div class="row g-3">
                     <div class="col-md-6">

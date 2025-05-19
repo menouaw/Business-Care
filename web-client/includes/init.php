@@ -12,4 +12,3 @@ require_once __DIR__ . '/../../shared/web-client/auth.php';
 
 
 ensureCsrfToken();
-verifyPostedCsrfToken();

@@ -189,19 +189,13 @@ function addProviderAvailability(int $provider_id, array $data): bool
  */
 function handleAvailabilityAddRequest(int $provider_id): void
 {
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['add_availability'])) {
-        flashMessage("Requête invalide.", "danger");
-        redirectTo(WEBCLIENT_URL . '/modules/providers/availabilities.php');
-        exit;
-    }
 
-    verifyCsrfToken();
 
+    verifyPostedCsrfToken();
 
     $data = $_POST;
 
     addProviderAvailability($provider_id, $data);
-
 
     redirectTo(WEBCLIENT_URL . '/modules/providers/availabilities.php');
     exit;
@@ -384,7 +378,11 @@ function handleAvailabilityUpdateRequest(int $provider_id): void
         exit;
     }
 
-    verifyCsrfToken();
+    if (!verifyPostedCsrfToken()) {
+        flashMessage("Jeton de sécurité invalide ou expiré pour la mise à jour.", "danger");
+        redirectTo(WEBCLIENT_URL . '/modules/providers/availabilities.php');
+        exit;
+    }
 
     $availability_id = filter_input(INPUT_POST, 'availability_id', FILTER_VALIDATE_INT);
     if (!$availability_id) {

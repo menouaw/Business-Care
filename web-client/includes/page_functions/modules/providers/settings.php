@@ -16,7 +16,7 @@ function getProviderDetailsForSettings(int $provider_id): array|false
         return false;
     }
 
-    return fetchOne(TABLE_USERS, 'id = :id AND role_id = :role_id', [":id" => $provider_id, ":role_id" => ROLE_PRESTATAIRE], 'id, nom, prenom, email, telephone, date_naissance, genre, photo_url');
+    return fetchOne(TABLE_USERS, 'id = :id AND role_id = :role_id', [":id" => $provider_id, ":role_id" => ROLE_PRESTATAIRE], 'id, nom, prenom, email, telephone, date_naissance, genre');
 }
 
 /**
@@ -162,88 +162,6 @@ function updateProviderPassword(int $provider_id, string $current_password, stri
 }
 
 /**
- * Met à jour la photo de profil du prestataire.
- *
- * @param int $provider_id L'ID du prestataire.
- * @param array $fileData Données du fichier $_FILES.
- * @return array Résultat [success => bool, message => string, new_photo_url => ?string].
- */
-function updateProviderProfilePhoto(int $provider_id, array $fileData): array
-{
-    if ($provider_id <= 0) return ['success' => false, 'message' => 'Utilisateur invalide.', 'new_photo_url' => null];
-
-    if (empty($fileData) || $fileData['error'] !== UPLOAD_ERR_OK) {
-        $uploadErrors = [
-            UPLOAD_ERR_INI_SIZE   => "Le fichier dépasse la taille maximale autorisée par le serveur.",
-            UPLOAD_ERR_FORM_SIZE  => "Le fichier dépasse la taille maximale autorisée par le formulaire.",
-            UPLOAD_ERR_PARTIAL    => "Le fichier n'a été que partiellement téléchargé.",
-            UPLOAD_ERR_NO_FILE    => "Aucun fichier n'a été téléchargé.",
-            UPLOAD_ERR_NO_TMP_DIR => "Erreur serveur : dossier temporaire manquant.",
-            UPLOAD_ERR_CANT_WRITE => "Erreur serveur : impossible d'écrire sur le disque.",
-            UPLOAD_ERR_EXTENSION  => "Erreur serveur : une extension PHP a arrêté l'envoi.",
-        ];
-        $message = $uploadErrors[$fileData['error']] ?? "Aucun fichier reçu ou erreur inconnue lors du téléchargement.";
-        return ['success' => false, 'message' => $message, 'new_photo_url' => null];
-    }
-
-
-    $finfo = new finfo(FILEINFO_MIME_TYPE);
-    $mime_type = $finfo->file($fileData['tmp_name']);
-    $allowed_mime_types = ['image/jpeg', 'image/png', 'image/gif'];
-
-    if (!in_array($mime_type, $allowed_mime_types)) {
-        return ['success' => false, 'message' => "Type de fichier invalide. Seuls JPG, PNG, GIF sont autorisés.", 'new_photo_url' => null];
-    }
-
-    if ($fileData['size'] > (2 * 1024 * 1024)) {
-        return ['success' => false, 'message' => 'Fichier trop volumineux (maximum 2 Mo).', 'new_photo_url' => null];
-    }
-
-
-    $uploadDir = realpath(__DIR__ . '/../../../../../uploads/photos');
-    if (!$uploadDir || !is_dir($uploadDir)) {
-        error_log("Le dossier d'upload n'existe pas ou n'est pas un dossier : {$uploadDir}");
-        return ['success' => false, 'message' => "Erreur de configuration serveur pour l'upload.", 'new_photo_url' => null];
-    }
-
-
-    $fileExtension = strtolower(pathinfo($fileData['name'], PATHINFO_EXTENSION));
-    $newFileName = 'provider_' . $provider_id . '_' . time() . '.' . $fileExtension;
-    $destinationPath = $uploadDir . DIRECTORY_SEPARATOR . $newFileName;
-    $relativePath = UPLOAD_URL . 'photos/' . $newFileName;
-
-
-    if (move_uploaded_file($fileData['tmp_name'], $destinationPath)) {
-
-        $currentUser = fetchOne(TABLE_USERS, 'id = :id', [':id' => $provider_id], 'photo_url');
-        if ($currentUser && !empty($currentUser['photo_url']) && strpos($currentUser['photo_url'], 'default-user.png') === false) {
-            $oldRelativePath = $currentUser['photo_url'];
-
-            $oldFileName = basename(parse_url($oldRelativePath, PHP_URL_PATH));
-            $oldFullPath = $uploadDir . DIRECTORY_SEPARATOR . $oldFileName;
-            if (file_exists($oldFullPath) && is_file($oldFullPath)) {
-                @unlink($oldFullPath);
-            }
-        }
-
-
-        $updated = updateRow(TABLE_USERS, ['photo_url' => $relativePath], 'id = :id', [":id" => $provider_id]);
-        if ($updated > 0) {
-            $_SESSION['user_photo'] = $relativePath;
-            return ['success' => true, 'message' => 'Photo de profil mise à jour avec succès.', 'new_photo_url' => $relativePath];
-        } else {
-            @unlink($destinationPath);
-            error_log("Échec de la mise à jour de photo_url en BDD pour l'utilisateur ID: {$provider_id}");
-            return ['success' => false, 'message' => 'Erreur lors de la mise à jour de la base de données.', 'new_photo_url' => null];
-        }
-    } else {
-        error_log("Échec de move_uploaded_file pour l'utilisateur ID: {$provider_id}. Source: {$fileData['tmp_name']}, Destination: {$destinationPath}");
-        return ['success' => false, 'message' => 'Impossible de sauvegarder le fichier téléchargé.', 'new_photo_url' => null];
-    }
-}
-
-
-/**
  * Fonction principale pour gérer les actions POST et préparer les données pour la vue des paramètres prestataire.
  *
  * @return array Données pour la vue.
@@ -276,13 +194,6 @@ function setupProviderSettingsPage(): array
                 case 'update_password':
                     $result = updateProviderPassword($provider_id, $formData['current_password'] ?? '', $formData['new_password'] ?? '');
                     break;
-                case 'update_photo':
-                    $result = updateProviderProfilePhoto($provider_id, $_FILES['profile_photo'] ?? []);
-
-                    if ($result['success'] && isset($result['new_photo_url'])) {
-                        $_SESSION['flash_new_photo_url'] = $result['new_photo_url'];
-                    }
-                    break;
                 case 'update_preferences':
                     $result = handleUpdateProviderPreferences($provider_id, $formData);
                     break;
@@ -310,13 +221,7 @@ function setupProviderSettingsPage(): array
     }
 
 
-    $csrfToken = generateToken();
-
-
-    $flash_new_photo_url = $_SESSION['flash_new_photo_url'] ?? null;
-    if (isset($_SESSION['flash_new_photo_url'])) {
-        unset($_SESSION['flash_new_photo_url']);
-    }
+    $csrfToken = ensureCsrfToken();
 
     return [
         'pageTitle' => "Mes Paramètres Prestataire",
@@ -325,8 +230,6 @@ function setupProviderSettingsPage(): array
 
         'csrf_token_profile' => $csrfToken,
         'csrf_token_password' => $csrfToken,
-        'csrf_token_photo' => $csrfToken,
-        'csrf_token_preferences' => $csrfToken,
-        'flash_new_photo_url' => $flash_new_photo_url
+        'csrf_token_preferences' => $csrfToken
     ];
 }
