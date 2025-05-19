@@ -13,6 +13,7 @@ $availability_to_edit = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_availability'])) {
     handleAvailabilityAddRequest($provider_id);
+} else if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 
@@ -22,7 +23,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_availability']
 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_availability'])) {
-    
     verifyPostedCsrfToken();
 
     $availability_id_to_delete = filter_input(INPUT_POST, 'availability_id', FILTER_VALIDATE_INT);

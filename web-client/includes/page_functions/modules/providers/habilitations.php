@@ -204,7 +204,7 @@ function handleHabilitationAddRequest(int $provider_id): void
     }
 
 
-    verifyCsrfToken();
+    verifyPostedCsrfToken();
 
 
     $habilitationData = [
